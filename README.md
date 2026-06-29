@@ -9,8 +9,9 @@ The current verified target is:
 1. Open the app on a browser.
 2. Import the official Kasane Teto OpenUTAU UTAU zip as a user-provided voicebank.
 3. Edit a simple vocal line.
-4. Export a 44.1 kHz / 16-bit / mono WAV.
-5. Import that WAV into GarageBand.
+4. Keep the browser draft automatically restored after refresh.
+5. Export or share a 44.1 kHz / 16-bit / mono WAV.
+6. Import that WAV into GarageBand.
 
 Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset.
 

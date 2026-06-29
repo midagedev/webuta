@@ -16,7 +16,7 @@ import {
   Upload,
   Volume2,
 } from 'lucide-react'
-import { useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import './App.css'
 import { encodeWav } from './audio/wav'
 import cyberVocalHero from './assets/cyber-vocal-hero.webp'
@@ -28,6 +28,7 @@ import {
   toneName,
 } from './music'
 import { addNoteAfter, addNoteFromGrid } from './projectEditing'
+import { loadSavedProject, saveProject } from './projectStorage'
 import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
 import { parseUstx, serializeUstx } from './ustx'
@@ -40,8 +41,8 @@ const MIN_NOTE_WIDTH = 44
 const LYRIC_PALETTE = ['도', '히', '다', '이', '스', '키', '라', '나']
 
 function App() {
-  const [project, setProject] = useState<SongProject>(demoProject)
-  const [selectedNoteId, setSelectedNoteId] = useState(demoProject.notes[0]?.id ?? '')
+  const [project, setProject] = useState<SongProject>(() => loadSavedProject() ?? demoProject)
+  const [selectedNoteId, setSelectedNoteId] = useState(() => project.notes[0]?.id ?? '')
   const [rendered, setRendered] = useState<RenderedAudio | null>(null)
   const [voicebankName, setVoicebankName] = useState('Browser demo voice')
   const [voicebank, setVoicebank] = useState<LoadedVoicebank | null>(null)
@@ -56,6 +57,10 @@ function App() {
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const selectedNote = project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0]
+
+  useEffect(() => {
+    saveProject(project)
+  }, [project])
   const range = useMemo(() => pitchRange(project.notes), [project.notes])
   const rows = useMemo(() => {
     const values: number[] = []

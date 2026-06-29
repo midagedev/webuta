@@ -1,8 +1,32 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { demoProject } from './demoProject'
+import { loadSavedProject, saveProject } from './projectStorage'
 
 describe('App editing workflow', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('restores the last browser project draft', () => {
+    saveProject({ ...demoProject, name: 'Recovered Draft' })
+
+    render(<App />)
+
+    expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Recovered Draft')
+  })
+
+  it('auto-saves project name edits', async () => {
+    render(<App />)
+
+    fireEvent.change(screen.getByLabelText('Project name'), { target: { value: 'Dohee Hook' } })
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.name).toBe('Dohee Hook')
+    })
+  })
+
   it('updates the selected lyric from the quick lyric pads', () => {
     render(<App />)
 
