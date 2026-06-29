@@ -1,58 +1,96 @@
 # WebUtau
 
-WebUtau is a browser-first cyber vocal synth sketchpad aimed at an iPad-to-GarageBand workflow.
+<div align="center">
+  <img src="src/assets/cyber-vocal-hero.webp" alt="WebUtau cyber vocal mascot" width="160" />
 
-The app pairs a neon-glam, tracker-inspired vocal editor UI with a simple singing workflow: load a user-provided UTAU/OpenUTAU voicebank, sketch lyrics on a dense piano grid, render a WAV, and import it into GarageBand.
-Without an imported singer, the built-in `Korean Demo Voice` renders Hangul lyrics as a browser-safe guide vocal by shaping Korean onset, vowel, and coda profiles.
+  <h3>Cyber vocal sketchpad for Hangul lyrics, UTAU voicebanks, and GarageBand-ready WAV export.</h3>
 
-The current verified target is:
+  <p>
+    <a href="https://midagedev.github.io/webuta/">Live App</a>
+    ·
+    <a href="docs/IPAD_GARAGEBAND_QA.md">iPad QA</a>
+    ·
+    <a href="docs/LICENSE_BOUNDARIES.md">License Boundaries</a>
+    ·
+    <a href="docs/PORTING_ROADMAP.md">Porting Roadmap</a>
+  </p>
 
-1. Open the app on a browser.
-2. Import the official Kasane Teto OpenUTAU UTAU zip as a user-provided voicebank.
-3. Edit a simple vocal line.
-4. Keep the browser draft automatically restored after refresh.
-5. Keep the last imported voicebank zip restored locally in the same browser.
-6. Open from the iPad home screen with app-shell caching after the first online load.
-7. Export or share a 44.1 kHz / 16-bit / mono WAV.
-8. Confirm the rendered WAV shows `GarageBand ready`.
-9. Import that WAV into GarageBand.
+  <p>
+    <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-faf38f?style=for-the-badge&amp;labelColor=21142f" />
+    <img alt="React" src="https://img.shields.io/badge/React-19-83f7ff?style=for-the-badge&amp;labelColor=21142f" />
+    <img alt="Vite" src="https://img.shields.io/badge/Vite-8-ff69c8?style=for-the-badge&amp;labelColor=21142f" />
+    <img alt="WAV Export" src="https://img.shields.io/badge/WAV-44.1kHz_PCM_mono-c8ff62?style=for-the-badge&amp;labelColor=21142f" />
+  </p>
+</div>
 
-Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset. In the browser app, an imported voicebank zip is cached only in that browser's local IndexedDB storage.
-The app shows whether the imported voicebank is saved on the current device, restored from local storage, or available only for the current session.
+WebUtau is a browser-first vocal editor inspired by OpenUtau-style workflows. It is built for a simple creative loop:
 
-## Visual Direction
+1. Open the app in a browser. After the first online load, the PWA shell can also be added to the iPad home screen.
+2. Type a short lyric line such as `도히도히 다이스키`.
+3. Sketch notes on a piano-roll/tracker grid.
+4. Render a 44.1 kHz / 16-bit / mono WAV.
+5. Download or share the WAV and import it into GarageBand.
 
-The current interface uses an original cyber vocal mascot illustration and a dense tracker-era editor theme:
+The app can run without a voicebank using the built-in `Korean Demo Voice`. That default voice is not TTS and does not use generated audio files; it is a deterministic browser synthesizer that shapes Hangul onset, vowel, and coda profiles so Korean lyrics can be tested immediately.
 
-- App eyebrow: `CYBER TRACKER CLUB`
-- Tracker surface: compact `PAT / CH / BPM / ROWS / BANK / OUT` status cells with mobile horizontal scrolling.
-- Mascot assets:
-  - `src/assets/cyber-vocal-hero.webp` for the browser UI
-  - `src/assets/cyber-vocal-hero.png` as the transparent PNG source
-- Visual constraints:
-  - Original character only, no third-party singer likeness.
-  - No bundled Kasane Teto voicebank or character assets.
-  - Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`, not imply Vocaloid compatibility.
-- The in-app `Licenses` panel lists project code, user-provided voicebank boundaries, original artwork, and the official Teto UTAU link.
+Kasane Teto assets are not bundled in this repository. For the real UTAU path, import the official Teto OpenUTAU/UTAU zip yourself in the browser. The zip stays local to the current device and is cached only in that browser's IndexedDB storage.
 
-## Run
+## Screenshots
 
-```sh
-npm install
-npm run dev
-```
+| Desktop pattern desk | Mobile editor |
+| --- | --- |
+| ![WebUtau desktop editor](docs/screenshots/webuta-desktop.jpg) | ![WebUtau mobile editor](docs/screenshots/webuta-mobile.jpg) |
 
-Open `http://127.0.0.1:5173/`.
+## What Works Today
+
+- Neon cyber vocal editor UI with compact tracker-style status cells.
+- Piano-roll note editing with drag, resize, keyboard movement, undo, and redo.
+- Hangul lyric line assignment for the built-in `도 히 도 히 다 이 스 키` demo phrase.
+- Built-in `Korean Demo Voice` for no-zip browser playback and export tests.
+- User-provided UTAU/OpenUTAU zip loading, including official Kasane Teto test coverage.
+- Voicebank alias coverage display, so missing syllables are visible before export.
+- WAV render inspection that shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
+- Local project and voicebank restore after refresh on the same browser.
+- PWA app-shell caching after the first online load.
+- In-app license panel that separates project code, original artwork, and user-provided voicebanks.
+
+## Beginner Workflow
+
+Use this path for a first vocal sketch:
+
+1. Open [the live app](https://midagedev.github.io/webuta/).
+2. Keep `Korean Demo Voice` selected, or import a local UTAU zip with `ZIP`.
+3. Edit the lyric line. The default is `도히도히 다이스키`.
+4. Press `적용` to assign lyrics to the notes.
+5. Press play to audition.
+6. Press `WAV` or `공유`.
+7. Import the exported WAV into GarageBand.
 
 ## Official Teto Test Asset
+
+The repository includes a local-only test helper for the official Kasane Teto OpenUTAU UTAU zip:
 
 ```sh
 npm run asset:teto
 npm run test:teto
 ```
 
-This downloads `TETO-OUset240323.zip` into ignored `test-assets/` and verifies that WebUtau can read its `character.yaml`, `oto.ini`, aliases, and WAV sample inventory.
-It also renders the built-in Korean `도 히 도 히 다 이 스 키` demo line through the local Teto samples, using the browser UTAU sample renderer path.
+This downloads `TETO-OUset240323.zip` into ignored `test-assets/` and verifies that WebUtau can read its `character.yaml`, `oto.ini`, aliases, and WAV sample inventory. The test also renders the built-in Korean demo line through the local Teto samples using the browser UTAU sample renderer path.
+
+Do not commit the downloaded Teto zip. The repository is MIT-licensed, but Teto voicebank files remain governed by their own official license and distribution terms.
+
+## Run Locally
+
+```sh
+npm install
+npm run dev
+```
+
+Open:
+
+```txt
+http://127.0.0.1:5173/
+```
 
 ## Checks
 
@@ -64,7 +102,7 @@ npm run build
 npm run test:teto
 ```
 
-Verified local smoke output:
+Current verified local smoke coverage:
 
 - Official Teto zip imported in browser.
 - `6216` UTAU aliases and `1822` WAV samples detected.
@@ -72,10 +110,21 @@ Verified local smoke output:
 - Built-in `Korean Demo Voice` decomposes Hangul syllables for the no-ZIP guide vocal path.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
-- The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
 - The app surfaces local voicebank cache status, including `이 기기 저장됨`, `이 기기에서 복원됨`, and `현재 세션 전용`.
 - Runtime npm dependency notices are generated in `docs/THIRD_PARTY_NOTICES.md`.
 - Physical iPad and GarageBand import verification is tracked in `docs/IPAD_GARAGEBAND_QA.md`.
+
+## Visual Direction
+
+The current interface uses an original cyber vocal mascot illustration and a dense tracker-era editor theme:
+
+- App eyebrow: `CYBER TRACKER CLUB`
+- Tracker surface: compact `PAT / CH / BPM / ROWS / BANK / MATCH` status cells with mobile horizontal scrolling.
+- Mascot assets:
+  - `src/assets/cyber-vocal-hero.webp` for the browser UI and README header
+  - `src/assets/cyber-vocal-hero.png` as the transparent PNG source
+- Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`. It should not imply Vocaloid compatibility.
+- No third-party singer likeness, Teto character art, or Teto voicebank files are bundled.
 
 ## Deploy To GitHub Pages
 
