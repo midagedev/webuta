@@ -1,0 +1,329 @@
+#!/usr/bin/env python3
+"""Generate the bundled Korean CV voicebank from Supertonic 3 TTS output.
+
+This script intentionally keeps model generation outside the browser app.
+Install the Python package in a local venv first:
+
+    pip install supertonic
+
+Then run:
+
+    python scripts/generate-korean-supertonic-voicebank.py
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import struct
+import sys
+import zipfile
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+
+SAMPLE_RATE = 44100
+OUTPUT = Path("public/voicebanks/webuta-ko-lite.zip")
+ZIP_DATE_TIME = (2026, 1, 1, 0, 0, 0)
+MODEL_NAME = "supertonic-3"
+MODEL_REPO = "Supertone/supertonic-3"
+MODEL_REVISION = "724fb5abbf5502583fb520898d45929e62f02c0b"
+VOICE_NAME = os.environ.get("WEBUTA_SUPERTONIC_VOICE", "F3")
+
+ONSETS = [
+    ("g", "ㄱ"),
+    ("kk", "ㄲ"),
+    ("n", "ㄴ"),
+    ("d", "ㄷ"),
+    ("tt", "ㄸ"),
+    ("r", "ㄹ"),
+    ("m", "ㅁ"),
+    ("b", "ㅂ"),
+    ("pp", "ㅃ"),
+    ("s", "ㅅ"),
+    ("ss", "ㅆ"),
+    ("", "ㅇ"),
+    ("j", "ㅈ"),
+    ("jj", "ㅉ"),
+    ("ch", "ㅊ"),
+    ("k", "ㅋ"),
+    ("t", "ㅌ"),
+    ("p", "ㅍ"),
+    ("h", "ㅎ"),
+]
+
+VOWELS = [
+    ("a", "ㅏ"),
+    ("ae", "ㅐ"),
+    ("ya", "ㅑ"),
+    ("yae", "ㅒ"),
+    ("eo", "ㅓ"),
+    ("e", "ㅔ"),
+    ("yeo", "ㅕ"),
+    ("ye", "ㅖ"),
+    ("o", "ㅗ"),
+    ("wa", "ㅘ"),
+    ("wae", "ㅙ"),
+    ("oe", "ㅚ"),
+    ("yo", "ㅛ"),
+    ("u", "ㅜ"),
+    ("wo", "ㅝ"),
+    ("we", "ㅞ"),
+    ("wi", "ㅟ"),
+    ("yu", "ㅠ"),
+    ("eu", "ㅡ"),
+    ("ui", "ㅢ"),
+    ("i", "ㅣ"),
+]
+
+ALT_ROMAN_ALIASES = {
+    "스": ["su"],
+    "즈": ["zu"],
+    "츠": ["tsu"],
+    "쓰": ["ssu"],
+    "크": ["ku"],
+    "그": ["gu"],
+    "드": ["du"],
+    "트": ["tu"],
+    "브": ["bu"],
+    "프": ["pu"],
+    "흐": ["hu", "fu"],
+    "르": ["ru"],
+    "느": ["nu"],
+    "므": ["mu"],
+    "으": ["u"],
+}
+
+FRICATIVE_ONSETS = {"ㅅ", "ㅆ", "ㅈ", "ㅉ", "ㅊ", "ㅎ"}
+STOP_ONSETS = {"ㄱ", "ㄲ", "ㄷ", "ㄸ", "ㅂ", "ㅃ", "ㅋ", "ㅌ", "ㅍ"}
+NASAL_LIQUID_ONSETS = {"ㄴ", "ㄹ", "ㅁ"}
+
+
+@dataclass(frozen=True)
+class OtoPreset:
+    consonant_ms: int
+    preutterance_ms: int
+    overlap_ms: int
+
+
+def main() -> int:
+    try:
+        from supertonic import TTS
+    except ImportError:
+        print("Install the optional generator dependency first: pip install supertonic", file=sys.stderr)
+        return 1
+
+    tts = TTS(model=MODEL_NAME, auto_download=True)
+    voice_style = tts.get_voice_style(VOICE_NAME)
+    files: dict[str, bytes | str] = {}
+    oto_lines: list[str] = []
+
+    print(f"Generating {OUTPUT} with {MODEL_NAME}/{VOICE_NAME} ...")
+    index = 0
+    for onset_index, (onset_roman, onset) in enumerate(ONSETS):
+        for vowel_index, (vowel_roman, vowel) in enumerate(VOWELS):
+            syllable = hangul_syllable(onset_index, vowel_index)
+            file_name = f"ko_{index:03d}_C4.wav"
+            samples = synthesize_syllable(tts, voice_style, syllable)
+            preset = oto_preset(onset)
+            files[f"samples/{file_name}"] = encode_wav(samples)
+            aliases = aliases_for(syllable, onset_roman, vowel_roman)
+            for alias in aliases:
+                oto_lines.append(
+                    f"{file_name}={alias},0,{preset.consonant_ms},-820,"
+                    f"{preset.preutterance_ms},{preset.overlap_ms}"
+                )
+            index += 1
+        print(f"  {onset or 'ㅇ'} row done")
+
+    manifest = {
+        "id": "webuta-ko-supertonic-v2",
+        "name": "WebUtau Korean V2",
+        "type": "tts-generated-utau-cv",
+        "sampleRate": SAMPLE_RATE,
+        "baseTone": "C4",
+        "model": {
+            "name": MODEL_NAME,
+            "repo": MODEL_REPO,
+            "revision": MODEL_REVISION,
+            "voice": VOICE_NAME,
+            "license": "OpenRAIL-M",
+        },
+        "coverage": {
+            "hangulCvAliases": len(ONSETS) * len(VOWELS),
+            "exactCodaSupport": False,
+        },
+    }
+
+    files["oto.ini"] = "\r\n".join(oto_lines) + "\r\n"
+    files["character.yaml"] = "\n".join(
+        [
+            "name: WebUtau Korean V2",
+            "text_file_encoding: utf-8",
+            "author: WebUtau Project",
+            "web: https://midagedev.github.io/webuta/",
+            "",
+        ]
+    )
+    files["readme.txt"] = "\r\n".join(
+        [
+            "WebUtau Korean V2",
+            "",
+            "A Korean CV starter UTAU-style voicebank generated from Supertonic 3 TTS output.",
+            "It contains Hangul onset+vowel samples and romanized aliases for browser vocal synthesis.",
+            "Final consonants are currently approximated to matching CV aliases by the WebUtau lyric matcher.",
+            "",
+            "This is not Kasane Teto, Vocaloid, OpenUtau, or a human singer sample pack.",
+            "Do not imply that the voice belongs to a real singer or third-party character.",
+            "",
+        ]
+    )
+    files["license.txt"] = "\r\n".join(
+        [
+            "WebUtau Korean V2 voicebank",
+            "",
+            "The voicebank metadata and packaging are part of the WebUtau project.",
+            "The WAV samples were generated from Supertonic 3 TTS output.",
+            "",
+            f"Model: {MODEL_REPO}",
+            f"Revision: {MODEL_REVISION}",
+            f"Voice style: {VOICE_NAME}",
+            "Model license: OpenRAIL-M. Review the model license before redistribution.",
+            "",
+            "No Kasane Teto, Vocaloid, OpenUtau, commercial singer, or human-recorded third-party sample is included.",
+            "",
+        ]
+    )
+    files["webuta-ko-lite.manifest.json"] = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    write_zip(OUTPUT, files)
+    print(f"Wrote {OUTPUT} ({index} samples, {len(oto_lines)} aliases)")
+    return 0
+
+
+def synthesize_syllable(tts, voice_style, syllable: str) -> np.ndarray:
+    wav, _duration = tts.synthesize(
+        syllable,
+        voice_style=voice_style,
+        lang="ko",
+        speed=1.0,
+        total_steps=10,
+        max_chunk_length=24,
+        silence_duration=0.04,
+    )
+    mono = np.asarray(wav, dtype=np.float32).reshape(-1)
+    cropped = crop_active(mono)
+    shaped = fit_sample_length(cropped, min_seconds=0.7, max_seconds=0.95)
+    return normalize_peak(shaped, 0.86)
+
+
+def crop_active(samples: np.ndarray) -> np.ndarray:
+    envelope = moving_rms(samples, window=1024)
+    peak = float(envelope.max()) if envelope.size else 0.0
+    if peak <= 1e-5:
+        return samples[: int(SAMPLE_RATE * 0.8)]
+    threshold = max(peak * 0.045, 0.003)
+    active = np.flatnonzero(envelope >= threshold)
+    if active.size == 0:
+        return samples[: int(SAMPLE_RATE * 0.8)]
+    start = max(0, int(active[0]) - int(SAMPLE_RATE * 0.065))
+    end = min(samples.size, int(active[-1]) + int(SAMPLE_RATE * 0.22))
+    return fade_edges(samples[start:end].copy(), 0.006, 0.04)
+
+
+def moving_rms(samples: np.ndarray, window: int) -> np.ndarray:
+    if samples.size == 0:
+        return np.array([], dtype=np.float32)
+    square = samples * samples
+    kernel = np.ones(window, dtype=np.float32) / window
+    return np.sqrt(np.convolve(square, kernel, mode="same"))
+
+
+def fit_sample_length(samples: np.ndarray, min_seconds: float, max_seconds: float) -> np.ndarray:
+    min_length = int(SAMPLE_RATE * min_seconds)
+    max_length = int(SAMPLE_RATE * max_seconds)
+    if samples.size > max_length:
+        return fade_edges(samples[:max_length].copy(), 0.0, 0.05)
+    if samples.size >= min_length:
+        return samples
+    padded = np.zeros(min_length, dtype=np.float32)
+    padded[: samples.size] = samples
+    return fade_edges(padded, 0.0, 0.05)
+
+
+def normalize_peak(samples: np.ndarray, target: float) -> np.ndarray:
+    peak = float(np.max(np.abs(samples))) if samples.size else 0.0
+    if peak <= 1e-6:
+        return samples.astype(np.float32)
+    return (samples * min(12.0, target / peak)).astype(np.float32)
+
+
+def fade_edges(samples: np.ndarray, fade_in_seconds: float, fade_out_seconds: float) -> np.ndarray:
+    fade_in = min(samples.size, int(SAMPLE_RATE * fade_in_seconds))
+    fade_out = min(samples.size, int(SAMPLE_RATE * fade_out_seconds))
+    if fade_in > 1:
+        samples[:fade_in] *= np.linspace(0.0, 1.0, fade_in, dtype=np.float32)
+    if fade_out > 1:
+        samples[-fade_out:] *= np.linspace(1.0, 0.0, fade_out, dtype=np.float32)
+    return samples
+
+
+def oto_preset(onset: str) -> OtoPreset:
+    if not onset or onset == "ㅇ":
+        return OtoPreset(consonant_ms=70, preutterance_ms=34, overlap_ms=18)
+    if onset in FRICATIVE_ONSETS:
+        return OtoPreset(consonant_ms=150, preutterance_ms=78, overlap_ms=24)
+    if onset in STOP_ONSETS:
+        return OtoPreset(consonant_ms=128, preutterance_ms=64, overlap_ms=22)
+    if onset in NASAL_LIQUID_ONSETS:
+        return OtoPreset(consonant_ms=118, preutterance_ms=58, overlap_ms=24)
+    return OtoPreset(consonant_ms=110, preutterance_ms=56, overlap_ms=22)
+
+
+def aliases_for(syllable: str, onset_roman: str, vowel_roman: str) -> list[str]:
+    aliases = {syllable}
+    roman = f"{onset_roman}{vowel_roman}"
+    if roman:
+        aliases.add(roman)
+    aliases.update(ALT_ROMAN_ALIASES.get(syllable, []))
+    return sorted(aliases)
+
+
+def hangul_syllable(onset_index: int, vowel_index: int) -> str:
+    return chr(0xAC00 + onset_index * 21 * 28 + vowel_index * 28)
+
+
+def encode_wav(samples: np.ndarray) -> bytes:
+    clipped = np.clip(samples, -1.0, 1.0)
+    pcm = np.where(clipped < 0, clipped * 32768.0, clipped * 32767.0).astype("<i2")
+    data = pcm.tobytes()
+    byte_rate = SAMPLE_RATE * 2
+    header = b"".join(
+        [
+            b"RIFF",
+            struct.pack("<I", 36 + len(data)),
+            b"WAVEfmt ",
+            struct.pack("<IHHIIHH", 16, 1, 1, SAMPLE_RATE, byte_rate, 2, 16),
+            b"data",
+            struct.pack("<I", len(data)),
+        ]
+    )
+    return header + data
+
+
+def write_zip(path: Path, files: dict[str, bytes | str]) -> None:
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
+        for name in sorted(files):
+            payload = files[name]
+            info = zipfile.ZipInfo(name, ZIP_DATE_TIME)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            if isinstance(payload, str):
+                archive.writestr(info, payload.encode("utf-8"))
+            else:
+                archive.writestr(info, payload)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

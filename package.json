@@ -13,6 +13,7 @@
     "test:teto": "RUN_TETO_ASSET=1 vitest run src/voicebank.teto.test.ts",
     "notices": "node scripts/generate-dependency-notices.mjs",
     "voicebank:lite": "node scripts/generate-korean-lite-voicebank.mjs",
+    "voicebank:supertonic": "python3 scripts/generate-korean-supertonic-voicebank.py",
     "asset:teto": "node scripts/download-teto-asset.mjs"
   },
   "dependencies": {
