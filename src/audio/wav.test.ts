@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { encodeWav, inspectWavBlob, inspectWavBuffer, isGarageBandReadyWav } from './wav'
+import { encodeWav, inspectWavBlob, inspectWavBuffer, isDawReadyWav } from './wav'
 
 describe('WAV encoder', () => {
   it('writes a mono PCM WAV header', async () => {
@@ -14,7 +14,7 @@ describe('WAV encoder', () => {
     expect(bytes.length).toBe(50)
   })
 
-  it('inspects GarageBand-ready WAV metadata', async () => {
+  it('inspects DAW-ready WAV metadata', async () => {
     const blob = encodeWav(new Float32Array(44100), 44100)
     const info = await inspectWavBlob(blob)
 
@@ -24,7 +24,7 @@ describe('WAV encoder', () => {
     expect(info.sampleRate).toBe(44100)
     expect(info.bitsPerSample).toBe(16)
     expect(info.durationSeconds).toBe(1)
-    expect(isGarageBandReadyWav(info)).toBe(true)
+    expect(isDawReadyWav(info)).toBe(true)
   })
 
   it('rejects invalid WAV containers during inspection', () => {

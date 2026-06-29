@@ -4,7 +4,7 @@
 
 WebUtau should be split into four layers:
 
-1. Editor UI: Svelte touch-first interface for iPad and desktop browsers.
+1. Editor UI: Svelte touch-first interface for mobile, tablet, and desktop browsers.
 2. Project model: USTX-compatible document model with browser persistence.
 3. Render API: a stable interface that returns PCM samples or WAV blobs.
 4. Render engines: browser demo, OpenUtau server renderer, WORLDLINE WASM, and future AI model renderers.
@@ -13,7 +13,7 @@ This keeps the child-friendly editor usable while the heavyweight synthesis work
 
 ## Renderer Strategy
 
-The browser demo renderer is not a real OpenUtau singer. It exists to prove the complete iPad-to-WAV workflow.
+The browser demo renderer is not a real OpenUtau singer. It exists to prove the complete browser vocal editing and WAV rendering workflow.
 
 Recommended sequence:
 
@@ -27,7 +27,7 @@ For the first real singer target, use Kasane Teto UTAU as a user-provided voiceb
 
 Local development can use `npm run asset:teto` to download the official zip into ignored `test-assets/`. That file is a test input only and must not be committed or redistributed with WebUtau.
 
-## GarageBand Workflow
+## WAV / DAW Workflow
 
 Target export:
 
@@ -35,15 +35,15 @@ Target export:
 - 44.1 kHz.
 - Mono first, stereo later.
 - File name based on project name.
-- Download path tested on iPad Safari and macOS Safari/Chrome.
+- Download and share paths tested on mobile, tablet, and desktop browsers.
 
 Manual test:
 
-1. Open WebUtau on iPad.
+1. Open WebUtau in a browser.
 2. Edit lyrics and notes.
 3. Tap WAV.
-4. Save to Files.
-5. Open GarageBand and import the WAV into an audio track.
+4. Save or share the rendered WAV.
+5. Import the WAV into a target DAW or sampler.
 
 ## OpenUtau Feature Parity
 

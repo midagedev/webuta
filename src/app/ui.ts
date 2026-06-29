@@ -1,4 +1,4 @@
-import { isGarageBandReadyWav, type WavInfo } from '../audio/wav'
+import { isDawReadyWav, type WavInfo } from '../audio/wav'
 import type { SongNote, SongProject } from '../types'
 import type { LyricEntryMatch, VoicebankCoverage } from '../voicebank'
 
@@ -34,7 +34,7 @@ export function formatTime(seconds: number) {
 export function formatWavSummary(info: WavInfo) {
   const sampleRateKhz = `${(info.sampleRate / 1000).toFixed(info.sampleRate % 1000 === 0 ? 0 : 1)} kHz`
   const channels = info.channelCount === 1 ? 'mono' : `${info.channelCount} ch`
-  const readiness = isGarageBandReadyWav(info) ? 'GarageBand ready' : 'WAV check'
+  const readiness = isDawReadyWav(info) ? 'DAW-ready WAV' : 'WAV check'
   return `${readiness} · ${sampleRateKhz} ${info.formatName} ${channels}`
 }
 

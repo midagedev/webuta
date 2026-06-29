@@ -6,7 +6,7 @@
   import LeftRail from './components/LeftRail.svelte'
   import ModeStrip from './components/ModeStrip.svelte'
   import TopBar from './components/TopBar.svelte'
-  import { encodeWav, inspectWavBlob, isGarageBandReadyWav } from './audio/wav'
+  import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
   import { createDemoProject } from './demoProject'
   import { pitchRange, projectDurationTicks, sanitizeFileName } from './music'
   import {
@@ -429,7 +429,7 @@
         wavInfo,
       }
       rendered = audio
-      notice = isGarageBandReadyWav(wavInfo) ? 'GarageBand ready' : 'WAV rendered'
+      notice = isDawReadyWav(wavInfo) ? 'Vocal WAV ready' : 'WAV rendered'
       return audio
     } catch (error) {
       notice = `Render failed: ${formatErrorMessage(error)}`

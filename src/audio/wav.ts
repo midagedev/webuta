@@ -97,7 +97,7 @@ export function inspectWavBuffer(buffer: ArrayBuffer): WavInfo {
   }
 }
 
-export function isGarageBandReadyWav(info: WavInfo) {
+export function isDawReadyWav(info: WavInfo) {
   return (
     info.container === 'RIFF/WAVE' &&
     info.audioFormat === 1 &&

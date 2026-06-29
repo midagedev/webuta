@@ -208,7 +208,7 @@ describe('App editing workflow', () => {
     })
   })
 
-  it('shares a rendered GarageBand-ready WAV when Web Share is available', async () => {
+  it('shares a rendered DAW-ready WAV when Web Share is available', async () => {
     const share = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'canShare', {
       value: vi.fn(() => true),
@@ -261,7 +261,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       expect(screen.getAllByText('WAV downloaded').length).toBeGreaterThan(0)
     })
-    expect(screen.getByText(/GarageBand ready · 44.1 kHz PCM mono/)).toBeTruthy()
+    expect(screen.getByText(/DAW-ready WAV · 44.1 kHz PCM mono/)).toBeTruthy()
   })
 
   it('adds a note by clicking an empty piano-roll cell', () => {

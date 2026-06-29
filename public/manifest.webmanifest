@@ -1,7 +1,7 @@
 {
   "name": "WebUtau Cyber Tracker",
   "short_name": "WebUtau",
-  "description": "Browser vocal synth sketchpad for rendering WAV vocals into GarageBand.",
+  "description": "Browser vocal synth sketchpad for Hangul lyrics, UTAU voicebanks, and WAV rendering.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

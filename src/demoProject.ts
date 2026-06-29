@@ -5,9 +5,9 @@ const trackId = 'track-main'
 const partId = 'part-main'
 
 export const demoProject: SongProject = {
-  id: 'demo-ipad-garageband',
+  id: 'demo-vocal-synth',
   name: 'First Vocal Sketch',
-  comment: 'A small WebUtau project that can render a GarageBand-ready WAV.',
+  comment: 'A small WebUtau project for sketching a browser vocal line.',
   bpm: 112,
   beatPerBar: 4,
   beatUnit: 4,

@@ -12,7 +12,7 @@ export const browserDemoRenderer: VocalRenderer = {
     status: 'ready',
     exportWav: true,
     realtimePreview: true,
-    notes: 'A browser-safe Korean guide voice that shapes Hangul syllables for editing and GarageBand export tests.',
+    notes: 'A browser-safe Korean guide voice that shapes Hangul syllables for vocal sketching and WAV render tests.',
   },
   async render(project) {
     const durationSeconds = projectDurationSeconds(project) + 0.6

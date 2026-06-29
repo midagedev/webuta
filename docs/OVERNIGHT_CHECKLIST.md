@@ -1,13 +1,13 @@
 # WebUtau Overnight Checklist
 
-Goal: build toward a full OpenUtau web port whose first usable path lets a young iPad user make a vocal line, export WAV, and import it into GarageBand.
+Goal: build toward a full OpenUtau web port whose first usable path lets a beginner make a synthesized vocal line directly in the browser.
 
 ## Product Promise
 
-- [ ] Beginner-friendly vocal editor works on iPad Safari.
+- [ ] Beginner-friendly vocal editor works on touch and desktop browsers.
 - [ ] A project can be created without reading OpenUtau documentation.
 - [ ] Notes can be edited with lyric, pitch, duration, and tempo controls.
-- [ ] WAV export is 44.1 kHz PCM and suitable for GarageBand import.
+- [ ] WAV render is 44.1 kHz PCM and suitable for common DAW import.
 - [ ] USTX import/export keeps a bridge to OpenUtau projects.
 - [ ] Rendering engine boundary can later swap the demo renderer for OpenUtau-compatible synthesis.
 - [ ] License boundaries are documented before bundling any singer, model, or external engine.
@@ -19,7 +19,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 - [x] Scaffold Svelte/Vite/TypeScript app.
 - [x] Add USTX YAML/JSON parser for modern OpenUtau project shape.
 - [x] Add USTX export for round-tripping simple vocal projects.
-- [x] Add iPad-friendly first-screen editor with project actions, note editor, and piano roll.
+- [x] Add touch-friendly first-screen editor with project actions, note editor, and piano roll.
 - [x] Add browser-safe demo vocal renderer.
 - [x] Make the built-in demo voice Hangul-aware for Korean guide vocal sketches without a ZIP.
 - [x] Add WAV encoder and download path.
@@ -39,11 +39,11 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 - [x] Built-in `Korean Demo Voice` decomposes Hangul syllables into onset/vowel/coda profiles.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
-- [x] App UI re-inspects rendered WAV headers and marks compatible output as `GarageBand ready`.
+- [x] App UI re-inspects rendered WAV headers and marks compatible output as DAW-ready.
 - [x] App UI shows whether the imported voicebank is saved locally, restored locally, or session-only.
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
-- [x] Physical iPad/GarageBand verification checklist added in `docs/IPAD_GARAGEBAND_QA.md`.
-- [ ] Physical iPad Safari share sheet and GarageBand import confirmed by a human on device.
+- [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.
+- [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams
 
@@ -53,6 +53,6 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 - [ ] Classic synthesis: WORLDLINE native bridge via server first, then WASM if practical.
 - [ ] AI synthesis: DiffSinger/ENUNU through a server renderer first because browser model size and ONNX compatibility are product risks.
 - [ ] Plugin compatibility: replace arbitrary EXE execution with a sandboxed web plugin API.
-- [ ] iPad workflow: test Safari download, Files share sheet, and GarageBand import on physical hardware.
+- [ ] WAV handoff workflow: test browser download/share and DAW import on physical hardware.
 - [ ] Accessibility and youth UX: large touch targets, simple labels, clear recoverable states, and no destructive default actions.
 - [ ] Security: scan uploaded voicebanks, isolate server render jobs, and never execute user-provided binaries in a shared worker.
