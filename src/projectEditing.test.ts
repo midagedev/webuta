@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { demoProject } from './demoProject'
 import { TICKS_PER_BEAT, type SongProject } from './types'
-import { addNoteAfter, addNoteFromGrid, updateNoteInProject } from './projectEditing'
+import {
+  addNoteAfter,
+  addNoteFromGrid,
+  applyLyricLineToProject,
+  tokenizeLyricLine,
+  updateNoteInProject,
+} from './projectEditing'
 
 describe('project editing helpers', () => {
   it('adds a note after the selected anchor', () => {
@@ -73,5 +79,21 @@ describe('project editing helpers', () => {
 
     expect(result.note).toBeNull()
     expect(result.project).toBe(demoProject)
+  })
+
+  it('tokenizes compact Korean lyric lines by syllable', () => {
+    expect(tokenizeLyricLine('도히도히 다이스키')).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+  })
+
+  it('keeps spaced romanized lyrics as note tokens', () => {
+    expect(tokenizeLyricLine('do hi do hi da i su ki')).toEqual(['do', 'hi', 'do', 'hi', 'da', 'i', 'su', 'ki'])
+  })
+
+  it('applies a lyric line to notes in timeline order', () => {
+    const { project, appliedCount, tokens } = applyLyricLineToProject(demoProject, '도히도히 다이스키')
+
+    expect(tokens).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(appliedCount).toBe(8)
+    expect(project.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
   })
 })

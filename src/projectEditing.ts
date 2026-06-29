@@ -61,6 +61,36 @@ export function updateNoteInProject(project: SongProject, noteId: string, patch:
   }
 }
 
+export function applyLyricLineToProject(project: SongProject, lyricLine: string) {
+  const tokens = tokenizeLyricLine(lyricLine)
+  if (tokens.length === 0) {
+    return { project, tokens, appliedCount: 0 }
+  }
+  const orderedNotes = [...project.notes].sort((a, b) => a.start - b.start || a.tone - b.tone)
+  const lyricById = new Map(
+    orderedNotes.slice(0, tokens.length).map((note, index) => [note.id, tokens[index]]),
+  )
+  return {
+    project: {
+      ...project,
+      notes: project.notes.map((note) =>
+        lyricById.has(note.id) ? sanitizeNote({ ...note, lyric: lyricById.get(note.id) ?? note.lyric }) : note,
+      ),
+    },
+    tokens,
+    appliedCount: lyricById.size,
+  }
+}
+
+export function tokenizeLyricLine(lyricLine: string) {
+  const tokens: string[] = []
+  for (const chunk of lyricLine.trim().split(/\s+/)) {
+    const parts = splitLyricChunk(chunk)
+    tokens.push(...parts)
+  }
+  return tokens
+}
+
 function insertNote(
   project: SongProject,
   noteInput: {
@@ -132,4 +162,13 @@ function ensurePrimaryPart(project: SongProject): VoicePart {
 
 function snapTick(tick: number) {
   return Math.round(tick / GRID_SNAP_TICKS) * GRID_SNAP_TICKS
+}
+
+function splitLyricChunk(chunk: string) {
+  const clean = chunk.trim().replace(/[,.!?;:()[\]{}"“”'‘’]+/g, '')
+  if (!clean) {
+    return []
+  }
+  const segments = clean.match(/[가-힣]|[ぁ-ゖァ-ヺー]|[a-zA-Z]+|\d+/g)
+  return segments?.map((segment) => segment.toLowerCase()) ?? []
 }

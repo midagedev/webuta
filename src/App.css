@@ -929,6 +929,40 @@ button:disabled {
     linear-gradient(180deg, #ffd76b 0%, #efa026 100%);
 }
 
+.lyric-line-editor {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.lyric-line-editor input {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #10161d;
+  border-radius: 8px;
+  color: #f4f7fb;
+  background: #151b22;
+  font-weight: 780;
+}
+
+.lyric-line-editor input:focus {
+  outline: 2px solid #45d77f;
+  outline-offset: 2px;
+}
+
+.lyric-line-editor button {
+  min-height: 42px;
+  padding: 0 15px;
+  border-radius: 8px;
+  color: #052314;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 35%),
+    linear-gradient(180deg, #70e99d 0%, #26bc6a 100%);
+  font-weight: 900;
+}
+
 .mobile-mascot-banner {
   display: none;
 }
@@ -2191,6 +2225,23 @@ button:disabled {
     linear-gradient(135deg, var(--glam-cream), var(--glam-pink));
 }
 
+.lyric-line-editor input,
+.lyric-line-editor button {
+  border: 1px solid rgba(8, 7, 18, 0.24);
+  border-radius: 8px;
+}
+
+.lyric-line-editor input {
+  color: var(--glam-text);
+  background: rgba(8, 7, 18, 0.72);
+}
+
+.lyric-line-editor button {
+  color: #120817;
+  background:
+    linear-gradient(135deg, var(--glam-cream), var(--glam-lime));
+}
+
 @media (max-width: 760px) {
   .mascot-card {
     grid-template-columns: 112px minmax(0, 1fr);
@@ -2799,6 +2850,21 @@ button:disabled {
     min-width: 48px;
     min-height: 42px;
     border-radius: 4px;
+  }
+
+  .lyric-line-editor {
+    min-height: 40px;
+    gap: 6px;
+  }
+
+  .lyric-line-editor input,
+  .lyric-line-editor button {
+    min-height: 40px;
+    border-radius: 4px;
+  }
+
+  .lyric-line-editor button {
+    padding: 0 12px;
   }
 
   .arrangement-panel {

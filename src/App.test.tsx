@@ -49,6 +49,46 @@ describe('App editing workflow', () => {
     expect((screen.getByLabelText('가사') as HTMLInputElement).value).toBe('키')
   })
 
+  it('applies a compact Korean lyric line across the melody', async () => {
+    render(<App />)
+
+    fireEvent.change(screen.getByLabelText('가사 라인'), { target: { value: '나나나나 라라라라' } })
+    fireEvent.click(screen.getByRole('button', { name: '적용' }))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual([
+        '나',
+        '나',
+        '나',
+        '나',
+        '라',
+        '라',
+        '라',
+        '라',
+      ])
+    })
+  })
+
+  it('applies spaced romanized lyrics across the melody', async () => {
+    render(<App />)
+
+    fireEvent.change(screen.getByLabelText('가사 라인'), { target: { value: 'do hi do hi da i su ki' } })
+    fireEvent.click(screen.getByRole('button', { name: '적용' }))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual([
+        'do',
+        'hi',
+        'do',
+        'hi',
+        'da',
+        'i',
+        'su',
+        'ki',
+      ])
+    })
+  })
+
   it('adds a note by clicking an empty piano-roll cell', () => {
     const { container } = render(<App />)
     const grid = container.querySelector('.roll-grid') as HTMLDivElement

@@ -39,7 +39,13 @@ import {
   sanitizeFileName,
   toneName,
 } from './music'
-import { addNoteAfter, addNoteFromGrid, GRID_SNAP_TICKS, updateNoteInProject } from './projectEditing'
+import {
+  addNoteAfter,
+  addNoteFromGrid,
+  applyLyricLineToProject,
+  GRID_SNAP_TICKS,
+  updateNoteInProject,
+} from './projectEditing'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
@@ -78,6 +84,7 @@ function App() {
   const [playbackTime, setPlaybackTime] = useState(0)
   const [notice, setNotice] = useState('Ready')
   const [paintLyric, setPaintLyric] = useState('도')
+  const [lyricLine, setLyricLine] = useState(() => formatLyricLine(project.notes))
   const fileInputRef = useRef<HTMLInputElement>(null)
   const voicebankInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -88,6 +95,10 @@ function App() {
   useEffect(() => {
     saveProject(project)
   }, [project])
+
+  useEffect(() => {
+    setLyricLine(formatLyricLine(project.notes))
+  }, [project.notes])
 
   useEffect(() => {
     let cancelled = false
@@ -238,6 +249,18 @@ function App() {
     if (selectedNote) {
       updateSelectedNote({ lyric })
     }
+  }
+
+  function applyLyricLine() {
+    const result = applyLyricLineToProject(project, lyricLine)
+    if (result.appliedCount === 0) {
+      setNotice('No lyrics applied')
+      return
+    }
+    setProject(result.project)
+    setPaintLyric(result.tokens[0] ?? paintLyric)
+    setNotice(`${result.appliedCount} lyrics applied`)
+    clearRendered()
   }
 
   function selectNote(note: SongNote) {
@@ -829,6 +852,18 @@ function App() {
             ))}
           </div>
 
+          <div className="lyric-line-editor" aria-label="Lyric line editor">
+            <input
+              aria-label="가사 라인"
+              value={lyricLine}
+              placeholder="도히도히 다이스키"
+              onChange={(event) => setLyricLine(event.target.value)}
+            />
+            <button type="button" onClick={applyLyricLine}>
+              적용
+            </button>
+          </div>
+
           <div className="arrangement-panel">
             <div className="ruler-head">Pat 00</div>
             <div className="ruler-scroll">
@@ -1033,6 +1068,13 @@ function canShareFile(file: File, shareNavigator = getShareNavigator()) {
 function snapDragTicks(deltaX: number) {
   const rawTicks = deltaX / TICK_WIDTH
   return Math.round(rawTicks / GRID_SNAP_TICKS) * GRID_SNAP_TICKS
+}
+
+function formatLyricLine(notes: SongNote[]) {
+  return [...notes]
+    .sort((a, b) => a.start - b.start || a.tone - b.tone)
+    .map((note) => note.lyric)
+    .join(' ')
 }
 
 export default App
