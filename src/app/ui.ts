@@ -8,7 +8,7 @@ export const MIN_NOTE_WIDTH = 44
 export const NOTE_RESIZE_HANDLE_WIDTH = 14
 export const LYRIC_PALETTE = ['도', '히', '다', '이', '스', '키', '라', '나']
 
-export type VoicebankCacheStatus = 'idle' | 'restoring' | 'restored' | 'saving' | 'saved' | 'session-only'
+export type VoicebankCacheStatus = 'idle' | 'bundled' | 'restoring' | 'restored' | 'saving' | 'saved' | 'session-only'
 
 export function pitchRows(min: number, max: number) {
   const values: number[] = []
@@ -71,6 +71,8 @@ export function formatVoicebankCacheStatus(status: VoicebankCacheStatus) {
       return '로컬 복원 중'
     case 'restored':
       return '이 기기에서 복원됨'
+    case 'bundled':
+      return '기본 번들'
     case 'saving':
       return '이 기기에 저장 중'
     case 'saved':

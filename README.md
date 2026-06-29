@@ -29,7 +29,7 @@ WebUtau is a browser-first vocal synth editor inspired by OpenUtau-style workflo
 4. Audition the synthesized vocal line.
 5. Render a 44.1 kHz / 16-bit / mono WAV for later use in music tools.
 
-The app can run without a voicebank using the built-in `Korean Demo Voice`. That default voice is not TTS and does not use generated audio files; it is a deterministic browser synthesizer that shapes Hangul onset, vowel, and coda profiles so Korean lyrics can be tested immediately.
+The app now ships with `WebUtau Korean Lite`, a small original UTAU-style Korean CV voicebank. It is loaded as a bundled zip with `oto.ini` and WAV samples, so the default path exercises the same sample-rendering route as imported UTAU voicebanks. This starter bank covers 399 Hangul onset+vowel syllables and approximates final consonant lyrics by matching their CV base.
 
 Kasane Teto assets are not bundled in this repository. For the real UTAU path, import the official Teto OpenUTAU/UTAU zip yourself in the browser. The zip stays local to the current device and is cached only in that browser's IndexedDB storage.
 
@@ -44,7 +44,7 @@ Kasane Teto assets are not bundled in this repository. For the real UTAU path, i
 - Neon cyber vocal editor UI with compact tracker-style status cells.
 - Piano-roll note editing with drag, resize, keyboard movement, undo, and redo.
 - Hangul lyric line assignment for the built-in `도 히 도 히 다 이 스 키` demo phrase.
-- Built-in `Korean Demo Voice` for no-zip browser playback and render tests.
+- Built-in `WebUtau Korean Lite` UTAU-style sample voicebank for default playback and render tests.
 - User-provided UTAU/OpenUTAU zip loading, including official Kasane Teto test coverage.
 - Voicebank alias coverage display, so missing syllables are visible before rendering.
 - WAV render inspection for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
@@ -57,7 +57,7 @@ Kasane Teto assets are not bundled in this repository. For the real UTAU path, i
 Use this path for a first vocal sketch:
 
 1. Open [the live app](https://midagedev.github.io/webuta/).
-2. Keep `Korean Demo Voice` selected, or import a local UTAU zip with `ZIP`.
+2. Keep `WebUtau Korean Lite` selected, or import a local UTAU zip with `ZIP`.
 3. Edit the lyric line. The default is `도히도히 다이스키`.
 4. Press `적용` to assign lyrics to the notes.
 5. Press play to audition.
@@ -94,6 +94,7 @@ http://127.0.0.1:5173/
 
 ```sh
 npm run notices
+npm run voicebank:lite
 npm run lint
 npm test
 npm run build
@@ -105,7 +106,8 @@ Current verified local smoke coverage:
 - Official Teto zip imported in browser.
 - `6216` UTAU aliases and `1822` WAV samples detected.
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the official Teto zip.
-- Built-in `Korean Demo Voice` decomposes Hangul syllables for the no-ZIP guide vocal path.
+- Bundled `WebUtau Korean Lite` contains `399` WAV samples and `814` oto.ini alias lines.
+- Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean Lite voicebank.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
 - The app surfaces local voicebank cache status, including `이 기기 저장됨`, `이 기기에서 복원됨`, and `현재 세션 전용`.
@@ -123,6 +125,7 @@ The current interface uses an original cyber vocal mascot illustration and a den
   - `src/assets/cyber-vocal-hero.png` as the transparent PNG source
 - Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`. It should not imply Vocaloid compatibility.
 - No third-party singer likeness, Teto character art, or Teto voicebank files are bundled.
+- `public/voicebanks/webuta-ko-lite.zip` is an original generated starter voicebank; regenerate it with `npm run voicebank:lite`.
 
 ## Deploy To GitHub Pages
 

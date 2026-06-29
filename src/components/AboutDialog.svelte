@@ -37,6 +37,10 @@
         <span>Voicebanks are user-provided downloads. No Teto voicebank or singer artwork is bundled.</span>
       </section>
       <section>
+        <strong>WebUtau Korean Lite</strong>
+        <span>The bundled starter voicebank contains original generated UTAU-style CV samples and metadata.</span>
+      </section>
+      <section>
         <strong>Artwork</strong>
         <span>The cyber vocal mascot is original project artwork, separate from singer characters.</span>
       </section>

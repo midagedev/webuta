@@ -13,15 +13,16 @@ This keeps the child-friendly editor usable while the heavyweight synthesis work
 
 ## Renderer Strategy
 
-The browser demo renderer is not a real OpenUtau singer. It exists to prove the complete browser vocal editing and WAV rendering workflow.
+`WebUtau Korean Lite` is the bundled first-run singer. It is an original UTAU-style Korean CV voicebank, not a third-party singer. The browser demo renderer remains as a fallback and test utility, but the product default should exercise the sample voicebank path.
 
 Recommended sequence:
 
-1. Keep browser demo renderer for instant preview and tests.
-2. Add an OpenUtau server renderer that runs trusted built-in engines only.
-3. Add voicebank upload and per-singer license display.
-4. Port WORLDLINE to WebAssembly for offline classic preview.
-5. Add ONNX Runtime Web experiments after model-size and Safari performance tests.
+1. Keep `WebUtau Korean Lite` as the default bundled sample voicebank.
+2. Improve Korean phonemization beyond CV approximation, starting with coda and liaison handling.
+3. Add an OpenUtau server renderer that runs trusted built-in engines only.
+4. Add voicebank upload and per-singer license display.
+5. Port WORLDLINE to WebAssembly for offline classic preview.
+6. Add ONNX Runtime Web experiments after model-size and Safari performance tests.
 
 For the first real singer target, use Kasane Teto UTAU as a user-provided voicebank. The app should link to the official download page, let the user import the zip, store it privately, and show the official terms before first use. Do not bundle or mirror the voicebank without permission.
 

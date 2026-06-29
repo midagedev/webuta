@@ -20,8 +20,8 @@ export const demoProject: SongProject = {
       id: trackId,
       name: 'Main Vocal',
       color: 'Coral',
-      singer: 'Korean Demo Voice',
-      phonemizer: 'hangul syllable demo',
+      singer: 'WebUtau Korean Lite',
+      phonemizer: 'hangul cv lite',
     },
   ],
   parts: [

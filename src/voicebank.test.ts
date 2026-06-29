@@ -94,6 +94,27 @@ describe('voicebank zip loader', () => {
     })
   })
 
+  it('approximates Hangul coda syllables with matching CV aliases', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean Lite\n')
+    zip.file('WebUtau/oto.ini', 'ha_C4.wav=하,0,150,-560,70,30\n')
+    zip.file('WebUtau/ha_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-lite.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const match = findEntryMatchForLyric(voicebank, '한')
+    const coverage = analyzeVoicebankCoverage(voicebank, [{ lyric: '한' }])
+
+    expect(match.quality).not.toBe('fallback')
+    expect(findEntryForLyric(voicebank, '한').alias).toBe('하')
+    expect(coverage).toMatchObject({
+      totalNotes: 1,
+      matchedNotes: 1,
+      fallbackNotes: 0,
+    })
+  })
+
   it('prefers plain single-sound aliases over styled fallback aliases', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')

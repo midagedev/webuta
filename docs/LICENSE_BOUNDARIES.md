@@ -27,11 +27,14 @@ Action:
 
 The OpenUtau code license does not grant rights to redistribute voicebanks, AI singers, ENUNU models, DiffSinger models, or generated audio under those voice/model licenses.
 
+WebUtau includes `WebUtau Korean Lite`, an original generated UTAU-style Korean CV starter voicebank. It is not copied from a third-party singer, TTS service, Kasane Teto, Vocaloid, or OpenUtau asset. Keep its generation script and bundled license text in sync when changing the asset.
+
 Kasane Teto's official UTAU page provides an OpenUTAU Japanese library set and recommends installing the downloaded `TETO-OUset240323.zip` in OpenUTAU. The official voice guidelines allow broad non-commercial personal/doujin use, but prohibit selling or distributing the whole or part of the UTAU voice library without permission.
 
 Action:
 
-- [ ] Pick a default singer with explicit redistribution permission.
+- [x] Pick a default singer with explicit redistribution permission.
+- [x] Bundle only the original `WebUtau Korean Lite` starter voicebank.
 - [ ] Display singer license and usage terms in the singer picker.
 - [ ] Keep user-uploaded singers private to the user's browser/account.
 - [ ] Do not bundle third-party commercial or unclear-license voices.

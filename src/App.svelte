@@ -7,6 +7,7 @@
   import ModeStrip from './components/ModeStrip.svelte'
   import TopBar from './components/TopBar.svelte'
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
+  import { BUNDLED_KOREAN_LITE_VOICEBANK_NAME, loadBundledKoreanLiteVoicebankFile } from './bundledVoicebank'
   import { createDemoProject } from './demoProject'
   import { pitchRange, projectDurationTicks, sanitizeFileName } from './music'
   import {
@@ -69,7 +70,7 @@
   let projectSourceLabel = $state(restoredProject ? 'Saved browser draft' : 'Built-in Hangul demo')
   let selectedNoteId = $state(initialProject.notes[0]?.id ?? '')
   let rendered = $state<RenderedAudio | null>(null)
-  let voicebankName = $state('Korean Demo Voice')
+  let voicebankName = $state(BUNDLED_KOREAN_LITE_VOICEBANK_NAME)
   let voicebank = $state<LoadedVoicebank | null>(null)
   let isRendering = $state(false)
   let isLoadingVoicebank = $state(false)
@@ -83,6 +84,7 @@
   let hasMounted = false
   let audioRef = $state<HTMLAudioElement | null>(null)
   let notePointer: NotePointerState | null = null
+  let voicebankLoadToken = 0
 
   const project = $derived(projectHistory.present)
   const canUndo = $derived(projectHistory.past.length > 0)
@@ -150,23 +152,62 @@
   async function restoreVoicebank() {
     const file = await loadSavedVoicebankFile()
     if (!file) {
-      voicebankCacheStatus = 'idle'
+      await restoreBundledVoicebank()
       return
     }
+    const loadToken = ++voicebankLoadToken
     isLoadingVoicebank = true
     notice = 'Restoring voicebank zip'
     voicebankCacheStatus = 'restoring'
     try {
       const loaded = await loadVoicebankZip(file)
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
       voicebank = loaded
       voicebankName = loaded.name
       notice = `${loaded.name}: ${loaded.sampleCount} aliases`
       voicebankCacheStatus = 'restored'
     } catch {
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
       notice = 'Saved voicebank could not be restored'
       voicebankCacheStatus = 'session-only'
     } finally {
-      isLoadingVoicebank = false
+      if (loadToken === voicebankLoadToken) {
+        isLoadingVoicebank = false
+      }
+    }
+  }
+
+  async function restoreBundledVoicebank() {
+    const loadToken = ++voicebankLoadToken
+    isLoadingVoicebank = true
+    notice = 'Loading bundled Korean voicebank'
+    voicebankCacheStatus = 'restoring'
+    try {
+      const file = await loadBundledKoreanLiteVoicebankFile()
+      const loaded = await loadVoicebankZip(file)
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
+      voicebank = loaded
+      voicebankName = loaded.name
+      notice = `${loaded.name}: ${loaded.sampleCount} aliases`
+      voicebankCacheStatus = 'bundled'
+    } catch {
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
+      voicebank = null
+      voicebankName = 'Korean Demo Voice'
+      voicebankCacheStatus = 'idle'
+      notice = 'Bundled voicebank unavailable; using synth fallback'
+    } finally {
+      if (loadToken === voicebankLoadToken) {
+        isLoadingVoicebank = false
+      }
     }
   }
 
@@ -181,21 +222,33 @@
   }
 
   async function handleVoicebankFile(file: File) {
+    const loadToken = ++voicebankLoadToken
     isLoadingVoicebank = true
     notice = 'Reading voicebank zip'
     try {
       const loaded = await loadVoicebankZip(file)
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
       voicebank = loaded
       voicebankName = loaded.name
       clearRendered()
       voicebankCacheStatus = 'saving'
       const saved = await saveVoicebankFile(file)
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
       voicebankCacheStatus = saved ? 'saved' : 'session-only'
       notice = `${loaded.name}: ${loaded.sampleCount} aliases`
     } catch (error) {
+      if (loadToken !== voicebankLoadToken) {
+        return
+      }
       notice = error instanceof Error ? error.message : 'Voicebank import failed'
     } finally {
-      isLoadingVoicebank = false
+      if (loadToken === voicebankLoadToken) {
+        isLoadingVoicebank = false
+      }
     }
   }
 
@@ -616,7 +669,7 @@
       onVoicebankFile={handleVoicebankFile}
       onBpm={(bpm) => updateProject({ bpm })}
       onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
-      onSelectDemoVoice={() => (notice = 'Korean Demo Voice selected')}
+      onSelectDemoVoice={() => (notice = `${voicebankName} selected`)}
       onLyric={(lyric) => {
         paintLyric = lyric
         updateSelectedNote({ lyric })

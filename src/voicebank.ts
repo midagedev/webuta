@@ -139,7 +139,9 @@ export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: s
 export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string): LyricEntryMatch {
   const normalized = normalizeLyric(lyric)
   const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
-  const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
+  const hangulCvAlias = hangulSyllableWithoutCoda(normalized)
+  const likelyCvAlias = hangulCvAlias ? lyricToLikelyJapaneseAlias(hangulCvAlias) : ''
+  const searchKeys = Array.from(new Set([normalized, likelyAlias, hangulCvAlias, likelyCvAlias].filter(Boolean)))
 
   const exact = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeLyric(entry.alias) === key),
@@ -592,6 +594,25 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     응: 'ん',
   }
   return map[lyric] ?? lyric
+}
+
+function hangulSyllableWithoutCoda(lyric: string) {
+  const [first] = lyric.trim()
+  if (!first) {
+    return ''
+  }
+  const code = first.charCodeAt(0)
+  const hangulBase = 0xac00
+  const hangulEnd = 0xd7a3
+  if (code < hangulBase || code > hangulEnd) {
+    return ''
+  }
+  const offset = code - hangulBase
+  const codaIndex = offset % 28
+  if (codaIndex === 0) {
+    return ''
+  }
+  return String.fromCharCode(code - codaIndex)
 }
 
 function inferVoicebankName(fileName: string) {
