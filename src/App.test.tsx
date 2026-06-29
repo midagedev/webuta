@@ -10,6 +10,23 @@ import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 describe('App editing workflow', () => {
   beforeEach(async () => {
     vi.stubGlobal('indexedDB', new IDBFactory())
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: vi.fn(() => 'blob:webuta-test'),
+      configurable: true,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      value: vi.fn(),
+      configurable: true,
+    })
+    Object.defineProperty(navigator, 'canShare', {
+      value: undefined,
+      configurable: true,
+    })
+    Object.defineProperty(navigator, 'share', {
+      value: undefined,
+      configurable: true,
+    })
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
     localStorage.clear()
     await clearSavedVoicebankFile()
   })
@@ -104,6 +121,43 @@ describe('App editing workflow', () => {
         'su',
         'ki',
       ])
+    })
+  })
+
+  it('shares a rendered GarageBand-ready WAV when Web Share is available', async () => {
+    const share = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'canShare', {
+      value: vi.fn(() => true),
+      configurable: true,
+    })
+    Object.defineProperty(navigator, 'share', {
+      value: share,
+      configurable: true,
+    })
+
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '공유' }))
+
+    await waitFor(() => {
+      expect(share).toHaveBeenCalledOnce()
+    })
+    const payload = share.mock.calls[0][0]
+    expect(payload.title).toBe('First Vocal Sketch')
+    expect(payload.files[0]).toBeInstanceOf(File)
+    expect(payload.files[0].type).toBe('audio/wav')
+    await waitFor(() => {
+      expect(screen.getAllByText('WAV shared').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('downloads a rendered WAV from the explicit download action', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByTitle('WAV 다운로드'))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('WAV downloaded').length).toBeGreaterThan(0)
     })
   })
 

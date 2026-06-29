@@ -19,6 +19,7 @@ import {
   Trash2,
   Redo2,
   Undo2,
+  Share2,
   Upload,
   Volume2,
 } from 'lucide-react'
@@ -467,8 +468,16 @@ function App() {
     setIsPlaying(false)
   }
 
-  async function exportWav() {
+  async function getRenderedWav() {
     const current = rendered ?? (await renderProject())
+    if (!current) {
+      return null
+    }
+    return current
+  }
+
+  async function shareWav() {
+    const current = await getRenderedWav()
     if (!current) {
       return
     }
@@ -488,6 +497,15 @@ function App() {
           return
         }
       }
+    }
+    downloadBlob(current.blob, current.fileName)
+    setNotice('Share unavailable; WAV downloaded')
+  }
+
+  async function downloadWav() {
+    const current = await getRenderedWav()
+    if (!current) {
+      return
     }
     downloadBlob(current.blob, current.fileName)
     setNotice('WAV downloaded')
@@ -556,9 +574,12 @@ function App() {
           >
             <Upload size={20} aria-hidden="true" />
           </button>
-          <button type="button" className="export-button" onClick={() => void exportWav()} disabled={isRendering}>
+          <button type="button" className="export-button" onClick={() => void shareWav()} disabled={isRendering}>
+            <Share2 size={19} aria-hidden="true" />
+            <span>공유</span>
+          </button>
+          <button type="button" className="toolbar-button" title="WAV 다운로드" onClick={() => void downloadWav()} disabled={isRendering}>
             <Download size={19} aria-hidden="true" />
-            <span>WAV</span>
           </button>
         </div>
 
@@ -1062,7 +1083,7 @@ function App() {
             </div>
             <div className="export-summary">
               <strong>{rendered ? rendered.fileName : 'WAV not rendered yet'}</strong>
-              <span>{rendered ? `${rendered.durationSeconds.toFixed(1)} sec` : '44.1 kHz mono export'}</span>
+              <span>{rendered ? `${rendered.durationSeconds.toFixed(1)} sec · 44.1 kHz mono` : '44.1 kHz mono WAV'}</span>
             </div>
           </div>
         </section>
