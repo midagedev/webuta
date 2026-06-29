@@ -1,3 +1,5 @@
+import type { WavInfo } from './audio/wav'
+
 export const TICKS_PER_BEAT = 480
 
 export type Track = {
@@ -47,6 +49,7 @@ export type RenderedAudio = {
   url: string
   durationSeconds: number
   fileName: string
+  wavInfo: WavInfo
 }
 
 export type RendererId = 'browser-demo' | 'utau-sample' | 'openutau-server' | 'worldline-wasm'

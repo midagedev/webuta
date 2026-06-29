@@ -177,6 +177,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       expect(screen.getAllByText('WAV downloaded').length).toBeGreaterThan(0)
     })
+    expect(screen.getByText(/GarageBand ready · 44.1 kHz PCM mono/)).toBeTruthy()
   })
 
   it('adds a note by clicking an empty piano-roll cell', () => {

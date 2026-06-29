@@ -13,7 +13,8 @@ The current verified target is:
 5. Keep the last imported voicebank zip restored locally in the same browser.
 6. Open from the iPad home screen with app-shell caching after the first online load.
 7. Export or share a 44.1 kHz / 16-bit / mono WAV.
-8. Import that WAV into GarageBand.
+8. Confirm the rendered WAV shows `GarageBand ready`.
+9. Import that WAV into GarageBand.
 
 Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset. In the browser app, an imported voicebank zip is cached only in that browser's local IndexedDB storage.
 
@@ -65,6 +66,7 @@ Verified local smoke output:
 - `6216` UTAU aliases and `1822` WAV samples detected.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
+- The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
 
 ## Deploy To GitHub Pages
 

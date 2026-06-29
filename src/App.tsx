@@ -33,7 +33,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import './App.css'
-import { encodeWav } from './audio/wav'
+import { encodeWav, inspectWavBlob, isGarageBandReadyWav, type WavInfo } from './audio/wav'
 import cyberVocalHero from './assets/cyber-vocal-hero.webp'
 import { demoProject } from './demoProject'
 import {
@@ -454,6 +454,7 @@ function App() {
         : renderers.browserDemo
       const result = await renderer.render(project)
       const blob = encodeWav(result.samples, result.sampleRate)
+      const wavInfo = await inspectWavBlob(blob)
       const url = URL.createObjectURL(blob)
       if (rendered?.url) {
         URL.revokeObjectURL(rendered.url)
@@ -463,9 +464,10 @@ function App() {
         url,
         durationSeconds: result.durationSeconds,
         fileName: `${sanitizeFileName(project.name)}.wav`,
+        wavInfo,
       }
       setRendered(audio)
-      setNotice('WAV ready')
+      setNotice(isGarageBandReadyWav(wavInfo) ? 'GarageBand ready' : 'WAV rendered')
       return audio
     } catch (error) {
       setNotice(`Render failed: ${formatErrorMessage(error)}`)
@@ -1125,7 +1127,7 @@ function App() {
             </div>
             <div className="export-summary">
               <strong>{rendered ? rendered.fileName : 'WAV not rendered yet'}</strong>
-              <span>{rendered ? `${rendered.durationSeconds.toFixed(1)} sec · 44.1 kHz mono` : '44.1 kHz mono WAV'}</span>
+              <span>{rendered ? formatWavSummary(rendered.wavInfo) : '44.1 kHz mono WAV'}</span>
             </div>
             <div className="dock-actions" aria-label="Export shortcuts">
               <button
@@ -1208,6 +1210,13 @@ function canShareFile(file: File, shareNavigator = getShareNavigator()) {
     typeof shareNavigator.share === 'function' &&
     (typeof shareNavigator.canShare !== 'function' || shareNavigator.canShare({ files: [file] }))
   )
+}
+
+function formatWavSummary(info: WavInfo) {
+  const sampleRateKhz = `${(info.sampleRate / 1000).toFixed(info.sampleRate % 1000 === 0 ? 0 : 1)} kHz`
+  const channels = info.channelCount === 1 ? 'mono' : `${info.channelCount} ch`
+  const readiness = isGarageBandReadyWav(info) ? 'GarageBand ready' : 'WAV check'
+  return `${readiness} · ${sampleRateKhz} ${info.formatName} ${channels}`
 }
 
 function formatErrorMessage(error: unknown) {
