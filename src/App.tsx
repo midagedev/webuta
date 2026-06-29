@@ -239,12 +239,30 @@ function App() {
     setIsPlaying(false)
   }
 
-  async function downloadWav() {
+  async function exportWav() {
     const current = rendered ?? (await renderProject())
     if (!current) {
       return
     }
+    const file = new File([current.blob], current.fileName, { type: 'audio/wav' })
+    const shareNavigator = getShareNavigator()
+    if (canShareFile(file, shareNavigator)) {
+      try {
+        await shareNavigator.share({
+          files: [file],
+          title: project.name,
+        })
+        setNotice('WAV shared')
+        return
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          setNotice('Share cancelled')
+          return
+        }
+      }
+    }
     downloadBlob(current.blob, current.fileName)
+    setNotice('WAV downloaded')
   }
 
   function downloadUstx() {
@@ -304,7 +322,7 @@ function App() {
           >
             <Upload size={20} aria-hidden="true" />
           </button>
-          <button type="button" className="export-button" onClick={() => void downloadWav()} disabled={isRendering}>
+          <button type="button" className="export-button" onClick={() => void exportWav()} disabled={isRendering}>
             <Download size={19} aria-hidden="true" />
             <span>WAV</span>
           </button>
@@ -798,6 +816,20 @@ function downloadBlob(blob: Blob, fileName: string) {
   anchor.click()
   anchor.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+function getShareNavigator() {
+  return navigator as Navigator & {
+    canShare?: (data: { files: File[] }) => boolean
+    share?: (data: { files: File[]; title: string }) => Promise<void>
+  }
+}
+
+function canShareFile(file: File, shareNavigator = getShareNavigator()) {
+  return (
+    typeof shareNavigator.share === 'function' &&
+    (typeof shareNavigator.canShare !== 'function' || shareNavigator.canShare({ files: [file] }))
+  )
 }
 
 export default App
