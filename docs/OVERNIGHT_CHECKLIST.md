@@ -34,6 +34,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 - [x] `npm test` passes.
 - [x] `npm run build` passes.
 - [x] `npm run test:teto` passes against local official `TETO-OUset240323.zip`.
+- [x] Official Teto zip covers the built-in Korean demo line with `8/8 matched` alias coverage.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
 - [x] App UI re-inspects rendered WAV headers and marks compatible output as `GarageBand ready`.

@@ -57,6 +57,15 @@ describe('App editing workflow', () => {
     await screen.findByText('WebUtau // Test Teto')
   })
 
+  it('shows current lyric match coverage for an imported voicebank', async () => {
+    await saveVoicebankFile(await makeMatchingVoicebankZip())
+
+    render(<App />)
+
+    await screen.findByText('WebUtau // Test Teto')
+    expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
+  })
+
   it('updates the selected lyric from the quick lyric pads', () => {
     render(<App />)
 
@@ -306,6 +315,27 @@ async function makeVoicebankZip() {
   zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
   const blob = await zip.generateAsync({ type: 'blob' })
   return new File([blob], 'test-teto.zip', { type: 'application/zip' })
+}
+
+async function makeMatchingVoicebankZip() {
+  const zip = new JSZip()
+  zip.file('Teto/character.yaml', 'name: Test Teto\n')
+  zip.file(
+    'Teto/oto.ini',
+    [
+      'do.wav=ど,0,120,0,40,20',
+      'hi.wav=ひ,0,120,0,40,20',
+      'da.wav=だ,0,120,0,40,20',
+      'i.wav=い,0,120,0,40,20',
+      'su.wav=す,0,120,0,40,20',
+      'ki.wav=き,0,120,0,40,20',
+    ].join('\n'),
+  )
+  for (const fileName of ['do.wav', 'hi.wav', 'da.wav', 'i.wav', 'su.wav', 'ki.wav']) {
+    zip.file(`Teto/${fileName}`, new Uint8Array([1, 2, 3, 4]))
+  }
+  const blob = await zip.generateAsync({ type: 'blob' })
+  return new File([blob], 'matching-teto.zip', { type: 'application/zip' })
 }
 
 function makeRect(input: { left: number; top: number; width: number; height: number }) {

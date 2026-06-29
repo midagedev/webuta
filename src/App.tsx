@@ -63,7 +63,7 @@ import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
 import { parseUstx, serializeUstx } from './ustx'
 import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from './types'
-import { loadVoicebankZip, type LoadedVoicebank } from './voicebank'
+import { analyzeVoicebankCoverage, loadVoicebankZip, type LoadedVoicebank, type VoicebankCoverage } from './voicebank'
 import { loadSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
 const ROW_HEIGHT = 26
@@ -107,6 +107,10 @@ function App() {
   const notePointerRef = useRef<NotePointerState | null>(null)
 
   const selectedNote = project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0]
+  const voicebankCoverage = useMemo(
+    () => (voicebank ? analyzeVoicebankCoverage(voicebank, project.notes) : null),
+    [project.notes, voicebank],
+  )
 
   useEffect(() => {
     saveProject(project)
@@ -683,7 +687,7 @@ function App() {
         </div>
         <div className="session-chip">
           <span className={`status-dot ${voicebank ? 'ready' : 'idle'}`}></span>
-          <span>{voicebank ? `${voicebank.wavCount} wav` : notice}</span>
+          <span>{voicebank ? formatVoicebankCoverage(voicebankCoverage) : notice}</span>
         </div>
       </nav>
 
@@ -765,7 +769,7 @@ function App() {
             </div>
             <div className="status-strip">
               <Volume2 size={17} aria-hidden="true" />
-              <span>{voicebank ? `${notice} · ${voicebank.wavCount} wav` : notice}</span>
+              <span>{voicebank ? `${notice} · ${formatVoicebankCoverage(voicebankCoverage)} · ${voicebank.wavCount} wav` : notice}</span>
             </div>
           </section>
 
@@ -935,6 +939,10 @@ function App() {
             <div>
               <span>BANK</span>
               <strong>{voicebank ? 'UTAU ZIP' : 'DEMO'}</strong>
+            </div>
+            <div>
+              <span>MATCH</span>
+              <strong>{voicebank ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'DEMO'}</strong>
             </div>
             <div>
               <span>OUT</span>
@@ -1114,7 +1122,7 @@ function App() {
               <span className={`status-dot ${rendered ? 'ready' : 'idle'}`}></span>
               <div>
                 <strong>{notice}</strong>
-                <span>{voicebankName}</span>
+                <span>{voicebank ? `${voicebankName} · ${formatVoicebankCoverage(voicebankCoverage)}` : voicebankName}</span>
               </div>
             </div>
             <div className="playhead-meter">
@@ -1217,6 +1225,14 @@ function formatWavSummary(info: WavInfo) {
   const channels = info.channelCount === 1 ? 'mono' : `${info.channelCount} ch`
   const readiness = isGarageBandReadyWav(info) ? 'GarageBand ready' : 'WAV check'
   return `${readiness} · ${sampleRateKhz} ${info.formatName} ${channels}`
+}
+
+function formatVoicebankCoverage(coverage: VoicebankCoverage | null, mode: 'full' | 'compact' = 'full') {
+  if (!coverage || coverage.totalNotes === 0) {
+    return mode === 'compact' ? '0/0' : '0/0 matched'
+  }
+  const ratio = `${coverage.matchedNotes}/${coverage.totalNotes}`
+  return mode === 'compact' ? ratio : `${ratio} matched`
 }
 
 function formatErrorMessage(error: unknown) {

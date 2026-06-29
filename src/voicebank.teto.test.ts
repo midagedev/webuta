@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { demoProject } from './demoProject'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
-import { findEntryForLyric, loadVoicebankZip } from './voicebank'
+import { analyzeVoicebankCoverage, findEntryForLyric, loadVoicebankZip } from './voicebank'
 
 const runTetoAsset = process.env.RUN_TETO_ASSET === '1'
 
@@ -24,6 +24,12 @@ describe.skipIf(!runTetoAsset)('official Kasane Teto OpenUTAU asset', () => {
     expect(la.alias).toContain('ら')
     expect(doKorean.alias).toContain('ど')
     expect(suKorean.alias).toContain('す')
+    expect(analyzeVoicebankCoverage(voicebank, demoProject.notes)).toMatchObject({
+      totalNotes: demoProject.notes.length,
+      matchedNotes: demoProject.notes.length,
+      fallbackNotes: 0,
+      fallbackLyrics: [],
+    })
   }, 60000)
 
   it('renders the built-in Korean demo with local Teto samples', async () => {

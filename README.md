@@ -64,6 +64,7 @@ Verified local smoke output:
 
 - Official Teto zip imported in browser.
 - `6216` UTAU aliases and `1822` WAV samples detected.
+- Built-in `도히도히 다이스키` demo reports `8/8 matched` against the official Teto zip.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
 - The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.

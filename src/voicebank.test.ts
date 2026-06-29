@@ -1,6 +1,12 @@
 import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
-import { findBestEntryForLyric, findEntryForLyric, loadVoicebankZip } from './voicebank'
+import {
+  analyzeVoicebankCoverage,
+  findBestEntryForLyric,
+  findEntryForLyric,
+  findEntryMatchForLyric,
+  loadVoicebankZip,
+} from './voicebank'
 
 describe('voicebank zip loader', () => {
   it('extracts oto.ini aliases and wav paths', async () => {
@@ -49,6 +55,43 @@ describe('voicebank zip loader', () => {
     expect(findEntryForLyric(voicebank, '이').alias).toBe('い')
     expect(findEntryForLyric(voicebank, '스').alias).toBe('す')
     expect(findEntryForLyric(voicebank, '키').alias).toBe('き')
+    expect(analyzeVoicebankCoverage(voicebank, [
+      { lyric: '도' },
+      { lyric: '히' },
+      { lyric: '도' },
+      { lyric: '히' },
+      { lyric: '다' },
+      { lyric: '이' },
+      { lyric: '스' },
+      { lyric: '키' },
+    ])).toMatchObject({
+      totalNotes: 8,
+      matchedNotes: 8,
+      fallbackNotes: 0,
+      uniqueLyrics: 6,
+      fallbackLyrics: [],
+    })
+  })
+
+  it('reports fallback coverage when a lyric has no alias match', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/character.yaml', 'name: Test Teto\n')
+    zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')
+    zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'partial.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const match = findEntryMatchForLyric(voicebank, '키')
+    const coverage = analyzeVoicebankCoverage(voicebank, [{ lyric: '아' }, { lyric: '키' }])
+
+    expect(match.quality).toBe('fallback')
+    expect(coverage).toMatchObject({
+      totalNotes: 2,
+      matchedNotes: 1,
+      fallbackNotes: 1,
+      fallbackLyrics: ['키'],
+    })
   })
 
   it('prefers plain single-sound aliases over styled fallback aliases', async () => {

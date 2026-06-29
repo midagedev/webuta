@@ -24,6 +24,24 @@ export type LoadedVoicebank = {
   readSample(entry: OtoEntry): Promise<ArrayBuffer>
 }
 
+export type LyricMatchQuality = 'exact' | 'core' | 'contains' | 'fallback'
+
+export type LyricEntryMatch = {
+  lyric: string
+  targetAlias: string
+  candidates: OtoEntry[]
+  quality: LyricMatchQuality
+}
+
+export type VoicebankCoverage = {
+  totalNotes: number
+  matchedNotes: number
+  fallbackNotes: number
+  uniqueLyrics: number
+  matchedLyrics: string[]
+  fallbackLyrics: string[]
+}
+
 type ZipFileMap = Record<string, JSZip.JSZipObject>
 
 export async function loadVoicebankZip(file: File): Promise<LoadedVoicebank> {
@@ -110,11 +128,15 @@ export function findEntryForLyric(voicebank: LoadedVoicebank, lyric: string) {
 }
 
 export function findBestEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
-  const candidates = findEntryCandidatesForLyric(voicebank, lyric)
-  return bestEntryCandidate(candidates, lyric, targetTone) ?? voicebank.entries[0]
+  const match = findEntryMatchForLyric(voicebank, lyric)
+  return bestEntryCandidate(match.candidates, lyric, targetTone) ?? voicebank.entries[0]
 }
 
 export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: string) {
+  return findEntryMatchForLyric(voicebank, lyric).candidates
+}
+
+export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string): LyricEntryMatch {
   const normalized = normalizeLyric(lyric)
   const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
   const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
@@ -123,20 +145,76 @@ export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: s
     searchKeys.some((key) => normalizeLyric(entry.alias) === key),
   )
   if (exact.length > 0) {
-    return exact
+    return {
+      lyric,
+      targetAlias: likelyAlias,
+      candidates: exact,
+      quality: 'exact',
+    }
   }
 
   const coreExact = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeAliasCore(entry.alias) === key),
   )
   if (coreExact.length > 0) {
-    return coreExact
+    return {
+      lyric,
+      targetAlias: likelyAlias,
+      candidates: coreExact,
+      quality: 'core',
+    }
   }
 
   const contains = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeLyric(entry.alias).includes(key)),
   )
-  return contains.length > 0 ? contains : voicebank.entries
+  if (contains.length > 0) {
+    return {
+      lyric,
+      targetAlias: likelyAlias,
+      candidates: contains,
+      quality: 'contains',
+    }
+  }
+
+  return {
+    lyric,
+    targetAlias: likelyAlias,
+    candidates: voicebank.entries,
+    quality: 'fallback',
+  }
+}
+
+export function analyzeVoicebankCoverage(
+  voicebank: LoadedVoicebank,
+  notes: Array<{ lyric: string }>,
+): VoicebankCoverage {
+  const lyricMatches = new Map<string, LyricEntryMatch>()
+  let matchedNotes = 0
+  for (const note of notes) {
+    const lyric = normalizeLyric(note.lyric)
+    const match = lyricMatches.get(lyric) ?? findEntryMatchForLyric(voicebank, lyric)
+    lyricMatches.set(lyric, match)
+    if (match.quality !== 'fallback') {
+      matchedNotes += 1
+    }
+  }
+
+  const matchedLyrics = [...lyricMatches.values()]
+    .filter((match) => match.quality !== 'fallback')
+    .map((match) => match.lyric)
+  const fallbackLyrics = [...lyricMatches.values()]
+    .filter((match) => match.quality === 'fallback')
+    .map((match) => match.lyric)
+
+  return {
+    totalNotes: notes.length,
+    matchedNotes,
+    fallbackNotes: notes.length - matchedNotes,
+    uniqueLyrics: lyricMatches.size,
+    matchedLyrics,
+    fallbackLyrics,
+  }
 }
 
 export function estimateEntryBaseTone(entry: OtoEntry) {
