@@ -895,6 +895,40 @@ button:disabled {
   display: none;
 }
 
+.lyric-pads {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 1px 0 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lyric-pads::-webkit-scrollbar {
+  display: none;
+}
+
+.lyric-pads button {
+  min-width: 44px;
+  min-height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid #0d3b1d;
+  border-radius: 8px;
+  color: #052314;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 35%),
+    linear-gradient(180deg, #70e99d 0%, #26bc6a 100%);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.lyric-pads button.active {
+  border-color: #6c3c06;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 35%),
+    linear-gradient(180deg, #ffd76b 0%, #efa026 100%);
+}
+
 .mobile-mascot-banner {
   display: none;
 }
@@ -981,6 +1015,7 @@ button:disabled {
 .roll-grid {
   position: relative;
   min-height: 100%;
+  cursor: crosshair;
   background:
     linear-gradient(90deg, rgba(133, 119, 97, 0.14) 0 1px, transparent 1px 100%),
     #fffaf0;
@@ -1047,6 +1082,7 @@ button:disabled {
   position: absolute;
   z-index: 4;
   height: 22px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2122,6 +2158,18 @@ button:disabled {
     linear-gradient(135deg, var(--glam-cream), var(--glam-pink));
 }
 
+.lyric-pads button {
+  border: 1px solid rgba(8, 7, 18, 0.24);
+  color: #120817;
+  background:
+    linear-gradient(135deg, var(--glam-lime), var(--glam-cyan));
+}
+
+.lyric-pads button.active {
+  background:
+    linear-gradient(135deg, var(--glam-cream), var(--glam-pink));
+}
+
 @media (max-width: 760px) {
   .mascot-card {
     grid-template-columns: 112px minmax(0, 1fr);
@@ -2265,7 +2313,8 @@ button:disabled {
 .editor-chips span,
 .tracker-strip,
 .key-label,
-.note-block {
+.note-block,
+.lyric-pads button {
   font-family: var(--tracker-mono);
 }
 
@@ -2719,6 +2768,18 @@ button:disabled {
     border-radius: 4px;
   }
 
+  .lyric-pads {
+    gap: 6px;
+    margin-top: -2px;
+    padding-bottom: 2px;
+  }
+
+  .lyric-pads button {
+    min-width: 48px;
+    min-height: 42px;
+    border-radius: 4px;
+  }
+
   .arrangement-panel {
     grid-template-columns: 68px minmax(0, 1fr);
     grid-template-rows: 26px 62px;
@@ -2746,5 +2807,7 @@ button:disabled {
   .bottom-dock {
     gap: 7px;
     padding: 8px;
+    margin: 0;
+    width: 100%;
   }
 }

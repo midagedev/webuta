@@ -16,19 +16,18 @@ import {
   Upload,
   Volume2,
 } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import './App.css'
 import { encodeWav } from './audio/wav'
 import cyberVocalHero from './assets/cyber-vocal-hero.webp'
 import { demoProject } from './demoProject'
 import {
-  clampTone,
-  makeId,
   pitchRange,
   projectDurationTicks,
   sanitizeFileName,
   toneName,
 } from './music'
+import { addNoteAfter, addNoteFromGrid } from './projectEditing'
 import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
 import { parseUstx, serializeUstx } from './ustx'
@@ -38,6 +37,7 @@ import { loadVoicebankZip, type LoadedVoicebank } from './voicebank'
 const ROW_HEIGHT = 26
 const TICK_WIDTH = 0.15
 const MIN_NOTE_WIDTH = 44
+const LYRIC_PALETTE = ['도', '히', '다', '이', '스', '키', '라', '나']
 
 function App() {
   const [project, setProject] = useState<SongProject>(demoProject)
@@ -50,12 +50,12 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackTime, setPlaybackTime] = useState(0)
   const [notice, setNotice] = useState('Ready')
+  const [paintLyric, setPaintLyric] = useState('도')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const voicebankInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const selectedNote = project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0]
-  const activePart = project.parts[0]
   const range = useMemo(() => pitchRange(project.notes), [project.notes])
   const rows = useMemo(() => {
     const values: number[] = []
@@ -129,31 +129,46 @@ function App() {
   }
 
   function addNote() {
-    const anchor = selectedNote ?? project.notes.at(-1)
-    const start = anchor ? anchor.start + anchor.duration : 0
-    const part = activePart ?? {
-      id: makeId('part'),
-      trackId: project.tracks[0].id,
-      name: 'Verse',
-      start: 0,
-      duration: TICKS_PER_BEAT * 4,
-    }
-    const note: SongNote = {
-      id: makeId('note'),
-      trackId: part.trackId,
-      partId: part.id,
-      start,
-      duration: TICKS_PER_BEAT,
-      tone: clampTone(anchor ? anchor.tone : 60),
-      lyric: '라',
-    }
-    setProject((current) => ({
-      ...current,
-      parts: current.parts.length ? current.parts : [part],
-      notes: [...current.notes, note],
-    }))
+    const { project: nextProject, note } = addNoteAfter(project, selectedNote ?? project.notes.at(-1), paintLyric)
+    setProject(nextProject)
     setSelectedNoteId(note.id)
     clearRendered()
+  }
+
+  function addNoteAtGridPoint(x: number, y: number) {
+    const { project: nextProject, note } = addNoteFromGrid(project, {
+      x,
+      y,
+      tickWidth: TICK_WIDTH,
+      rowHeight: ROW_HEIGHT,
+      maxTone: range.max,
+      minTone: range.min,
+      lyric: paintLyric,
+    })
+    setProject(nextProject)
+    setSelectedNoteId(note.id)
+    clearRendered()
+    setNotice(`${note.lyric} ${toneName(note.tone)} added`)
+  }
+
+  function handleGridClick(event: ReactMouseEvent<HTMLDivElement>) {
+    if ((event.target as HTMLElement).closest('button')) {
+      return
+    }
+    const rect = event.currentTarget.getBoundingClientRect()
+    addNoteAtGridPoint(event.clientX - rect.left, event.clientY - rect.top)
+  }
+
+  function chooseLyric(lyric: string) {
+    setPaintLyric(lyric)
+    if (selectedNote) {
+      updateSelectedNote({ lyric })
+    }
+  }
+
+  function selectNote(note: SongNote) {
+    setSelectedNoteId(note.id)
+    setPaintLyric(note.lyric)
   }
 
   function deleteSelectedNote() {
@@ -453,7 +468,11 @@ function App() {
                   <input
                     value={selectedNote.lyric}
                     maxLength={12}
-                    onChange={(event) => updateSelectedNote({ lyric: event.target.value || '라' })}
+                    onChange={(event) => {
+                      const lyric = event.target.value || '라'
+                      setPaintLyric(lyric)
+                      updateSelectedNote({ lyric })
+                    }}
                   />
                 </label>
                 <label className="field-label">
@@ -580,10 +599,23 @@ function App() {
                 type="button"
                 key={note.id}
                 className={note.id === selectedNote?.id ? 'active' : ''}
-                onClick={() => setSelectedNoteId(note.id)}
+                onClick={() => selectNote(note)}
               >
                 <strong>{note.lyric}</strong>
                 <span>{toneName(note.tone)}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="lyric-pads" aria-label="Quick lyric painter">
+            {LYRIC_PALETTE.map((lyric) => (
+              <button
+                type="button"
+                key={lyric}
+                className={lyric === paintLyric ? 'active' : ''}
+                onClick={() => chooseLyric(lyric)}
+              >
+                {lyric}
               </button>
             ))}
           </div>
@@ -646,7 +678,11 @@ function App() {
               ))}
             </div>
             <div className="roll-scroll">
-              <div className="roll-grid" style={{ width: gridWidth, height: gridHeight }}>
+              <div
+                className="roll-grid"
+                style={{ width: gridWidth, height: gridHeight }}
+                onClick={handleGridClick}
+              >
                 {rows.map((tone, rowIndex) => (
                   <div
                     className={`grid-row ${isBlackKey(tone) ? 'black' : 'white'}`}
@@ -675,7 +711,7 @@ function App() {
                         top: row * ROW_HEIGHT + 3,
                         width: Math.max(MIN_NOTE_WIDTH, note.duration * TICK_WIDTH - 4),
                       }}
-                      onClick={() => setSelectedNoteId(note.id)}
+                      onClick={() => selectNote(note)}
                     >
                       <span>{note.lyric}</span>
                     </button>
