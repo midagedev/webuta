@@ -1,4 +1,5 @@
 import { TICKS_PER_BEAT, type SongProject } from './types'
+import { makeId } from './music'
 
 const trackId = 'track-main'
 const partId = 'part-main'
@@ -42,4 +43,15 @@ export const demoProject: SongProject = {
     { id: 'n7', trackId, partId, start: 3120, duration: 420, tone: 67, lyric: '스' },
     { id: 'n8', trackId, partId, start: 3600, duration: 1080, tone: 64, lyric: '키' },
   ],
+}
+
+export function createDemoProject(): SongProject {
+  return {
+    ...demoProject,
+    id: makeId('project'),
+    tracks: demoProject.tracks.map((track) => ({ ...track })),
+    parts: demoProject.parts.map((part) => ({ ...part })),
+    notes: demoProject.notes.map((note) => ({ ...note })),
+    source: demoProject.source ? { ...demoProject.source } : undefined,
+  }
 }

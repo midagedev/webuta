@@ -6,24 +6,42 @@ This file lists runtime npm packages used by the browser app. Development-only t
 
 | Package | Version | License | Source |
 | --- | --- | --- | --- |
+| `@jridgewell/gen-mapping` | `0.3.13` | MIT | https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz |
+| `@jridgewell/remapping` | `2.3.5` | MIT | https://registry.npmjs.org/@jridgewell/remapping/-/remapping-2.3.5.tgz |
+| `@jridgewell/resolve-uri` | `3.1.2` | MIT | https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz |
+| `@jridgewell/sourcemap-codec` | `1.5.5` | MIT | https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz |
+| `@jridgewell/trace-mapping` | `0.3.31` | MIT | https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz |
+| `@lucide/svelte` | `1.22.0` | ISC | https://registry.npmjs.org/@lucide/svelte/-/svelte-1.22.0.tgz |
+| `@sveltejs/acorn-typescript` | `1.0.10` | MIT | https://registry.npmjs.org/@sveltejs/acorn-typescript/-/acorn-typescript-1.0.10.tgz |
+| `@types/estree` | `1.0.9` | MIT | https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz |
+| `@types/trusted-types` | `2.0.7` | MIT | https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz |
+| `acorn` | `8.17.0` | MIT | https://registry.npmjs.org/acorn/-/acorn-8.17.0.tgz |
 | `argparse` | `2.0.1` | Python-2.0 | https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz |
+| `aria-query` | `5.3.0` | Apache-2.0 | https://registry.npmjs.org/aria-query/-/aria-query-5.3.0.tgz |
+| `axobject-query` | `4.1.0` | Apache-2.0 | https://registry.npmjs.org/axobject-query/-/axobject-query-4.1.0.tgz |
+| `clsx` | `2.1.1` | MIT | https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz |
 | `core-util-is` | `1.0.3` | MIT | https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz |
+| `dequal` | `2.0.3` | MIT | https://registry.npmjs.org/dequal/-/dequal-2.0.3.tgz |
+| `devalue` | `5.8.1` | MIT | https://registry.npmjs.org/devalue/-/devalue-5.8.1.tgz |
+| `esm-env` | `1.2.2` | MIT | https://registry.npmjs.org/esm-env/-/esm-env-1.2.2.tgz |
+| `esrap` | `2.2.13` | MIT | https://registry.npmjs.org/esrap/-/esrap-2.2.13.tgz |
 | `immediate` | `3.0.6` | MIT | https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz |
 | `inherits` | `2.0.4` | ISC | https://registry.npmjs.org/inherits/-/inherits-2.0.4.tgz |
+| `is-reference` | `3.0.3` | MIT | https://registry.npmjs.org/is-reference/-/is-reference-3.0.3.tgz |
 | `isarray` | `1.0.0` | MIT | https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz |
 | `js-yaml` | `5.2.0` | MIT | https://registry.npmjs.org/js-yaml/-/js-yaml-5.2.0.tgz |
 | `jszip` | `3.10.1` | (MIT OR GPL-3.0-or-later) | https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz |
 | `lie` | `3.3.0` | MIT | https://registry.npmjs.org/lie/-/lie-3.3.0.tgz |
-| `lucide-react` | `1.21.0` | ISC | https://registry.npmjs.org/lucide-react/-/lucide-react-1.21.0.tgz |
+| `locate-character` | `3.0.0` | MIT | https://registry.npmjs.org/locate-character/-/locate-character-3.0.0.tgz |
+| `magic-string` | `0.30.21` | MIT | https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz |
 | `pako` | `1.0.11` | (MIT AND Zlib) | https://registry.npmjs.org/pako/-/pako-1.0.11.tgz |
 | `process-nextick-args` | `2.0.1` | MIT | https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz |
-| `react` | `19.2.7` | MIT | https://registry.npmjs.org/react/-/react-19.2.7.tgz |
-| `react-dom` | `19.2.7` | MIT | https://registry.npmjs.org/react-dom/-/react-dom-19.2.7.tgz |
 | `readable-stream` | `2.3.8` | MIT | https://registry.npmjs.org/readable-stream/-/readable-stream-2.3.8.tgz |
 | `safe-buffer` | `5.1.2` | MIT | https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.1.2.tgz |
-| `scheduler` | `0.27.0` | MIT | https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz |
 | `setimmediate` | `1.0.5` | MIT | https://registry.npmjs.org/setimmediate/-/setimmediate-1.0.5.tgz |
 | `string_decoder` | `1.1.1` | MIT | https://registry.npmjs.org/string_decoder/-/string_decoder-1.1.1.tgz |
+| `svelte` | `5.56.4` | MIT | https://registry.npmjs.org/svelte/-/svelte-5.56.4.tgz |
 | `util-deprecate` | `1.0.2` | MIT | https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz |
+| `zimmerframe` | `1.1.4` | MIT | https://registry.npmjs.org/zimmerframe/-/zimmerframe-1.1.4.tgz |
 
 All listed runtime packages include license metadata in the lockfile.

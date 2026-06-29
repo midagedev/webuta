@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { svelteTesting } from '@testing-library/svelte/vite'
 
 function githubPagesBase() {
   const repository = process.env.GITHUB_REPOSITORY
@@ -13,7 +14,7 @@ function githubPagesBase() {
 // https://vite.dev/config/
 export default defineConfig({
   base: process.env.GITHUB_ACTIONS ? githubPagesBase() : '/',
-  plugins: [react()],
+  plugins: [svelte(), svelteTesting()],
   test: {
     environment: 'jsdom',
     globals: true,

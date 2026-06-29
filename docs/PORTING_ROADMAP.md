@@ -4,7 +4,7 @@
 
 WebUtau should be split into four layers:
 
-1. Editor UI: React touch-first interface for iPad and desktop browsers.
+1. Editor UI: Svelte touch-first interface for iPad and desktop browsers.
 2. Project model: USTX-compatible document model with browser persistence.
 3. Render API: a stable interface that returns PCM samples or WAV blobs.
 4. Render engines: browser demo, OpenUtau server renderer, WORLDLINE WASM, and future AI model renderers.

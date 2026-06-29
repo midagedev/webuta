@@ -15,21 +15,18 @@
     "asset:teto": "node scripts/download-teto-asset.mjs"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.22.0",
     "js-yaml": "^5.2.0",
     "jszip": "^3.10.1",
-    "lucide-react": "^1.21.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "svelte": "^5.56.4"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/svelte": "^5.4.2",
     "@types/js-yaml": "^4.0.9",
     "@types/jszip": "^3.4.0",
     "@types/node": "^24.13.2",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
     "oxlint": "^1.69.0",

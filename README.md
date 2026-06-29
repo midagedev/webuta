@@ -17,7 +17,7 @@
 
   <p>
     <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-faf38f?style=for-the-badge&amp;labelColor=21142f" />
-    <img alt="React" src="https://img.shields.io/badge/React-19-83f7ff?style=for-the-badge&amp;labelColor=21142f" />
+    <img alt="Svelte" src="https://img.shields.io/badge/Svelte-5-83f7ff?style=for-the-badge&amp;labelColor=21142f" />
     <img alt="Vite" src="https://img.shields.io/badge/Vite-8-ff69c8?style=for-the-badge&amp;labelColor=21142f" />
     <img alt="WAV Export" src="https://img.shields.io/badge/WAV-44.1kHz_PCM_mono-c8ff62?style=for-the-badge&amp;labelColor=21142f" />
   </p>

@@ -16,7 +16,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 
 ## Tonight's Implemented Slice
 
-- [x] Scaffold React/Vite/TypeScript app.
+- [x] Scaffold Svelte/Vite/TypeScript app.
 - [x] Add USTX YAML/JSON parser for modern OpenUtau project shape.
 - [x] Add USTX export for round-tripping simple vocal projects.
 - [x] Add iPad-friendly first-screen editor with project actions, note editor, and piano roll.

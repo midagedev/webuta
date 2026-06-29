@@ -1,0 +1,273 @@
+<script lang="ts">
+  import { Download, FileDown, Mic, Share2 } from '@lucide/svelte'
+  import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
+  import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from '../types'
+  import { projectDurationTicks, toneName } from '../music'
+  import {
+    compactLyricLine,
+    formatVoicebankCacheStatus,
+    formatVoicebankCoverage,
+    formatWavSummary,
+    inputValue,
+    isBlackKey,
+    LYRIC_PALETTE,
+    MIN_NOTE_WIDTH,
+    ROW_HEIGHT,
+    TICK_WIDTH,
+    type VoicebankCacheStatus,
+  } from '../app/ui'
+  import type { LoadedVoicebank, VoicebankCoverage } from '../voicebank'
+
+  type Props = {
+    project: SongProject
+    projectSourceLabel: string
+    selectedNote: SongNote | undefined
+    rows: number[]
+    rangeMax: number
+    songTicks: number
+    gridWidth: number
+    gridHeight: number
+    beatCount: number
+    barCount: number
+    playheadLeft: number
+    paintLyric: string
+    lyricLine: string
+    voicebank: LoadedVoicebank | null
+    voicebankName: string
+    voicebankCoverage: VoicebankCoverage | null
+    voicebankCacheStatus: VoicebankCacheStatus
+    rendered: RenderedAudio | null
+    notice: string
+    isRendering: boolean
+    playbackTime: number
+    displayDuration: number
+    onSaveProject: () => void
+    onSelectNote: (note: SongNote) => void
+    onChooseLyric: (lyric: string) => void
+    onLyricLine: (line: string) => void
+    onApplyLyricLine: () => void
+    onGridClick: (event: MouseEvent) => void
+    onNoteKeyDown: (event: KeyboardEvent, note: SongNote) => void
+    onNotePointerDown: (event: PointerEvent, note: SongNote) => void
+    onNotePointerMove: (event: PointerEvent) => void
+    onNotePointerEnd: (event: PointerEvent) => void
+    onShare: () => Promise<void>
+    onDownloadWav: () => Promise<void>
+  }
+
+  let {
+    project,
+    projectSourceLabel,
+    selectedNote,
+    rows,
+    rangeMax,
+    songTicks,
+    gridWidth,
+    gridHeight,
+    beatCount,
+    barCount,
+    playheadLeft,
+    paintLyric,
+    lyricLine,
+    voicebank,
+    voicebankName,
+    voicebankCoverage,
+    voicebankCacheStatus,
+    rendered,
+    notice,
+    isRendering,
+    playbackTime,
+    displayDuration,
+    onSaveProject,
+    onSelectNote,
+    onChooseLyric,
+    onLyricLine,
+    onApplyLyricLine,
+    onGridClick,
+    onNoteKeyDown,
+    onNotePointerDown,
+    onNotePointerMove,
+    onNotePointerEnd,
+    onShare,
+    onDownloadWav,
+  }: Props = $props()
+
+  let selectedNoteLabel = $derived(selectedNote ? `${selectedNote.lyric} · ${toneName(selectedNote.tone)}` : 'No note')
+</script>
+
+<section class="editor-area">
+  <div class="timeline-header">
+    <div>
+      <p class="project-kicker">현재 프로젝트 · {projectSourceLabel}</p>
+      <h1>{project.name}</h1>
+      <p>pattern 00 · {project.notes.length} notes · {beatCount} beats · {barCount} bars</p>
+    </div>
+    <button type="button" class="icon-text-button" onclick={onSaveProject}>
+      <FileDown size={18} aria-hidden="true" />
+      <span>프로젝트</span>
+    </button>
+  </div>
+
+  <div class="tracker-strip" aria-label="Tracker status">
+    <div><span>PAT</span><strong>00</strong></div>
+    <div><span>CH</span><strong>01 VOC</strong></div>
+    <div><span>BPM</span><strong>{project.bpm}</strong></div>
+    <div><span>ROWS</span><strong>{rows.length}</strong></div>
+    <div><span>BANK</span><strong>{voicebank ? 'UTAU ZIP' : 'DEMO'}</strong></div>
+    <div><span>MATCH</span><strong>{voicebank ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'DEMO'}</strong></div>
+    <div><span>OUT</span><strong>{rendered ? 'WAV READY' : 'ARMED'}</strong></div>
+  </div>
+
+  <div class="mobile-mascot-banner">
+    <img src={cyberVocalHero} alt="" aria-hidden="true" />
+    <div>
+      <span>CYBER TRACKER CLUB</span>
+      <strong>{compactLyricLine(project.notes)}</strong>
+    </div>
+  </div>
+
+  <div class="mobile-note-strip" aria-label="Mobile note selector">
+    {#each project.notes as note (note.id)}
+      <button type="button" class={note.id === selectedNote?.id ? 'active' : ''} onclick={() => onSelectNote(note)}>
+        <strong>{note.lyric}</strong>
+        <span>{toneName(note.tone)}</span>
+      </button>
+    {/each}
+  </div>
+
+  <div class="lyric-pads" aria-label="Quick lyric painter">
+    {#each LYRIC_PALETTE as lyric (lyric)}
+      <button type="button" class={lyric === paintLyric ? 'active' : ''} onclick={() => onChooseLyric(lyric)}>
+        {lyric}
+      </button>
+    {/each}
+  </div>
+
+  <div class="lyric-line-editor" aria-label="Lyric line editor">
+    <input aria-label="가사 라인" value={lyricLine} placeholder="도히도히 다이스키" oninput={(event) => onLyricLine(inputValue(event))} />
+    <button type="button" onclick={onApplyLyricLine}>적용</button>
+  </div>
+
+  <div class="arrangement-panel">
+    <div class="ruler-head">Pat 00</div>
+    <div class="ruler-scroll">
+      <div class="ruler-grid" style={`width: ${gridWidth}px;`}>
+        {#each Array.from({ length: barCount }, (_, bar) => bar) as bar (bar)}
+          <span style={`left: ${bar * project.beatPerBar * TICKS_PER_BEAT * TICK_WIDTH}px;`}>{bar + 1}</span>
+        {/each}
+      </div>
+    </div>
+    <div class="track-lane-head">
+      <Mic size={17} aria-hidden="true" />
+      <div>
+        <strong>CH 01 Vocal</strong>
+        <span>{voicebankName}</span>
+      </div>
+    </div>
+    <div class="track-lane-scroll">
+      <div class="track-lane-grid" style={`width: ${gridWidth}px;`}>
+        {#each Array.from({ length: beatCount + 1 }, (_, beat) => beat) as beat (beat)}
+          <div class={`beat-line ${beat % project.beatPerBar === 0 ? 'bar' : ''}`} style={`left: ${beat * TICKS_PER_BEAT * TICK_WIDTH}px;`}></div>
+        {/each}
+        <div class="vocal-region" style={`width: ${Math.max(220, projectDurationTicks(project) * TICK_WIDTH)}px;`}>
+          {#each project.notes as note (note.id)}
+            <span>{note.lyric}</span>
+          {/each}
+        </div>
+        <div class="playhead-line arrangement" style={`left: ${playheadLeft}px;`}></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-toolbar">
+    <div>
+      <strong>Tracker Piano Grid</strong>
+      <span>{selectedNoteLabel}</span>
+    </div>
+    <div class="editor-chips">
+      <span>{rows.length} rows</span>
+      <span>CH 01</span>
+      <span>{voicebank ? 'UTAU vocal bank' : 'Korean guide voice'}</span>
+    </div>
+  </div>
+
+  <div class="piano-roll-frame" style={`min-height: ${gridHeight}px;`}>
+    <div class="keyboard" style={`height: ${gridHeight}px;`}>
+      {#each rows as tone (tone)}
+        <div class={`key-row ${isBlackKey(tone) ? 'black' : 'white'}`}>
+          <span class="key-label">{toneName(tone)}</span>
+        </div>
+      {/each}
+    </div>
+    <div class="roll-scroll">
+      <div
+        class="roll-grid"
+        role="grid"
+        tabindex="0"
+        aria-label="Piano roll note grid"
+        aria-rowcount={rows.length}
+        aria-colcount={Math.ceil(songTicks / TICKS_PER_BEAT)}
+        style={`width: ${gridWidth}px; height: ${gridHeight}px;`}
+        onclick={onGridClick}
+        onkeydown={() => undefined}
+      >
+        {#each rows as tone, rowIndex (tone)}
+          <div class={`grid-row ${isBlackKey(tone) ? 'black' : 'white'}`} style={`top: ${rowIndex * ROW_HEIGHT}px;`}></div>
+        {/each}
+        {#each Array.from({ length: Math.ceil(songTicks / TICKS_PER_BEAT) + 1 }, (_, beat) => beat) as beat (beat)}
+          <div class={`beat-line ${beat % project.beatPerBar === 0 ? 'bar' : ''}`} style={`left: ${beat * TICKS_PER_BEAT * TICK_WIDTH}px;`}></div>
+        {/each}
+        <div class="playhead-line" style={`left: ${playheadLeft}px;`}></div>
+        {#each project.notes as note (note.id)}
+          {@const row = rangeMax - note.tone}
+          <button
+            type="button"
+            class={`note-block ${note.id === selectedNote?.id ? 'selected' : ''}`}
+            aria-label={`${note.lyric} ${toneName(note.tone)} note`}
+            title="드래그해서 이동, 오른쪽 끝 드래그로 길이 조절"
+            style={`left: ${note.start * TICK_WIDTH}px; top: ${row * ROW_HEIGHT + 3}px; width: ${Math.max(MIN_NOTE_WIDTH, note.duration * TICK_WIDTH - 4)}px;`}
+            onclick={() => onSelectNote(note)}
+            onkeydown={(event) => onNoteKeyDown(event, note)}
+            onpointerdown={(event) => onNotePointerDown(event, note)}
+            onpointermove={onNotePointerMove}
+            onpointerup={onNotePointerEnd}
+            onpointercancel={onNotePointerEnd}
+          >
+            <span>{note.lyric}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-dock">
+    <div class="dock-status">
+      <span class={`status-dot ${rendered ? 'ready' : 'idle'}`}></span>
+      <div>
+        <strong>{notice}</strong>
+        <span>
+          {voicebank
+            ? `${voicebankName} · ${formatVoicebankCoverage(voicebankCoverage)} · ${formatVoicebankCacheStatus(voicebankCacheStatus)}`
+            : voicebankName}
+        </span>
+      </div>
+    </div>
+    <div class="playhead-meter">
+      <div class="playhead-fill" style={`width: ${displayDuration > 0 ? Math.min(100, (playbackTime / displayDuration) * 100) : 0}%;`}></div>
+    </div>
+    <div class="export-summary">
+      <strong>{rendered ? rendered.fileName : 'WAV not rendered yet'}</strong>
+      <span>{rendered ? formatWavSummary(rendered.wavInfo) : '44.1 kHz mono WAV'}</span>
+    </div>
+    <div class="dock-actions" aria-label="Export shortcuts">
+      <button type="button" class="dock-action primary" aria-label="WAV 공유" onclick={() => void onShare()} disabled={isRendering}>
+        <Share2 size={18} aria-hidden="true" />
+        <span>공유</span>
+      </button>
+      <button type="button" class="dock-action" aria-label="하단 WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
+        <Download size={18} aria-hidden="true" />
+        <span>WAV</span>
+      </button>
+    </div>
+  </div>
+</section>

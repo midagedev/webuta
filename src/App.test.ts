@@ -1,8 +1,8 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/svelte'
 import { IDBFactory } from 'fake-indexeddb'
 import JSZip from 'jszip'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import App from './App'
+import App from './App.svelte'
 import { demoProject } from './demoProject'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
@@ -34,32 +34,54 @@ describe('App editing workflow', () => {
   it('restores the last browser project draft', () => {
     saveProject({ ...demoProject, name: 'Recovered Draft' })
 
-    render(<App />)
+    render(App)
 
     expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Recovered Draft')
+    expect(screen.getByLabelText('Current project').textContent).toContain('Recovered Draft')
+    expect(screen.getByText('Saved browser draft')).toBeTruthy()
   })
 
   it('auto-saves project name edits', async () => {
-    render(<App />)
+    render(App)
 
-    fireEvent.change(screen.getByLabelText('Project name'), { target: { value: 'Dohee Hook' } })
+    fireEvent.input(screen.getByLabelText('Project name'), { target: { value: 'Dohee Hook' } })
 
     await waitFor(() => {
       expect(loadSavedProject()?.name).toBe('Dohee Hook')
     })
   })
 
+  it('starts a new Hangul demo project from a restored draft', async () => {
+    saveProject({
+      ...demoProject,
+      name: 'Old Draft',
+      notes: demoProject.notes.map((note) => ({ ...note, lyric: 'la' })),
+    })
+
+    render(App)
+
+    expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Old Draft')
+
+    fireEvent.click(screen.getByTitle('새 프로젝트'))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('First Vocal Sketch')
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    })
+    expect(screen.getAllByText('Built-in Hangul demo').length).toBeGreaterThan(0)
+  })
+
   it('restores the last imported voicebank zip', async () => {
     await saveVoicebankFile(await makeVoicebankZip())
 
-    render(<App />)
+    render(App)
 
     await screen.findByText('WebUtau // Test Teto')
     expect(screen.getAllByText(/이 기기에서 복원됨/).length).toBeGreaterThan(0)
   })
 
   it('marks a newly imported voicebank zip as saved on this device', async () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const zipInput = container.querySelector('input[accept=".zip"]') as HTMLInputElement
 
     fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
@@ -72,7 +94,7 @@ describe('App editing workflow', () => {
 
   it('marks an imported voicebank as session-only when browser storage is unavailable', async () => {
     vi.stubGlobal('indexedDB', undefined)
-    const { container } = render(<App />)
+    const { container } = render(App)
     const zipInput = container.querySelector('input[accept=".zip"]') as HTMLInputElement
 
     fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
@@ -84,7 +106,7 @@ describe('App editing workflow', () => {
   })
 
   it('opens license and credit boundaries from the toolbar', () => {
-    render(<App />)
+    render(App)
 
     fireEvent.click(screen.getByTitle('라이선스'))
 
@@ -101,7 +123,7 @@ describe('App editing workflow', () => {
   it('shows current lyric match coverage for an imported voicebank', async () => {
     await saveVoicebankFile(await makeMatchingVoicebankZip())
 
-    render(<App />)
+    render(App)
 
     await screen.findByText('WebUtau // Test Teto')
     expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
@@ -112,7 +134,7 @@ describe('App editing workflow', () => {
   it('shows fallback lyric coverage when the imported voicebank cannot match the demo line', async () => {
     await saveVoicebankFile(await makeVoicebankZip())
 
-    render(<App />)
+    render(App)
 
     await screen.findByText('WebUtau // Test Teto')
     expect(screen.getByText('미매칭 8개: 도, 히, 다, 이, 스, 키')).toBeTruthy()
@@ -120,7 +142,7 @@ describe('App editing workflow', () => {
   })
 
   it('updates the selected lyric from the quick lyric pads', () => {
-    render(<App />)
+    render(App)
 
     const lyricPads = screen.getByLabelText('Quick lyric painter')
     fireEvent.click(within(lyricPads).getByRole('button', { name: '키' }))
@@ -129,7 +151,7 @@ describe('App editing workflow', () => {
   })
 
   it('undoes and redoes a lyric pad edit', async () => {
-    render(<App />)
+    render(App)
 
     const lyricPads = screen.getByLabelText('Quick lyric painter')
     fireEvent.click(within(lyricPads).getByRole('button', { name: '키' }))
@@ -147,9 +169,9 @@ describe('App editing workflow', () => {
   })
 
   it('applies a compact Korean lyric line across the melody', async () => {
-    render(<App />)
+    render(App)
 
-    fireEvent.change(screen.getByLabelText('가사 라인'), { target: { value: '나나나나 라라라라' } })
+    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: '나나나나 라라라라' } })
     fireEvent.click(screen.getByRole('button', { name: '적용' }))
 
     await waitFor(() => {
@@ -167,9 +189,9 @@ describe('App editing workflow', () => {
   })
 
   it('applies spaced romanized lyrics across the melody', async () => {
-    render(<App />)
+    render(App)
 
-    fireEvent.change(screen.getByLabelText('가사 라인'), { target: { value: 'do hi do hi da i su ki' } })
+    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: 'do hi do hi da i su ki' } })
     fireEvent.click(screen.getByRole('button', { name: '적용' }))
 
     await waitFor(() => {
@@ -197,7 +219,7 @@ describe('App editing workflow', () => {
       configurable: true,
     })
 
-    render(<App />)
+    render(App)
 
     fireEvent.click(screen.getByRole('button', { name: '공유' }))
 
@@ -214,7 +236,7 @@ describe('App editing workflow', () => {
   })
 
   it('falls back to download when Web Share is unavailable', async () => {
-    render(<App />)
+    render(App)
 
     fireEvent.click(screen.getByRole('button', { name: '공유' }))
 
@@ -225,14 +247,14 @@ describe('App editing workflow', () => {
   })
 
   it('exposes bottom dock export actions for touch layouts', () => {
-    render(<App />)
+    render(App)
 
     expect(screen.getByRole('button', { name: 'WAV 공유' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '하단 WAV 다운로드' })).toBeTruthy()
   })
 
   it('downloads a rendered WAV from the explicit download action', async () => {
-    render(<App />)
+    render(App)
 
     fireEvent.click(screen.getByTitle('WAV 다운로드'))
 
@@ -243,7 +265,7 @@ describe('App editing workflow', () => {
   })
 
   it('adds a note by clicking an empty piano-roll cell', () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const grid = container.querySelector('.roll-grid') as HTMLDivElement
     grid.getBoundingClientRect = () =>
       ({
@@ -264,7 +286,7 @@ describe('App editing workflow', () => {
   })
 
   it('nudges the selected note timing and pitch from the note panel', async () => {
-    render(<App />)
+    render(App)
 
     fireEvent.click(screen.getByTitle('뒤로 이동'))
     fireEvent.click(screen.getByTitle('음 높게'))
@@ -277,7 +299,7 @@ describe('App editing workflow', () => {
   })
 
   it('drags a piano-roll note to edit timing and pitch', async () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
     noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
 
@@ -293,7 +315,7 @@ describe('App editing workflow', () => {
   })
 
   it('undoes a drag edit as one operation', async () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
     noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
 
@@ -314,7 +336,7 @@ describe('App editing workflow', () => {
   })
 
   it('supports desktop undo and redo shortcuts outside text fields', async () => {
-    render(<App />)
+    render(App)
 
     const lyricPads = screen.getByLabelText('Quick lyric painter')
     fireEvent.click(within(lyricPads).getByRole('button', { name: '키' }))
@@ -332,7 +354,7 @@ describe('App editing workflow', () => {
   })
 
   it('resizes a piano-roll note from the right edge', async () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
     noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
 
@@ -347,7 +369,7 @@ describe('App editing workflow', () => {
   })
 
   it('edits a focused note with arrow keys', async () => {
-    const { container } = render(<App />)
+    const { container } = render(App)
     const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
 
     fireEvent.keyDown(noteBlock, { key: 'ArrowRight' })
