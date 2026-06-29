@@ -1,4 +1,4 @@
-const CACHE_NAME = 'webuta-app-shell-v3'
+const CACHE_NAME = 'webuta-app-shell-v4'
 
 function scopedUrl(path) {
   return new URL(path, self.registration.scope).toString()

@@ -80,6 +80,11 @@ const VOWEL_FORMANTS = {
 }
 
 const VOWEL_WEIGHTS = [1.0, 0.48, 0.22, 0.1]
+const VOWEL_WEIGHT_OVERRIDES = {
+  'ㅣ': [0.72, 0.74, 0.25, 0.08],
+  'ㅟ': [0.68, 0.76, 0.25, 0.08],
+  'ㅢ': [0.76, 0.66, 0.24, 0.08],
+}
 
 const ALT_ROMAN_ALIASES = new Map([
   ['스', ['su']],
@@ -251,42 +256,66 @@ function renderSyllable({ onset, vowel }) {
   }
 
   const formants = VOWEL_FORMANTS[vowel] ?? VOWEL_FORMANTS['ㅏ']
+  const vowelWeights = VOWEL_WEIGHT_OVERRIDES[vowel] ?? VOWEL_WEIGHTS
   for (let band = 0; band < formants.length; band++) {
     const filtered = bandPass(source, formants[band], band < 2 ? 6.5 : 9.5)
     for (let i = 0; i < output.length; i++) {
-      output[i] += filtered[i] * VOWEL_WEIGHTS[band]
+      output[i] += filtered[i] * vowelWeights[band]
     }
   }
 
-  addConsonant(output, onset, noiseSeed)
+  addConsonant(output, onset, vowel, noiseSeed)
   deEss(output)
   normalize(output, 0.86)
   fadeEdges(output, Math.floor(0.0015 * SAMPLE_RATE), Math.floor(0.012 * SAMPLE_RATE))
   return output
 }
 
-function addConsonant(output, onset, seed) {
-  const profile = onsetProfile(onset)
+function addConsonant(output, onset, vowel, seed) {
+  const profile = onsetProfile(onset, vowel)
   if (profile.duration <= 0) {
     return
   }
   const count = Math.min(output.length, Math.floor(profile.duration * SAMPLE_RATE))
+  let previousNoise = 0
   for (let i = 0; i < count; i++) {
     const t = i / SAMPLE_RATE
     const p = i / count
     const burst = (1 - smoothstep(p)) * Math.min(1, t / 0.006)
-    const noise = pseudoNoise(seed + i * profile.noiseStride) * profile.noise
+    const rawNoise = pseudoNoise(seed + i * profile.noiseStride)
+    const brightNoise = rawNoise - previousNoise * (profile.brightness ?? 0)
+    previousNoise = rawNoise
+    const transient = Math.exp(-t / (profile.burstDecay ?? 0.018)) * Math.min(1, t / 0.003)
+    const noise = brightNoise * profile.noise
     const tone = Math.sin(2 * Math.PI * BASE_FREQUENCY * profile.toneRatio * t) * profile.tone
-    output[i] += (noise + tone) * burst
+    const burstTone =
+      Math.sin(2 * Math.PI * BASE_FREQUENCY * (profile.burstToneRatio ?? profile.toneRatio) * t) *
+      (profile.burstTone ?? 0) *
+      transient
+    output[i] += (noise + tone) * burst + burstTone
   }
 }
 
-function onsetProfile(onset) {
+function onsetProfile(onset, vowel) {
   if (!onset || onset === 'ㅇ') {
     return { duration: 0.018, noise: 0.02, tone: 0.02, toneRatio: 1.5, noiseStride: 2 }
   }
+  if (onset === 'ㅋ') {
+    const frontVowel = isFrontVowel(vowel)
+    return {
+      duration: frontVowel ? 0.068 : 0.06,
+      noise: frontVowel ? 0.24 : 0.36,
+      tone: frontVowel ? 0.08 : 0.05,
+      toneRatio: frontVowel ? 3.05 : 2.9,
+      burstTone: frontVowel ? 0.24 : 0.11,
+      burstToneRatio: frontVowel ? 4.8 : 5.6,
+      burstDecay: frontVowel ? 0.015 : 0.018,
+      brightness: frontVowel ? 0.24 : 0.32,
+      noiseStride: 17,
+    }
+  }
   if (['ㄱ', 'ㄲ', 'ㅋ'].includes(onset)) {
-    return { duration: 0.055, noise: onset === 'ㅋ' ? 0.5 : 0.34, tone: 0.05, toneRatio: 2.8, noiseStride: 5 }
+    return { duration: 0.055, noise: 0.34, tone: 0.05, toneRatio: 2.8, noiseStride: 5 }
   }
   if (['ㄷ', 'ㄸ', 'ㅌ'].includes(onset)) {
     return { duration: 0.05, noise: onset === 'ㅌ' ? 0.48 : 0.3, tone: 0.05, toneRatio: 3.1, noiseStride: 7 }
@@ -304,6 +333,10 @@ function onsetProfile(onset) {
     return { duration: 0.065, noise: 0.055, tone: 0.18, toneRatio: onset === 'ㅁ' ? 0.5 : 0.75, noiseStride: 2 }
   }
   return { duration: 0.05, noise: 0.16, tone: 0.04, toneRatio: 2.2, noiseStride: 5 }
+}
+
+function isFrontVowel(vowel) {
+  return ['ㅣ', 'ㅟ', 'ㅢ', 'ㅔ', 'ㅖ', 'ㅐ', 'ㅒ', 'ㅚ'].includes(vowel)
 }
 
 function singerEnvelope(progress) {
