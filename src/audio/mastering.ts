@@ -3,6 +3,7 @@ export type MasteringOptions = {
   highPassHz?: number
   targetPeak?: number
   maxGain?: number
+  fadeEdgesMs?: number
 }
 
 export function masterMonoMix(samples: Float32Array, options: MasteringOptions) {
@@ -10,6 +11,7 @@ export function masterMonoMix(samples: Float32Array, options: MasteringOptions) 
   highPass(samples, options.sampleRate, options.highPassHz ?? 35)
   softLimit(samples)
   peakNormalize(samples, options.targetPeak ?? 0.88, options.maxGain ?? 2.4)
+  fadeEdges(samples, options.sampleRate, options.fadeEdgesMs ?? 5)
 }
 
 export function measurePeak(samples: Float32Array) {
@@ -75,5 +77,17 @@ function peakNormalize(samples: Float32Array, targetPeak: number, maxGain: numbe
   const gain = Math.min(maxGain, targetPeak / peak)
   for (let i = 0; i < samples.length; i++) {
     samples[i] *= gain
+  }
+}
+
+function fadeEdges(samples: Float32Array, sampleRate: number, fadeMs: number) {
+  const fadeSamples = Math.min(samples.length / 2, Math.floor((sampleRate * fadeMs) / 1000))
+  if (fadeSamples <= 1) {
+    return
+  }
+  for (let i = 0; i < fadeSamples; i++) {
+    const gain = i / fadeSamples
+    samples[i] *= gain
+    samples[samples.length - 1 - i] *= gain
   }
 }

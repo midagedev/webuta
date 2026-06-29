@@ -59,8 +59,26 @@ function mixSample(
   playbackRate: number,
   entry: OtoEntry,
 ) {
-  const source = sample.getChannelData(0)
+  const source = getMonoSampleData(sample)
   mixPreparedSample(output, project, note, source, sample.sampleRate, playbackRate, entry)
+}
+
+function getMonoSampleData(sample: AudioBuffer) {
+  const channelCount = Math.max(1, sample.numberOfChannels || 1)
+  if (channelCount === 1) {
+    return sample.getChannelData(0)
+  }
+
+  const length = sample.length || sample.getChannelData(0).length
+  const mixed = new Float32Array(length)
+  const gain = 1 / Math.sqrt(channelCount)
+  for (let channel = 0; channel < channelCount; channel++) {
+    const source = sample.getChannelData(channel)
+    for (let i = 0; i < mixed.length; i++) {
+      mixed[i] += (source[i] ?? 0) * gain
+    }
+  }
+  return mixed
 }
 
 function mixPreparedSample(

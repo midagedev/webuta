@@ -45,6 +45,48 @@ describe('UTAU sample renderer', () => {
     expect(peak).toBeLessThanOrEqual(0.89)
     expect(hasNonFiniteSample).toBe(false)
   })
+
+  it('downmixes stereo decoded samples before rendering', async () => {
+    const entry: OtoEntry = {
+      fileName: 'do_C4.wav',
+      path: 'Teto/do_C4.wav',
+      alias: 'ど',
+      offsetMs: 0,
+      consonantMs: 80,
+      cutoffMs: 0,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const left = makeVocalishSource(0.42, 44100)
+    const right = new Float32Array(left.length)
+    for (let i = 0; i < right.length; i++) {
+      right[i] = left[i] * 0.55
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(left, 44100, right)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render(makeProject())
+    const peak = result.samples.reduce((max, sample) => Math.max(max, Math.abs(sample)), 0)
+
+    expect(peak).toBeGreaterThan(0.04)
+    expect(peak).toBeLessThanOrEqual(0.89)
+  })
 })
 
 function makeProject(): SongProject {
@@ -78,14 +120,17 @@ function makeVocalishSource(durationSeconds: number, sampleRate: number) {
   return samples
 }
 
-function makeAudioBuffer(samples: Float32Array, sampleRate: number) {
+function makeAudioBuffer(samples: Float32Array, sampleRate: number, rightSamples?: Float32Array) {
+  const channels = rightSamples ? [samples, rightSamples] : [samples]
   return {
     sampleRate,
+    length: samples.length,
+    numberOfChannels: channels.length,
     getChannelData(channel: number) {
-      if (channel !== 0) {
+      if (!channels[channel]) {
         throw new Error(`Unexpected channel: ${channel}`)
       }
-      return samples
+      return channels[channel]
     },
   } as AudioBuffer
 }

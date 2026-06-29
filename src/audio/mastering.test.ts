@@ -13,4 +13,23 @@ describe('mastering chain', () => {
     expect(Math.abs(measureMean(samples))).toBeLessThan(0.01)
     expect(measurePeak(samples)).toBeLessThanOrEqual(0.87)
   })
+
+  it('fades the exported edges to prevent start and end clicks', () => {
+    const samples = new Float32Array(1000)
+    for (let i = 0; i < samples.length; i++) {
+      samples[i] = i < samples.length / 2 ? 0.4 : -0.4
+    }
+
+    masterMonoMix(samples, {
+      sampleRate: 1000,
+      highPassHz: 0,
+      targetPeak: 0.5,
+      maxGain: 1,
+      fadeEdgesMs: 20,
+    })
+
+    expect(Math.abs(samples[0])).toBeLessThan(0.001)
+    expect(Math.abs(samples.at(-1) ?? 1)).toBeLessThan(0.001)
+    expect(Math.abs(samples[40])).toBeGreaterThan(0.1)
+  })
 })

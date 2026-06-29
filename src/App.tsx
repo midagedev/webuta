@@ -165,6 +165,38 @@ function App() {
   const playheadLeft = displayDuration > 0 ? Math.min(gridWidth, (playbackTime / displayDuration) * gridWidth) : 0
   const selectedNoteLabel = selectedNote ? `${selectedNote.lyric} · ${toneName(selectedNote.tone)}` : 'No note'
 
+  useEffect(() => {
+    function handleWindowKeyDown(event: KeyboardEvent) {
+      if (isTextEditingTarget(event.target)) {
+        return
+      }
+
+      const key = event.key.toLowerCase()
+      const commandPressed = event.metaKey || event.ctrlKey
+      if (commandPressed && key === 'z') {
+        event.preventDefault()
+        if (event.shiftKey) {
+          redoProject()
+        } else {
+          undoProject()
+        }
+        return
+      }
+      if (commandPressed && key === 'y') {
+        event.preventDefault()
+        redoProject()
+        return
+      }
+      if (event.code === 'Space' && !isButtonLikeTarget(event.target)) {
+        event.preventDefault()
+        void playOrPause()
+      }
+    }
+
+    window.addEventListener('keydown', handleWindowKeyDown)
+    return () => window.removeEventListener('keydown', handleWindowKeyDown)
+  })
+
   async function handleFile(file: File) {
     const text = await file.text()
     const nextProject = parseUstx(text, file.name)
@@ -435,6 +467,9 @@ function App() {
       setRendered(audio)
       setNotice('WAV ready')
       return audio
+    } catch (error) {
+      setNotice(`Render failed: ${formatErrorMessage(error)}`)
+      return null
     } finally {
       setIsRendering(false)
     }
@@ -454,8 +489,13 @@ function App() {
     audio.src = current.url
     audio.currentTime = 0
     setPlaybackTime(0)
-    await audio.play()
-    setIsPlaying(true)
+    try {
+      await audio.play()
+      setIsPlaying(true)
+    } catch (error) {
+      setNotice(`Playback failed: ${formatErrorMessage(error)}`)
+      setIsPlaying(false)
+    }
   }
 
   function stopPlayback() {
@@ -483,6 +523,7 @@ function App() {
     }
     const file = new File([current.blob], current.fileName, { type: 'audio/wav' })
     const shareNavigator = getShareNavigator()
+    let shareFailed = false
     if (canShareFile(file, shareNavigator)) {
       try {
         await shareNavigator.share({
@@ -496,10 +537,11 @@ function App() {
           setNotice('Share cancelled')
           return
         }
+        shareFailed = true
       }
     }
     downloadBlob(current.blob, current.fileName)
-    setNotice('Share unavailable; WAV downloaded')
+    setNotice(shareFailed ? 'Share failed; WAV downloaded' : 'Share unavailable; WAV downloaded')
   }
 
   async function downloadWav() {
@@ -1085,6 +1127,28 @@ function App() {
               <strong>{rendered ? rendered.fileName : 'WAV not rendered yet'}</strong>
               <span>{rendered ? `${rendered.durationSeconds.toFixed(1)} sec · 44.1 kHz mono` : '44.1 kHz mono WAV'}</span>
             </div>
+            <div className="dock-actions" aria-label="Export shortcuts">
+              <button
+                type="button"
+                className="dock-action primary"
+                aria-label="WAV 공유"
+                onClick={() => void shareWav()}
+                disabled={isRendering}
+              >
+                <Share2 size={18} aria-hidden="true" />
+                <span>공유</span>
+              </button>
+              <button
+                type="button"
+                className="dock-action"
+                aria-label="하단 WAV 다운로드"
+                onClick={() => void downloadWav()}
+                disabled={isRendering}
+              >
+                <Download size={18} aria-hidden="true" />
+                <span>WAV</span>
+              </button>
+            </div>
           </div>
         </section>
       </section>
@@ -1144,6 +1208,29 @@ function canShareFile(file: File, shareNavigator = getShareNavigator()) {
     typeof shareNavigator.share === 'function' &&
     (typeof shareNavigator.canShare !== 'function' || shareNavigator.canShare({ files: [file] }))
   )
+}
+
+function formatErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+  return 'Unknown error'
+}
+
+function isTextEditingTarget(target: EventTarget | null) {
+  const element = target instanceof HTMLElement ? target : null
+  if (!element) {
+    return false
+  }
+  return Boolean(element.closest('input, textarea, select, [contenteditable="true"]'))
+}
+
+function isButtonLikeTarget(target: EventTarget | null) {
+  const element = target instanceof HTMLElement ? target : null
+  if (!element) {
+    return false
+  }
+  return Boolean(element.closest('button, a'))
 }
 
 function snapDragTicks(deltaX: number) {

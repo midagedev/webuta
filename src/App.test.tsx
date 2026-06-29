@@ -151,6 +151,24 @@ describe('App editing workflow', () => {
     })
   })
 
+  it('falls back to download when Web Share is unavailable', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: '공유' }))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Share unavailable; WAV downloaded').length).toBeGreaterThan(0)
+    })
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled()
+  })
+
+  it('exposes bottom dock export actions for touch layouts', () => {
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: 'WAV 공유' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '하단 WAV 다운로드' })).toBeTruthy()
+  })
+
   it('downloads a rendered WAV from the explicit download action', async () => {
     render(<App />)
 
@@ -229,6 +247,24 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       expect(loadSavedProject()?.notes.find((note) => note.id === 'n1')?.start).toBe(0)
+    })
+  })
+
+  it('supports desktop undo and redo shortcuts outside text fields', async () => {
+    render(<App />)
+
+    const lyricPads = screen.getByLabelText('Quick lyric painter')
+    fireEvent.click(within(lyricPads).getByRole('button', { name: '키' }))
+    fireEvent.keyDown(window, { key: 'z', metaKey: true })
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes[0].lyric).toBe('도')
+    })
+
+    fireEvent.keyDown(window, { key: 'z', metaKey: true, shiftKey: true })
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes[0].lyric).toBe('키')
     })
   })
 
