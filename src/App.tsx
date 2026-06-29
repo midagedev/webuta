@@ -103,7 +103,7 @@ function App() {
   const canRedo = projectHistory.future.length > 0
   const [selectedNoteId, setSelectedNoteId] = useState(() => project.notes[0]?.id ?? '')
   const [rendered, setRendered] = useState<RenderedAudio | null>(null)
-  const [voicebankName, setVoicebankName] = useState('Browser demo voice')
+  const [voicebankName, setVoicebankName] = useState('Korean Demo Voice')
   const [voicebank, setVoicebank] = useState<LoadedVoicebank | null>(null)
   const [isRendering, setIsRendering] = useState(false)
   const [isLoadingVoicebank, setIsLoadingVoicebank] = useState(false)
@@ -783,7 +783,7 @@ function App() {
             </label>
             <label className="field-label">
               보컬
-              <select value="browser-demo" onChange={() => setNotice('Browser demo voice selected')}>
+              <select value="browser-demo" onChange={() => setNotice('Korean Demo Voice selected')}>
                 <option value="browser-demo">{voicebankName}</option>
               </select>
             </label>
@@ -1088,7 +1088,7 @@ function App() {
             <div className="editor-chips">
               <span>{rows.length} rows</span>
               <span>CH 01</span>
-              <span>{voicebank ? 'UTAU vocal bank' : 'Demo cyber synth'}</span>
+              <span>{voicebank ? 'UTAU vocal bank' : 'Korean guide voice'}</span>
             </div>
           </div>
 

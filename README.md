@@ -3,6 +3,7 @@
 WebUtau is a browser-first cyber vocal synth sketchpad aimed at an iPad-to-GarageBand workflow.
 
 The app pairs a neon-glam, tracker-inspired vocal editor UI with a simple singing workflow: load a user-provided UTAU/OpenUTAU voicebank, sketch lyrics on a dense piano grid, render a WAV, and import it into GarageBand.
+Without an imported singer, the built-in `Korean Demo Voice` renders Hangul lyrics as a browser-safe guide vocal by shaping Korean onset, vowel, and coda profiles.
 
 The current verified target is:
 
@@ -68,6 +69,7 @@ Verified local smoke output:
 - Official Teto zip imported in browser.
 - `6216` UTAU aliases and `1822` WAV samples detected.
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the official Teto zip.
+- Built-in `Korean Demo Voice` decomposes Hangul syllables for the no-ZIP guide vocal path.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
 - The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
