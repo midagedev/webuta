@@ -55,6 +55,7 @@ It also renders the built-in Korean `도 히 도 히 다 이 스 키` demo line 
 ## Checks
 
 ```sh
+npm run notices
 npm run lint
 npm test
 npm run build
@@ -69,6 +70,8 @@ Verified local smoke output:
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
 - The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
+- Runtime npm dependency notices are generated in `docs/THIRD_PARTY_NOTICES.md`.
+- Physical iPad and GarageBand import verification is tracked in `docs/IPAD_GARAGEBAND_QA.md`.
 
 ## Deploy To GitHub Pages
 
@@ -85,4 +88,6 @@ Only `dist/` is published. Kasane Teto voicebank zips in `test-assets/` are igno
 
 - [Overnight checklist](docs/OVERNIGHT_CHECKLIST.md)
 - [License boundaries](docs/LICENSE_BOUNDARIES.md)
+- [Third party notices](docs/THIRD_PARTY_NOTICES.md)
+- [iPad GarageBand QA](docs/IPAD_GARAGEBAND_QA.md)
 - [Porting roadmap](docs/PORTING_ROADMAP.md)

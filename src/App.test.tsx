@@ -65,8 +65,9 @@ describe('App editing workflow', () => {
     expect(screen.getByRole('dialog', { name: 'WebUtau Credits' })).toBeTruthy()
     expect(screen.getByText('Voicebanks are user-provided downloads. No Teto voicebank or singer artwork is bundled.')).toBeTruthy()
     expect(screen.getByText('The cyber vocal mascot is original project artwork, separate from singer characters.')).toBeTruthy()
+    expect(screen.getByText('Runtime npm notices are generated in docs/THIRD_PARTY_NOTICES.md.')).toBeTruthy()
 
-    fireEvent.click(screen.getByTitle('닫기'))
+    fireEvent.keyDown(window, { key: 'Escape' })
 
     expect(screen.queryByRole('dialog', { name: 'WebUtau Credits' })).toBeNull()
   })
@@ -78,6 +79,18 @@ describe('App editing workflow', () => {
 
     await screen.findByText('WebUtau // Test Teto')
     expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
+    expect(screen.getByText('현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
+    expect(screen.getByText('도 -> ど (exact)')).toBeTruthy()
+  })
+
+  it('shows fallback lyric coverage when the imported voicebank cannot match the demo line', async () => {
+    await saveVoicebankFile(await makeVoicebankZip())
+
+    render(<App />)
+
+    await screen.findByText('WebUtau // Test Teto')
+    expect(screen.getByText('미매칭 8개: 도, 히, 다, 이, 스, 키')).toBeTruthy()
+    expect(screen.getByText('도 -> ど alias 없음')).toBeTruthy()
   })
 
   it('updates the selected lyric from the quick lyric pads', () => {

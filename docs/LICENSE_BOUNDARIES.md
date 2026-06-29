@@ -18,7 +18,7 @@ OpenUtau references packages and native components with their own licenses. The 
 
 Action:
 
-- [ ] Generate dependency notices for npm packages.
+- [x] Generate dependency notices for npm packages.
 - [ ] Audit any copied C# packages if an OpenUtau server renderer is added.
 - [ ] Audit WORLDLINE native/WASM distribution terms before shipping it.
 - [ ] Audit ONNX Runtime Web or server-side ONNX Runtime terms before bundling.

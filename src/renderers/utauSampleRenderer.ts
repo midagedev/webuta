@@ -8,6 +8,8 @@ const SAMPLE_RATE = 44100
 const MIN_LOOP_MS = 36
 const MAX_LOOP_MS = 130
 const LOOP_CROSSFADE_MS = 18
+const VIBRATO_RATE_HZ = 5.4
+const VIBRATO_DEPTH_CENTS = 16
 
 export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContext: AudioContext): VocalRenderer {
   const cache = new Map<string, Promise<AudioBuffer>>()
@@ -23,13 +25,14 @@ export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContex
     async render(project) {
       const durationSeconds = projectDurationSeconds(project) + 1.2
       const samples = new Float32Array(Math.ceil(durationSeconds * SAMPLE_RATE))
-      for (const note of sortedNotes(project.notes)) {
+      const notes = sortedNotes(project.notes)
+      for (const [index, note] of notes.entries()) {
         const entry = findBestEntryForLyric(voicebank, note.lyric, note.tone)
         const sample = await getSample(entry.path, async () => {
           const buffer = await voicebank.readSample(entry)
           return audioContext.decodeAudioData(buffer.slice(0))
         })
-        mixSample(samples, project, note, sample, playbackRateForTone(entry, note.tone), entry)
+        mixSample(samples, project, note, notes[index + 1], sample, playbackRateForTone(entry, note.tone), entry)
       }
       masterMonoMix(samples, { sampleRate: SAMPLE_RATE, maxGain: 2.4, targetPeak: 0.88 })
       return {
@@ -55,12 +58,13 @@ function mixSample(
   output: Float32Array,
   project: SongProject,
   note: SongNote,
+  nextNote: SongNote | undefined,
   sample: AudioBuffer,
   playbackRate: number,
   entry: OtoEntry,
 ) {
   const source = getMonoSampleData(sample)
-  mixPreparedSample(output, project, note, source, sample.sampleRate, playbackRate, entry)
+  mixPreparedSample(output, project, note, nextNote, source, sample.sampleRate, playbackRate, entry)
 }
 
 function getMonoSampleData(sample: AudioBuffer) {
@@ -85,6 +89,7 @@ function mixPreparedSample(
   output: Float32Array,
   project: SongProject,
   note: SongNote,
+  nextNote: SongNote | undefined,
   source: Float32Array,
   sourceSampleRate: number,
   playbackRate: number,
@@ -94,7 +99,7 @@ function mixPreparedSample(
   const noteDurationSeconds = ticksToSeconds(note.duration, project.bpm)
   const preutteranceSeconds = Math.max(0, (entry?.preutteranceMs ?? 0) / 1000)
   const overlapSeconds = clamp((entry?.overlapMs ?? 18) / 1000, 0.008, 0.14)
-  const releaseSeconds = clamp(noteDurationSeconds * 0.22, 0.055, 0.18)
+  const releaseSeconds = releaseSecondsForNote(project, note, nextNote, noteDurationSeconds)
   const renderStartSeconds = noteStartSeconds - preutteranceSeconds
   const startSample = Math.max(0, Math.floor(renderStartSeconds * SAMPLE_RATE))
   const skippedSeconds = Math.max(0, -renderStartSeconds)
@@ -107,18 +112,54 @@ function mixPreparedSample(
   const fadeInSamples = Math.max(64, Math.floor(overlapSeconds * SAMPLE_RATE))
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
   const noteBodySamples = Math.max(1, Math.floor(noteDurationSeconds * SAMPLE_RATE))
+  let sourcePosition = sourceWindow.start + Math.floor(skippedSeconds * SAMPLE_RATE) * rate
 
   for (let i = 0; i < length && startSample + i < output.length; i++) {
     const elapsedOutputSamples = i + Math.floor(skippedSeconds * SAMPLE_RATE)
-    const sourcePosition = sourceWindow.start + elapsedOutputSamples * rate
     const sampleValue = readLoopedLinear(source, sourcePosition, loop)
     const preutteranceSamples = Math.floor(preutteranceSeconds * SAMPLE_RATE)
     const noteProgress = elapsedOutputSamples - preutteranceSamples
-    const attack = Math.min(1, elapsedOutputSamples / fadeInSamples)
-    const release = Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples)
+    const attack = smoothstep(Math.min(1, elapsedOutputSamples / fadeInSamples))
+    const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
     output[startSample + i] += sampleValue * envelope * 0.66
+    sourcePosition += rate * vibratoRateMultiplier(noteProgress, noteBodySamples)
   }
+}
+
+function releaseSecondsForNote(
+  project: SongProject,
+  note: SongNote,
+  nextNote: SongNote | undefined,
+  noteDurationSeconds: number,
+) {
+  if (!nextNote || nextNote.trackId !== note.trackId) {
+    return clamp(noteDurationSeconds * 0.22, 0.055, 0.18)
+  }
+  const noteEndSeconds = ticksToSeconds(note.start + note.duration, project.bpm)
+  const nextStartSeconds = ticksToSeconds(nextNote.start, project.bpm)
+  const gapSeconds = nextStartSeconds - noteEndSeconds
+  if (gapSeconds <= 0.03) {
+    return 0.035
+  }
+  if (gapSeconds <= 0.18) {
+    return clamp(gapSeconds * 0.6, 0.04, 0.1)
+  }
+  return clamp(noteDurationSeconds * 0.2, 0.055, 0.16)
+}
+
+function vibratoRateMultiplier(noteProgressSamples: number, noteBodySamples: number) {
+  if (noteBodySamples < SAMPLE_RATE * 0.42 || noteProgressSamples <= 0) {
+    return 1
+  }
+  const progress = noteProgressSamples / noteBodySamples
+  if (progress < 0.52 || progress > 0.96) {
+    return 1
+  }
+  const seconds = noteProgressSamples / SAMPLE_RATE
+  const depthRamp = smoothstep(clamp((progress - 0.52) / 0.18, 0, 1))
+  const cents = Math.sin(seconds * Math.PI * 2 * VIBRATO_RATE_HZ) * VIBRATO_DEPTH_CENTS * depthRamp
+  return 2 ** (cents / 1200)
 }
 
 function makeSourceWindow(sourceLength: number, sampleRate: number, entry?: OtoEntry) {
@@ -183,6 +224,11 @@ function msToSamples(ms: number, sampleRate: number) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function smoothstep(value: number) {
+  const x = clamp(value, 0, 1)
+  return x * x * (3 - 2 * x)
 }
 
 function clampInt(value: number, min: number, max: number) {

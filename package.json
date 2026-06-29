@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:teto": "RUN_TETO_ASSET=1 vitest run src/voicebank.teto.test.ts",
+    "notices": "node scripts/generate-dependency-notices.mjs",
     "asset:teto": "node scripts/download-teto-asset.mjs"
   },
   "dependencies": {

@@ -65,7 +65,14 @@ import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
 import { parseUstx, serializeUstx } from './ustx'
 import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from './types'
-import { analyzeVoicebankCoverage, loadVoicebankZip, type LoadedVoicebank, type VoicebankCoverage } from './voicebank'
+import {
+  analyzeVoicebankCoverage,
+  findEntryMatchForLyric,
+  loadVoicebankZip,
+  type LoadedVoicebank,
+  type LyricEntryMatch,
+  type VoicebankCoverage,
+} from './voicebank'
 import { loadSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
 const ROW_HEIGHT = 26
@@ -113,6 +120,10 @@ function App() {
   const voicebankCoverage = useMemo(
     () => (voicebank ? analyzeVoicebankCoverage(voicebank, project.notes) : null),
     [project.notes, voicebank],
+  )
+  const selectedLyricMatch = useMemo(
+    () => (voicebank && selectedNote ? findEntryMatchForLyric(voicebank, selectedNote.lyric) : null),
+    [selectedNote, voicebank],
   )
 
   useEffect(() => {
@@ -175,6 +186,12 @@ function App() {
   useEffect(() => {
     function handleWindowKeyDown(event: KeyboardEvent) {
       if (isTextEditingTarget(event.target)) {
+        return
+      }
+
+      if (event.key === 'Escape' && isAboutOpen) {
+        event.preventDefault()
+        setIsAboutOpen(false)
         return
       }
 
@@ -777,6 +794,7 @@ function App() {
               <Volume2 size={17} aria-hidden="true" />
               <span>{voicebank ? `${notice} · ${formatVoicebankCoverage(voicebankCoverage)} · ${voicebank.wavCount} wav` : notice}</span>
             </div>
+            <VoicebankCoverageCard coverage={voicebankCoverage} hasVoicebank={Boolean(voicebank)} />
           </section>
 
           <section className="tool-panel">
@@ -789,6 +807,9 @@ function App() {
                 <div className="selected-note-card">
                   <span>{selectedNote.lyric}</span>
                   <strong>{toneName(selectedNote.tone)}</strong>
+                </div>
+                <div className={`lyric-match-chip ${selectedLyricMatch?.quality === 'fallback' ? 'warning' : 'ready'}`}>
+                  {formatLyricMatch(selectedLyricMatch)}
                 </div>
                 <label className="field-label">
                   가사
@@ -1173,6 +1194,45 @@ function App() {
   )
 }
 
+function VoicebankCoverageCard({
+  coverage,
+  hasVoicebank,
+}: {
+  coverage: VoicebankCoverage | null
+  hasVoicebank: boolean
+}) {
+  if (!hasVoicebank) {
+    return (
+      <div className="coverage-card idle" aria-label="Voicebank lyric coverage">
+        <strong>보이스뱅크 대기</strong>
+        <span>도/히/다/이/스/키 alias 검사 준비됨.</span>
+      </div>
+    )
+  }
+
+  if (!coverage) {
+    return (
+      <div className="coverage-card idle" aria-label="Voicebank lyric coverage">
+        <strong>매칭 검사 중</strong>
+        <span>가사와 oto.ini alias를 비교하고 있습니다.</span>
+      </div>
+    )
+  }
+
+  const missingLyrics = coverage.fallbackLyrics.slice(0, 6)
+  const isReady = coverage.fallbackNotes === 0
+  return (
+    <div className={`coverage-card ${isReady ? 'ready' : 'warning'}`} aria-label="Voicebank lyric coverage">
+      <strong>{formatVoicebankCoverage(coverage)}</strong>
+      <span>
+        {isReady
+          ? `현재 ${coverage.uniqueLyrics}개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.`
+          : `미매칭 ${coverage.fallbackNotes}개: ${missingLyrics.join(', ')}${coverage.fallbackLyrics.length > missingLyrics.length ? '...' : ''}`}
+      </span>
+    </div>
+  )
+}
+
 function AboutDialog({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
@@ -1208,6 +1268,10 @@ function AboutDialog({ onClose }: { onClose: () => void }) {
           <section>
             <strong>OpenUtau</strong>
             <span>This browser build does not bundle desktop OpenUtau source or external resampler binaries.</span>
+          </section>
+          <section>
+            <strong>Dependencies</strong>
+            <span>Runtime npm notices are generated in docs/THIRD_PARTY_NOTICES.md.</span>
           </section>
           <a href="https://kasaneteto.jp/utau/" target="_blank" rel="noreferrer">
             Official Teto UTAU
@@ -1285,6 +1349,17 @@ function formatVoicebankCoverage(coverage: VoicebankCoverage | null, mode: 'full
   }
   const ratio = `${coverage.matchedNotes}/${coverage.totalNotes}`
   return mode === 'compact' ? ratio : `${ratio} matched`
+}
+
+function formatLyricMatch(match: LyricEntryMatch | null) {
+  if (!match) {
+    return 'alias 검사 대기'
+  }
+  if (match.quality === 'fallback') {
+    return `${match.lyric} -> ${match.targetAlias || match.lyric} alias 없음`
+  }
+  const alias = match.candidates[0]?.alias ?? match.targetAlias
+  return `${match.lyric} -> ${alias} (${match.quality})`
 }
 
 function formatErrorMessage(error: unknown) {

@@ -530,6 +530,60 @@ button:disabled {
   white-space: nowrap;
 }
 
+.coverage-card,
+.lyric-match-chip {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.coverage-card {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid #17212a;
+  background: #151b22;
+}
+
+.coverage-card strong,
+.coverage-card span,
+.lyric-match-chip {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coverage-card strong {
+  color: #f4f7fb;
+  font-weight: 860;
+}
+
+.coverage-card span {
+  color: #aeb8c5;
+  line-height: 1.35;
+}
+
+.coverage-card.ready {
+  border-color: #155c32;
+  background: #10261b;
+}
+
+.coverage-card.ready strong,
+.lyric-match-chip.ready {
+  color: #78eba7;
+}
+
+.coverage-card.warning {
+  border-color: #72500c;
+  background: #2d2413;
+}
+
+.coverage-card.warning strong,
+.lyric-match-chip.warning {
+  color: #ffd36a;
+}
+
 .note-editor {
   margin-bottom: 10px;
 }
@@ -560,6 +614,16 @@ button:disabled {
 .selected-note-card strong {
   color: rgba(36, 23, 5, 0.72);
   font-size: 12px;
+}
+
+.lyric-match-chip {
+  min-height: 30px;
+  align-items: center;
+  margin: -2px 0 10px;
+  padding: 0 9px;
+  border: 1px solid #17212a;
+  background: #151b22;
+  white-space: nowrap;
 }
 
 .small-button,
