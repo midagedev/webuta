@@ -1,5 +1,6 @@
 import { midiToHz, projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
 import type { SongNote, SongProject } from '../types'
+import { masterMonoMix } from '../audio/mastering'
 import type { VocalRenderer } from './types'
 
 const SAMPLE_RATE = 44100
@@ -19,7 +20,7 @@ export const browserDemoRenderer: VocalRenderer = {
     for (const note of sortedNotes(project.notes)) {
       mixNote(samples, project, note)
     }
-    normalize(samples)
+    masterMonoMix(samples, { sampleRate: SAMPLE_RATE, maxGain: 1.8, targetPeak: 0.82 })
     return {
       samples,
       sampleRate: SAMPLE_RATE,
@@ -62,20 +63,6 @@ function vowelColor(lyric: string) {
     return { fundamental: 0.86, second: 0.18, third: 0.08, brightness: 0.04, air: 0.014 }
   }
   return { fundamental: 0.7, second: 0.28, third: 0.18, brightness: 0.1, air: 0.017 }
-}
-
-function normalize(samples: Float32Array) {
-  let peak = 0
-  for (const sample of samples) {
-    peak = Math.max(peak, Math.abs(sample))
-  }
-  if (peak < 0.01) {
-    return
-  }
-  const gain = Math.min(1.8, 0.82 / peak)
-  for (let i = 0; i < samples.length; i++) {
-    samples[i] *= gain
-  }
 }
 
 function pseudoNoise(seed: number) {

@@ -45,12 +45,15 @@ npm run test:teto
 ```
 
 This downloads `TETO-OUset240323.zip` into ignored `test-assets/` and verifies that WebUtau can read its `character.yaml`, `oto.ini`, aliases, and WAV sample inventory.
+It also renders the built-in Korean `도 히 도 히 다 이 스 키` demo line through the local Teto samples, using the browser UTAU sample renderer path.
 
 ## Checks
 
 ```sh
+npm run lint
 npm test
 npm run build
+npm run test:teto
 ```
 
 Verified local smoke output:

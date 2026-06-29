@@ -106,22 +106,41 @@ function pathDecodeScore(files: ZipFileMap) {
 }
 
 export function findEntryForLyric(voicebank: LoadedVoicebank, lyric: string) {
+  return findBestEntryForLyric(voicebank, lyric, 60)
+}
+
+export function findBestEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
+  const candidates = findEntryCandidatesForLyric(voicebank, lyric)
+  return bestEntryCandidate(candidates, lyric, targetTone) ?? voicebank.entries[0]
+}
+
+export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: string) {
   const normalized = normalizeLyric(lyric)
-  const exact = voicebank.entries.find((entry) => normalizeLyric(entry.alias) === normalized)
-  if (exact) {
+  const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
+  const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
+
+  const exact = voicebank.entries.filter((entry) =>
+    searchKeys.some((key) => normalizeLyric(entry.alias) === key),
+  )
+  if (exact.length > 0) {
     return exact
   }
-  const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
-  const byLikelyAlias = voicebank.entries.find((entry) => normalizeLyric(entry.alias) === likelyAlias)
-  if (byLikelyAlias) {
-    return byLikelyAlias
+
+  const coreExact = voicebank.entries.filter((entry) =>
+    searchKeys.some((key) => normalizeAliasCore(entry.alias) === key),
+  )
+  if (coreExact.length > 0) {
+    return coreExact
   }
-  const contains = voicebank.entries.find((entry) => normalizeLyric(entry.alias).includes(normalized))
-  return contains ?? voicebank.entries[0]
+
+  const contains = voicebank.entries.filter((entry) =>
+    searchKeys.some((key) => normalizeLyric(entry.alias).includes(key)),
+  )
+  return contains.length > 0 ? contains : voicebank.entries
 }
 
 export function estimateEntryBaseTone(entry: OtoEntry) {
-  const match = entry.fileName.match(/([A-Ga-g])([#b]?)(\d)/)
+  const match = `${entry.fileName} ${entry.path}`.match(/([A-Ga-g])([#b]?)(\d)/)
   if (!match) {
     return 60
   }
@@ -133,6 +152,72 @@ export function estimateEntryBaseTone(entry: OtoEntry) {
 
 export function playbackRateForTone(entry: OtoEntry, targetTone: number) {
   return midiToHz(targetTone) / midiToHz(estimateEntryBaseTone(entry))
+}
+
+function bestEntryCandidate(entries: OtoEntry[], lyric: string, targetTone: number) {
+  const normalized = normalizeLyric(lyric)
+  const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
+  const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
+  return entries
+    .map((entry, index) => ({
+      entry,
+      score: entrySelectionScore(entry, searchKeys, targetTone, index),
+    }))
+    .sort((a, b) => a.score - b.score)[0]?.entry
+}
+
+function entrySelectionScore(entry: OtoEntry, searchKeys: string[], targetTone: number, index: number) {
+  const alias = normalizeLyric(entry.alias)
+  const core = normalizeAliasCore(entry.alias)
+  const path = normalizeLyric(entry.path)
+  const matchScore = searchKeys.reduce((best, key) => {
+    if (alias === key) {
+      return Math.min(best, 0)
+    }
+    if (core === key) {
+      return Math.min(best, 12)
+    }
+    if (alias.includes(key)) {
+      return Math.min(best, 52)
+    }
+    return best
+  }, 100)
+
+  const prefixPenalty = /^[-*]\s/.test(alias) ? 5 : 0
+  const vcvPenalty = /^[a-zぁ-んァ-ンー]\s/.test(alias) ? 18 : 0
+  const pathPenalty = voicebankStylePenalty(path)
+  const pitchPenalty = hasExplicitPitch(entry) ? Math.abs(estimateEntryBaseTone(entry) - targetTone) * 1.7 : 0
+  return matchScore + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+}
+
+function voicebankStylePenalty(path: string) {
+  let penalty = 0
+  if (path.includes('単独音')) {
+    penalty -= 10
+  }
+  if (path.includes('連続音')) {
+    penalty += 16
+  }
+  if (path.includes('ささやき')) {
+    penalty += 20
+  }
+  if (path.includes('エッジ')) {
+    penalty += 18
+  }
+  if (path.includes('力み')) {
+    penalty += 14
+  }
+  if (path.includes('叫び')) {
+    penalty += 16
+  }
+  if (path.includes('エクストラ')) {
+    penalty += 26
+  }
+  return penalty
+}
+
+function hasExplicitPitch(entry: OtoEntry) {
+  return /[A-Ga-g][#b]?\d/.test(`${entry.fileName} ${entry.path}`)
 }
 
 function parseOtoIni(text: string, directory: string, files: ZipFileMap) {
@@ -227,6 +312,13 @@ function parseNumber(value: string | undefined) {
 
 function normalizeLyric(lyric: string) {
   return lyric.trim().toLowerCase()
+}
+
+function normalizeAliasCore(alias: string) {
+  return normalizeLyric(alias)
+    .replace(/^[-*]\s+/, '')
+    .replace(/^[a-zぁ-んァ-ンー]\s+/, '')
+    .replace(/[囁力↑↓'’]+$/g, '')
 }
 
 function lyricToLikelyJapaneseAlias(lyric: string) {
