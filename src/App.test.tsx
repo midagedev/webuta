@@ -69,6 +69,19 @@ describe('App editing workflow', () => {
 
     expect(screen.getByText(/9 notes/)).toBeTruthy()
   })
+
+  it('nudges the selected note timing and pitch from the note panel', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByTitle('뒤로 이동'))
+    fireEvent.click(screen.getByTitle('음 높게'))
+
+    await waitFor(() => {
+      const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
+      expect(savedNote?.start).toBe(120)
+      expect(savedNote?.tone).toBe(61)
+    })
+  })
 })
 
 async function makeVoicebankZip() {

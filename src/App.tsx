@@ -1,4 +1,8 @@
 import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
   Download,
   FileDown,
   FolderOpen,
@@ -27,7 +31,7 @@ import {
   sanitizeFileName,
   toneName,
 } from './music'
-import { addNoteAfter, addNoteFromGrid } from './projectEditing'
+import { addNoteAfter, addNoteFromGrid, GRID_SNAP_TICKS, updateNoteInProject } from './projectEditing'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
@@ -155,17 +159,16 @@ function App() {
       return
     }
     setProject((current) => ({
-      ...current,
-      notes: current.notes.map((note) =>
-        note.id === selectedNote.id
-          ? {
-              ...note,
-              ...patch,
-            }
-          : note,
-      ),
+      ...updateNoteInProject(current, selectedNote.id, patch).project,
     }))
     clearRendered()
+  }
+
+  function nudgeSelectedNote(patch: Partial<SongNote>) {
+    if (!selectedNote) {
+      return
+    }
+    updateSelectedNote(patch)
   }
 
   function addNote() {
@@ -546,6 +549,46 @@ function App() {
                     ))}
                   </select>
                 </label>
+                <div className="step-row">
+                  <button
+                    type="button"
+                    className="small-button"
+                    title="앞으로 이동"
+                    onClick={() => nudgeSelectedNote({ start: selectedNote.start - GRID_SNAP_TICKS })}
+                  >
+                    <ArrowLeft size={16} aria-hidden="true" />
+                    <span>앞</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="small-button"
+                    title="뒤로 이동"
+                    onClick={() => nudgeSelectedNote({ start: selectedNote.start + GRID_SNAP_TICKS })}
+                  >
+                    <ArrowRight size={16} aria-hidden="true" />
+                    <span>뒤</span>
+                  </button>
+                </div>
+                <div className="step-row">
+                  <button
+                    type="button"
+                    className="small-button"
+                    title="음 낮게"
+                    onClick={() => nudgeSelectedNote({ tone: selectedNote.tone - 1 })}
+                  >
+                    <ArrowDown size={16} aria-hidden="true" />
+                    <span>낮게</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="small-button"
+                    title="음 높게"
+                    onClick={() => nudgeSelectedNote({ tone: selectedNote.tone + 1 })}
+                  >
+                    <ArrowUp size={16} aria-hidden="true" />
+                    <span>높게</span>
+                  </button>
+                </div>
                 <div className="step-row">
                   <button
                     type="button"

@@ -43,6 +43,24 @@ export function addNoteFromGrid(project: SongProject, input: GridNoteInput) {
   })
 }
 
+export function updateNoteInProject(project: SongProject, noteId: string, patch: Partial<SongNote>) {
+  const currentNote = project.notes.find((note) => note.id === noteId)
+  if (!currentNote) {
+    return { project, note: null }
+  }
+  const note = sanitizeNote({ ...currentNote, ...patch })
+  return {
+    project: {
+      ...project,
+      parts: expandPartForNote(project.parts, note),
+      notes: project.notes
+        .map((item) => (item.id === note.id ? note : item))
+        .sort((a, b) => a.start - b.start || a.tone - b.tone),
+    },
+    note,
+  }
+}
+
 function insertNote(
   project: SongProject,
   noteInput: {
@@ -53,7 +71,7 @@ function insertNote(
     lyric: string
   },
 ) {
-  const note: SongNote = {
+  const note = sanitizeNote({
     id: makeId('note'),
     trackId: noteInput.part.trackId,
     partId: noteInput.part.id,
@@ -61,7 +79,7 @@ function insertNote(
     duration: noteInput.duration,
     tone: noteInput.tone,
     lyric: noteInput.lyric,
-  }
+  })
   const nextPart = {
     ...noteInput.part,
     duration: Math.max(noteInput.part.duration, note.start - noteInput.part.start + note.duration),
@@ -76,6 +94,27 @@ function insertNote(
       notes: [...project.notes, note].sort((a, b) => a.start - b.start || a.tone - b.tone),
     },
     note,
+  }
+}
+
+function expandPartForNote(parts: VoicePart[], note: SongNote) {
+  return parts.map((part) =>
+    part.id === note.partId
+      ? {
+          ...part,
+          duration: Math.max(part.duration, note.start - part.start + note.duration),
+        }
+      : part,
+  )
+}
+
+function sanitizeNote(note: SongNote): SongNote {
+  return {
+    ...note,
+    start: Math.max(0, Math.round(note.start)),
+    duration: Math.max(GRID_SNAP_TICKS, Math.round(note.duration)),
+    tone: clampTone(note.tone),
+    lyric: note.lyric.trim() || '라',
   }
 }
 

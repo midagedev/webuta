@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { demoProject } from './demoProject'
 import { TICKS_PER_BEAT, type SongProject } from './types'
-import { addNoteAfter, addNoteFromGrid } from './projectEditing'
+import { addNoteAfter, addNoteFromGrid, updateNoteInProject } from './projectEditing'
 
 describe('project editing helpers', () => {
   it('adds a note after the selected anchor', () => {
@@ -50,5 +50,28 @@ describe('project editing helpers', () => {
     })
 
     expect(project.parts[0].duration).toBeGreaterThanOrEqual(note.start + note.duration)
+  })
+
+  it('updates notes and expands the owning part for export', () => {
+    const target = demoProject.notes[0]
+    const { project, note } = updateNoteInProject(demoProject, target.id, {
+      start: TICKS_PER_BEAT * 12,
+      duration: TICKS_PER_BEAT * 2,
+      tone: 120,
+      lyric: ' 키 ',
+    })
+
+    expect(note?.start).toBe(TICKS_PER_BEAT * 12)
+    expect(note?.duration).toBe(TICKS_PER_BEAT * 2)
+    expect(note?.tone).toBe(84)
+    expect(note?.lyric).toBe('키')
+    expect(project.parts[0].duration).toBeGreaterThanOrEqual(TICKS_PER_BEAT * 14)
+  })
+
+  it('keeps the project unchanged when a note is missing', () => {
+    const result = updateNoteInProject(demoProject, 'missing-note', { lyric: '라' })
+
+    expect(result.note).toBeNull()
+    expect(result.project).toBe(demoProject)
   })
 })
