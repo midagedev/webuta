@@ -4,7 +4,6 @@ import {
   FolderOpen,
   Gauge,
   Mic2,
-  Music2,
   Pause,
   Play,
   Plus,
@@ -20,6 +19,7 @@ import {
 import { useMemo, useRef, useState } from 'react'
 import './App.css'
 import { encodeWav } from './audio/wav'
+import cyberVocalHero from './assets/cyber-vocal-hero.webp'
 import { demoProject } from './demoProject'
 import {
   clampTone,
@@ -328,25 +328,25 @@ function App() {
       <nav className="mode-strip" aria-label="Workspace sections">
         <div className="brand-block">
           <div className="brand-mark">
-            <Music2 size={22} aria-hidden="true" />
+            <img src={cyberVocalHero} alt="" aria-hidden="true" />
           </div>
           <div>
-            <p className="eyebrow">WebUtau</p>
-            <strong>{voicebankName}</strong>
+            <p className="eyebrow">CYBER VOCAL CLUB</p>
+            <strong>WebUtau // {voicebankName}</strong>
           </div>
         </div>
         <div className="mode-tabs">
           <button type="button" className="mode-tab active">
             <Mic2 size={17} aria-hidden="true" />
-            <span>Tracks</span>
+            <span>Stage</span>
           </button>
           <button type="button" className="mode-tab">
             <Scissors size={17} aria-hidden="true" />
-            <span>Editor</span>
+            <span>Lyrics</span>
           </button>
           <button type="button" className="mode-tab">
             <Gauge size={17} aria-hidden="true" />
-            <span>Engine</span>
+            <span>Synth</span>
           </button>
         </div>
         <div className="session-chip">
@@ -360,11 +360,18 @@ function App() {
           <section className="tool-panel">
             <div className="panel-heading">
               <Sparkles size={18} aria-hidden="true" />
-              <h2>트랙</h2>
+              <h2>스테이지</h2>
+            </div>
+            <div className="mascot-card">
+              <img src={cyberVocalHero} alt="Cyber vocal synth mascot illustration" />
+              <div>
+                <strong>Neon Vocal Muse</strong>
+                <span>dark pop synth mode</span>
+              </div>
             </div>
             <div className="channel-strip">
               <div className="track-avatar">
-                <Mic2 size={20} aria-hidden="true" />
+                <img src={cyberVocalHero} alt="" aria-hidden="true" />
               </div>
               <div className="track-copy">
                 <strong>{project.tracks[0]?.name ?? 'Main Vocal'}</strong>
@@ -524,12 +531,20 @@ function App() {
           <div className="timeline-header">
             <div>
               <h1>{project.name}</h1>
-              <p>{project.notes.length} notes · {beatCount} beats · {barCount} bars</p>
+              <p>{project.notes.length} notes · {beatCount} beats · {barCount} bars · cyber vocal stage</p>
             </div>
             <button type="button" className="icon-text-button" onClick={downloadUstx}>
               <FileDown size={18} aria-hidden="true" />
               <span>프로젝트</span>
             </button>
+          </div>
+
+          <div className="mobile-mascot-banner">
+            <img src={cyberVocalHero} alt="" aria-hidden="true" />
+            <div>
+              <span>CYBER VOCAL CLUB</span>
+              <strong>도히도히 다이스키</strong>
+            </div>
           </div>
 
           <div className="mobile-note-strip" aria-label="Mobile note selector">
@@ -585,12 +600,12 @@ function App() {
 
           <div className="editor-toolbar">
             <div>
-              <strong>Piano Roll</strong>
+              <strong>Neon Piano Roll</strong>
               <span>{selectedNoteLabel}</span>
             </div>
             <div className="editor-chips">
               <span>{rows.length} keys</span>
-              <span>{voicebank ? 'UTAU samples' : 'Demo synth'}</span>
+              <span>{voicebank ? 'UTAU vocal bank' : 'Demo cyber synth'}</span>
             </div>
           </div>
 

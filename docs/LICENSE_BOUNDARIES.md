@@ -55,3 +55,13 @@ Action:
 
 - [x] Use WebUtau and vocal synth wording in the app.
 - [ ] Avoid implying Yamaha/Vocaloid compatibility beyond import/export facts that are true and documented.
+
+## Project Artwork
+
+The cyber vocal mascot illustration in `src/assets/cyber-vocal-hero.png` and `src/assets/cyber-vocal-hero.webp` is an original project visual generated for this app. It is not a Kasane Teto, Vocaloid, OpenUtau, or third-party singer asset.
+
+Action:
+
+- [x] Keep mascot artwork visually distinct from existing singer characters.
+- [x] Do not use third-party singer artwork as bundled UI branding.
+- [ ] Add an About / Credits screen before a public release that lists project artwork and generated-asset notes.
