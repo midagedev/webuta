@@ -17,6 +17,8 @@ import {
   Sparkles,
   Square,
   Trash2,
+  Redo2,
+  Undo2,
   Upload,
   Volume2,
 } from 'lucide-react'
@@ -46,6 +48,15 @@ import {
   GRID_SNAP_TICKS,
   updateNoteInProject,
 } from './projectEditing'
+import {
+  commitPresentFromSnapshot,
+  commitProjectChange,
+  createProjectHistory,
+  redoProjectChange,
+  replacePresentProject,
+  replaceProjectHistory,
+  undoProjectChange,
+} from './projectHistory'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { rendererCapabilities, renderers } from './renderers/registry'
 import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
@@ -64,6 +75,7 @@ type NotePointerState = {
   noteId: string
   pointerId: number
   mode: 'move' | 'resize'
+  originProject: SongProject
   originClientX: number
   originClientY: number
   originStart: number
@@ -73,7 +85,10 @@ type NotePointerState = {
 }
 
 function App() {
-  const [project, setProject] = useState<SongProject>(() => loadSavedProject() ?? demoProject)
+  const [projectHistory, setProjectHistory] = useState(() => createProjectHistory(loadSavedProject() ?? demoProject))
+  const project = projectHistory.present
+  const canUndo = projectHistory.past.length > 0
+  const canRedo = projectHistory.future.length > 0
   const [selectedNoteId, setSelectedNoteId] = useState(() => project.notes[0]?.id ?? '')
   const [rendered, setRendered] = useState<RenderedAudio | null>(null)
   const [voicebankName, setVoicebankName] = useState('Browser demo voice')
@@ -152,7 +167,7 @@ function App() {
   async function handleFile(file: File) {
     const text = await file.text()
     const nextProject = parseUstx(text, file.name)
-    setProject(nextProject)
+    setProjectHistory(replaceProjectHistory(nextProject))
     setSelectedNoteId(nextProject.notes[0]?.id ?? '')
     clearRendered()
     setNotice(`${file.name} loaded`)
@@ -183,7 +198,7 @@ function App() {
   }
 
   function updateProject(patch: Partial<SongProject>) {
-    setProject((current) => ({ ...current, ...patch }))
+    commitProject((current) => ({ ...current, ...patch }))
     clearRendered()
   }
 
@@ -194,11 +209,16 @@ function App() {
     updateNote(selectedNote.id, patch)
   }
 
-  function updateNote(noteId: string, patch: Partial<SongNote>) {
-    setProject((current) => {
+  function updateNote(noteId: string, patch: Partial<SongNote>, options: { history?: 'commit' | 'replace' } = {}) {
+    const applyUpdate = (current: SongProject) => {
       const result = updateNoteInProject(current, noteId, patch)
       return result.project
-    })
+    }
+    if (options.history === 'replace') {
+      replaceProject(applyUpdate)
+    } else {
+      commitProject(applyUpdate)
+    }
     setSelectedNoteId(noteId)
     if (typeof patch.lyric === 'string') {
       setPaintLyric(patch.lyric.trim() || '라')
@@ -215,7 +235,7 @@ function App() {
 
   function addNote() {
     const { project: nextProject, note } = addNoteAfter(project, selectedNote ?? project.notes.at(-1), paintLyric)
-    setProject(nextProject)
+    commitProject(nextProject)
     setSelectedNoteId(note.id)
     clearRendered()
   }
@@ -230,7 +250,7 @@ function App() {
       minTone: range.min,
       lyric: paintLyric,
     })
-    setProject(nextProject)
+    commitProject(nextProject)
     setSelectedNoteId(note.id)
     clearRendered()
     setNotice(`${note.lyric} ${toneName(note.tone)} added`)
@@ -257,7 +277,7 @@ function App() {
       setNotice('No lyrics applied')
       return
     }
-    setProject(result.project)
+    commitProject(result.project)
     setPaintLyric(result.tokens[0] ?? paintLyric)
     setNotice(`${result.appliedCount} lyrics applied`)
     clearRendered()
@@ -275,6 +295,7 @@ function App() {
       noteId: note.id,
       pointerId: event.pointerId,
       mode: distanceFromRight <= NOTE_RESIZE_HANDLE_WIDTH ? 'resize' : 'move',
+      originProject: project,
       originClientX: event.clientX,
       originClientY: event.clientY,
       originStart: note.start,
@@ -300,17 +321,19 @@ function App() {
     }
 
     if (drag.mode === 'resize') {
-      updateNote(drag.noteId, {
-        duration: drag.originDuration + tickDelta,
-      })
+      updateNote(drag.noteId, { duration: drag.originDuration + tickDelta }, { history: 'replace' })
       event.preventDefault()
       return
     }
 
-    updateNote(drag.noteId, {
-      start: drag.originStart + tickDelta,
-      tone: drag.originTone - Math.round(deltaY / ROW_HEIGHT),
-    })
+    updateNote(
+      drag.noteId,
+      {
+        start: drag.originStart + tickDelta,
+        tone: drag.originTone - Math.round(deltaY / ROW_HEIGHT),
+      },
+      { history: 'replace' },
+    )
     event.preventDefault()
   }
 
@@ -322,6 +345,7 @@ function App() {
     notePointerRef.current = null
     event.currentTarget.releasePointerCapture?.(event.pointerId)
     if (drag.moved) {
+      setProjectHistory((current) => commitPresentFromSnapshot(current, drag.originProject))
       setNotice(drag.mode === 'resize' ? 'Note length edited' : 'Note moved')
     }
   }
@@ -350,11 +374,41 @@ function App() {
       return
     }
     const nextNotes = project.notes.filter((note) => note.id !== selectedNote.id)
-    setProject((current) => ({
+    commitProject((current) => ({
       ...current,
       notes: nextNotes,
     }))
     setSelectedNoteId(nextNotes[0]?.id ?? '')
+    clearRendered()
+  }
+
+  function commitProject(update: SongProject | ((current: SongProject) => SongProject)) {
+    setProjectHistory((current) => commitProjectChange(current, update))
+  }
+
+  function replaceProject(update: SongProject | ((current: SongProject) => SongProject)) {
+    setProjectHistory((current) => replacePresentProject(current, update))
+  }
+
+  function undoProject() {
+    if (!canUndo) {
+      return
+    }
+    const nextHistory = undoProjectChange(projectHistory)
+    setProjectHistory(nextHistory)
+    setSelectedNoteId(reconcileSelectedNoteId(nextHistory.present, selectedNoteId))
+    setNotice('Undo')
+    clearRendered()
+  }
+
+  function redoProject() {
+    if (!canRedo) {
+      return
+    }
+    const nextHistory = redoProjectChange(projectHistory)
+    setProjectHistory(nextHistory)
+    setSelectedNoteId(reconcileSelectedNoteId(nextHistory.present, selectedNoteId))
+    setNotice('Redo')
     clearRendered()
   }
 
@@ -454,6 +508,12 @@ function App() {
           </button>
           <button type="button" className="toolbar-button" title="USTX 저장" onClick={downloadUstx}>
             <Save size={20} aria-hidden="true" />
+          </button>
+          <button type="button" className="toolbar-button" title="되돌리기" onClick={undoProject} disabled={!canUndo}>
+            <Undo2 size={19} aria-hidden="true" />
+          </button>
+          <button type="button" className="toolbar-button" title="다시 실행" onClick={redoProject} disabled={!canRedo}>
+            <Redo2 size={19} aria-hidden="true" />
           </button>
           <span className="topbar-label">Pattern Desk</span>
         </div>
@@ -1075,6 +1135,10 @@ function formatLyricLine(notes: SongNote[]) {
     .sort((a, b) => a.start - b.start || a.tone - b.tone)
     .map((note) => note.lyric)
     .join(' ')
+}
+
+function reconcileSelectedNoteId(project: SongProject, selectedNoteId: string) {
+  return project.notes.some((note) => note.id === selectedNoteId) ? selectedNoteId : project.notes[0]?.id ?? ''
 }
 
 export default App

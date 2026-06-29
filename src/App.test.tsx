@@ -49,6 +49,24 @@ describe('App editing workflow', () => {
     expect((screen.getByLabelText('가사') as HTMLInputElement).value).toBe('키')
   })
 
+  it('undoes and redoes a lyric pad edit', async () => {
+    render(<App />)
+
+    const lyricPads = screen.getByLabelText('Quick lyric painter')
+    fireEvent.click(within(lyricPads).getByRole('button', { name: '키' }))
+    fireEvent.click(screen.getByTitle('되돌리기'))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes[0].lyric).toBe('도')
+    })
+
+    fireEvent.click(screen.getByTitle('다시 실행'))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes[0].lyric).toBe('키')
+    })
+  })
+
   it('applies a compact Korean lyric line across the melody', async () => {
     render(<App />)
 
@@ -136,6 +154,27 @@ describe('App editing workflow', () => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
       expect(savedNote?.tone).toBe(61)
+    })
+  })
+
+  it('undoes a drag edit as one operation', async () => {
+    const { container } = render(<App />)
+    const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
+    noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
+
+    fireEvent.pointerDown(noteBlock, { pointerId: 1, clientX: 18, clientY: 18 })
+    fireEvent.pointerMove(noteBlock, { pointerId: 1, clientX: 36, clientY: 18 })
+    fireEvent.pointerMove(noteBlock, { pointerId: 1, clientX: 54, clientY: 18 })
+    fireEvent.pointerUp(noteBlock, { pointerId: 1, clientX: 54, clientY: 18 })
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes.find((note) => note.id === 'n1')?.start).toBe(240)
+    })
+
+    fireEvent.click(screen.getByTitle('되돌리기'))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes.find((note) => note.id === 'n1')?.start).toBe(0)
     })
   })
 
