@@ -20,7 +20,15 @@ import {
   Upload,
   Volume2,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import './App.css'
 import { encodeWav } from './audio/wav'
 import cyberVocalHero from './assets/cyber-vocal-hero.webp'
@@ -44,6 +52,19 @@ const ROW_HEIGHT = 26
 const TICK_WIDTH = 0.15
 const MIN_NOTE_WIDTH = 44
 const LYRIC_PALETTE = ['도', '히', '다', '이', '스', '키', '라', '나']
+const NOTE_RESIZE_HANDLE_WIDTH = 14
+
+type NotePointerState = {
+  noteId: string
+  pointerId: number
+  mode: 'move' | 'resize'
+  originClientX: number
+  originClientY: number
+  originStart: number
+  originTone: number
+  originDuration: number
+  moved: boolean
+}
 
 function App() {
   const [project, setProject] = useState<SongProject>(() => loadSavedProject() ?? demoProject)
@@ -60,6 +81,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const voicebankInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const notePointerRef = useRef<NotePointerState | null>(null)
 
   const selectedNote = project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0]
 
@@ -158,9 +180,18 @@ function App() {
     if (!selectedNote) {
       return
     }
-    setProject((current) => ({
-      ...updateNoteInProject(current, selectedNote.id, patch).project,
-    }))
+    updateNote(selectedNote.id, patch)
+  }
+
+  function updateNote(noteId: string, patch: Partial<SongNote>) {
+    setProject((current) => {
+      const result = updateNoteInProject(current, noteId, patch)
+      return result.project
+    })
+    setSelectedNoteId(noteId)
+    if (typeof patch.lyric === 'string') {
+      setPaintLyric(patch.lyric.trim() || '라')
+    }
     clearRendered()
   }
 
@@ -212,6 +243,83 @@ function App() {
   function selectNote(note: SongNote) {
     setSelectedNoteId(note.id)
     setPaintLyric(note.lyric)
+  }
+
+  function startNotePointer(event: ReactPointerEvent<HTMLButtonElement>, note: SongNote) {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const distanceFromRight = bounds.right - event.clientX
+    notePointerRef.current = {
+      noteId: note.id,
+      pointerId: event.pointerId,
+      mode: distanceFromRight <= NOTE_RESIZE_HANDLE_WIDTH ? 'resize' : 'move',
+      originClientX: event.clientX,
+      originClientY: event.clientY,
+      originStart: note.start,
+      originTone: note.tone,
+      originDuration: note.duration,
+      moved: false,
+    }
+    selectNote(note)
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+
+  function moveNotePointer(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = notePointerRef.current
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return
+    }
+
+    const deltaX = event.clientX - drag.originClientX
+    const deltaY = event.clientY - drag.originClientY
+    const tickDelta = snapDragTicks(deltaX)
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      drag.moved = true
+    }
+
+    if (drag.mode === 'resize') {
+      updateNote(drag.noteId, {
+        duration: drag.originDuration + tickDelta,
+      })
+      event.preventDefault()
+      return
+    }
+
+    updateNote(drag.noteId, {
+      start: drag.originStart + tickDelta,
+      tone: drag.originTone - Math.round(deltaY / ROW_HEIGHT),
+    })
+    event.preventDefault()
+  }
+
+  function endNotePointer(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = notePointerRef.current
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return
+    }
+    notePointerRef.current = null
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+    if (drag.moved) {
+      setNotice(drag.mode === 'resize' ? 'Note length edited' : 'Note moved')
+    }
+  }
+
+  function handleNoteKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, note: SongNote) {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      updateNote(note.id, { start: note.start - GRID_SNAP_TICKS })
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      updateNote(note.id, { start: note.start + GRID_SNAP_TICKS })
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      updateNote(note.id, { tone: note.tone + 1 })
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      updateNote(note.id, { tone: note.tone - 1 })
+    }
   }
 
   function deleteSelectedNote() {
@@ -770,7 +878,7 @@ function App() {
             </div>
           </div>
 
-          <div className="piano-roll-frame">
+          <div className="piano-roll-frame" style={{ minHeight: gridHeight }}>
             <div className="keyboard" style={{ height: gridHeight }}>
               {rows.map((tone) => (
                 <div className={`key-row ${isBlackKey(tone) ? 'black' : 'white'}`} key={tone}>
@@ -807,12 +915,19 @@ function App() {
                       type="button"
                       key={note.id}
                       className={`note-block ${selected ? 'selected' : ''}`}
+                      aria-label={`${note.lyric} ${toneName(note.tone)} note`}
+                      title="드래그해서 이동, 오른쪽 끝 드래그로 길이 조절"
                       style={{
                         left: note.start * TICK_WIDTH,
                         top: row * ROW_HEIGHT + 3,
                         width: Math.max(MIN_NOTE_WIDTH, note.duration * TICK_WIDTH - 4),
                       }}
                       onClick={() => selectNote(note)}
+                      onKeyDown={(event) => handleNoteKeyDown(event, note)}
+                      onPointerDown={(event) => startNotePointer(event, note)}
+                      onPointerMove={moveNotePointer}
+                      onPointerUp={endNotePointer}
+                      onPointerCancel={endNotePointer}
                     >
                       <span>{note.lyric}</span>
                     </button>
@@ -913,6 +1028,11 @@ function canShareFile(file: File, shareNavigator = getShareNavigator()) {
     typeof shareNavigator.share === 'function' &&
     (typeof shareNavigator.canShare !== 'function' || shareNavigator.canShare({ files: [file] }))
   )
+}
+
+function snapDragTicks(deltaX: number) {
+  const rawTicks = deltaX / TICK_WIDTH
+  return Math.round(rawTicks / GRID_SNAP_TICKS) * GRID_SNAP_TICKS
 }
 
 export default App

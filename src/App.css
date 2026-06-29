@@ -1082,7 +1082,7 @@ button:disabled {
   position: absolute;
   z-index: 4;
   height: 22px;
-  cursor: pointer;
+  cursor: grab;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1100,6 +1100,13 @@ button:disabled {
   font-size: 13px;
   font-weight: 860;
   white-space: nowrap;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.note-block:active {
+  cursor: grabbing;
 }
 
 .note-block.selected {
@@ -1116,6 +1123,20 @@ button:disabled {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.note-block::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(8, 7, 18, 0.24);
+  box-shadow: 5px 0 0 rgba(8, 7, 18, 0.16);
+  pointer-events: none;
 }
 
 .bottom-dock {

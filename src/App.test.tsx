@@ -82,6 +82,51 @@ describe('App editing workflow', () => {
       expect(savedNote?.tone).toBe(61)
     })
   })
+
+  it('drags a piano-roll note to edit timing and pitch', async () => {
+    const { container } = render(<App />)
+    const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
+    noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
+
+    fireEvent.pointerDown(noteBlock, { pointerId: 1, clientX: 18, clientY: 18 })
+    fireEvent.pointerMove(noteBlock, { pointerId: 1, clientX: 36, clientY: -8 })
+    fireEvent.pointerUp(noteBlock, { pointerId: 1, clientX: 36, clientY: -8 })
+
+    await waitFor(() => {
+      const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
+      expect(savedNote?.start).toBe(120)
+      expect(savedNote?.tone).toBe(61)
+    })
+  })
+
+  it('resizes a piano-roll note from the right edge', async () => {
+    const { container } = render(<App />)
+    const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
+    noteBlock.getBoundingClientRect = makeRect({ left: 0, top: 0, width: 80, height: 24 })
+
+    fireEvent.pointerDown(noteBlock, { pointerId: 1, clientX: 74, clientY: 18 })
+    fireEvent.pointerMove(noteBlock, { pointerId: 1, clientX: 92, clientY: 18 })
+    fireEvent.pointerUp(noteBlock, { pointerId: 1, clientX: 92, clientY: 18 })
+
+    await waitFor(() => {
+      const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
+      expect(savedNote?.duration).toBe(540)
+    })
+  })
+
+  it('edits a focused note with arrow keys', async () => {
+    const { container } = render(<App />)
+    const noteBlock = container.querySelector('.note-block') as HTMLButtonElement
+
+    fireEvent.keyDown(noteBlock, { key: 'ArrowRight' })
+    fireEvent.keyDown(noteBlock, { key: 'ArrowUp' })
+
+    await waitFor(() => {
+      const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
+      expect(savedNote?.start).toBe(120)
+      expect(savedNote?.tone).toBe(61)
+    })
+  })
 })
 
 async function makeVoicebankZip() {
@@ -91,4 +136,20 @@ async function makeVoicebankZip() {
   zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
   const blob = await zip.generateAsync({ type: 'blob' })
   return new File([blob], 'test-teto.zip', { type: 'application/zip' })
+}
+
+function makeRect(input: { left: number; top: number; width: number; height: number }) {
+  const { left, top, width, height } = input
+  return () =>
+    ({
+      x: left,
+      y: top,
+      left,
+      top,
+      right: left + width,
+      bottom: top + height,
+      width,
+      height,
+      toJSON: () => ({}),
+    }) as DOMRect
 }
