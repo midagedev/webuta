@@ -2,12 +2,14 @@
   import { onMount } from 'svelte'
   import './App.css'
   import AboutDialog from './components/AboutDialog.svelte'
+  import ComposerPanel from './components/ComposerPanel.svelte'
   import EditorArea from './components/EditorArea.svelte'
   import LeftRail from './components/LeftRail.svelte'
   import ModeStrip from './components/ModeStrip.svelte'
   import TopBar from './components/TopBar.svelte'
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
   import { BUNDLED_KOREAN_LITE_VOICEBANK_NAME, loadBundledKoreanLiteVoicebankFile } from './bundledVoicebank'
+  import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
   import { createDemoProject } from './demoProject'
   import { pitchRange, projectDurationTicks, sanitizeFileName } from './music'
   import {
@@ -30,7 +32,7 @@
   import { renderers } from './renderers/registry'
   import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
   import { parseUstx, serializeUstx } from './ustx'
-  import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from './types'
+  import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject, type WorkspaceMode } from './types'
   import {
     analyzeVoicebankCoverage,
     findEntryMatchForLyric,
@@ -79,6 +81,9 @@
   let notice = $state('Ready')
   let paintLyric = $state('도')
   let lyricLine = $state(formatLyricLine(initialProject.notes))
+  let activeMode = $state<WorkspaceMode>('compose')
+  let composerLyrics = $state(formatLyricLine(initialProject.notes).replaceAll(' ', ''))
+  let composerMood = $state<ComposerMood>('bright')
   let isAboutOpen = $state(false)
   let voicebankCacheStatus = $state<VoicebankCacheStatus>('idle')
   let hasMounted = false
@@ -101,6 +106,7 @@
   const beatCount = $derived(Math.ceil(songTicks / TICKS_PER_BEAT))
   const barCount = $derived(Math.ceil(beatCount / project.beatPerBar))
   const playheadLeft = $derived(displayDuration > 0 ? Math.min(gridWidth, (playbackTime / displayDuration) * gridWidth) : 0)
+  const composerSuggestion = $derived(composeFromLyrics(composerLyrics, composerMood))
 
   $effect(() => {
     lyricLine = formatLyricLine(project.notes)
@@ -321,6 +327,22 @@
     paintLyric = result.tokens[0] ?? paintLyric
     notice = `${result.appliedCount} lyrics applied`
     clearRendered()
+  }
+
+  function announceComposition() {
+    notice = `${composerSuggestion.notes.length} note melody · ${formatChordLine(composerSuggestion.chords.slice(0, 4))}`
+  }
+
+  function applyComposition() {
+    const nextProject = applyMelodySuggestion(project, composerSuggestion)
+    commitProject(nextProject)
+    selectedNoteId = nextProject.notes[0]?.id ?? ''
+    paintLyric = nextProject.notes[0]?.lyric ?? paintLyric
+    lyricLine = formatLyricLine(nextProject.notes)
+    projectSourceLabel = `Composer · ${formatChordLine(composerSuggestion.chords.slice(0, 4))}`
+    activeMode = 'pattern'
+    clearRendered()
+    notice = `${composerSuggestion.notes.length} generated notes applied`
   }
 
   function selectNote(note: SongNote) {
@@ -653,7 +675,7 @@
     onProjectName={(name) => updateProject({ name })}
   />
 
-  <ModeStrip {voicebankName} {voicebank} {voicebankCoverage} {notice} />
+  <ModeStrip {activeMode} {voicebankName} {voicebank} {voicebankCoverage} {notice} onMode={(mode) => (activeMode = mode)} />
 
   <section class="workspace">
     <LeftRail
@@ -681,42 +703,56 @@
       onDeleteNote={deleteSelectedNote}
     />
 
-    <EditorArea
-      {project}
-      {projectSourceLabel}
-      {selectedNote}
-      {rows}
-      rangeMax={range.max}
-      {songTicks}
-      {gridWidth}
-      {gridHeight}
-      {beatCount}
-      {barCount}
-      {playheadLeft}
-      {paintLyric}
-      {lyricLine}
-      {voicebank}
-      {voicebankName}
-      {voicebankCoverage}
-      {voicebankCacheStatus}
-      {rendered}
-      {notice}
-      {isRendering}
-      {playbackTime}
-      {displayDuration}
-      onSaveProject={downloadUstx}
-      onSelectNote={selectNote}
-      onChooseLyric={chooseLyric}
-      onLyricLine={(line) => (lyricLine = line)}
-      onApplyLyricLine={applyLyricLine}
-      onGridClick={handleGridClick}
-      onNoteKeyDown={handleNoteKeyDown}
-      onNotePointerDown={startNotePointer}
-      onNotePointerMove={moveNotePointer}
-      onNotePointerEnd={endNotePointer}
-      onShare={shareWav}
-      onDownloadWav={downloadWav}
-    />
+    <div class="main-stack">
+      {#if activeMode === 'compose'}
+        <ComposerPanel
+          lyrics={composerLyrics}
+          mood={composerMood}
+          suggestion={composerSuggestion}
+          onLyrics={(lyrics) => (composerLyrics = lyrics)}
+          onMood={(mood) => (composerMood = mood)}
+          onGenerate={announceComposition}
+          onApply={applyComposition}
+        />
+      {/if}
+
+      <EditorArea
+        {project}
+        {projectSourceLabel}
+        {selectedNote}
+        {rows}
+        rangeMax={range.max}
+        {songTicks}
+        {gridWidth}
+        {gridHeight}
+        {beatCount}
+        {barCount}
+        {playheadLeft}
+        {paintLyric}
+        {lyricLine}
+        {voicebank}
+        {voicebankName}
+        {voicebankCoverage}
+        {voicebankCacheStatus}
+        {rendered}
+        {notice}
+        {isRendering}
+        {playbackTime}
+        {displayDuration}
+        onSaveProject={downloadUstx}
+        onSelectNote={selectNote}
+        onChooseLyric={chooseLyric}
+        onLyricLine={(line) => (lyricLine = line)}
+        onApplyLyricLine={applyLyricLine}
+        onGridClick={handleGridClick}
+        onNoteKeyDown={handleNoteKeyDown}
+        onNotePointerDown={startNotePointer}
+        onNotePointerMove={moveNotePointer}
+        onNotePointerEnd={endNotePointer}
+        onShare={shareWav}
+        onDownloadWav={downloadWav}
+      />
+    </div>
   </section>
 
   <audio

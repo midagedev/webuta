@@ -101,7 +101,7 @@ export function reconcileSelectedNoteId(project: SongProject, selectedNoteId: st
 }
 
 export function inputValue(event: Event) {
-  const target = event.currentTarget as HTMLInputElement | HTMLSelectElement
+  const target = event.currentTarget as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
   return target.value
 }
 

@@ -64,3 +64,5 @@ export type RendererCapability = {
   realtimePreview: boolean
   notes: string
 }
+
+export type WorkspaceMode = 'compose' | 'pattern' | 'rows' | 'mixer'

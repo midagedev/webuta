@@ -208,6 +208,26 @@ describe('App editing workflow', () => {
     })
   })
 
+  it('generates and applies a melody from compose mode lyrics', async () => {
+    render(App)
+
+    fireEvent.input(screen.getByLabelText('Compose mode').querySelector('textarea') as HTMLTextAreaElement, {
+      target: { value: '사랑해' },
+    })
+    fireEvent.change(screen.getByLabelText('Compose mode').querySelector('select') as HTMLSelectElement, {
+      target: { value: 'minor' },
+    })
+    fireEvent.click(within(screen.getByLabelText('Compose mode')).getByRole('button', { name: '멜로디 적용' }))
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.bpm).toBe(96)
+      expect(saved?.notes.map((note) => note.lyric)).toEqual(['사', '랑', '해'])
+      expect(saved?.parts[0].name).toBe('Generated Hook')
+    })
+    expect(screen.getAllByText(/Composer · Am/).length).toBeGreaterThan(0)
+  })
+
   it('shares a rendered DAW-ready WAV when Web Share is available', async () => {
     const share = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'canShare', {
