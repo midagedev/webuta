@@ -10,10 +10,11 @@ The current verified target is:
 2. Import the official Kasane Teto OpenUTAU UTAU zip as a user-provided voicebank.
 3. Edit a simple vocal line.
 4. Keep the browser draft automatically restored after refresh.
-5. Export or share a 44.1 kHz / 16-bit / mono WAV.
-6. Import that WAV into GarageBand.
+5. Keep the last imported voicebank zip restored locally in the same browser.
+6. Export or share a 44.1 kHz / 16-bit / mono WAV.
+7. Import that WAV into GarageBand.
 
-Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset.
+Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset. In the browser app, an imported voicebank zip is cached only in that browser's local IndexedDB storage.
 
 ## Visual Direction
 

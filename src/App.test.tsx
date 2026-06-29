@@ -1,12 +1,17 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { IDBFactory } from 'fake-indexeddb'
+import JSZip from 'jszip'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { demoProject } from './demoProject'
 import { loadSavedProject, saveProject } from './projectStorage'
+import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
 describe('App editing workflow', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.stubGlobal('indexedDB', new IDBFactory())
     localStorage.clear()
+    await clearSavedVoicebankFile()
   })
 
   it('restores the last browser project draft', () => {
@@ -25,6 +30,14 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       expect(loadSavedProject()?.name).toBe('Dohee Hook')
     })
+  })
+
+  it('restores the last imported voicebank zip', async () => {
+    await saveVoicebankFile(await makeVoicebankZip())
+
+    render(<App />)
+
+    await screen.findByText('WebUtau // Test Teto')
   })
 
   it('updates the selected lyric from the quick lyric pads', () => {
@@ -57,3 +70,12 @@ describe('App editing workflow', () => {
     expect(screen.getByText(/9 notes/)).toBeTruthy()
   })
 })
+
+async function makeVoicebankZip() {
+  const zip = new JSZip()
+  zip.file('Teto/character.yaml', 'name: Test Teto\n')
+  zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')
+  zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
+  const blob = await zip.generateAsync({ type: 'blob' })
+  return new File([blob], 'test-teto.zip', { type: 'application/zip' })
+}

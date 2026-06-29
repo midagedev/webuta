@@ -34,6 +34,7 @@ import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
 import { parseUstx, serializeUstx } from './ustx'
 import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from './types'
 import { loadVoicebankZip, type LoadedVoicebank } from './voicebank'
+import { loadSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
 const ROW_HEIGHT = 26
 const TICK_WIDTH = 0.15
@@ -61,6 +62,39 @@ function App() {
   useEffect(() => {
     saveProject(project)
   }, [project])
+
+  useEffect(() => {
+    let cancelled = false
+    async function restoreVoicebank() {
+      const file = await loadSavedVoicebankFile()
+      if (!file || cancelled) {
+        return
+      }
+      setIsLoadingVoicebank(true)
+      setNotice('Restoring voicebank zip')
+      try {
+        const loaded = await loadVoicebankZip(file)
+        if (cancelled) {
+          return
+        }
+        setVoicebank(loaded)
+        setVoicebankName(loaded.name)
+        setNotice(`${loaded.name}: ${loaded.sampleCount} aliases`)
+      } catch {
+        if (!cancelled) {
+          setNotice('Saved voicebank could not be restored')
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingVoicebank(false)
+        }
+      }
+    }
+    void restoreVoicebank()
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const range = useMemo(() => pitchRange(project.notes), [project.notes])
   const rows = useMemo(() => {
     const values: number[] = []
@@ -95,6 +129,7 @@ function App() {
       setVoicebank(loaded)
       setVoicebankName(loaded.name)
       clearRendered()
+      void saveVoicebankFile(file)
       setNotice(`${loaded.name}: ${loaded.sampleCount} aliases`)
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Voicebank import failed')
