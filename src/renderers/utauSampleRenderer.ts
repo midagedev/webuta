@@ -8,6 +8,7 @@ const SAMPLE_RATE = 44100
 const MIN_LOOP_MS = 36
 const MAX_LOOP_MS = 130
 const LOOP_CROSSFADE_MS = 18
+const CONSONANT_GUARD_FADE_MS = 2
 const VIBRATO_RATE_HZ = 5.4
 const VIBRATO_DEPTH_CENTS = 16
 
@@ -108,9 +109,14 @@ function mixPreparedSample(
   const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
   const sourceWindow = makeSourceWindow(source.length, sourceSampleRate, entry)
   const loop = makeLoopWindow(sourceWindow, sourceSampleRate)
-  const fadeInSamples = Math.max(64, Math.floor(overlapSeconds * SAMPLE_RATE))
+  const fadeInSamples = Math.max(16, Math.floor(overlapSeconds * SAMPLE_RATE))
+  const consonantGuardFadeSamples = Math.max(12, msToSamples(CONSONANT_GUARD_FADE_MS, SAMPLE_RATE))
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
   const noteBodySamples = Math.max(1, Math.floor(noteDurationSeconds * SAMPLE_RATE))
+  const consonantOutputSamples = Math.max(
+    Math.floor(preutteranceSeconds * SAMPLE_RATE),
+    Math.floor((sourceWindow.consonantEnd - sourceWindow.start) / Math.max(0.001, rate)),
+  )
   let sourcePosition = sourceWindow.start
 
   for (let i = 0; i < length && startSample + i < output.length; i++) {
@@ -118,7 +124,10 @@ function mixPreparedSample(
     const sampleValue = readLoopedLinear(source, sourcePosition, loop)
     const preutteranceSamples = Math.floor(preutteranceSeconds * SAMPLE_RATE)
     const noteProgress = elapsedOutputSamples - preutteranceSamples
-    const attack = smoothstep(Math.min(1, elapsedOutputSamples / fadeInSamples))
+    const attack =
+      elapsedOutputSamples <= consonantOutputSamples
+        ? smoothstep(Math.min(1, elapsedOutputSamples / consonantGuardFadeSamples))
+        : smoothstep(Math.min(1, elapsedOutputSamples / fadeInSamples))
     const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
     output[startSample + i] += sampleValue * envelope * 0.66

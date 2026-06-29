@@ -261,7 +261,7 @@ function renderSyllable({ onset, vowel }) {
   addConsonant(output, onset, noiseSeed)
   deEss(output)
   normalize(output, 0.86)
-  fade(output, Math.floor(0.012 * SAMPLE_RATE))
+  fadeEdges(output, Math.floor(0.0015 * SAMPLE_RATE), Math.floor(0.012 * SAMPLE_RATE))
   return output
 }
 
@@ -363,10 +363,12 @@ function normalize(samples, targetPeak) {
   }
 }
 
-function fade(samples, count) {
-  for (let i = 0; i < count; i++) {
-    const gain = i / count
-    samples[i] *= gain
+function fadeEdges(samples, fadeInCount, fadeOutCount) {
+  for (let i = 0; i < fadeInCount; i++) {
+    samples[i] *= i / fadeInCount
+  }
+  for (let i = 0; i < fadeOutCount; i++) {
+    const gain = i / fadeOutCount
     samples[samples.length - i - 1] *= gain
   }
 }

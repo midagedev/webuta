@@ -1,6 +1,6 @@
 export const BUNDLED_KOREAN_LITE_VOICEBANK_NAME = 'WebUtau Korean Lite'
 export const BUNDLED_KOREAN_LITE_VOICEBANK_FILE = 'webuta-ko-lite.zip'
-export const BUNDLED_KOREAN_LITE_VOICEBANK_VERSION = '20260629-preroll-fix-1'
+export const BUNDLED_KOREAN_LITE_VOICEBANK_VERSION = '20260629-consonant-guard-1'
 
 export async function loadBundledKoreanLiteVoicebankFile() {
   const url = new URL(`${import.meta.env.BASE_URL}voicebanks/${BUNDLED_KOREAN_LITE_VOICEBANK_FILE}`, window.location.href)
