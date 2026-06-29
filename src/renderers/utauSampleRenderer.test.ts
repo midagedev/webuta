@@ -123,6 +123,43 @@ describe('UTAU sample renderer', () => {
 
     expect(energy(first80Ms)).toBeGreaterThan(0.015)
   })
+
+  it('sustains long notes from the stable vowel body instead of looping the fading release', async () => {
+    const entry: OtoEntry = {
+      fileName: 'do_C4.wav',
+      path: 'WebUtau/do_C4.wav',
+      alias: '도',
+      offsetMs: 0,
+      consonantMs: 100,
+      cutoffMs: 0,
+      preutteranceMs: 50,
+      overlapMs: 20,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalSourceWithRelease(1.1, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render(makeLongNoteProject())
+    const earlyBody = result.samples.slice(Math.floor(0.28 * 44100), Math.floor(0.48 * 44100))
+    const lateBody = result.samples.slice(Math.floor(1.12 * 44100), Math.floor(1.32 * 44100))
+
+    expect(energy(lateBody)).toBeGreaterThan(energy(earlyBody) * 0.45)
+  })
 })
 
 function makeProject(): SongProject {
@@ -156,6 +193,20 @@ function makeSingleNoteProject(): SongProject {
   }
 }
 
+function makeLongNoteProject(): SongProject {
+  return {
+    id: 'test-project',
+    name: 'Renderer Test',
+    comment: '',
+    bpm: 112,
+    beatPerBar: 4,
+    beatUnit: 4,
+    tracks: [{ id: 'track', name: 'Main Vocal', color: 'Coral' }],
+    parts: [{ id: 'part', trackId: 'track', name: 'Verse', start: 0, duration: TICKS_PER_BEAT * 5 }],
+    notes: [{ id: 'n1', trackId: 'track', partId: 'part', start: 0, duration: TICKS_PER_BEAT * 4, tone: 60, lyric: '도' }],
+  }
+}
+
 function makeVocalishSource(durationSeconds: number, sampleRate: number) {
   const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
   for (let i = 0; i < samples.length; i++) {
@@ -181,6 +232,17 @@ function makeAttackOnlySource(durationSeconds: number, sampleRate: number) {
         Math.sin(2 * Math.PI * 523.25 * t) * 0.25 +
         Math.sin(2 * Math.PI * 1046.5 * t) * 0.12) *
       envelope
+  }
+  return samples
+}
+
+function makeVocalSourceWithRelease(durationSeconds: number, sampleRate: number) {
+  const samples = makeVocalishSource(durationSeconds, sampleRate)
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / sampleRate
+    if (t > durationSeconds - 0.18) {
+      samples[i] *= Math.max(0, (durationSeconds - t) / 0.18)
+    }
   }
   return samples
 }

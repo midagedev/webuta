@@ -1,6 +1,6 @@
 export const BUNDLED_KOREAN_LITE_VOICEBANK_NAME = 'WebUtau Korean V2'
 export const BUNDLED_KOREAN_LITE_VOICEBANK_FILE = 'webuta-ko-lite.zip'
-export const BUNDLED_KOREAN_LITE_VOICEBANK_VERSION = '20260629-supertonic-v2-f3-1'
+export const BUNDLED_KOREAN_LITE_VOICEBANK_VERSION = '20260630-supertonic-v2-f3-sustain-1'
 
 export async function loadBundledKoreanLiteVoicebankFile() {
   const url = new URL(`${import.meta.env.BASE_URL}voicebanks/${BUNDLED_KOREAN_LITE_VOICEBANK_FILE}`, window.location.href)

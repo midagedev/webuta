@@ -26,6 +26,10 @@ import numpy as np
 SAMPLE_RATE = 44100
 OUTPUT = Path("public/voicebanks/webuta-ko-lite.zip")
 ZIP_DATE_TIME = (2026, 1, 1, 0, 0, 0)
+TARGET_SAMPLE_SECONDS = 1.32
+LOOP_SECONDS = 0.13
+LOOP_CROSSFADE_SECONDS = 0.018
+RELEASE_SECONDS = 0.14
 MODEL_NAME = "supertonic-3"
 MODEL_REPO = "Supertone/supertonic-3"
 MODEL_REVISION = "724fb5abbf5502583fb520898d45929e62f02c0b"
@@ -131,7 +135,7 @@ def main() -> int:
             aliases = aliases_for(syllable, onset_roman, vowel_roman)
             for alias in aliases:
                 oto_lines.append(
-                    f"{file_name}={alias},0,{preset.consonant_ms},-820,"
+                    f"{file_name}={alias},0,{preset.consonant_ms},-1200,"
                     f"{preset.preutterance_ms},{preset.overlap_ms}"
                 )
             index += 1
@@ -143,6 +147,8 @@ def main() -> int:
         "type": "tts-generated-utau-cv",
         "sampleRate": SAMPLE_RATE,
         "baseTone": "C4",
+        "sampleSeconds": TARGET_SAMPLE_SECONDS,
+        "sustainLoop": True,
         "model": {
             "name": MODEL_NAME,
             "repo": MODEL_REPO,
@@ -172,6 +178,7 @@ def main() -> int:
             "",
             "A Korean CV starter UTAU-style voicebank generated from Supertonic 3 TTS output.",
             "It contains Hangul onset+vowel samples and romanized aliases for browser vocal synthesis.",
+            "Each sample is extended with a sustain loop so longer notes can sing instead of ending as short speech.",
             "Final consonants are currently approximated to matching CV aliases by the WebUtau lyric matcher.",
             "",
             "This is not Kasane Teto, Vocaloid, OpenUtau, or a human singer sample pack.",
@@ -215,19 +222,19 @@ def synthesize_syllable(tts, voice_style, syllable: str) -> np.ndarray:
     )
     mono = np.asarray(wav, dtype=np.float32).reshape(-1)
     cropped = crop_active(mono)
-    shaped = fit_sample_length(cropped, min_seconds=0.7, max_seconds=0.95)
-    return normalize_peak(shaped, 0.86)
+    sustained = extend_sustain(cropped, TARGET_SAMPLE_SECONDS)
+    return normalize_peak(sustained, 0.86)
 
 
 def crop_active(samples: np.ndarray) -> np.ndarray:
     envelope = moving_rms(samples, window=1024)
     peak = float(envelope.max()) if envelope.size else 0.0
     if peak <= 1e-5:
-        return samples[: int(SAMPLE_RATE * 0.8)]
+        return samples[: int(SAMPLE_RATE * TARGET_SAMPLE_SECONDS)]
     threshold = max(peak * 0.045, 0.003)
     active = np.flatnonzero(envelope >= threshold)
     if active.size == 0:
-        return samples[: int(SAMPLE_RATE * 0.8)]
+        return samples[: int(SAMPLE_RATE * TARGET_SAMPLE_SECONDS)]
     start = max(0, int(active[0]) - int(SAMPLE_RATE * 0.065))
     end = min(samples.size, int(active[-1]) + int(SAMPLE_RATE * 0.22))
     return fade_edges(samples[start:end].copy(), 0.006, 0.04)
@@ -241,16 +248,104 @@ def moving_rms(samples: np.ndarray, window: int) -> np.ndarray:
     return np.sqrt(np.convolve(square, kernel, mode="same"))
 
 
-def fit_sample_length(samples: np.ndarray, min_seconds: float, max_seconds: float) -> np.ndarray:
-    min_length = int(SAMPLE_RATE * min_seconds)
-    max_length = int(SAMPLE_RATE * max_seconds)
-    if samples.size > max_length:
-        return fade_edges(samples[:max_length].copy(), 0.0, 0.05)
-    if samples.size >= min_length:
-        return samples
-    padded = np.zeros(min_length, dtype=np.float32)
-    padded[: samples.size] = samples
-    return fade_edges(padded, 0.0, 0.05)
+def extend_sustain(samples: np.ndarray, target_seconds: float) -> np.ndarray:
+    target_length = int(SAMPLE_RATE * target_seconds)
+    if samples.size <= 0:
+        return np.zeros(target_length, dtype=np.float32)
+
+    loop_start, loop_end = find_loop_region(samples)
+    loop = samples[loop_start:loop_end].copy()
+    if loop.size < int(SAMPLE_RATE * 0.035):
+        padded = np.zeros(target_length, dtype=np.float32)
+        padded[: min(samples.size, target_length)] = samples[:target_length]
+        return fade_edges(padded, 0.006, RELEASE_SECONDS)
+
+    output = np.zeros(target_length, dtype=np.float32)
+    release_length = int(SAMPLE_RATE * RELEASE_SECONDS)
+    sustain_end = max(1, target_length - release_length)
+    head_length = min(loop_end, sustain_end)
+    output[:head_length] = samples[:head_length]
+
+    position = head_length
+    crossfade = min(int(SAMPLE_RATE * LOOP_CROSSFADE_SECONDS), max(4, loop.size // 3))
+    while position < sustain_end:
+        write_count = min(loop.size, sustain_end - position)
+        write_loop(output, position, loop[:write_count], crossfade)
+        position += write_count
+
+    if position < target_length:
+        release = make_release_tail(output, position, target_length)
+        output[position:target_length] = release
+
+    return fade_edges(output, 0.006, RELEASE_SECONDS)
+
+
+def find_loop_region(samples: np.ndarray) -> tuple[int, int]:
+    loop_length = int(SAMPLE_RATE * LOOP_SECONDS)
+    if samples.size <= loop_length + 2:
+        return 0, samples.size
+
+    envelope = moving_rms(samples, window=1024)
+    peak = float(envelope.max()) if envelope.size else 0.0
+    if peak <= 1e-5:
+        start = max(0, samples.size // 2 - loop_length // 2)
+        return start, min(samples.size, start + loop_length)
+
+    active = np.flatnonzero(envelope >= max(peak * 0.22, 0.0025))
+    if active.size == 0:
+        start = max(0, samples.size // 2 - loop_length // 2)
+        return start, min(samples.size, start + loop_length)
+
+    active_start = int(active[0])
+    active_end = int(active[-1])
+    active_span = max(loop_length + 1, active_end - active_start)
+    search_start = min(samples.size - loop_length - 1, active_start + int(active_span * 0.34))
+    search_end = min(samples.size - loop_length - 1, max(search_start, active_end - loop_length - int(SAMPLE_RATE * 0.055)))
+    if search_end <= search_start:
+        search_start = max(0, min(samples.size - loop_length - 1, active_start + int(active_span * 0.45)))
+        search_end = search_start
+
+    best_start = search_start
+    best_score = float("inf")
+    step = 128
+    for start in range(search_start, search_end + 1, step):
+        end = start + loop_length
+        head = samples[start : start + min(512, loop_length)]
+        tail = samples[end - min(512, loop_length) : end]
+        env_score = abs(float(envelope[start]) - float(envelope[min(envelope.size - 1, end - 1)]))
+        edge_score = abs(float(np.mean(head)) - float(np.mean(tail)))
+        energy = float(np.mean(np.abs(samples[start:end])))
+        score = env_score + edge_score * 0.8 - energy * 0.06
+        if score < best_score:
+            best_score = score
+            best_start = start
+    return best_start, min(samples.size, best_start + loop_length)
+
+
+def write_loop(output: np.ndarray, position: int, loop: np.ndarray, crossfade: int) -> None:
+    write_count = loop.size
+    if write_count == 0:
+        return
+    blend_count = min(crossfade, position, write_count)
+    if blend_count > 0:
+        for i in range(blend_count):
+            blend = (i + 1) / blend_count
+            output[position + i] = output[position + i] * (1.0 - blend) + loop[i] * blend
+    if write_count > blend_count:
+        output[position + blend_count : position + write_count] = loop[blend_count:write_count]
+
+
+def make_release_tail(output: np.ndarray, position: int, target_length: int) -> np.ndarray:
+    tail_length = target_length - position
+    if tail_length <= 0:
+        return np.array([], dtype=np.float32)
+    source_start = max(0, position - min(tail_length, int(SAMPLE_RATE * LOOP_SECONDS)))
+    source = output[source_start:position]
+    if source.size == 0:
+        return np.zeros(tail_length, dtype=np.float32)
+    repeated = np.resize(source, tail_length).astype(np.float32)
+    repeated *= np.linspace(1.0, 0.0, tail_length, dtype=np.float32)
+    return repeated
 
 
 def normalize_peak(samples: np.ndarray, target: float) -> np.ndarray:

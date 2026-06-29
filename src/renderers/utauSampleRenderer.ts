@@ -8,6 +8,7 @@ const SAMPLE_RATE = 44100
 const MIN_LOOP_MS = 36
 const MAX_LOOP_MS = 130
 const LOOP_CROSSFADE_MS = 18
+const LOOP_RELEASE_GUARD_MS = 120
 const CONSONANT_GUARD_FADE_MS = 2
 const VIBRATO_RATE_HZ = 5.4
 const VIBRATO_DEPTH_CENTS = 16
@@ -189,16 +190,17 @@ function makeSourceWindow(sourceLength: number, sampleRate: number, entry?: OtoE
 function makeLoopWindow(sourceWindow: { start: number; end: number; consonantEnd: number }, sampleRate: number) {
   const maxLoop = msToSamples(MAX_LOOP_MS, sampleRate)
   const minLoop = msToSamples(MIN_LOOP_MS, sampleRate)
-  const available = sourceWindow.end - sourceWindow.consonantEnd
+  const guardedEnd = Math.max(sourceWindow.consonantEnd + minLoop, sourceWindow.end - msToSamples(LOOP_RELEASE_GUARD_MS, sampleRate))
+  const available = guardedEnd - sourceWindow.consonantEnd
   if (available <= minLoop) {
-    const start = Math.max(sourceWindow.start, sourceWindow.end - Math.max(minLoop, available))
-    return { start, end: sourceWindow.end, crossfade: Math.max(8, Math.floor((sourceWindow.end - start) / 4)) }
+    const start = Math.max(sourceWindow.start, guardedEnd - Math.max(minLoop, available))
+    return { start, end: guardedEnd, crossfade: Math.max(8, Math.floor((guardedEnd - start) / 4)) }
   }
   const loopLength = Math.min(maxLoop, available)
-  const start = sourceWindow.end - loopLength
+  const start = guardedEnd - loopLength
   return {
     start,
-    end: sourceWindow.end,
+    end: guardedEnd,
     crossfade: Math.min(msToSamples(LOOP_CROSSFADE_MS, sampleRate), Math.floor(loopLength / 2)),
   }
 }
