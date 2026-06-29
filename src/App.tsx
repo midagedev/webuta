@@ -532,6 +532,20 @@ function App() {
             </button>
           </div>
 
+          <div className="mobile-note-strip" aria-label="Mobile note selector">
+            {project.notes.map((note) => (
+              <button
+                type="button"
+                key={note.id}
+                className={note.id === selectedNote?.id ? 'active' : ''}
+                onClick={() => setSelectedNoteId(note.id)}
+              >
+                <strong>{note.lyric}</strong>
+                <span>{toneName(note.tone)}</span>
+              </button>
+            ))}
+          </div>
+
           <div className="arrangement-panel">
             <div className="ruler-head">Bars</div>
             <div className="ruler-scroll">
