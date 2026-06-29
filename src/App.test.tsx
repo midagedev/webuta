@@ -55,6 +55,32 @@ describe('App editing workflow', () => {
     render(<App />)
 
     await screen.findByText('WebUtau // Test Teto')
+    expect(screen.getAllByText(/이 기기에서 복원됨/).length).toBeGreaterThan(0)
+  })
+
+  it('marks a newly imported voicebank zip as saved on this device', async () => {
+    const { container } = render(<App />)
+    const zipInput = container.querySelector('input[accept=".zip"]') as HTMLInputElement
+
+    fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
+
+    await screen.findByText('WebUtau // Test Teto')
+    await waitFor(() => {
+      expect(screen.getAllByText(/이 기기 저장됨/).length).toBeGreaterThan(0)
+    })
+  })
+
+  it('marks an imported voicebank as session-only when browser storage is unavailable', async () => {
+    vi.stubGlobal('indexedDB', undefined)
+    const { container } = render(<App />)
+    const zipInput = container.querySelector('input[accept=".zip"]') as HTMLInputElement
+
+    fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
+
+    await screen.findByText('WebUtau // Test Teto')
+    await waitFor(() => {
+      expect(screen.getAllByText(/현재 세션 전용/).length).toBeGreaterThan(0)
+    })
   })
 
   it('opens license and credit boundaries from the toolbar', () => {

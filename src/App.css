@@ -548,6 +548,7 @@ button:disabled {
 
 .coverage-card strong,
 .coverage-card span,
+.coverage-card em,
 .lyric-match-chip {
   min-width: 0;
   overflow: hidden;
@@ -564,12 +565,19 @@ button:disabled {
   line-height: 1.35;
 }
 
+.coverage-card em {
+  color: #8fa0b4;
+  font-style: normal;
+  line-height: 1.25;
+}
+
 .coverage-card.ready {
   border-color: #155c32;
   background: #10261b;
 }
 
 .coverage-card.ready strong,
+.coverage-card.ready em,
 .lyric-match-chip.ready {
   color: #78eba7;
 }
@@ -580,6 +588,7 @@ button:disabled {
 }
 
 .coverage-card.warning strong,
+.coverage-card.warning em,
 .lyric-match-chip.warning {
   color: #ffd36a;
 }

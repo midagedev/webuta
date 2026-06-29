@@ -38,6 +38,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a young
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
 - [x] App UI re-inspects rendered WAV headers and marks compatible output as `GarageBand ready`.
+- [x] App UI shows whether the imported voicebank is saved locally, restored locally, or session-only.
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Physical iPad/GarageBand verification checklist added in `docs/IPAD_GARAGEBAND_QA.md`.
 - [ ] Physical iPad Safari share sheet and GarageBand import confirmed by a human on device.

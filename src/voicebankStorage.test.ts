@@ -31,4 +31,13 @@ describe('voicebank storage', () => {
     expect(await clearSavedVoicebankFile()).toBe(true)
     expect(await loadSavedVoicebankFile()).toBeNull()
   })
+
+  it('reports unavailable storage without throwing', async () => {
+    vi.stubGlobal('indexedDB', undefined)
+    const file = new File([new Uint8Array([1])], 'voice.zip')
+
+    expect(await saveVoicebankFile(file)).toBe(false)
+    expect(await loadSavedVoicebankFile()).toBeNull()
+    expect(await clearSavedVoicebankFile()).toBe(false)
+  })
 })

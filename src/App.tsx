@@ -94,6 +94,8 @@ type NotePointerState = {
   moved: boolean
 }
 
+type VoicebankCacheStatus = 'idle' | 'restoring' | 'restored' | 'saving' | 'saved' | 'session-only'
+
 function App() {
   const [projectHistory, setProjectHistory] = useState(() => createProjectHistory(loadSavedProject() ?? demoProject))
   const project = projectHistory.present
@@ -111,6 +113,7 @@ function App() {
   const [paintLyric, setPaintLyric] = useState('도')
   const [lyricLine, setLyricLine] = useState(() => formatLyricLine(project.notes))
   const [isAboutOpen, setIsAboutOpen] = useState(false)
+  const [voicebankCacheStatus, setVoicebankCacheStatus] = useState<VoicebankCacheStatus>('idle')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const voicebankInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -139,10 +142,14 @@ function App() {
     async function restoreVoicebank() {
       const file = await loadSavedVoicebankFile()
       if (!file || cancelled) {
+        if (!cancelled) {
+          setVoicebankCacheStatus('idle')
+        }
         return
       }
       setIsLoadingVoicebank(true)
       setNotice('Restoring voicebank zip')
+      setVoicebankCacheStatus('restoring')
       try {
         const loaded = await loadVoicebankZip(file)
         if (cancelled) {
@@ -151,9 +158,11 @@ function App() {
         setVoicebank(loaded)
         setVoicebankName(loaded.name)
         setNotice(`${loaded.name}: ${loaded.sampleCount} aliases`)
+        setVoicebankCacheStatus('restored')
       } catch {
         if (!cancelled) {
           setNotice('Saved voicebank could not be restored')
+          setVoicebankCacheStatus('session-only')
         }
       } finally {
         if (!cancelled) {
@@ -238,7 +247,9 @@ function App() {
       setVoicebank(loaded)
       setVoicebankName(loaded.name)
       clearRendered()
-      void saveVoicebankFile(file)
+      setVoicebankCacheStatus('saving')
+      const saved = await saveVoicebankFile(file)
+      setVoicebankCacheStatus(saved ? 'saved' : 'session-only')
       setNotice(`${loaded.name}: ${loaded.sampleCount} aliases`)
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Voicebank import failed')
@@ -792,9 +803,17 @@ function App() {
             </div>
             <div className="status-strip">
               <Volume2 size={17} aria-hidden="true" />
-              <span>{voicebank ? `${notice} · ${formatVoicebankCoverage(voicebankCoverage)} · ${voicebank.wavCount} wav` : notice}</span>
+              <span>
+                {voicebank
+                  ? `${notice} · ${formatVoicebankCoverage(voicebankCoverage)} · ${voicebank.wavCount} wav · ${formatVoicebankCacheStatus(voicebankCacheStatus)}`
+                  : notice}
+              </span>
             </div>
-            <VoicebankCoverageCard coverage={voicebankCoverage} hasVoicebank={Boolean(voicebank)} />
+            <VoicebankCoverageCard
+              coverage={voicebankCoverage}
+              hasVoicebank={Boolean(voicebank)}
+              cacheStatus={voicebankCacheStatus}
+            />
           </section>
 
           <section className="tool-panel">
@@ -926,7 +945,7 @@ function App() {
                   <span className="status-dot ready"></span>
                   <div>
                     <strong>{voicebank.name}</strong>
-                    <span>Imported UTAU samples</span>
+                    <span>{formatVoicebankCacheStatus(voicebankCacheStatus)}</span>
                   </div>
                 </div>
               ) : null}
@@ -1149,7 +1168,11 @@ function App() {
               <span className={`status-dot ${rendered ? 'ready' : 'idle'}`}></span>
               <div>
                 <strong>{notice}</strong>
-                <span>{voicebank ? `${voicebankName} · ${formatVoicebankCoverage(voicebankCoverage)}` : voicebankName}</span>
+                <span>
+                  {voicebank
+                    ? `${voicebankName} · ${formatVoicebankCoverage(voicebankCoverage)} · ${formatVoicebankCacheStatus(voicebankCacheStatus)}`
+                    : voicebankName}
+                </span>
               </div>
             </div>
             <div className="playhead-meter">
@@ -1197,15 +1220,18 @@ function App() {
 function VoicebankCoverageCard({
   coverage,
   hasVoicebank,
+  cacheStatus,
 }: {
   coverage: VoicebankCoverage | null
   hasVoicebank: boolean
+  cacheStatus: VoicebankCacheStatus
 }) {
   if (!hasVoicebank) {
     return (
       <div className="coverage-card idle" aria-label="Voicebank lyric coverage">
         <strong>보이스뱅크 대기</strong>
         <span>도/히/다/이/스/키 alias 검사 준비됨.</span>
+        <em>{formatVoicebankCacheStatus(cacheStatus)}</em>
       </div>
     )
   }
@@ -1215,6 +1241,7 @@ function VoicebankCoverageCard({
       <div className="coverage-card idle" aria-label="Voicebank lyric coverage">
         <strong>매칭 검사 중</strong>
         <span>가사와 oto.ini alias를 비교하고 있습니다.</span>
+        <em>{formatVoicebankCacheStatus(cacheStatus)}</em>
       </div>
     )
   }
@@ -1229,6 +1256,7 @@ function VoicebankCoverageCard({
           ? `현재 ${coverage.uniqueLyrics}개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.`
           : `미매칭 ${coverage.fallbackNotes}개: ${missingLyrics.join(', ')}${coverage.fallbackLyrics.length > missingLyrics.length ? '...' : ''}`}
       </span>
+      <em>{formatVoicebankCacheStatus(cacheStatus)}</em>
     </div>
   )
 }
@@ -1360,6 +1388,24 @@ function formatLyricMatch(match: LyricEntryMatch | null) {
   }
   const alias = match.candidates[0]?.alias ?? match.targetAlias
   return `${match.lyric} -> ${alias} (${match.quality})`
+}
+
+function formatVoicebankCacheStatus(status: VoicebankCacheStatus) {
+  switch (status) {
+    case 'restoring':
+      return '로컬 복원 중'
+    case 'restored':
+      return '이 기기에서 복원됨'
+    case 'saving':
+      return '이 기기에 저장 중'
+    case 'saved':
+      return '이 기기 저장됨'
+    case 'session-only':
+      return '현재 세션 전용'
+    case 'idle':
+    default:
+      return '로컬 ZIP 대기'
+  }
 }
 
 function formatErrorMessage(error: unknown) {

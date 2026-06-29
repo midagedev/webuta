@@ -17,6 +17,7 @@ The current verified target is:
 9. Import that WAV into GarageBand.
 
 Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset. In the browser app, an imported voicebank zip is cached only in that browser's local IndexedDB storage.
+The app shows whether the imported voicebank is saved on the current device, restored from local storage, or available only for the current session.
 
 ## Visual Direction
 
@@ -70,6 +71,7 @@ Verified local smoke output:
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
 - Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
 - The app re-inspects the rendered Blob header and shows `GarageBand ready` only for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
+- The app surfaces local voicebank cache status, including `이 기기 저장됨`, `이 기기에서 복원됨`, and `현재 세션 전용`.
 - Runtime npm dependency notices are generated in `docs/THIRD_PARTY_NOTICES.md`.
 - Physical iPad and GarageBand import verification is tracked in `docs/IPAD_GARAGEBAND_QA.md`.
 
