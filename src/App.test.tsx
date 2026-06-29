@@ -57,6 +57,20 @@ describe('App editing workflow', () => {
     await screen.findByText('WebUtau // Test Teto')
   })
 
+  it('opens license and credit boundaries from the toolbar', () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByTitle('라이선스'))
+
+    expect(screen.getByRole('dialog', { name: 'WebUtau Credits' })).toBeTruthy()
+    expect(screen.getByText('Voicebanks are user-provided downloads. No Teto voicebank or singer artwork is bundled.')).toBeTruthy()
+    expect(screen.getByText('The cyber vocal mascot is original project artwork, separate from singer characters.')).toBeTruthy()
+
+    fireEvent.click(screen.getByTitle('닫기'))
+
+    expect(screen.queryByRole('dialog', { name: 'WebUtau Credits' })).toBeNull()
+  })
+
   it('shows current lyric match coverage for an imported voicebank', async () => {
     await saveVoicebankFile(await makeMatchingVoicebankZip())
 

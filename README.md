@@ -31,6 +31,7 @@ The current interface uses an original cyber vocal mascot illustration and a den
   - Original character only, no third-party singer likeness.
   - No bundled Kasane Teto voicebank or character assets.
   - Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`, not imply Vocaloid compatibility.
+- The in-app `Licenses` panel lists project code, user-provided voicebank boundaries, original artwork, and the official Teto UTAU link.
 
 ## Run
 

@@ -1291,6 +1291,85 @@ button:disabled {
     linear-gradient(180deg, #ffc557 0%, #d88317 100%);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(3, 5, 12, 0.72);
+}
+
+.about-dialog {
+  width: min(520px, 100%);
+  max-height: min(720px, calc(100svh - 36px));
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  color: #f8fafc;
+  background:
+    linear-gradient(145deg, rgba(255, 69, 199, 0.2), rgba(64, 244, 255, 0.1)),
+    #111322;
+  box-shadow:
+    0 0 0 1px rgba(255, 69, 199, 0.2),
+    0 22px 80px rgba(0, 0, 0, 0.48);
+}
+
+.about-dialog-header {
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.about-dialog-header h2 {
+  margin: 2px 0 0;
+  color: var(--glam-text, #fff7ff);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.about-dialog-body {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.about-dialog-body section,
+.about-dialog-body a {
+  min-height: 48px;
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(5, 7, 14, 0.54);
+}
+
+.about-dialog-body strong {
+  color: var(--glam-lime, #c8ff4a);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.about-dialog-body span,
+.about-dialog-body a {
+  color: #dbe7f5;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.about-dialog-body a {
+  color: var(--glam-cyan, #40f4ff);
+  font-weight: 850;
+  text-decoration: none;
+}
+
 @media (max-width: 980px) {
   .topbar {
     grid-template-columns: minmax(0, 1fr) auto;

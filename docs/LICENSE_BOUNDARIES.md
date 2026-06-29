@@ -9,7 +9,7 @@ OpenUtau's repository license is MIT. That is favorable for a web port: copying,
 Action:
 
 - [ ] Keep OpenUtau copyright and MIT text in this repo before copying substantial source.
-- [ ] Add an About / Licenses screen before a public release.
+- [x] Add an About / Licenses screen before a public release.
 - [ ] Track copied OpenUtau files and upstream commit hashes.
 
 ## Dependencies
@@ -64,4 +64,4 @@ Action:
 
 - [x] Keep mascot artwork visually distinct from existing singer characters.
 - [x] Do not use third-party singer artwork as bundled UI branding.
-- [ ] Add an About / Credits screen before a public release that lists project artwork and generated-asset notes.
+- [x] Add an About / Credits screen before a public release that lists project artwork and generated-asset notes.

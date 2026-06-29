@@ -7,6 +7,7 @@ import {
   FileDown,
   FolderOpen,
   Gauge,
+  Info,
   Mic2,
   Pause,
   Play,
@@ -22,6 +23,7 @@ import {
   Share2,
   Upload,
   Volume2,
+  X,
 } from 'lucide-react'
 import {
   useEffect,
@@ -101,6 +103,7 @@ function App() {
   const [notice, setNotice] = useState('Ready')
   const [paintLyric, setPaintLyric] = useState('도')
   const [lyricLine, setLyricLine] = useState(() => formatLyricLine(project.notes))
+  const [isAboutOpen, setIsAboutOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const voicebankInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -580,6 +583,9 @@ function App() {
           </button>
           <button type="button" className="toolbar-button" title="다시 실행" onClick={redoProject} disabled={!canRedo}>
             <Redo2 size={19} aria-hidden="true" />
+          </button>
+          <button type="button" className="toolbar-button" title="라이선스" onClick={() => setIsAboutOpen(true)}>
+            <Info size={19} aria-hidden="true" />
           </button>
           <span className="topbar-label">Pattern Desk</span>
         </div>
@@ -1162,7 +1168,53 @@ function App() {
           </div>
         </section>
       </section>
+      {isAboutOpen ? <AboutDialog onClose={() => setIsAboutOpen(false)} /> : null}
     </main>
+  )
+}
+
+function AboutDialog({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className="about-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="about-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="about-dialog-header">
+          <div>
+            <p className="eyebrow">LICENSES</p>
+            <h2 id="about-title">WebUtau Credits</h2>
+          </div>
+          <button type="button" className="toolbar-button" title="닫기" onClick={onClose}>
+            <X size={19} aria-hidden="true" />
+          </button>
+        </div>
+        <div className="about-dialog-body">
+          <section>
+            <strong>WebUtau</strong>
+            <span>Project code is MIT licensed.</span>
+          </section>
+          <section>
+            <strong>Kasane Teto UTAU</strong>
+            <span>Voicebanks are user-provided downloads. No Teto voicebank or singer artwork is bundled.</span>
+          </section>
+          <section>
+            <strong>Artwork</strong>
+            <span>The cyber vocal mascot is original project artwork, separate from singer characters.</span>
+          </section>
+          <section>
+            <strong>OpenUtau</strong>
+            <span>This browser build does not bundle desktop OpenUtau source or external resampler binaries.</span>
+          </section>
+          <a href="https://kasaneteto.jp/utau/" target="_blank" rel="noreferrer">
+            Official Teto UTAU
+          </a>
+        </div>
+      </section>
+    </div>
   )
 }
 
