@@ -23,7 +23,7 @@ The script writes `public/voicebanks/webuta-ko-lite.zip` with:
 
 - 399 Hangul CV WAV samples
 - 814 Hangul and romanized aliases
-- sustain-extended samples for longer singing notes
+- elongated-vowel sustain samples for longer singing notes
 - `oto.ini`, `character.yaml`, `readme.txt`, `license.txt`
 - `webuta-ko-lite.manifest.json`
 

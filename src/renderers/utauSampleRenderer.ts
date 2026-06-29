@@ -5,10 +5,10 @@ import { findBestEntryForLyric, playbackRateForTone, type LoadedVoicebank, type 
 import type { VocalRenderer } from './types'
 
 const SAMPLE_RATE = 44100
-const MIN_LOOP_MS = 36
-const MAX_LOOP_MS = 130
-const LOOP_CROSSFADE_MS = 18
-const LOOP_RELEASE_GUARD_MS = 120
+const MIN_LOOP_MS = 180
+const MAX_LOOP_MS = 620
+const LOOP_CROSSFADE_MS = 110
+const LOOP_RELEASE_GUARD_MS = 180
 const CONSONANT_GUARD_FADE_MS = 2
 const VIBRATO_RATE_HZ = 5.4
 const VIBRATO_DEPTH_CENTS = 16

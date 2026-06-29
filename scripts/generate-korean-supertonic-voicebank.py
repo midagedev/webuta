@@ -23,13 +23,14 @@ from pathlib import Path
 
 import numpy as np
 
-SAMPLE_RATE = 44100
+TTS_SAMPLE_RATE = 44100
+SAMPLE_RATE = 32000
 OUTPUT = Path("public/voicebanks/webuta-ko-lite.zip")
 ZIP_DATE_TIME = (2026, 1, 1, 0, 0, 0)
-TARGET_SAMPLE_SECONDS = 1.32
-LOOP_SECONDS = 0.13
-LOOP_CROSSFADE_SECONDS = 0.018
-RELEASE_SECONDS = 0.14
+TARGET_SAMPLE_SECONDS = 1.72
+LOOP_SECONDS = 0.58
+LOOP_CROSSFADE_SECONDS = 0.14
+RELEASE_SECONDS = 0.18
 MODEL_NAME = "supertonic-3"
 MODEL_REPO = "Supertone/supertonic-3"
 MODEL_REVISION = "724fb5abbf5502583fb520898d45929e62f02c0b"
@@ -135,7 +136,7 @@ def main() -> int:
             aliases = aliases_for(syllable, onset_roman, vowel_roman)
             for alias in aliases:
                 oto_lines.append(
-                    f"{file_name}={alias},0,{preset.consonant_ms},-1200,"
+                    f"{file_name}={alias},0,{preset.consonant_ms},-1540,"
                     f"{preset.preutterance_ms},{preset.overlap_ms}"
                 )
             index += 1
@@ -178,7 +179,7 @@ def main() -> int:
             "",
             "A Korean CV starter UTAU-style voicebank generated from Supertonic 3 TTS output.",
             "It contains Hangul onset+vowel samples and romanized aliases for browser vocal synthesis.",
-            "Each sample is extended with a sustain loop so longer notes can sing instead of ending as short speech.",
+            "Each sample is generated from an elongated vowel prompt and extended with a long sustain loop.",
             "Final consonants are currently approximated to matching CV aliases by the WebUtau lyric matcher.",
             "",
             "This is not Kasane Teto, Vocaloid, OpenUtau, or a human singer sample pack.",
@@ -211,19 +212,22 @@ def main() -> int:
 
 
 def synthesize_syllable(tts, voice_style, syllable: str) -> np.ndarray:
+    vowel_tail = elongated_tail_for_syllable(syllable)
     wav, _duration = tts.synthesize(
-        syllable,
+        f"{syllable}{vowel_tail}",
         voice_style=voice_style,
         lang="ko",
-        speed=1.0,
+        speed=0.92,
         total_steps=10,
-        max_chunk_length=24,
+        max_chunk_length=48,
         silence_duration=0.04,
     )
     mono = np.asarray(wav, dtype=np.float32).reshape(-1)
+    mono = resample_linear(mono, int(getattr(tts, "sample_rate", TTS_SAMPLE_RATE)), SAMPLE_RATE)
     cropped = crop_active(mono)
     sustained = extend_sustain(cropped, TARGET_SAMPLE_SECONDS)
-    return normalize_peak(sustained, 0.86)
+    leveled = level_sustain_body(sustained)
+    return normalize_peak(leveled, 0.86)
 
 
 def crop_active(samples: np.ndarray) -> np.ndarray:
@@ -299,8 +303,8 @@ def find_loop_region(samples: np.ndarray) -> tuple[int, int]:
     active_start = int(active[0])
     active_end = int(active[-1])
     active_span = max(loop_length + 1, active_end - active_start)
-    search_start = min(samples.size - loop_length - 1, active_start + int(active_span * 0.34))
-    search_end = min(samples.size - loop_length - 1, max(search_start, active_end - loop_length - int(SAMPLE_RATE * 0.055)))
+    search_start = min(samples.size - loop_length - 1, active_start + int(active_span * 0.22))
+    search_end = min(samples.size - loop_length - 1, max(search_start, active_start + int(active_span * 0.72)))
     if search_end <= search_start:
         search_start = max(0, min(samples.size - loop_length - 1, active_start + int(active_span * 0.45)))
         search_end = search_start
@@ -314,8 +318,12 @@ def find_loop_region(samples: np.ndarray) -> tuple[int, int]:
         tail = samples[end - min(512, loop_length) : end]
         env_score = abs(float(envelope[start]) - float(envelope[min(envelope.size - 1, end - 1)]))
         edge_score = abs(float(np.mean(head)) - float(np.mean(tail)))
-        energy = float(np.mean(np.abs(samples[start:end])))
-        score = env_score + edge_score * 0.8 - energy * 0.06
+        segment = samples[start:end]
+        energy = float(np.mean(np.abs(segment)))
+        envelope_variance = float(np.std(envelope[start:end:max(1, step)]))
+        center = start + loop_length / 2
+        center_bias = abs(center - (active_start + active_span * 0.52)) / max(1, active_span)
+        score = env_score + edge_score * 0.8 + envelope_variance * 0.34 + center_bias * 0.015 - energy * 0.2
         if score < best_score:
             best_score = score
             best_start = start
@@ -346,6 +354,41 @@ def make_release_tail(output: np.ndarray, position: int, target_length: int) -> 
     repeated = np.resize(source, tail_length).astype(np.float32)
     repeated *= np.linspace(1.0, 0.0, tail_length, dtype=np.float32)
     return repeated
+
+
+def level_sustain_body(samples: np.ndarray) -> np.ndarray:
+    output = samples.copy()
+    body_start = int(SAMPLE_RATE * 0.28)
+    body_end = min(samples.size, int(SAMPLE_RATE * (TARGET_SAMPLE_SECONDS - RELEASE_SECONDS - 0.04)))
+    if body_end <= body_start:
+        return output
+    envelope = moving_rms(samples, window=max(512, int(SAMPLE_RATE * 0.045)))
+    body = envelope[body_start:body_end]
+    voiced = body[body > max(0.004, float(body.max()) * 0.18)]
+    if voiced.size == 0:
+        return output
+    target = float(np.percentile(voiced, 68))
+    for i in range(body_start, body_end):
+        current = float(envelope[i])
+        if current <= 1e-5:
+            continue
+        gain = np.clip(target / current, 0.62, 2.15)
+        edge = min((i - body_start) / max(1, int(SAMPLE_RATE * 0.08)), (body_end - i) / max(1, int(SAMPLE_RATE * 0.08)), 1.0)
+        output[i] *= 1.0 + (gain - 1.0) * max(0.0, edge)
+    return output
+
+
+def resample_linear(samples: np.ndarray, source_rate: int, target_rate: int) -> np.ndarray:
+    if source_rate == target_rate:
+        return samples.astype(np.float32)
+    if samples.size == 0:
+        return samples.astype(np.float32)
+    target_length = max(1, round(samples.size * target_rate / source_rate))
+    source_positions = np.arange(target_length, dtype=np.float32) * (source_rate / target_rate)
+    left = np.floor(source_positions).astype(np.int64)
+    right = np.minimum(left + 1, samples.size - 1)
+    frac = source_positions - left
+    return (samples[left] * (1.0 - frac) + samples[right] * frac).astype(np.float32)
 
 
 def normalize_peak(samples: np.ndarray, target: float) -> np.ndarray:
@@ -388,6 +431,16 @@ def aliases_for(syllable: str, onset_roman: str, vowel_roman: str) -> list[str]:
 
 def hangul_syllable(onset_index: int, vowel_index: int) -> str:
     return chr(0xAC00 + onset_index * 21 * 28 + vowel_index * 28)
+
+
+def elongated_tail_for_syllable(syllable: str) -> str:
+    code = ord(syllable)
+    if code < 0xAC00 or code > 0xD7A3:
+        return syllable * 5
+    offset = code - 0xAC00
+    vowel_index = (offset % (21 * 28)) // 28
+    vowel_only = chr(0xAC00 + 11 * 21 * 28 + vowel_index * 28)
+    return vowel_only * 5
 
 
 def encode_wav(samples: np.ndarray) -> bytes:
