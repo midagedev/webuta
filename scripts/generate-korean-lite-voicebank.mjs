@@ -124,7 +124,7 @@ for (let onsetIndex = 0; onsetIndex < ONSETS.length; onsetIndex++) {
     const aliases = aliasesFor(syllable, onsetRoman, vowelRoman)
     zip.file(`samples/${fileName}`, encodeWav(renderSyllable({ onset, vowel })), zipFileOptions())
     for (const alias of aliases) {
-      otoLines.push(`${fileName}=${alias},0,150,-560,70,30`)
+      otoLines.push(`${fileName}=${alias},0,120,-560,28,14`)
     }
     index += 1
   }

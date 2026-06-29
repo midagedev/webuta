@@ -87,6 +87,42 @@ describe('UTAU sample renderer', () => {
     expect(peak).toBeGreaterThan(0.04)
     expect(peak).toBeLessThanOrEqual(0.89)
   })
+
+  it('preserves the first note attack when preutterance would start before the timeline', async () => {
+    const entry: OtoEntry = {
+      fileName: 'do_C4.wav',
+      path: 'WebUtau/do_C4.wav',
+      alias: '도',
+      offsetMs: 0,
+      consonantMs: 100,
+      cutoffMs: 0,
+      preutteranceMs: 90,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeAttackOnlySource(0.42, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render(makeSingleNoteProject())
+    const first80Ms = result.samples.slice(0, Math.floor(0.08 * 44100))
+
+    expect(energy(first80Ms)).toBeGreaterThan(0.015)
+  })
 })
 
 function makeProject(): SongProject {
@@ -106,6 +142,20 @@ function makeProject(): SongProject {
   }
 }
 
+function makeSingleNoteProject(): SongProject {
+  return {
+    id: 'test-project',
+    name: 'Renderer Test',
+    comment: '',
+    bpm: 112,
+    beatPerBar: 4,
+    beatUnit: 4,
+    tracks: [{ id: 'track', name: 'Main Vocal', color: 'Coral' }],
+    parts: [{ id: 'part', trackId: 'track', name: 'Verse', start: 0, duration: TICKS_PER_BEAT * 2 }],
+    notes: [{ id: 'n1', trackId: 'track', partId: 'part', start: 0, duration: 720, tone: 60, lyric: '도' }],
+  }
+}
+
 function makeVocalishSource(durationSeconds: number, sampleRate: number) {
   const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
   for (let i = 0; i < samples.length; i++) {
@@ -118,6 +168,25 @@ function makeVocalishSource(durationSeconds: number, sampleRate: number) {
       Math.max(0, envelope)
   }
   return samples
+}
+
+function makeAttackOnlySource(durationSeconds: number, sampleRate: number) {
+  const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
+  const attackSamples = Math.floor(0.045 * sampleRate)
+  for (let i = 0; i < attackSamples; i++) {
+    const t = i / sampleRate
+    const envelope = Math.max(0, 1 - i / attackSamples)
+    samples[i] =
+      (Math.sin(2 * Math.PI * 261.63 * t) * 0.65 +
+        Math.sin(2 * Math.PI * 523.25 * t) * 0.25 +
+        Math.sin(2 * Math.PI * 1046.5 * t) * 0.12) *
+      envelope
+  }
+  return samples
+}
+
+function energy(samples: Float32Array) {
+  return samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length
 }
 
 function makeAudioBuffer(samples: Float32Array, sampleRate: number, rightSamples?: Float32Array) {

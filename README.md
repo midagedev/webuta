@@ -126,6 +126,7 @@ The current interface uses an original cyber vocal mascot illustration and a den
 - Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`. It should not imply Vocaloid compatibility.
 - No third-party singer likeness, Teto character art, or Teto voicebank files are bundled.
 - `public/voicebanks/webuta-ko-lite.zip` is an original generated starter voicebank; regenerate it with `npm run voicebank:lite`.
+- When the bundled voicebank changes, bump `BUNDLED_KOREAN_LITE_VOICEBANK_VERSION` in `src/bundledVoicebank.ts` so browsers fetch the new zip.
 
 ## Deploy To GitHub Pages
 

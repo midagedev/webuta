@@ -102,8 +102,7 @@ function mixPreparedSample(
   const releaseSeconds = releaseSecondsForNote(project, note, nextNote, noteDurationSeconds)
   const renderStartSeconds = noteStartSeconds - preutteranceSeconds
   const startSample = Math.max(0, Math.floor(renderStartSeconds * SAMPLE_RATE))
-  const skippedSeconds = Math.max(0, -renderStartSeconds)
-  const renderLengthSeconds = preutteranceSeconds + noteDurationSeconds + releaseSeconds - skippedSeconds
+  const renderLengthSeconds = preutteranceSeconds + noteDurationSeconds + releaseSeconds
   const length = Math.max(1, Math.ceil(renderLengthSeconds * SAMPLE_RATE))
   const sourceRateRatio = sourceSampleRate / SAMPLE_RATE
   const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
@@ -112,10 +111,10 @@ function mixPreparedSample(
   const fadeInSamples = Math.max(64, Math.floor(overlapSeconds * SAMPLE_RATE))
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
   const noteBodySamples = Math.max(1, Math.floor(noteDurationSeconds * SAMPLE_RATE))
-  let sourcePosition = sourceWindow.start + Math.floor(skippedSeconds * SAMPLE_RATE) * rate
+  let sourcePosition = sourceWindow.start
 
   for (let i = 0; i < length && startSample + i < output.length; i++) {
-    const elapsedOutputSamples = i + Math.floor(skippedSeconds * SAMPLE_RATE)
+    const elapsedOutputSamples = i
     const sampleValue = readLoopedLinear(source, sourcePosition, loop)
     const preutteranceSamples = Math.floor(preutteranceSeconds * SAMPLE_RATE)
     const noteProgress = elapsedOutputSamples - preutteranceSamples
