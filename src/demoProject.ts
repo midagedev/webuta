@@ -1,0 +1,45 @@
+import { TICKS_PER_BEAT, type SongProject } from './types'
+
+const trackId = 'track-main'
+const partId = 'part-main'
+
+export const demoProject: SongProject = {
+  id: 'demo-ipad-garageband',
+  name: 'First Vocal Sketch',
+  comment: 'A small WebUtau project that can render a GarageBand-ready WAV.',
+  bpm: 112,
+  beatPerBar: 4,
+  beatUnit: 4,
+  source: {
+    fileName: 'built-in-demo',
+    format: 'webuta',
+  },
+  tracks: [
+    {
+      id: trackId,
+      name: 'Main Vocal',
+      color: 'Coral',
+      singer: 'Browser demo voice',
+      phonemizer: 'lyric tone demo',
+    },
+  ],
+  parts: [
+    {
+      id: partId,
+      trackId,
+      name: 'Verse',
+      start: 0,
+      duration: TICKS_PER_BEAT * 8,
+    },
+  ],
+  notes: [
+    { id: 'n1', trackId, partId, start: 0, duration: 480, tone: 60, lyric: '도' },
+    { id: 'n2', trackId, partId, start: 480, duration: 480, tone: 62, lyric: '히' },
+    { id: 'n3', trackId, partId, start: 960, duration: 480, tone: 64, lyric: '도' },
+    { id: 'n4', trackId, partId, start: 1440, duration: 480, tone: 65, lyric: '히' },
+    { id: 'n5', trackId, partId, start: 1920, duration: 480, tone: 67, lyric: '다' },
+    { id: 'n6', trackId, partId, start: 2400, duration: 480, tone: 69, lyric: '이' },
+    { id: 'n7', trackId, partId, start: 2880, duration: 480, tone: 67, lyric: '스' },
+    { id: 'n8', trackId, partId, start: 3360, duration: 960, tone: 64, lyric: '키' },
+  ],
+}

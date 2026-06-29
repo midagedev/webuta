@@ -1,0 +1,62 @@
+# WebUtau
+
+WebUtau is a browser-first vocal synth editor prototype aimed at an iPad-to-GarageBand workflow.
+
+The current verified target is:
+
+1. Open the app on a browser.
+2. Import the official Kasane Teto OpenUTAU UTAU zip as a user-provided voicebank.
+3. Edit a simple vocal line.
+4. Export a 44.1 kHz / 16-bit / mono WAV.
+5. Import that WAV into GarageBand.
+
+Kasane Teto assets are not bundled in this repository. Use the official download page and keep the zip as a local, ignored test asset.
+
+## Run
+
+```sh
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:5173/`.
+
+## Official Teto Test Asset
+
+```sh
+npm run asset:teto
+npm run test:teto
+```
+
+This downloads `TETO-OUset240323.zip` into ignored `test-assets/` and verifies that WebUtau can read its `character.yaml`, `oto.ini`, aliases, and WAV sample inventory.
+
+## Checks
+
+```sh
+npm test
+npm run build
+```
+
+Verified local smoke output:
+
+- Official Teto zip imported in browser.
+- `6216` UTAU aliases and `1822` WAV samples detected.
+- WAV download created at `test-output/First-Vocal-Sketch.wav`.
+- Output format: RIFF/WAVE, PCM, 16-bit, mono, 44100 Hz.
+
+## Deploy To GitHub Pages
+
+This repository includes a GitHub Actions workflow at `.github/workflows/pages.yml`.
+
+1. Push the repository to GitHub.
+2. In GitHub, open `Settings -> Pages`.
+3. Set `Build and deployment -> Source` to `GitHub Actions`.
+4. Push to `main`, or run the `Deploy GitHub Pages` workflow manually.
+
+Only `dist/` is published. Kasane Teto voicebank zips in `test-assets/` are ignored local test inputs and must not be committed or uploaded.
+
+## Docs
+
+- [Overnight checklist](docs/OVERNIGHT_CHECKLIST.md)
+- [License boundaries](docs/LICENSE_BOUNDARIES.md)
+- [Porting roadmap](docs/PORTING_ROADMAP.md)
