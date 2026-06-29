@@ -2,7 +2,7 @@
 
 WebUtau is a browser-first cyber vocal synth sketchpad aimed at an iPad-to-GarageBand workflow.
 
-The app pairs a neon-glam vocal editor UI with a simple singing workflow: load a user-provided UTAU/OpenUTAU voicebank, sketch lyrics on a piano roll, render a WAV, and import it into GarageBand.
+The app pairs a neon-glam, tracker-inspired vocal editor UI with a simple singing workflow: load a user-provided UTAU/OpenUTAU voicebank, sketch lyrics on a dense piano grid, render a WAV, and import it into GarageBand.
 
 The current verified target is:
 
@@ -16,9 +16,10 @@ Kasane Teto assets are not bundled in this repository. Use the official download
 
 ## Visual Direction
 
-The current interface uses an original cyber vocal mascot illustration and a neon-glam editor theme:
+The current interface uses an original cyber vocal mascot illustration and a dense tracker-era editor theme:
 
-- App eyebrow: `CYBER VOCAL CLUB`
+- App eyebrow: `CYBER TRACKER CLUB`
+- Tracker surface: compact `PAT / CH / BPM / ROWS / BANK / OUT` status cells with mobile horizontal scrolling.
 - Mascot assets:
   - `src/assets/cyber-vocal-hero.webp` for the browser UI
   - `src/assets/cyber-vocal-hero.png` as the transparent PNG source

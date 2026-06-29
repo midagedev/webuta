@@ -35,7 +35,7 @@ import { parseUstx, serializeUstx } from './ustx'
 import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from './types'
 import { loadVoicebankZip, type LoadedVoicebank } from './voicebank'
 
-const ROW_HEIGHT = 28
+const ROW_HEIGHT = 26
 const TICK_WIDTH = 0.15
 const MIN_NOTE_WIDTH = 44
 
@@ -248,7 +248,7 @@ function App() {
           <button type="button" className="toolbar-button" title="USTX 저장" onClick={downloadUstx}>
             <Save size={20} aria-hidden="true" />
           </button>
-          <span className="topbar-label">My Songs</span>
+          <span className="topbar-label">Pattern Desk</span>
         </div>
 
         <div className="transport-center" aria-label="Playback controls">
@@ -331,22 +331,22 @@ function App() {
             <img src={cyberVocalHero} alt="" aria-hidden="true" />
           </div>
           <div>
-            <p className="eyebrow">CYBER VOCAL CLUB</p>
+            <p className="eyebrow">CYBER TRACKER CLUB</p>
             <strong>WebUtau // {voicebankName}</strong>
           </div>
         </div>
         <div className="mode-tabs">
           <button type="button" className="mode-tab active">
             <Mic2 size={17} aria-hidden="true" />
-            <span>Stage</span>
+            <span>Pattern</span>
           </button>
           <button type="button" className="mode-tab">
             <Scissors size={17} aria-hidden="true" />
-            <span>Lyrics</span>
+            <span>Rows</span>
           </button>
           <button type="button" className="mode-tab">
             <Gauge size={17} aria-hidden="true" />
-            <span>Synth</span>
+            <span>Mixer</span>
           </button>
         </div>
         <div className="session-chip">
@@ -360,13 +360,13 @@ function App() {
           <section className="tool-panel">
             <div className="panel-heading">
               <Sparkles size={18} aria-hidden="true" />
-              <h2>스테이지</h2>
+              <h2>패턴</h2>
             </div>
             <div className="mascot-card">
               <img src={cyberVocalHero} alt="Cyber vocal synth mascot illustration" />
               <div>
-                <strong>Neon Vocal Muse</strong>
-                <span>dark pop synth mode</span>
+                <strong>Vocal Operator</strong>
+                <span>tracker vocal mode</span>
               </div>
             </div>
             <div className="channel-strip">
@@ -531,7 +531,7 @@ function App() {
           <div className="timeline-header">
             <div>
               <h1>{project.name}</h1>
-              <p>{project.notes.length} notes · {beatCount} beats · {barCount} bars · cyber vocal stage</p>
+              <p>pattern 00 · {project.notes.length} notes · {beatCount} beats · {barCount} bars</p>
             </div>
             <button type="button" className="icon-text-button" onClick={downloadUstx}>
               <FileDown size={18} aria-hidden="true" />
@@ -539,10 +539,37 @@ function App() {
             </button>
           </div>
 
+          <div className="tracker-strip" aria-label="Tracker status">
+            <div>
+              <span>PAT</span>
+              <strong>00</strong>
+            </div>
+            <div>
+              <span>CH</span>
+              <strong>01 VOC</strong>
+            </div>
+            <div>
+              <span>BPM</span>
+              <strong>{project.bpm}</strong>
+            </div>
+            <div>
+              <span>ROWS</span>
+              <strong>{rows.length}</strong>
+            </div>
+            <div>
+              <span>BANK</span>
+              <strong>{voicebank ? 'UTAU ZIP' : 'DEMO'}</strong>
+            </div>
+            <div>
+              <span>OUT</span>
+              <strong>{rendered ? 'WAV READY' : 'ARMED'}</strong>
+            </div>
+          </div>
+
           <div className="mobile-mascot-banner">
             <img src={cyberVocalHero} alt="" aria-hidden="true" />
             <div>
-              <span>CYBER VOCAL CLUB</span>
+              <span>CYBER TRACKER CLUB</span>
               <strong>도히도히 다이스키</strong>
             </div>
           </div>
@@ -562,7 +589,7 @@ function App() {
           </div>
 
           <div className="arrangement-panel">
-            <div className="ruler-head">Bars</div>
+            <div className="ruler-head">Pat 00</div>
             <div className="ruler-scroll">
               <div className="ruler-grid" style={{ width: gridWidth }}>
                 {Array.from({ length: barCount }, (_, bar) => (
@@ -575,7 +602,7 @@ function App() {
             <div className="track-lane-head">
               <Mic2 size={17} aria-hidden="true" />
               <div>
-                <strong>Main Vocal</strong>
+                <strong>CH 01 Vocal</strong>
                 <span>{voicebankName}</span>
               </div>
             </div>
@@ -600,11 +627,12 @@ function App() {
 
           <div className="editor-toolbar">
             <div>
-              <strong>Neon Piano Roll</strong>
+              <strong>Tracker Piano Grid</strong>
               <span>{selectedNoteLabel}</span>
             </div>
             <div className="editor-chips">
-              <span>{rows.length} keys</span>
+              <span>{rows.length} rows</span>
+              <span>CH 01</span>
               <span>{voicebank ? 'UTAU vocal bank' : 'Demo cyber synth'}</span>
             </div>
           </div>
