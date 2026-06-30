@@ -1,4 +1,5 @@
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
+import { normalizeNoteIntensity, sanitizeOptionalNoteIntensity } from './expression'
 import { TICKS_PER_BEAT, type NotePitchBend, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
@@ -33,6 +34,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
     if (!isRestLyric(lyric)) {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
       const pitchBend = parseUstPitchBend(section, duration)
+      const intensity = sanitizeOptionalNoteIntensity(numberField(section, 'Intensity', 100))
       notes.push({
         id: `note-${index}`,
         trackId,
@@ -41,6 +43,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
         duration,
         tone,
         lyric,
+        ...(intensity !== undefined ? { intensity } : {}),
         ...(vibrato ? { vibrato } : {}),
         ...(pitchBend ? { pitchBend } : {}),
       })
@@ -135,6 +138,7 @@ export function serializeUst(project: SongProject) {
       length: note.duration,
       lyric: note.lyric,
       tone: note.tone,
+      intensity: note.intensity,
       vibrato: note.vibrato,
       pitchBend: note.pitchBend,
       tempo: tempoAt(note.start),
@@ -194,6 +198,7 @@ function pushNoteSection(
     length: number
     lyric: string
     tone: number
+    intensity?: number
     vibrato?: NoteVibrato
     pitchBend?: NotePitchBend
     tempo?: number
@@ -206,7 +211,7 @@ function pushNoteSection(
   if (note.tempo !== undefined) {
     sections.push(`Tempo=${formatNumber(note.tempo, 2)}`)
   }
-  sections.push('Intensity=100')
+  sections.push(`Intensity=${normalizeNoteIntensity(note.intensity)}`)
   sections.push('Modulation=0')
   if (note.vibrato) {
     sections.push(`VBR=${serializeUstVibrato(note.vibrato)}`)

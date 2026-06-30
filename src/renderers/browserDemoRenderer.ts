@@ -1,4 +1,5 @@
 import { durationTicksToSeconds, midiToHz, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
+import { noteIntensityGain } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import type { SongNote, SongProject } from '../types'
 import { masterMonoMix } from '../audio/mastering'
@@ -44,6 +45,7 @@ function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
   const length = Math.max(1, Math.floor(durationTicksToSeconds(project, note.start, note.duration) * SAMPLE_RATE))
   const frequency = midiToHz(note.tone)
   const voice = koreanDemoVoiceProfile(note.lyric)
+  const intensityGain = noteIntensityGain(note)
 
   for (let i = 0; i < length && startSample + i < output.length; i++) {
     const t = i / SAMPLE_RATE
@@ -71,7 +73,7 @@ function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
       Math.sin(phase * 3.01) * voice.third +
       Math.sin(phase * 5.02) * voice.brightness
     const nasalOrLiquidTail = Math.sin(phase * 0.5) * voice.codaTone * codaAmount
-    output[startSample + i] += ((vowelTone * codaDamp + nasalOrLiquidTail + breath) * envelope + consonant) * 0.32
+    output[startSample + i] += ((vowelTone * codaDamp + nasalOrLiquidTail + breath) * envelope + consonant) * 0.32 * intensityGain
   }
 }
 

@@ -15,6 +15,7 @@
   } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
+  import { normalizeNoteIntensity } from '../expression'
   import { normalizeNotePitchBend, sanitizeOptionalNotePitchBend } from '../pitchBend'
   import { GRID_SNAP_TICKS } from '../projectEditing'
   import type { NeuralModelCard, NotePitchBend, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
@@ -56,6 +57,7 @@
     onTone: (tone: number) => void
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
+    onIntensity: (intensity: number) => void
     onVibrato: (vibrato: NoteVibrato) => void
     onPitchBend: (pitchBend: NotePitchBend | undefined) => void
     onAddNote: () => void
@@ -88,6 +90,7 @@
     onTone,
     onNudge,
     onDuration,
+    onIntensity,
     onVibrato,
     onPitchBend,
     onAddNote,
@@ -143,6 +146,7 @@
   let selectedRenderWarnings = $derived(
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
+  let selectedIntensity = $derived(normalizeNoteIntensity(selectedNote?.intensity))
   let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
   let selectedPitchBend = $derived(normalizeNotePitchBend(selectedNote?.pitchBend))
   let selectedPitchBendEnabled = $derived(Boolean(selectedNote?.pitchBend && selectedPitchBend.points.length > 0))
@@ -473,6 +477,20 @@
           <button type="button" class="small-button" onclick={() => onDuration(selectedNote!.duration + 120)}>
             길게
           </button>
+        </div>
+        <div class="dynamics-card" aria-label="Selected note dynamics">
+          <label class="slider-field">
+            <span>세기 <output>{selectedIntensity}%</output></span>
+            <input
+              aria-label="Note intensity"
+              type="range"
+              min="0"
+              max="200"
+              step="1"
+              value={selectedIntensity}
+              oninput={(event) => onIntensity(Number(inputValue(event)))}
+            />
+          </label>
         </div>
         <div class="vibrato-card" aria-label="Selected note vibrato">
           <label class="toggle-line">

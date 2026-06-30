@@ -1,4 +1,5 @@
 import { durationTicksToSeconds, midiToHz, normalizedTempoChanges, sortedNotes, ticksToSecondsInProject } from './music'
+import { normalizeNoteIntensity } from './expression'
 import { normalizeNotePitchBend } from './pitchBend'
 import { TICKS_PER_BEAT, type SongProject } from './types'
 
@@ -111,6 +112,7 @@ export type NeuralRenderNote = {
   midi: number | null
   targetHz: number | null
   lyric: string
+  intensity: number
   phonemes: NeuralPhoneme[]
   pitchCurve: NeuralPitchPoint[]
 }
@@ -237,6 +239,7 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
         midi: null,
         targetHz: null,
         lyric: 'R',
+        intensity: 0,
         phonemes: phonemesForLyric('R'),
         pitchCurve: [],
       })
@@ -256,6 +259,7 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
       midi: isUnpitched ? null : note.tone,
       targetHz: isUnpitched ? null : midiToHz(note.tone),
       lyric: note.lyric,
+      intensity: isUnpitched ? 0 : normalizeNoteIntensity(note.intensity),
       phonemes: phonemesForLyric(note.lyric),
       pitchCurve: normalizePitchCurve([...pitchCurveFromNote(note), ...(options.pitchCurves?.[note.id] ?? [])]),
     })

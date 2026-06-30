@@ -159,6 +159,7 @@ describe('project editing helpers', () => {
         note.id === 'n8'
           ? {
               ...note,
+              intensity: 74,
               pitchBend: {
                 points: [
                   { timePercent: 0, cents: 0 },
@@ -181,6 +182,7 @@ describe('project editing helpers', () => {
       duration: 1080,
       tone: 64,
       lyric: '키',
+      intensity: 74,
       vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
       pitchBend: {
         points: [

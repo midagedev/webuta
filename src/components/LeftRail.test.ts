@@ -61,6 +61,19 @@ describe('LeftRail release readiness', () => {
     )
   })
 
+  it('edits selected-note intensity as a dynamics parameter', async () => {
+    const onIntensity = vi.fn()
+    render(LeftRail, makeProps({ onIntensity }))
+
+    const dynamicsCard = screen.getByLabelText('Selected note dynamics')
+    expect(dynamicsCard.textContent).toContain('세기')
+    expect(dynamicsCard.textContent).toContain('100%')
+
+    await fireEvent.input(screen.getByLabelText('Note intensity'), { target: { value: '73' } })
+
+    expect(onIntensity).toHaveBeenCalledWith(73)
+  })
+
   it('edits selected-note pitch bend as a simple curve', async () => {
     const onPitchBend = vi.fn()
     render(LeftRail, makeProps({ onPitchBend }))
@@ -162,6 +175,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onTone: vi.fn(),
     onNudge: vi.fn(),
     onDuration: vi.fn(),
+    onIntensity: vi.fn(),
     onVibrato: vi.fn(),
     onPitchBend: vi.fn(),
     onAddNote: vi.fn(),

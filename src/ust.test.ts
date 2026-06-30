@@ -20,6 +20,7 @@ describe('classic UST compatibility layer', () => {
         'Length=480',
         'Lyric=도',
         'NoteNum=64',
+        'Intensity=72',
         '[#0002]',
         'Length=960',
         'Lyric=히',
@@ -47,7 +48,7 @@ describe('classic UST compatibility layer', () => {
     })
     expect(project.parts[0]).toMatchObject({ start: 0, duration: 1920 })
     expect(project.notes).toHaveLength(2)
-    expect(project.notes[0]).toMatchObject({ start: 240, duration: 480, tone: 64, lyric: '도' })
+    expect(project.notes[0]).toMatchObject({ start: 240, duration: 480, tone: 64, lyric: '도', intensity: 72 })
     expect(project.notes[1]).toMatchObject({
       start: 720,
       duration: 960,
@@ -74,6 +75,7 @@ describe('classic UST compatibility layer', () => {
         index === 0
           ? {
               ...note,
+              intensity: 64,
               pitchBend: {
                 points: [
                   { timePercent: 0, cents: 0 },
@@ -96,6 +98,7 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('ProjectName=First Vocal Sketch')
     expect(text).toContain('Lyric=도')
     expect(text).toContain('Lyric=R')
+    expect(text).toContain('Intensity=64')
     expect(text).toContain('Tempo=96')
     expect(text).toContain('VBR=56,179,20,10,10,0,0')
     expect(text).toContain('PBS=0,0')
@@ -105,6 +108,7 @@ describe('classic UST compatibility layer', () => {
 
     const reparsed = parseUst(text, 'roundtrip.ust')
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(reparsed.notes[0].intensity).toBe(64)
     expect(reparsed.tempoChanges).toEqual([
       { position: 0, bpm: 112 },
       { position: 2160, bpm: 96 },

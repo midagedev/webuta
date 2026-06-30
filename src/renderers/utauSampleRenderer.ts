@@ -1,5 +1,6 @@
 import { masterMonoMix } from '../audio/mastering'
 import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
+import { noteIntensityGain } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import type { SongNote, SongProject } from '../types'
 import {
@@ -117,6 +118,7 @@ function mixCodaTailSample(
   const sourceSampleRate = sample.sampleRate
   const sourceRateRatio = sourceSampleRate / SAMPLE_RATE
   const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
+  const intensityGain = noteIntensityGain(note)
   const tailSamples = Math.min(
     source.length,
     Math.max(
@@ -134,7 +136,7 @@ function mixCodaTailSample(
     const sourcePosition = sourceStart + i * rate
     const fadeIn = smoothstep(i / fadeInSamples)
     const fadeOut = smoothstep((outputTailSamples - i) / fadeOutSamples)
-    output[startSample + i] += readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5
+    output[startSample + i] += readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5 * intensityGain
   }
 }
 
@@ -183,6 +185,7 @@ function mixPreparedSample(
   const consonantGuardFadeSamples = Math.max(12, msToSamples(CONSONANT_GUARD_FADE_MS, SAMPLE_RATE))
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
   const noteBodySamples = Math.max(1, Math.floor(noteDurationSeconds * SAMPLE_RATE))
+  const intensityGain = noteIntensityGain(note)
   const consonantOutputSamples = Math.max(
     Math.floor(preutteranceSeconds * SAMPLE_RATE),
     Math.floor((sourceWindow.consonantEnd - sourceWindow.start) / Math.max(0.001, rate)),
@@ -203,7 +206,7 @@ function mixPreparedSample(
         : smoothstep(Math.min(1, elapsedOutputSamples / fadeInSamples))
     const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
-    output[startSample + i] += sampleValue * envelope * 0.66
+    output[startSample + i] += sampleValue * envelope * 0.66 * intensityGain
     sourcePosition += rate * pitchRateMultiplier(note, noteProgress, noteBodySamples)
   }
 }

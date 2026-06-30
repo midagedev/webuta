@@ -36,6 +36,7 @@ describe('neural render contract export', () => {
       durationTick: 420,
       midi: 64,
       lyric: '도',
+      intensity: 100,
       phonemes: [
         { symbol: 'd', role: 'onset', source: '도' },
         { symbol: 'o', role: 'vowel', source: '도' },
@@ -166,6 +167,20 @@ describe('neural render contract export', () => {
     ])
   })
 
+  it('exports per-note intensity for server renderers', () => {
+    const project: SongProject = {
+      ...demoProject,
+      notes: [{ ...demoProject.notes[0], intensity: 137 }],
+    }
+    const request = createNeuralRenderRequest(project)
+
+    expect(request.notes[0]).toMatchObject({
+      kind: 'note',
+      lyric: '도',
+      intensity: 137,
+    })
+  })
+
   it('treats rest lyrics as silent events instead of pitched syllables', () => {
     const project: SongProject = {
       ...demoProject,
@@ -177,6 +192,7 @@ describe('neural render contract export', () => {
     expect(createNeuralRenderRequest(project).notes[0]).toMatchObject({
       kind: 'rest',
       lyric: '쉼',
+      intensity: 0,
       midi: null,
       targetHz: null,
       phonemes: [{ symbol: 'sil', role: 'silence' }],

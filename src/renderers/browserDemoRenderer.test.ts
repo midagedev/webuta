@@ -78,6 +78,21 @@ describe('browser demo renderer', () => {
 
     expect(difference).toBeGreaterThan(20)
   })
+
+  it('renders per-note intensity as relative dynamics', async () => {
+    const result = await browserDemoRenderer.render({
+      ...demoProject,
+      bpm: 120,
+      notes: [
+        { ...demoProject.notes[0], id: 'quiet', start: 0, duration: TICKS_PER_BEAT, tone: 60, lyric: '라', intensity: 45 },
+        { ...demoProject.notes[1], id: 'loud', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT, tone: 60, lyric: '라', intensity: 160 },
+      ],
+    })
+    const quiet = energy(result.samples.slice(Math.floor(0.12 * 44100), Math.floor(0.48 * 44100)))
+    const loud = energy(result.samples.slice(Math.floor(1.12 * 44100), Math.floor(1.48 * 44100)))
+
+    expect(loud).toBeGreaterThan(quiet * 2)
+  })
 })
 
 function energy(samples: Float32Array) {

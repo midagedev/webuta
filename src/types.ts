@@ -18,6 +18,7 @@ export type SongNote = {
   duration: number
   tone: number
   lyric: string
+  intensity?: number
   vibrato?: NoteVibrato
   pitchBend?: NotePitchBend
 }

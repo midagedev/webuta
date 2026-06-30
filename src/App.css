@@ -827,6 +827,7 @@ button:disabled {
   margin-bottom: 10px;
 }
 
+.dynamics-card,
 .vibrato-card,
 .pitch-bend-card {
   display: grid;
@@ -836,6 +837,11 @@ button:disabled {
   border: 1px solid #2a3441;
   border-radius: 8px;
   background: #111821;
+}
+
+.dynamics-card {
+  border-color: #263d35;
+  background: #111d1a;
 }
 
 .pitch-bend-card {

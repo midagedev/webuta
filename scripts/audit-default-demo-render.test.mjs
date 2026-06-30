@@ -14,6 +14,7 @@ describe('default demo render audit report', () => {
         'first-run lyric visible',
         'community release readiness card visible',
         'voicebank license metadata visible',
+        'selected-note dynamics controls visible',
         'selected-note vibrato controls visible',
         'selected-note pitch bend controls visible',
         'selected-note duplicate controls visible',

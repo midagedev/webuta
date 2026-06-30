@@ -366,6 +366,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Selected note dynamics').getByText('세기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note vibrato').getByText('비브라토').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note pitch bend').getByText('피치 벤드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 복제' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -394,6 +395,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run lyric visible',
     'community release readiness card visible',
     'voicebank license metadata visible',
+    'selected-note dynamics controls visible',
     'selected-note vibrato controls visible',
     'selected-note pitch bend controls visible',
     'selected-note duplicate controls visible',

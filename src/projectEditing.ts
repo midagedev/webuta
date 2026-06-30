@@ -1,4 +1,5 @@
 import { clampTone, makeId } from './music'
+import { sanitizeOptionalNoteIntensity } from './expression'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { TICKS_PER_BEAT, type SongNote, type SongProject, type VoicePart } from './types'
 import { sanitizeOptionalNoteVibrato } from './vibrato'
@@ -269,7 +270,8 @@ function expandPartForNote(parts: VoicePart[], note: SongNote) {
 }
 
 function sanitizeNote(note: SongNote): SongNote {
-  const { pitchBend: rawPitchBend, vibrato: rawVibrato, ...rest } = note
+  const { intensity: rawIntensity, pitchBend: rawPitchBend, vibrato: rawVibrato, ...rest } = note
+  const intensity = sanitizeOptionalNoteIntensity(rawIntensity)
   const vibrato = sanitizeOptionalNoteVibrato(rawVibrato)
   const pitchBend = sanitizeOptionalNotePitchBend(rawPitchBend)
   return {
@@ -278,6 +280,7 @@ function sanitizeNote(note: SongNote): SongNote {
     duration: Math.max(GRID_SNAP_TICKS, Math.round(note.duration)),
     tone: clampTone(note.tone),
     lyric: note.lyric.trim() || '라',
+    ...(intensity !== undefined ? { intensity } : {}),
     ...(vibrato ? { vibrato } : {}),
     ...(pitchBend ? { pitchBend } : {}),
   }

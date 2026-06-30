@@ -216,6 +216,9 @@ Recommended coverage shape:
   render, download, share.
 - [x] Add per-note vibrato controls for depth, rate, and start position, with
   sound-rendered output in the UTAU sample renderer and browser fallback voice.
+- [x] Add selected-note UTAU `Intensity`/dynamics controls, preserve them in
+  `.webutau.json` and UST import/export, and render the gain change through
+  both the UTAU sample renderer and browser fallback voice.
 - [x] Add a selected-note UTAU sample preview that plays through the loaded
   voicebank sample renderer, not just the oscillator touch keyboard.
 - [x] Show a current voicebank license metadata card beside coverage and render
@@ -416,6 +419,9 @@ Current verified V3 evidence:
   published `review/v3/index.html` scorecard.
 - Browser renderer selects the closest explicit pitch layer for the requested
   note tone; generated V3 tests verify `도` resolves to C4/F4/A4 layers.
+- Selected-note UTAU `Intensity` now lives in the note model, round-trips
+  through UST, appears in the left-rail dynamics control, and changes rendered
+  gain without depending on any recorded source material.
 - Imported UTAU voicebanks with `prefix.map` now use the map's pitch-specific
   prefix/suffix aliases before falling back to filename pitch inference.
 - Voicebank zip import now applies browser safety limits before parsing: the

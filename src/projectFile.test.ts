@@ -12,6 +12,7 @@ describe('WebUtau project files', () => {
           index === 0
             ? {
                 ...note,
+                intensity: 82,
                 pitchBend: {
                   points: [
                     { timePercent: 0, cents: 0 },
@@ -42,6 +43,7 @@ describe('WebUtau project files', () => {
       { timePercent: 100, cents: 0 },
     ])
     expect(project.notes[0].pitchBend?.modes).toEqual(['s', 'r'])
+    expect(project.notes[0].intensity).toBe(82)
     expect(project.source).toEqual({
       fileName: 'saved-hook.webutau.json',
       format: 'webuta',

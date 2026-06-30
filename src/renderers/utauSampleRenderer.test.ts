@@ -90,6 +90,50 @@ describe('UTAU sample renderer', () => {
     expect(peak).toBeLessThanOrEqual(0.89)
   })
 
+  it('renders per-note intensity as relative UTAU sample dynamics', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 80,
+      cutoffMs: 0,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(0.8, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeProject(),
+      notes: [
+        { id: 'quiet', trackId: 'track', partId: 'part', start: 0, duration: 600, tone: 60, lyric: '라', intensity: 45 },
+        { id: 'loud', trackId: 'track', partId: 'part', start: 600, duration: 600, tone: 60, lyric: '라', intensity: 160 },
+      ],
+    })
+    const quiet = energy(result.samples.slice(Math.floor(0.16 * 44100), Math.floor(0.48 * 44100)))
+    const loud = energy(result.samples.slice(Math.floor(0.86 * 44100), Math.floor(1.18 * 44100)))
+
+    expect(loud).toBeGreaterThan(quiet * 2.2)
+  })
+
   it('uses per-note vibrato depth when advancing the UTAU sample', async () => {
     const entry: OtoEntry = {
       fileName: 'ra_C4.wav',

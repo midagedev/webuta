@@ -72,6 +72,9 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] App tests cover selected-note duplicate/split/delete controls and selected-note loop region display.
 - [x] App tests cover selected-note vibrato controls; project/UST/USTX tests
   verify vibrato round-trip, and renderer tests verify vibrato changes rendered audio.
+- [x] App tests cover selected-note UTAU `Intensity`/dynamics controls; project
+  and UST tests verify dynamics round-trip, and renderer tests verify dynamics
+  changes rendered audio.
 - [x] Classic UST `PBS`/`PBW`/`PBY` pitch-bend curves survive import/export and
   affect both browser fallback and UTAU sample renderer output.
 - [x] App tests cover selected-note pitch-bend controls for a simple editable
@@ -81,7 +84,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 
 ## Full Port Workstreams
 
-- [ ] OpenUtau Core parity: commands, full pitch-editor UI, expressions, and phonemizer behavior.
+- [ ] OpenUtau Core parity: commands, full pitch-editor UI, full expression automation, and phonemizer behavior.
 - [ ] Voicebank management: zip import, browser storage, singer metadata, sample preview, and license display.
 - [ ] Kasane Teto UTAU support: parse the official OpenUTAU library zip, read `character.yaml` / `oto.ini`, and route Japanese lyrics through the compatible phonemizer.
 - [ ] Classic synthesis: WORLDLINE native bridge via server first, then WASM if practical.

@@ -1454,6 +1454,7 @@
         onTone={(tone) => updateSelectedNote({ tone })}
         onNudge={updateSelectedNote}
         onDuration={(duration) => updateSelectedNote({ duration })}
+        onIntensity={(intensity) => updateSelectedNote({ intensity })}
         onVibrato={(vibrato) => updateSelectedNote({ vibrato })}
         onPitchBend={(pitchBend) => updateSelectedNote({ pitchBend })}
         onAddNote={addNote}
