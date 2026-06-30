@@ -7,9 +7,11 @@ export function normalizeNotePitchBend(pitchBend: Partial<NotePitchBend> | null 
   const points = Array.isArray(pitchBend?.points) ? pitchBend.points : []
   const normalizedPoints = normalizePitchPoints(points)
   const modes = Array.isArray(pitchBend?.modes) ? normalizePitchBendModes(pitchBend.modes, normalizedPoints.length - 1) : []
+  const snapFirst = typeof pitchBend?.snapFirst === 'boolean' ? pitchBend.snapFirst : undefined
   return {
     points: normalizedPoints,
     ...(modes.length > 0 ? { modes } : {}),
+    ...(snapFirst !== undefined ? { snapFirst } : {}),
   }
 }
 
@@ -22,7 +24,8 @@ export function sanitizeOptionalNotePitchBend(pitchBend: Partial<NotePitchBend> 
 }
 
 export function notePitchBendCentsAt(note: SongNote, progress: number) {
-  const points = normalizeNotePitchBend(note.pitchBend).points
+  const pitchBend = normalizeNotePitchBend(note.pitchBend)
+  const points = pitchBend.points
   if (points.length === 0) {
     return 0
   }
@@ -35,7 +38,8 @@ export function notePitchBendCentsAt(note: SongNote, progress: number) {
     const current = points[index]
     if (timePercent <= current.timePercent) {
       const span = Math.max(0.0001, current.timePercent - previous.timePercent)
-      const ratio = (timePercent - previous.timePercent) / span
+      const mode = pitchBend.modes?.[index - 1]
+      const ratio = pitchBendRatio((timePercent - previous.timePercent) / span, mode)
       return previous.cents + (current.cents - previous.cents) * ratio
     }
   }
@@ -73,6 +77,20 @@ function normalizePitchBendModes(modes: unknown[], maxLength: number) {
 function sanitizeMode(mode: unknown) {
   const value = String(mode ?? '').trim().slice(0, 12)
   return /^[a-z0-9_-]*$/iu.test(value) ? value : 's'
+}
+
+function pitchBendRatio(ratio: number, mode: string | undefined) {
+  const value = clampNumber(ratio, 0, 1)
+  switch (mode) {
+    case 'i':
+      return 1 - Math.cos((value * Math.PI) / 2)
+    case 'o':
+      return Math.sin((value * Math.PI) / 2)
+    case 'io':
+      return (1 - Math.cos(value * Math.PI)) / 2
+    default:
+      return value
+  }
 }
 
 function clampNumber(value: unknown, min: number, max: number) {

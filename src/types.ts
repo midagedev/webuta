@@ -62,6 +62,7 @@ export type NotePitchPoint = {
 export type NotePitchBend = {
   points: NotePitchPoint[]
   modes?: string[]
+  snapFirst?: boolean
 }
 
 export type TempoChange = {

@@ -245,6 +245,9 @@ Recommended coverage shape:
   segment modes, save them in `.webutau.json`, export them back to UST, and
   render the pitch curves in both the UTAU sample renderer and browser fallback
   voice.
+- [x] Preserve OpenUtau USTX `pitch.data` curves through import/export,
+  converting OpenUtau millisecond point offsets and 0.1-semitone values to
+  WebUtau note-local pitch bends and back.
 - [x] Add selected-note pitch-bend controls for a simple editable 3-point curve
   with desktop/mobile smoke coverage.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
@@ -485,6 +488,10 @@ Current verified V3 evidence:
   The curves survive native project save/load, duplicate-note workflows, and
   UST export, and they alter rendered pitch in both browser fallback and UTAU
   sample renderer paths.
+- OpenUtau USTX `pitch.data` now round-trips through the same WebUtau pitch-bend
+  model. Point `x` values are interpreted as milliseconds from the note start,
+  `y` values are converted from 0.1 semitone units to cents, `snap_first` is
+  preserved, and basic `l`/`i`/`o`/`io` shapes affect playback interpolation.
 - The left rail now exposes a selected-note pitch-bend card with an ON/OFF
   toggle, bend amount slider, bend position slider, and compact curve preview.
 - DAW editing controls now cover draw, drag, resize, duplicate, split, delete, lyric line

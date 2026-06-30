@@ -152,6 +152,7 @@ export function duplicateNoteInProject(project: SongProject, noteId: string) {
       ? {
           points: currentNote.pitchBend.points.map((point) => ({ ...point })),
           ...(currentNote.pitchBend.modes ? { modes: [...currentNote.pitchBend.modes] } : {}),
+          ...(typeof currentNote.pitchBend.snapFirst === 'boolean' ? { snapFirst: currentNote.pitchBend.snapFirst } : {}),
         }
       : undefined,
     vibrato: currentNote.vibrato ? { ...currentNote.vibrato } : undefined,

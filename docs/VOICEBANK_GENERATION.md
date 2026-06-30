@@ -36,7 +36,7 @@ npm run voicebank:clarity-v3
 
 `voicebank:sustain-v3` uses the browser UTAU renderer, downloads the actual WAV
 users would receive, and checks long notes for loop ticks, sustain stability,
-onset/coda energy, target pitch error, and in-note pitch drift.
+onset/coda energy, intended target pitch error, and in-note pitch drift.
 
 ## Procedural Fallback
 

@@ -1,5 +1,14 @@
 import * as yaml from 'js-yaml'
-import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type TempoChange, type Track, type VoicePart } from './types'
+import {
+  TICKS_PER_BEAT,
+  type NotePitchBend,
+  type NoteVibrato,
+  type SongNote,
+  type SongProject,
+  type TempoChange,
+  type Track,
+  type VoicePart,
+} from './types'
 import {
   normalizeNoteIntensity,
   normalizeNoteModulation,
@@ -10,6 +19,7 @@ import {
 } from './expression'
 import { makeId } from './music'
 import { normalizedTempoChanges } from './music'
+import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
 type AnyRecord = Record<string, unknown>
@@ -99,17 +109,21 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
     const parsedNotes = partNotes
       .map((noteItem, noteIndex) => {
         const noteRecord = isRecord(noteItem) ? noteItem : {}
+        const start = partStart + numberField(noteRecord, ['position'], noteIndex * TICKS_PER_BEAT)
+        const duration = Math.max(10, numberField(noteRecord, ['duration'], TICKS_PER_BEAT))
+        const pitchBend = parseUstxPitchBend(noteRecord, start, duration, tempoChanges)
         const vibrato = parseUstxVibrato(noteRecord)
         const expressions = parseUstxPhonemeExpressions(noteRecord)
         return {
           id: `note-${partIndex}-${noteIndex}`,
           trackId: tracks[trackNo].id,
           partId,
-          start: partStart + numberField(noteRecord, ['position'], noteIndex * TICKS_PER_BEAT),
-          duration: Math.max(10, numberField(noteRecord, ['duration'], TICKS_PER_BEAT)),
+          start,
+          duration,
           tone: numberField(noteRecord, ['tone'], 60),
           lyric: stringField(noteRecord, ['lyric'], 'la'),
           ...expressions,
+          ...(pitchBend ? { pitchBend } : {}),
           ...(vibrato ? { vibrato } : {}),
         }
       })
@@ -183,12 +197,14 @@ export function serializeUstx(project: SongProject) {
         .sort((a, b) => a.start - b.start)
         .map((note) => {
           const phonemeExpressions = serializeUstxPhonemeExpressions(note)
+          const pitch = serializeUstxPitchBend(note.pitchBend, note.start, note.duration, project)
           return {
             position: note.start - part.start,
             duration: note.duration,
             tone: note.tone,
             lyric: note.lyric,
             ...(phonemeExpressions.length > 0 ? { phonemeExpressions } : {}),
+            ...(pitch ? { pitch } : {}),
             ...(note.vibrato ? { vibrato: serializeUstxVibrato(note.vibrato) } : {}),
           }
         }),
@@ -311,6 +327,148 @@ function optionalNumberField(record: AnyRecord, keys: string[]) {
     }
   }
   return undefined
+}
+
+function optionalBooleanField(record: AnyRecord, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'boolean') {
+      return value
+    }
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase()
+      if (normalized === 'true') {
+        return true
+      }
+      if (normalized === 'false') {
+        return false
+      }
+    }
+  }
+  return undefined
+}
+
+function parseUstxPitchBend(
+  record: AnyRecord,
+  noteStart: number,
+  duration: number,
+  tempoChanges: TempoChange[],
+): NotePitchBend | undefined {
+  const rawPitch = record.pitch
+  if (!isRecord(rawPitch)) {
+    return undefined
+  }
+  const durationMs = durationTicksToMilliseconds(noteStart, duration, tempoChanges)
+  if (durationMs <= 0) {
+    return undefined
+  }
+  const rawPoints = arrayField(rawPitch, ['data'])
+  const parsedPoints = rawPoints.flatMap((item) => {
+    const pointRecord = isRecord(item) ? item : {}
+    const x = numberField(pointRecord, ['x', 'X'], Number.NaN)
+    const y = numberField(pointRecord, ['y', 'Y'], Number.NaN)
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return []
+    }
+    return [
+      {
+        point: {
+          timePercent: (x / durationMs) * 100,
+          cents: y * 10,
+        },
+        shape: sanitizeUstxPitchShape(stringField(pointRecord, ['shape'], 'io')),
+      },
+    ]
+  })
+  const points = parsedPoints.map((item) => item.point)
+  const modes = parsedPoints.map((item) => item.shape).slice(0, Math.max(0, points.length - 1))
+  const snapFirst = optionalBooleanField(rawPitch, ['snap_first', 'snapFirst'])
+  return sanitizeOptionalNotePitchBend({
+    points,
+    ...(modes.length > 0 ? { modes } : {}),
+    ...(snapFirst !== undefined ? { snapFirst } : {}),
+  })
+}
+
+function serializeUstxPitchBend(
+  pitchBend: NotePitchBend | undefined,
+  noteStart: number,
+  duration: number,
+  project: SongProject,
+) {
+  const normalized = sanitizeOptionalNotePitchBend(pitchBend)
+  if (!normalized) {
+    return undefined
+  }
+  const durationMs = durationTicksToMilliseconds(noteStart, duration, normalizedTempoChanges(project))
+  if (durationMs <= 0) {
+    return undefined
+  }
+  return {
+    data: normalized.points.map((point, index) => ({
+      x: roundPitchValue((point.timePercent / 100) * durationMs),
+      y: roundPitchValue(point.cents / 10),
+      shape: sanitizeUstxPitchShape(normalized.modes?.[index] ?? 'io'),
+    })),
+    snap_first: typeof normalized.snapFirst === 'boolean' ? normalized.snapFirst : false,
+  }
+}
+
+function durationTicksToMilliseconds(startTick: number, durationTicks: number, tempoChanges: TempoChange[]) {
+  const start = Math.max(0, Math.round(startTick))
+  const end = Math.max(start, start + Math.round(durationTicks))
+  const tempos = normalizedTempoList(tempoChanges)
+  let cursorTick = 0
+  let cursorMs = 0
+  let bpm = tempos[0]?.bpm ?? 120
+  let startMs = 0
+  let endMs = 0
+
+  for (const tempo of tempos.slice(1)) {
+    if (tempo.position >= end) {
+      break
+    }
+    const nextMs = cursorMs + ticksToMilliseconds(tempo.position - cursorTick, bpm)
+    if (cursorTick <= start && start < tempo.position) {
+      startMs = cursorMs + ticksToMilliseconds(start - cursorTick, bpm)
+    }
+    cursorTick = tempo.position
+    cursorMs = nextMs
+    bpm = tempo.bpm
+  }
+
+  if (cursorTick <= start) {
+    startMs = cursorMs + ticksToMilliseconds(start - cursorTick, bpm)
+  }
+  endMs = cursorMs + ticksToMilliseconds(end - cursorTick, bpm)
+  return Math.max(0, endMs - startMs)
+}
+
+function normalizedTempoList(tempoChanges: TempoChange[]) {
+  const byPosition = new Map<number, number>()
+  byPosition.set(0, 120)
+  for (const tempo of tempoChanges) {
+    const position = Math.max(0, Math.round(tempo.position))
+    const bpm = Number.isFinite(tempo.bpm) && tempo.bpm > 0 ? tempo.bpm : 120
+    byPosition.set(position, bpm)
+  }
+  return [...byPosition.entries()]
+    .map(([position, bpm]) => ({ position, bpm }))
+    .sort((a, b) => a.position - b.position)
+}
+
+function ticksToMilliseconds(ticks: number, bpm: number) {
+  return (ticks / TICKS_PER_BEAT) * (60_000 / bpm)
+}
+
+function sanitizeUstxPitchShape(shape: unknown) {
+  const value = String(shape ?? '').trim().toLowerCase()
+  return value === 'l' || value === 'i' || value === 'o' || value === 'io' || value === 'sp' ? value : 'io'
+}
+
+function roundPitchValue(value: number) {
+  const rounded = Math.round(value * 1000) / 1000
+  return Math.abs(rounded) < 0.0005 ? 0 : rounded
 }
 
 function serializeUstxPhonemeExpressions(note: SongNote) {

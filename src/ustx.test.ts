@@ -118,6 +118,98 @@ describe('USTX compatibility layer', () => {
     expect(text).toContain('value: 24')
   })
 
+  it('round-trips OpenUtau pitch blocks as note pitch bends', () => {
+    const project = parseUstx(
+      [
+        'name: Pitch USTX',
+        'tempos:',
+        '  - position: 0',
+        '    bpm: 120',
+        'tracks:',
+        '  - track_name: Lead',
+        'voice_parts:',
+        '  - name: Verse',
+        '    track_no: 0',
+        '    position: 0',
+        '    duration: 960',
+        '    notes:',
+        '      - position: 0',
+        '        duration: 960',
+        '        tone: 64',
+        '        lyric: 라',
+        '        pitch:',
+        '          data:',
+        '            - {x: 0, y: 0, shape: l}',
+        '            - {x: 500, y: 4, shape: i}',
+        '            - {x: 1000, y: -2, shape: o}',
+        '          snap_first: false',
+      ].join('\n'),
+      'pitch.ustx',
+    )
+
+    expect(project.notes[0].pitchBend).toEqual({
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 50, cents: 40 },
+        { timePercent: 100, cents: -20 },
+      ],
+      modes: ['l', 'i'],
+      snapFirst: false,
+    })
+
+    const text = serializeUstx(project)
+    expect(text).toContain('pitch:')
+    expect(text).toContain('snap_first: false')
+    expect(text).toContain('x: 500')
+    expect(text).toContain("'y': 4")
+    expect(text).toContain('shape: i')
+
+    const reparsed = parseUstx(text, 'pitch-roundtrip.ustx')
+    expect(reparsed.notes[0].pitchBend).toEqual(project.notes[0].pitchBend)
+  })
+
+  it('converts USTX pitch point milliseconds across tempo changes', () => {
+    const project = parseUstx(
+      [
+        'name: Tempo Pitch USTX',
+        'tempos:',
+        '  - position: 0',
+        '    bpm: 120',
+        '  - position: 480',
+        '    bpm: 60',
+        'tracks:',
+        '  - track_name: Lead',
+        'voice_parts:',
+        '  - name: Verse',
+        '    track_no: 0',
+        '    position: 0',
+        '    duration: 960',
+        '    notes:',
+        '      - position: 0',
+        '        duration: 960',
+        '        tone: 64',
+        '        lyric: 라',
+        '        pitch:',
+        '          data:',
+        '            - {x: 0, y: 0, shape: l}',
+        '            - {x: 750, y: 1.5, shape: l}',
+        '            - {x: 1500, y: 0, shape: l}',
+        '          snap_first: false',
+      ].join('\n'),
+      'tempo-pitch.ustx',
+    )
+
+    expect(project.notes[0].pitchBend?.points).toEqual([
+      { timePercent: 0, cents: 0 },
+      { timePercent: 50, cents: 15 },
+      { timePercent: 100, cents: 0 },
+    ])
+
+    const text = serializeUstx(project)
+    expect(text).toContain('x: 750')
+    expect(text).toContain('x: 1500')
+  })
+
   it('omits default OpenUtau phoneme expressions from USTX export', () => {
     const project = parseUstx(sampleUstx, 'sample.ustx')
     project.notes[0] = {
