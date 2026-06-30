@@ -94,9 +94,16 @@ describe('App editing workflow', () => {
     render(App)
 
     const guide = screen.getByLabelText('First run guide')
+    const path = within(guide).getByLabelText('Starter path')
 
     expect(within(guide).getByText('첫 보컬 스케치')).toBeTruthy()
     expect(within(guide).getByText('도 히 도 히 다 이 스 키')).toBeTruthy()
+    expect(within(path).getByText('01')).toBeTruthy()
+    expect(within(path).getByText('보이스')).toBeTruthy()
+    expect(within(path).getByText('02')).toBeTruthy()
+    expect(within(path).getByText('재생')).toBeTruthy()
+    expect(within(path).getByText('03')).toBeTruthy()
+    expect(within(path).getByText('WAV')).toBeTruthy()
     expect(within(guide).getByRole('button', { name: '스타터 재생' })).toBeTruthy()
     expect(within(guide).getByRole('button', { name: '스타터 WAV 다운로드' })).toBeTruthy()
 

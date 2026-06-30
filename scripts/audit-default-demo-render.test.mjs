@@ -10,6 +10,7 @@ describe('default demo render audit report', () => {
       checks: [
         'default V3 voicebank loaded',
         'first-run starter guide visible',
+        'first-run guided path visible',
         'first-run demo aliases fully matched',
         'first-run demo render warnings clear',
         'first-run lyric visible',
