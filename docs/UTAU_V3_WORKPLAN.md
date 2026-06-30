@@ -196,6 +196,8 @@ Recommended coverage shape:
   CV alias.
 - [x] Add crossfade diagnostics for loop discontinuities.
 - [x] Add pitch-layer selection by target MIDI note and alias.
+- [x] Parse UTAU `prefix.map` and prefer mapped pitch-specific alias
+  prefix/suffix entries for imported multipitch voicebanks.
 - [x] Add per-note render warnings for fallback, missing alias, or extreme pitch shift.
 - [x] Verify imported Teto and bundled V3 both render without regressions.
 - [x] Add browser-safe voicebank zip import limits for zip size, entry count,
@@ -399,6 +401,8 @@ Current verified V3 evidence:
   published `review/v3/index.html` scorecard.
 - Browser renderer selects the closest explicit pitch layer for the requested
   note tone; generated V3 tests verify `도` resolves to C4/F4/A4 layers.
+- Imported UTAU voicebanks with `prefix.map` now use the map's pitch-specific
+  prefix/suffix aliases before falling back to filename pitch inference.
 - Voicebank zip import now applies browser safety limits before parsing: the
   loader accepts Teto-sized normal UTAU packages but rejects unsafe paths,
   abnormal entry counts, oversized `oto.ini`/WAV members, excessive expanded WAV

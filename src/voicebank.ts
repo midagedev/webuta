@@ -18,6 +18,7 @@ export type LoadedVoicebank = {
   name: string
   sourceFileName: string
   metadata: VoicebankMetadata
+  prefixMaps?: VoicebankPrefixMap[]
   entries: OtoEntry[]
   aliases: string[]
   sampleCount: number
@@ -35,7 +36,21 @@ export type VoicebankMetadata = {
   readme?: VoicebankTextMetadata
   license?: VoicebankTextMetadata
   manifestPath?: string
+  prefixMapPaths?: string[]
   licenseStatus: 'license-file-present' | 'license-file-missing'
+}
+
+export type VoicebankPrefixMapRule = {
+  noteName: string
+  tone: number
+  prefix: string
+  suffix: string
+}
+
+export type VoicebankPrefixMap = {
+  path: string
+  directory: string
+  rules: VoicebankPrefixMapRule[]
 }
 
 export type LyricMatchQuality = 'exact' | 'core' | 'contains' | 'fallback'
@@ -136,8 +151,9 @@ export async function loadVoicebankZip(file: File, options: LoadVoicebankZipOpti
     }
   }
 
+  const prefixMaps = await readPrefixMaps(files, safetyLimits)
   const character = await readCharacterInfo(files, safetyLimits)
-  const metadata = await readVoicebankMetadata(files, safetyLimits, character.path)
+  const metadata = await readVoicebankMetadata(files, safetyLimits, character.path, prefixMaps)
   const aliases = Array.from(new Set(entries.map((entry) => entry.alias).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b),
   )
@@ -147,6 +163,7 @@ export async function loadVoicebankZip(file: File, options: LoadVoicebankZipOpti
     name: character.name || inferVoicebankName(file.name),
     sourceFileName: file.name,
     metadata,
+    prefixMaps,
     entries,
     aliases,
     sampleCount: entries.length,
@@ -301,8 +318,8 @@ export function findEntryForLyric(voicebank: LoadedVoicebank, lyric: string) {
 }
 
 export function findBestEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
-  const match = findEntryMatchForLyric(voicebank, lyric)
-  return bestEntryCandidate(match.candidates, lyric, targetTone) ?? voicebank.entries[0]
+  const match = findEntryMatchForLyric(voicebank, lyric, targetTone)
+  return bestEntryCandidate(voicebank, match.candidates, lyric, targetTone) ?? voicebank.entries[0]
 }
 
 export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: string) {
@@ -319,7 +336,7 @@ export function findCodaTailEntryForLyric(voicebank: LoadedVoicebank, lyric: str
     const core = normalizeAliasCore(entry.alias)
     return searchKeys.some((key) => alias === key || core === key)
   })
-  return bestEntryCandidate(candidates, lyric, targetTone)
+  return bestEntryCandidate(voicebank, candidates, lyric, targetTone)
 }
 
 export function findSustainEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
@@ -327,19 +344,22 @@ export function findSustainEntryForLyric(voicebank: LoadedVoicebank, lyric: stri
   if (!sustainLyric) {
     return undefined
   }
-  const match = findEntryMatchForLyric(voicebank, sustainLyric)
+  const match = findEntryMatchForLyric(voicebank, sustainLyric, targetTone)
   if (match.quality === 'fallback') {
     return undefined
   }
-  return bestEntryCandidate(match.candidates, sustainLyric, targetTone)
+  return bestEntryCandidate(voicebank, match.candidates, sustainLyric, targetTone)
 }
 
-export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string): LyricEntryMatch {
+export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone?: number): LyricEntryMatch {
   const normalized = normalizeLyric(lyric)
   const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
   const hangulCvAlias = hangulSyllableWithoutCoda(normalized)
   const likelyCvAlias = hangulCvAlias ? lyricToLikelyJapaneseAlias(hangulCvAlias) : ''
-  const searchKeys = Array.from(new Set([normalized, likelyAlias, hangulCvAlias, likelyCvAlias].filter(Boolean)))
+  const baseKeys = Array.from(new Set([normalized, likelyAlias, hangulCvAlias, likelyCvAlias].filter(Boolean)))
+  const targetKeys = Array.from(new Set([likelyAlias, normalized, likelyCvAlias, hangulCvAlias].filter(Boolean)))
+  const mappedKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, targetKeys, targetTone)
+  const searchKeys = Array.from(new Set([...mappedKeys, ...baseKeys].filter(Boolean)))
 
   const exact = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeLyric(entry.alias) === key),
@@ -347,7 +367,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (exact.length > 0) {
     return {
       lyric,
-      targetAlias: likelyAlias,
+      targetAlias: mappedKeys[0] ?? likelyAlias,
       candidates: exact,
       quality: 'exact',
     }
@@ -359,7 +379,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (coreExact.length > 0) {
     return {
       lyric,
-      targetAlias: likelyAlias,
+      targetAlias: mappedKeys[0] ?? likelyAlias,
       candidates: coreExact,
       quality: 'core',
     }
@@ -371,7 +391,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (contains.length > 0) {
     return {
       lyric,
-      targetAlias: likelyAlias,
+      targetAlias: mappedKeys[0] ?? likelyAlias,
       candidates: contains,
       quality: 'contains',
     }
@@ -379,7 +399,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
 
   return {
     lyric,
-    targetAlias: likelyAlias,
+    targetAlias: mappedKeys[0] ?? likelyAlias,
     candidates: voicebank.entries,
     quality: 'fallback',
   }
@@ -496,29 +516,33 @@ export function estimateEntryBaseTone(entry: OtoEntry) {
   if (!match) {
     return 60
   }
-  const [, note, accidental, octaveText] = match
-  const semitone = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note.toUpperCase() as 'C']
-  const accidentalOffset = accidental === '#' ? 1 : accidental === 'b' ? -1 : 0
-  return (Number(octaveText) + 1) * 12 + semitone + accidentalOffset
+  return noteNameToMidi(`${match[1]}${match[2]}${match[3]}`) ?? 60
 }
 
 export function playbackRateForTone(entry: OtoEntry, targetTone: number) {
   return midiToHz(targetTone) / midiToHz(estimateEntryBaseTone(entry))
 }
 
-function bestEntryCandidate(entries: OtoEntry[], lyric: string, targetTone: number) {
+function bestEntryCandidate(voicebank: LoadedVoicebank, entries: OtoEntry[], lyric: string, targetTone: number) {
   const normalized = normalizeLyric(lyric)
   const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
   const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
+  const mappedKeys = prefixMappedAliasesForKeys(voicebank, searchKeys, targetTone)
   return entries
     .map((entry, index) => ({
       entry,
-      score: entrySelectionScore(entry, searchKeys, targetTone, index),
+      score: entrySelectionScore(entry, searchKeys, mappedKeys, targetTone, index),
     }))
     .sort((a, b) => a.score - b.score)[0]?.entry
 }
 
-function entrySelectionScore(entry: OtoEntry, searchKeys: string[], targetTone: number, index: number) {
+function entrySelectionScore(
+  entry: OtoEntry,
+  searchKeys: string[],
+  mappedKeys: string[],
+  targetTone: number,
+  index: number,
+) {
   const alias = normalizeLyric(entry.alias)
   const core = normalizeAliasCore(entry.alias)
   const path = normalizeLyric(entry.path)
@@ -536,10 +560,41 @@ function entrySelectionScore(entry: OtoEntry, searchKeys: string[], targetTone: 
   }, 100)
 
   const prefixPenalty = /^[-*]\s/.test(alias) ? 5 : 0
+  const prefixMapPenalty =
+    mappedKeys.length > 0 && !mappedKeys.some((key) => alias === key || core === key) ? 8 : 0
   const vcvPenalty = /^[a-zぁ-んァ-ンー]\s/.test(alias) ? 18 : 0
   const pathPenalty = voicebankStylePenalty(path)
   const pitchPenalty = hasExplicitPitch(entry) ? Math.abs(estimateEntryBaseTone(entry) - targetTone) * 1.7 : 0
-  return matchScore + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+  return matchScore + prefixMapPenalty + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+}
+
+function prefixMappedAliasesForKeys(voicebank: LoadedVoicebank, keys: string[], targetTone: number) {
+  const affixes = prefixMapAffixesForTone(voicebank, targetTone)
+  if (affixes.length === 0) {
+    return []
+  }
+  return Array.from(
+    new Set(
+      affixes.flatMap((affix) =>
+        keys.map((key) => normalizeLyric(`${affix.prefix}${key}${affix.suffix}`)).filter(Boolean),
+      ),
+    ),
+  )
+}
+
+function prefixMapAffixesForTone(voicebank: LoadedVoicebank, targetTone: number) {
+  return (voicebank.prefixMaps ?? [])
+    .map((prefixMap) => closestPrefixMapRule(prefixMap, targetTone))
+    .filter((rule): rule is VoicebankPrefixMapRule => Boolean(rule && (rule.prefix || rule.suffix)))
+}
+
+function closestPrefixMapRule(prefixMap: VoicebankPrefixMap, targetTone: number) {
+  return prefixMap.rules
+    .map((rule, index) => ({
+      rule,
+      score: Math.abs(rule.tone - targetTone) + index / 10000,
+    }))
+    .sort((a, b) => a.score - b.score)[0]?.rule
 }
 
 function voicebankStylePenalty(path: string) {
@@ -631,6 +686,7 @@ async function readVoicebankMetadata(
   files: ZipFileMap,
   limits: VoicebankZipSafetyLimits,
   characterPath: string | undefined,
+  prefixMaps: VoicebankPrefixMap[],
 ): Promise<VoicebankMetadata> {
   const licensePath = findTextAssetPath(files, /(^|\/)(license|licence|terms|readme_license)\.(txt|md)$/i)
   const readmePath = findTextAssetPath(files, /(^|\/)(readme|README)\.(txt|md)$/)
@@ -643,8 +699,53 @@ async function readVoicebankMetadata(
     readme,
     license,
     manifestPath,
+    prefixMapPaths: prefixMaps.map((prefixMap) => prefixMap.path),
     licenseStatus: license ? 'license-file-present' : 'license-file-missing',
   }
+}
+
+async function readPrefixMaps(files: ZipFileMap, limits: VoicebankZipSafetyLimits): Promise<VoicebankPrefixMap[]> {
+  const prefixMapPaths = Object.keys(files)
+    .filter((path) => /(^|\/)prefix\.map$/i.test(path) && !files[path].dir)
+    .sort((a, b) => pathDepth(a) - pathDepth(b) || a.localeCompare(b))
+  const prefixMaps: VoicebankPrefixMap[] = []
+  for (const path of prefixMapPaths) {
+    validateZipMemberSize(files[path], limits.maxSingleMetadataBytes, `prefix.map ${path}`)
+    const text = await readZipText(files[path])
+    const rules = parsePrefixMap(text)
+    if (rules.length === 0) {
+      continue
+    }
+    prefixMaps.push({
+      path,
+      directory: path.includes('/') ? path.slice(0, path.lastIndexOf('/') + 1) : '',
+      rules,
+    })
+  }
+  return prefixMaps
+}
+
+function parsePrefixMap(text: string): VoicebankPrefixMapRule[] {
+  const rules: VoicebankPrefixMapRule[] = []
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.replace(/\uFEFF/g, '')
+    if (!line.trim() || line.trimStart().startsWith('#')) {
+      continue
+    }
+    const values = line.includes('\t') ? line.split('\t') : line.trim().split(/\s+/)
+    const noteName = (values[0] ?? '').trim()
+    const tone = noteNameToMidi(noteName)
+    if (tone === undefined) {
+      continue
+    }
+    rules.push({
+      noteName,
+      tone,
+      prefix: values[1] ?? '',
+      suffix: values.slice(2).join('\t') || '',
+    })
+  }
+  return rules
 }
 
 function findTextAssetPath(files: ZipFileMap, pattern: RegExp) {
@@ -714,6 +815,17 @@ function splitOnce(text: string, separator: string) {
 function parseNumber(value: string | undefined) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+function noteNameToMidi(noteName: string) {
+  const match = noteName.trim().match(/^([A-Ga-g])([#b♯♭]?)(-?\d)$/)
+  if (!match) {
+    return undefined
+  }
+  const [, note, accidental, octaveText] = match
+  const semitone = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note.toUpperCase() as 'C']
+  const accidentalOffset = accidental === '#' || accidental === '♯' ? 1 : accidental === 'b' || accidental === '♭' ? -1 : 0
+  return (Number(octaveText) + 1) * 12 + semitone + accidentalOffset
 }
 
 function normalizeLyric(lyric: string) {

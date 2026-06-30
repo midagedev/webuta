@@ -290,4 +290,29 @@ describe('voicebank zip loader', () => {
     expect(findBestEntryForLyric(voicebank, 'a', 67).fileName).toBe('a_G4.wav')
     expect(findBestEntryForLyric(voicebank, 'a', 60).fileName).toBe('a_C4.wav')
   })
+
+  it('uses prefix.map suffixes to choose multipitch aliases without pitch-coded file names', async () => {
+    const zip = new JSZip()
+    zip.file('Singer/character.yaml', 'name: Prefix Map Singer\n')
+    zip.file('Singer/prefix.map', ['C4\t\t_LOW', 'G4\t\t_HIGH'].join('\r\n'))
+    zip.file(
+      'Singer/oto.ini',
+      ['soft.wav=あ_LOW,0,120,0,40,20', 'bright.wav=あ_HIGH,0,120,0,40,20'].join('\n'),
+    )
+    zip.file('Singer/soft.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('Singer/bright.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'prefix-map.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(voicebank.metadata.prefixMapPaths).toEqual(['Singer/prefix.map'])
+    expect(voicebank.prefixMaps?.[0].rules).toHaveLength(2)
+    expect(findBestEntryForLyric(voicebank, 'a', 60).fileName).toBe('soft.wav')
+    expect(findBestEntryForLyric(voicebank, 'a', 67).fileName).toBe('bright.wav')
+    expect(findEntryMatchForLyric(voicebank, 'a', 67)).toMatchObject({
+      targetAlias: 'あ_high',
+      quality: 'exact',
+    })
+  })
 })

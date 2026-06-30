@@ -32,6 +32,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
   without rendering the whole song.
 - [x] Add browser-side voicebank zip safety checks for oversized packages,
   unsafe paths, abnormal file counts, and oversized WAV/oto members.
+- [x] Add UTAU `prefix.map` parsing so imported multipitch voicebanks can select
+  pitch-specific alias prefixes/suffixes.
 - [x] Add current voicebank license/readme metadata display for bundled V3 and
   user-imported UTAU zips.
 - [x] Add a non-redistributed `test-assets/` workflow and `npm run asset:teto` downloader for the official test zip.
