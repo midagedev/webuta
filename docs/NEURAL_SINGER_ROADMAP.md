@@ -108,10 +108,13 @@ Starting points:
 High-quality singing voice synthesis is data-bound. GPU time helps, but it does
 not replace clean singing recordings, alignment, and rights.
 
-Current product constraint: the user will not provide singer recordings. Private
-recording tooling can stay as a pipeline prototype, but it is not an active path
-for the WebUtau default voice. The releasable default must come from a
-license-clean public dataset path or a fully generated/synthetic voicebank path.
+Current product constraint: the user will not provide singer recordings, and
+the bundled default voice should be made by WebUtau itself rather than derived
+from public/private recorded voice datasets. Private recording tooling can stay
+as a pipeline prototype, but it is not an active path for the WebUtau default
+voice. Public datasets remain useful for pronunciation QA, alignment research,
+and future separately licensed neural experiments; they are not the source audio
+for the releasable default UTAU pack.
 
 ### Candidate datasets
 
@@ -267,9 +270,10 @@ license-clean public dataset path or a fully generated/synthetic voicebank path.
     are speech auxiliaries; Pansori, Deeply Korean read, and Deeply
     parent-child vocal interaction are reference-only.
   - The current conclusion is intentional and important: no acquired public
-    Korean dataset is production-release evidence for a WebUtau neural singer.
-    Completion still requires AI Hub terms approval or another license-clean
-    source that does not depend on user-provided recordings.
+    Korean dataset is production-release evidence for the bundled default
+    WebUtau voice. Completion still requires the fully generated synthetic UTAU
+    path for the default, or a separate future voice with explicit dataset/model
+    rights and release approval.
 - Licensed Korean singing dataset: AI Hub multi-speaker singing data.
   - Useful if access and terms allow model training for this project.
   - Review license, account access, redistribution, and generated-model terms.

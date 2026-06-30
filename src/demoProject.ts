@@ -34,13 +34,13 @@ export const demoProject: SongProject = {
     },
   ],
   notes: [
-    { id: 'n1', trackId, partId, start: 0, duration: 420, tone: 60, lyric: '도' },
-    { id: 'n2', trackId, partId, start: 480, duration: 360, tone: 62, lyric: '히' },
+    { id: 'n1', trackId, partId, start: 0, duration: 420, tone: 64, lyric: '도' },
+    { id: 'n2', trackId, partId, start: 480, duration: 360, tone: 67, lyric: '히' },
     { id: 'n3', trackId, partId, start: 960, duration: 420, tone: 64, lyric: '도' },
-    { id: 'n4', trackId, partId, start: 1440, duration: 600, tone: 65, lyric: '히' },
+    { id: 'n4', trackId, partId, start: 1440, duration: 600, tone: 69, lyric: '히' },
     { id: 'n5', trackId, partId, start: 2160, duration: 420, tone: 67, lyric: '다' },
     { id: 'n6', trackId, partId, start: 2640, duration: 360, tone: 69, lyric: '이' },
-    { id: 'n7', trackId, partId, start: 3120, duration: 420, tone: 67, lyric: '스' },
+    { id: 'n7', trackId, partId, start: 3120, duration: 420, tone: 65, lyric: '스' },
     { id: 'n8', trackId, partId, start: 3600, duration: 1080, tone: 64, lyric: '키' },
   ],
 }

@@ -33,14 +33,14 @@ describe('neural render contract export', () => {
       id: 'n1',
       startTick: 0,
       durationTick: 420,
-      midi: 60,
+      midi: 64,
       lyric: '도',
       phonemes: [
         { symbol: 'd', role: 'onset', source: '도' },
         { symbol: 'o', role: 'vowel', source: '도' },
       ],
     })
-    expect(request.notes[0].targetHz).toBeCloseTo(261.625565, 5)
+    expect(request.notes[0].targetHz).toBeCloseTo(329.627557, 5)
   })
 
   it('preserves Korean coda phonemes instead of reducing to CV', () => {

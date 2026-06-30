@@ -38,7 +38,7 @@
       </section>
       <section>
         <strong>WebUtau Korean V3 Synthetic</strong>
-        <span>The bundled starter voicebank contains original DSP-generated UTAU-style samples and metadata, with no human recording, TTS output, or cloned singer likeness.</span>
+        <span>The bundled starter voicebank contains original DSP-generated UTAU-style samples and metadata, with no human recording, recorded dataset source audio, TTS output, or cloned singer likeness.</span>
       </section>
       <section>
         <strong>Artwork</strong>

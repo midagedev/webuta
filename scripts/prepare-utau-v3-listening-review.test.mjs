@@ -19,6 +19,7 @@ describe('UTAU V3 listening review pack', () => {
       'vowel-color-check',
     ])
     expect(projects[0].project.notes.map((note) => note.lyric).join('')).toBe('도히도히다이스키')
+    expect(projects[0].project.notes.map((note) => note.tone)).toEqual([64, 67, 64, 69, 67, 69, 65, 64])
     expect(projects[1].project.notes.map((note) => note.lyric)).toContain('연')
     expect(projects[2].project.notes.map((note) => note.lyric)).toEqual(['가', '나', '다', '라', '마', '사'])
   })

@@ -285,10 +285,10 @@ describe('App editing workflow', () => {
     expect(start).toHaveBeenCalledOnce()
     expect(previewButton.className).toContain('pressed')
     const previewFrequency = oscillator.frequency.setValueAtTime.mock.calls[0][0]
-    expect(previewFrequency).toBeCloseTo(293.66, 2)
+    expect(previewFrequency).toBeCloseTo(392.0, 2)
     expect(oscillator.frequency.setValueAtTime).toHaveBeenCalledWith(previewFrequency, 0)
-    expect(screen.getByText('히 · D4')).toBeTruthy()
-    expect(screen.getAllByText('Preview 도 · D4').length).toBeGreaterThan(0)
+    expect(screen.getByText('히 · G4')).toBeTruthy()
+    expect(screen.getAllByText('Preview 도 · G4').length).toBeGreaterThan(0)
   })
 
   it('records touch performance notes from the lyric queue as one undoable take', async () => {
@@ -309,8 +309,8 @@ describe('App editing workflow', () => {
       const saved = loadSavedProject()
       expect(saved?.notes).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ lyric: '가', tone: 60, start: 240, duration: 240 }),
-          expect.objectContaining({ lyric: '나', tone: 62, start: 480, duration: 240 }),
+          expect.objectContaining({ lyric: '가', tone: 64, start: 240, duration: 240 }),
+          expect.objectContaining({ lyric: '나', tone: 67, start: 480, duration: 240 }),
         ]),
       )
     })
@@ -490,7 +490,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(61)
+      expect(savedNote?.tone).toBe(65)
     })
   })
 
@@ -506,7 +506,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(61)
+      expect(savedNote?.tone).toBe(65)
     })
   })
 
@@ -618,7 +618,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(61)
+      expect(savedNote?.tone).toBe(65)
     })
   })
 })

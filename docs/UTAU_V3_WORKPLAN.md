@@ -1,6 +1,6 @@
 # WebUtau Korean V3 UTAU Workplan
 
-Research snapshot: 2026-06-30
+Research snapshot: 2026-07-01
 
 Goal: replace the low-quality `WebUtau Korean V2` default with a community-release-ready
 `WebUtau Korean V3` UTAU-format voicebank and make the browser editor good enough
@@ -9,7 +9,8 @@ to use as a small vocal-synth DAW.
 Hard constraint: the user will not provide singer recordings, and the project
 must not ask the user's family to record a voice. V3 must therefore be generated
 by WebUtau tooling itself. The primary V3 path is a fully synthetic, original
-DSP-generated singer, not a recorded singer and not a cloned third-party voice.
+DSP-generated singer, not a recorded singer, not a public/private
+dataset-derived voice, and not a cloned third-party voice.
 Any private-recording scripts in the repo are inactive historical/prototype
 tooling for other experiments, not the path for this V3 goal.
 
@@ -26,8 +27,8 @@ WebUtau V3 is successful when a new visitor can:
 
 ## Research Conclusion
 
-With no singer recordings available, the best path is a fully generated,
-license-clean synthetic UTAU voicebank:
+With no singer recordings available and no user-provided voice material allowed,
+the best path is a fully generated, license-clean synthetic UTAU voicebank:
 
 - Generate a controlled Korean CV/VC/multipitch voicebank from deterministic
   DSP synthesis.
@@ -35,16 +36,18 @@ license-clean synthetic UTAU voicebank:
   `readme.txt`, and `license.txt`.
 - Use analysis tools for assistance: F0 diagnostics, loop diagnostics, oto
   validation, and optional neural alignment/re-synthesis experiments.
-- Keep neural systems as tooling, not as the default source of the voice, unless
-  the model, dataset, singer identity, and generated-audio rights are explicitly
-  cleared for public redistribution.
+- Keep neural systems and public datasets as QA/research tooling, not as the
+  default source of the voice, unless a future separate release explicitly
+  changes the product goal and clears model, dataset, singer identity, and
+  generated-audio rights.
 
 This is better than the current V2 path because V2 is generated/procedural/TTS-like
 and has weak singing sustain, unstable pronunciation, and unclear public-release
 comfort for a community default. It is better than extracting public speech
-datasets because speech corpora are not sung, often mix many speakers, and do
-not naturally contain stable musical vowels. It is safer than public neural
-singing datasets because many useful datasets are research-only or noncommercial.
+datasets because speech corpora are not sung, often mix many speakers, do not
+naturally contain stable musical vowels, and would make the default singer
+dataset-derived rather than original. It is safer than public neural singing
+datasets because many useful datasets are research-only or noncommercial.
 
 An original recorded V3 is out of scope for the active goal. If a future
 contributor explicitly provides consent-reviewed recordings, that can become a
@@ -80,9 +83,9 @@ user or their family to record a voice.
 | --- | --- | --- | --- | --- |
 | V2 procedural/formant generation | Very low | Clean | Poor | Keep only as fallback/test fixture |
 | Current Supertonic/TTS V2 | Low to medium | Needs model-output review | Poor | Retire as legacy |
-| Public speech corpus slicing | Low for singing | CC0/CC BY candidates exist | Poor alone | Use for pronunciation QA/prototypes |
-| Public singing dataset to UTAU samples | Medium risk | Often NC/SA/research | Risky | Use only if license explicitly allows redistribution |
-| Neural model renders to UTAU samples | Potentially high | Complex model/dataset/singer rights | Tool only | Use for alignment or private experiments |
+| Public speech corpus slicing | Low for singing | CC0/CC BY candidates exist | Poor and dataset-derived | Pronunciation QA/prototypes only |
+| Public singing dataset to UTAU samples | Medium risk | Often NC/SA/research | Not for this default | Separate future voice only |
+| Neural model renders to UTAU samples | Potentially high | Complex model/dataset/singer rights | Tool only, not default source | Use for alignment or private experiments |
 | Original consent-recorded UTAU | High | Clean if release signed | Good if available | Secondary fallback |
 | Fully synthetic DSP UTAU V3 | Medium but controllable | Clean | Best under no-recording constraint | Primary V3 path |
 
@@ -128,6 +131,8 @@ Recommended coverage shape:
 - [x] Choose generated singer identity: `WebUtau Korean V3 Synthetic`.
 - [x] Avoid human recordings, voice cloning, third-party singer likenesses, and
   TTS/model outputs in the default V3 artifact.
+- [x] Avoid public/private recorded dataset source audio in the default V3
+  artifact; datasets may only support QA/research for this goal.
 - [x] Add a release audit gate that blocks V3 if the bundled zip does not prove
   no-recording synthetic origin through its manifest, readme, and license.
 - [x] Decide that generated user audio may be used freely without third-party
@@ -200,8 +205,9 @@ Recommended coverage shape:
 
 ### M7. First-Run Musical Quality
 
-- [ ] Improve the default melody beyond a test scale if listening review says it
-  still feels like a test phrase.
+- [x] Improve the default melody beyond a test scale: the built-in
+  `도히도히 다이스키` phrase now uses an E-G-E-A-G-A-F-E hook-shaped contour
+  that stays within safe imported-voicebank pitch-shift bounds.
 - [x] Ensure the default phrase uses aliases that exist in V3.
 - [x] Render default demo to WAV and archive diagnostics.
 - [x] Generate browser-rendered V2/V3 comparison WAVs and require V3 to score
@@ -272,9 +278,9 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 615 WAV samples, 1437 oto aliases, about 46 MB.
+- Default web profile: 615 WAV samples, 1437 oto aliases, 47944410 bytes.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260630-v3-synthetic-web-1`.
+  version `20260701-v3-synthetic-web-2`.
 - `npm run voicebank:audit-v3` passes on the default zip: all 615 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
@@ -285,6 +291,9 @@ Current verified V3 evidence:
   first-run aliases match 8/8, render warnings are clear, the lyric line is
   visible, desktop/mobile overflow checks pass, and the exported WAV is 44.1 kHz
   mono 16-bit PCM, 6.56 seconds, 578384 bytes.
+- The default `도히도히 다이스키` melody is now E-G-E-A-G-A-F-E rather than a
+  straight ascending test scale; regression tests pin this contour in the app
+  fixture and listening-review pack.
 - `npm run voicebank:review-v3` prepares a browser-rendered listening review
   pack at `experiments/utau-v3/work/v3-listening-review/`: 4 V3 WAV phrases
   covering first-run demo, batchim release, common CV attacks, and vowel color,
@@ -339,8 +348,8 @@ Current verified V3 evidence:
   region display.
 - Release audit now inspects `public/voicebanks/webuta-ko-v3.zip` directly and
   requires manifest/readme/license evidence that the default V3 voicebank is
-  fully synthetic, DSP-generated, and not recorded, cloned, or rendered from a
-  third-party TTS/model output.
+  fully synthetic, DSP-generated, and not recorded, not derived from recorded
+  dataset source audio, cloned, or rendered from a third-party TTS/model output.
 - Release audit now requires the listening review pack and human score file to
   include four V2/V3 comparison entries, with V3 preference scores of at least
   4/5 before community release.
@@ -351,12 +360,10 @@ Current verified V3 evidence:
   evidence before deploy; the local synthetic-origin gate passes on the real
   bundled V3 zip.
 - `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/community-release-audit-pages.json`:
-  blocked only by missing human listening scores; live Pages loads
-  `voicebanks/webuta-ko-v3.zip?v=20260630-v3-synthetic-web-1` with HTTP 200 and
-  47944175 bytes.
-- GitHub Actions Pages run `28455792293` passed build, tests, artifact upload,
-  and deploy for commit `677a1f6`.
-- `npm test`: 81 passed / 1 skipped files, 353 passed / 2 skipped tests.
+  must be rerun after the next Pages deployment so the live cache-busted zip
+  reports `20260701-v3-synthetic-web-2`; human listening scores are still the
+  final release blocker.
+- `npm test`: 82 passed / 1 skipped files, 354 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

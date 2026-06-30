@@ -121,7 +121,7 @@ describe('project editing helpers', () => {
     expect(rightNote).toMatchObject({
       start: 240,
       duration: 180,
-      tone: 60,
+      tone: 64,
       lyric: '도',
     })
     expect(project.notes).toHaveLength(demoProject.notes.length + 1)

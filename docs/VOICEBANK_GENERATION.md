@@ -17,8 +17,9 @@ This writes `public/voicebanks/webuta-ko-v3.zip` with generated WAV samples,
 `webuta-ko-v3.manifest.json`.
 
 The V3 default is a fully synthetic DSP-generated voice. It does not copy or
-clone a human singer, a TTS model output, Kasane Teto, Vocaloid, or any
-third-party singer asset.
+clone a human singer, use public/private recorded voice datasets as source
+audio, use TTS/model checkpoint output, or include Kasane Teto, Vocaloid, or
+any third-party singer asset.
 
 ## Procedural Fallback
 
