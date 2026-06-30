@@ -168,7 +168,41 @@
       ? '남은 단계: 생성된 WAV 청취 점수 저장'
       : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
   )
+  let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
+
+  function voicebankLicenseTitle() {
+    if (!voicebank) {
+      return '라이선스 대기'
+    }
+    if (isBundledDefaultVoicebank && voicebank.metadata.license) {
+      return '번들 V3 라이선스 포함'
+    }
+    if (voicebank.metadata.license) {
+      return '사용자 ZIP 라이선스 포함'
+    }
+    return '라이선스 파일 없음'
+  }
+
+  function voicebankLicenseSummary() {
+    if (!voicebank) {
+      return 'UTAU ZIP을 불러오면 license.txt/readme.txt를 확인합니다.'
+    }
+    if (voicebank.metadata.license) {
+      return voicebank.metadata.license.excerpt
+    }
+    if (voicebank.metadata.readme) {
+      return voicebank.metadata.readme.excerpt
+    }
+    return '이 보이스뱅크 ZIP 안에서 license.txt 또는 readme.txt를 찾지 못했습니다.'
+  }
+
+  function voicebankLicensePath() {
+    if (!voicebank) {
+      return '메타데이터 대기'
+    }
+    return voicebank.metadata.license?.path ?? voicebank.metadata.readme?.path ?? voicebank.metadata.characterPath ?? voicebank.sourceFileName
+  }
 </script>
 
 <aside class="left-rail">
@@ -282,6 +316,11 @@
           ? `${notice} · ${formatVoicebankCoverage(voicebankCoverage)} · ${voicebank.wavCount} wav · ${formatVoicebankCacheStatus(voicebankCacheStatus)}`
           : notice}
       </span>
+    </div>
+    <div class={`voicebank-license-card ${voicebankLicenseState}`} aria-label="Voicebank license metadata">
+      <strong>{voicebankLicenseTitle()}</strong>
+      <span>{voicebankLicenseSummary()}</span>
+      <em>{voicebankLicensePath()}</em>
     </div>
     <div class={`coverage-card ${voicebankCoverage?.fallbackNotes === 0 ? 'ready' : voicebank ? 'warning' : 'idle'}`} aria-label="Voicebank lyric coverage">
       {#if !voicebank}

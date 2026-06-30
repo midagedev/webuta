@@ -17,11 +17,25 @@ export type LoadedVoicebank = {
   id: string
   name: string
   sourceFileName: string
+  metadata: VoicebankMetadata
   entries: OtoEntry[]
   aliases: string[]
   sampleCount: number
   wavCount: number
   readSample(entry: OtoEntry): Promise<ArrayBuffer>
+}
+
+export type VoicebankTextMetadata = {
+  path: string
+  excerpt: string
+}
+
+export type VoicebankMetadata = {
+  characterPath?: string
+  readme?: VoicebankTextMetadata
+  license?: VoicebankTextMetadata
+  manifestPath?: string
+  licenseStatus: 'license-file-present' | 'license-file-missing'
 }
 
 export type LyricMatchQuality = 'exact' | 'core' | 'contains' | 'fallback'
@@ -72,6 +86,7 @@ export type VoicebankZipSafetyLimits = {
   maxOtoFiles: number
   maxWavFiles: number
   maxSingleOtoBytes: number
+  maxSingleMetadataBytes: number
   maxSingleWavBytes: number
   maxTotalWavBytes: number
 }
@@ -86,6 +101,7 @@ export const DEFAULT_VOICEBANK_ZIP_SAFETY_LIMITS: VoicebankZipSafetyLimits = {
   maxOtoFiles: 128,
   maxWavFiles: 6000,
   maxSingleOtoBytes: 4 * 1024 * 1024,
+  maxSingleMetadataBytes: 512 * 1024,
   maxSingleWavBytes: 32 * 1024 * 1024,
   maxTotalWavBytes: 1536 * 1024 * 1024,
 }
@@ -120,15 +136,17 @@ export async function loadVoicebankZip(file: File, options: LoadVoicebankZipOpti
     }
   }
 
-  const characterName = await readCharacterName(files)
+  const character = await readCharacterInfo(files, safetyLimits)
+  const metadata = await readVoicebankMetadata(files, safetyLimits, character.path)
   const aliases = Array.from(new Set(entries.map((entry) => entry.alias).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b),
   )
 
   return {
     id: `${file.name}-${file.size}-${file.lastModified}`,
-    name: characterName || inferVoicebankName(file.name),
+    name: character.name || inferVoicebankName(file.name),
     sourceFileName: file.name,
+    metadata,
     entries,
     aliases,
     sampleCount: entries.length,
@@ -583,20 +601,74 @@ function parseOtoIni(text: string, directory: string, files: ZipFileMap) {
   return entries
 }
 
-async function readCharacterName(files: ZipFileMap) {
+async function readCharacterInfo(files: ZipFileMap, limits: VoicebankZipSafetyLimits) {
   const characterPath = Object.keys(files).find((path) => /(^|\/)character\.ya?ml$/i.test(path) && !files[path].dir)
   if (characterPath) {
     try {
+      validateZipMemberSize(files[characterPath], limits.maxSingleMetadataBytes, `character metadata ${characterPath}`)
       const text = await readZipText(files[characterPath])
       const data = yaml.load(text)
       if (typeof data === 'object' && data && 'name' in data && typeof data.name === 'string') {
-        return data.name
+        return {
+          path: characterPath,
+          name: data.name,
+        }
       }
     } catch {
-      return undefined
+      return {
+        path: characterPath,
+        name: undefined,
+      }
     }
   }
-  return undefined
+  return {
+    path: undefined,
+    name: undefined,
+  }
+}
+
+async function readVoicebankMetadata(
+  files: ZipFileMap,
+  limits: VoicebankZipSafetyLimits,
+  characterPath: string | undefined,
+): Promise<VoicebankMetadata> {
+  const licensePath = findTextAssetPath(files, /(^|\/)(license|licence|terms|readme_license)\.(txt|md)$/i)
+  const readmePath = findTextAssetPath(files, /(^|\/)(readme|README)\.(txt|md)$/)
+  const manifestPath = Object.keys(files).find((path) => /(^|\/)[^/]+\.manifest\.json$/i.test(path) && !files[path].dir)
+  const license = licensePath ? await readTextMetadata(files[licensePath], licensePath, limits) : undefined
+  const readme = readmePath ? await readTextMetadata(files[readmePath], readmePath, limits) : undefined
+
+  return {
+    characterPath,
+    readme,
+    license,
+    manifestPath,
+    licenseStatus: license ? 'license-file-present' : 'license-file-missing',
+  }
+}
+
+function findTextAssetPath(files: ZipFileMap, pattern: RegExp) {
+  return Object.keys(files)
+    .filter((path) => pattern.test(path) && !files[path].dir)
+    .sort((a, b) => pathDepth(a) - pathDepth(b) || a.localeCompare(b))[0]
+}
+
+async function readTextMetadata(file: JSZip.JSZipObject, path: string, limits: VoicebankZipSafetyLimits) {
+  validateZipMemberSize(file, limits.maxSingleMetadataBytes, `voicebank metadata ${path}`)
+  const text = await readZipText(file)
+  return {
+    path,
+    excerpt: textExcerpt(text),
+  }
+}
+
+function pathDepth(path: string) {
+  return path.split('/').length
+}
+
+function textExcerpt(text: string, maxLength = 320) {
+  const normalized = text.split('\u0000').join('').replace(/\s+/g, ' ').trim()
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength).trimEnd()}...` : normalized
 }
 
 async function readZipText(file: JSZip.JSZipObject) {

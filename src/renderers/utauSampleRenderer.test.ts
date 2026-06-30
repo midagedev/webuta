@@ -20,6 +20,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -66,6 +67,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -103,6 +105,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -139,6 +142,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -176,6 +180,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -221,6 +226,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [entry],
       aliases: [entry.alias],
       sampleCount: 1,
@@ -272,6 +278,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [cvEntry, vcEntry],
       aliases: [cvEntry.alias, vcEntry.alias],
       sampleCount: 2,
@@ -335,6 +342,7 @@ describe('UTAU sample renderer', () => {
       id: 'test-bank',
       name: 'Test Bank',
       sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
       entries: [cvcEntry, cvEntry, vcEntry],
       aliases: [cvcEntry.alias, cvEntry.alias, vcEntry.alias],
       sampleCount: 3,
@@ -368,6 +376,21 @@ describe('UTAU sample renderer', () => {
     expect(requestedPaths).not.toContain('WebUtau/yeon_C4.wav')
   })
 })
+
+function makeVoicebankMetadata() {
+  return {
+    characterPath: 'character.yaml',
+    readme: {
+      path: 'readme.txt',
+      excerpt: 'Test UTAU voicebank.',
+    },
+    license: {
+      path: 'license.txt',
+      excerpt: 'Test voicebank license.',
+    },
+    licenseStatus: 'license-file-present' as const,
+  }
+}
 
 function makeProject(): SongProject {
   return {

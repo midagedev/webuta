@@ -210,6 +210,9 @@ describe('App editing workflow', () => {
     expect(screen.getByText('현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
     expect(screen.getByText('도 -> ど (exact)')).toBeTruthy()
     expect(screen.getByText('렌더 경고 없음')).toBeTruthy()
+    const licenseCard = screen.getByLabelText('Voicebank license metadata')
+    expect(licenseCard.textContent).toContain('사용자 ZIP 라이선스 포함')
+    expect(licenseCard.textContent).toContain('Test Teto matching license')
   })
 
   it('previews the selected note through the loaded UTAU sample renderer', async () => {
@@ -701,6 +704,8 @@ describe('App editing workflow', () => {
 async function makeVoicebankZip() {
   const zip = new JSZip()
   zip.file('Teto/character.yaml', 'name: Test Teto\n')
+  zip.file('Teto/readme.txt', 'Test Teto readme for imported voicebank checks.\n')
+  zip.file('Teto/license.txt', 'Test Teto license permits local WebUtau rendering.\n')
   zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')
   zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
   const blob = await zip.generateAsync({ type: 'blob' })
@@ -710,6 +715,8 @@ async function makeVoicebankZip() {
 async function makeMatchingVoicebankZip() {
   const zip = new JSZip()
   zip.file('Teto/character.yaml', 'name: Test Teto\n')
+  zip.file('Teto/readme.txt', 'Test Teto matching readme for imported voicebank checks.\n')
+  zip.file('Teto/license.txt', 'Test Teto matching license permits local WebUtau rendering.\n')
   zip.file(
     'Teto/oto.ini',
     [

@@ -364,6 +364,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
   await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -386,6 +388,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run demo render warnings clear',
     'first-run lyric visible',
     'community release readiness card visible',
+    'voicebank license metadata visible',
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]

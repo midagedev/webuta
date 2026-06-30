@@ -142,6 +142,8 @@ Recommended coverage shape:
   singer endorsement.
 - [x] Add final `license.txt` inside the V3 zip.
 - [x] Add singer/license display in the app before V3 becomes the default.
+- [x] Parse current voicebank `license.txt`/`readme.txt` metadata from UTAU
+  zips and show it in the editor for both bundled V3 and user-imported zips.
 - [x] Keep source-generation scripts and V3 zip manifest in sync.
 - [x] Remove recording-kit commands from the active V3 release workflow; any
   old recording helpers are historical experiments, not this goal's path.
@@ -212,6 +214,9 @@ Recommended coverage shape:
   render, download, share.
 - [x] Add a selected-note UTAU sample preview that plays through the loaded
   voicebank sample renderer, not just the oscillator touch keyboard.
+- [x] Show a current voicebank license metadata card beside coverage and render
+  warnings, so users can see whether the active UTAU zip includes license/readme
+  material before rendering.
 - [x] Add project save/load/export/import.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
@@ -396,6 +401,10 @@ Current verified V3 evidence:
   loader accepts Teto-sized normal UTAU packages but rejects unsafe paths,
   abnormal entry counts, oversized `oto.ini`/WAV members, excessive expanded WAV
   payload, and suspicious compression ratios.
+- Voicebank loader now extracts safe excerpts from `license.txt` and
+  `readme.txt`; the left rail shows whether the current bundled or imported
+  UTAU zip has license metadata, and browser smoke requires the bundled V3
+  license card to be visible.
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while

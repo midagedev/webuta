@@ -430,6 +430,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run demo render warnings clear',
       'first-run lyric visible',
       'community release readiness card visible',
+      'voicebank license metadata visible',
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
       'desktop WAV download',

@@ -581,6 +581,7 @@ button:disabled {
 }
 
 .coverage-card,
+.voicebank-license-card,
 .render-warning-card,
 .lyric-match-chip,
 .render-note-chip {
@@ -592,6 +593,7 @@ button:disabled {
 }
 
 .coverage-card,
+.voicebank-license-card,
 .render-warning-card {
   margin-top: 8px;
   padding: 9px 10px;
@@ -734,6 +736,9 @@ button:disabled {
 .coverage-card strong,
 .coverage-card span,
 .coverage-card em,
+.voicebank-license-card strong,
+.voicebank-license-card span,
+.voicebank-license-card em,
 .render-warning-card strong,
 .render-warning-card span,
 .render-warning-card li,
@@ -745,36 +750,43 @@ button:disabled {
 }
 
 .coverage-card strong,
+.voicebank-license-card strong,
 .render-warning-card strong {
   color: #f4f7fb;
   font-weight: 860;
 }
 
 .coverage-card span,
+.voicebank-license-card span,
 .render-warning-card span {
   color: #aeb8c5;
   line-height: 1.35;
 }
 
-.coverage-card em {
+.coverage-card em,
+.voicebank-license-card em {
   color: #8fa0b4;
   font-style: normal;
   line-height: 1.25;
 }
 
-.coverage-card.ready {
+.coverage-card.ready,
+.voicebank-license-card.ready {
   border-color: #155c32;
   background: #10261b;
 }
 
 .coverage-card.ready strong,
 .coverage-card.ready em,
+.voicebank-license-card.ready strong,
+.voicebank-license-card.ready em,
 .render-warning-card.ready strong,
 .lyric-match-chip.ready {
   color: #78eba7;
 }
 
 .coverage-card.warning,
+.voicebank-license-card.warning,
 .render-warning-card.warning {
   border-color: #72500c;
   background: #2d2413;
@@ -782,9 +794,19 @@ button:disabled {
 
 .coverage-card.warning strong,
 .coverage-card.warning em,
+.voicebank-license-card.warning strong,
+.voicebank-license-card.warning em,
 .render-warning-card.warning strong,
 .lyric-match-chip.warning {
   color: #ffd36a;
+}
+
+.voicebank-license-card span {
+  display: -webkit-box;
+  max-height: 34px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .render-warning-card ul {

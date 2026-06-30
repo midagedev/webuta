@@ -19,6 +19,9 @@ describe('LeftRail release readiness', () => {
     expect(releaseCard.textContent).toContain('0 warnings')
     expect(releaseCard.textContent).toContain('listening-scores.local.json 필요')
     expect(screen.getByRole('link', { name: '청취 리뷰 열기' }).getAttribute('href')).toBe('/review/v3/index.html')
+    const licenseCard = screen.getByLabelText('Voicebank license metadata')
+    expect(licenseCard.textContent).toContain('번들 V3 라이선스 포함')
+    expect(licenseCard.textContent).toContain('Generated original sample data')
   })
 
   it('does not mark imported user zips as the bundled V3 release voicebank', () => {
@@ -34,6 +37,7 @@ describe('LeftRail release readiness', () => {
     const releaseCard = screen.getByLabelText('Community release readiness')
     expect(releaseCard.textContent).toContain('V3 공개 점검 필요')
     expect(releaseCard.textContent).toContain('사용자 ZIP 모드')
+    expect(screen.getByLabelText('Voicebank license metadata').textContent).toContain('사용자 ZIP 라이선스 포함')
   })
 })
 
@@ -105,6 +109,19 @@ function makeVoicebank(): LoadedVoicebank {
     id: 'webuta-ko-v3-synthetic',
     name: BUNDLED_UTAU_VOICEBANK_NAME,
     sourceFileName: 'webuta-ko-v3.zip',
+    metadata: {
+      characterPath: 'character.yaml',
+      readme: {
+        path: 'readme.txt',
+        excerpt: 'WebUtau Korean V3 Synthetic generated voicebank.',
+      },
+      license: {
+        path: 'license.txt',
+        excerpt: 'Generated original sample data and metadata may be redistributed under the MIT license.',
+      },
+      manifestPath: 'webuta-ko-v3.manifest.json',
+      licenseStatus: 'license-file-present',
+    },
     entries: [],
     aliases: [],
     sampleCount: 1437,
