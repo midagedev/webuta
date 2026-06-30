@@ -287,15 +287,97 @@ function readmeGate(paths) {
       }
     }
   }
-  for (const screenshotPath of [paths.desktopScreenshot, paths.mobileScreenshot]) {
-    if (!existsSync(screenshotPath)) {
-      problems.push(`screenshot missing: ${screenshotPath}`)
-    }
-  }
+  const screenshots = [
+    inspectScreenshot(paths.desktopScreenshot, { label: 'desktop', minWidth: 1000, minHeight: 700, minBytes: 80_000 }, problems),
+    inspectScreenshot(paths.mobileScreenshot, { label: 'mobile', minWidth: 360, minHeight: 700, minBytes: 40_000 }, problems),
+  ].filter(Boolean)
   return makeGate('readme-release-docs', 'README screenshots, license notes, and honest limitations', paths.readme, problems, {
     desktopScreenshot: paths.desktopScreenshot,
     mobileScreenshot: paths.mobileScreenshot,
+    screenshots,
   })
+}
+
+function inspectScreenshot(path, expectation, problems) {
+  if (!existsSync(path)) {
+    problems.push(`screenshot missing: ${path}`)
+    return null
+  }
+  const bytes = readFileSync(path)
+  const image = readImageInfo(bytes)
+  if (!image) {
+    problems.push(`${expectation.label} screenshot must be a readable PNG or JPEG: ${path}`)
+    return {
+      label: expectation.label,
+      path,
+      bytes: bytes.length,
+      type: null,
+      width: null,
+      height: null,
+    }
+  }
+  if (bytes.length < expectation.minBytes) {
+    problems.push(`${expectation.label} screenshot is too small: ${bytes.length} bytes; expected at least ${expectation.minBytes}`)
+  }
+  if (image.width < expectation.minWidth || image.height < expectation.minHeight) {
+    problems.push(
+      `${expectation.label} screenshot is ${image.width}x${image.height}; expected at least ${expectation.minWidth}x${expectation.minHeight}`,
+    )
+  }
+  return {
+    label: expectation.label,
+    path,
+    bytes: bytes.length,
+    ...image,
+  }
+}
+
+function readImageInfo(bytes) {
+  if (bytes.length >= 24 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return {
+      type: 'png',
+      width: bytes.readUInt32BE(16),
+      height: bytes.readUInt32BE(20),
+    }
+  }
+  if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
+    let offset = 2
+    while (offset + 4 < bytes.length) {
+      while (bytes[offset] === 0xff) {
+        offset += 1
+      }
+      const marker = bytes[offset]
+      offset += 1
+      if (marker === 0xd9 || marker === 0xda) {
+        break
+      }
+      if (offset + 2 > bytes.length) {
+        break
+      }
+      const segmentLength = bytes.readUInt16BE(offset)
+      if (segmentLength < 2 || offset + segmentLength > bytes.length) {
+        break
+      }
+      if (isJpegStartOfFrame(marker) && offset + 7 <= bytes.length) {
+        return {
+          type: 'jpeg',
+          width: bytes.readUInt16BE(offset + 5),
+          height: bytes.readUInt16BE(offset + 3),
+        }
+      }
+      offset += segmentLength
+    }
+  }
+  return null
+}
+
+function isJpegStartOfFrame(marker) {
+  return (
+    (marker >= 0xc0 && marker <= 0xc3) ||
+    (marker >= 0xc5 && marker <= 0xc7) ||
+    (marker >= 0xc9 && marker <= 0xcb) ||
+    (marker >= 0xcd && marker <= 0xcf)
+  )
 }
 
 function bundledVoicebankGate(bundled) {

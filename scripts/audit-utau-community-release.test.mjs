@@ -155,6 +155,19 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('synthetic-origin: V3 readme.txt must include "not by cloning, recording"')
     expect(report.problems.join('\n')).toContain('synthetic-origin: V3 license.txt must include "TTS service output"')
   })
+
+  it('blocks release when README screenshots are placeholders instead of real captures', async () => {
+    const fixture = await makeFixture()
+    writeFileSync(join(fixture.root, 'docs', 'screenshots', 'webuta-mobile.jpg'), 'jpg')
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('mobile screenshot must be a readable PNG or JPEG')
+  })
 })
 
 async function makeFixture(overrides = {}) {
@@ -189,8 +202,8 @@ async function makeFixture(overrides = {}) {
   }
   writeFileSync(join(root, 'README.md'), makeReadme())
   writeFileSync(join(docs, 'LICENSE_BOUNDARIES.md'), makeLicenseBoundaries())
-  writeFileSync(join(docs, 'screenshots', 'webuta-desktop.jpg'), 'jpg')
-  writeFileSync(join(docs, 'screenshots', 'webuta-mobile.jpg'), 'jpg')
+  writeFakeJpeg(join(docs, 'screenshots', 'webuta-desktop.jpg'), 1280, 800, 90_000)
+  writeFakeJpeg(join(docs, 'screenshots', 'webuta-mobile.jpg'), 390, 844, 45_000)
   writeFileSync(
     join(root, 'src', 'bundledVoicebank.ts'),
     [
@@ -418,6 +431,39 @@ function makeLicenseBoundaries() {
 function writeJson(path, value) {
   mkdirSync(join(path, '..'), { recursive: true })
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+function writeFakeJpeg(path, width, height, byteLength) {
+  const sof0 = Buffer.from([
+    0xff,
+    0xc0,
+    0x00,
+    0x11,
+    0x08,
+    (height >> 8) & 0xff,
+    height & 0xff,
+    (width >> 8) & 0xff,
+    width & 0xff,
+    0x03,
+    0x01,
+    0x11,
+    0x00,
+    0x02,
+    0x11,
+    0x00,
+    0x03,
+    0x11,
+    0x00,
+  ])
+  const header = Buffer.concat([
+    Buffer.from([0xff, 0xd8]),
+    Buffer.from([0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00]),
+    sof0,
+    Buffer.from([0xff, 0xd9]),
+  ])
+  const output = Buffer.alloc(Math.max(byteLength, header.length), 0)
+  header.copy(output)
+  writeFileSync(path, output)
 }
 
 function deepMerge(base, overrides) {

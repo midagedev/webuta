@@ -12,6 +12,7 @@
     "smoke:browser": "node scripts/smoke-browser-render.mjs",
     "smoke:browser:neural": "node scripts/smoke-browser-render.mjs --fake-neural-service",
     "smoke:browser:neural:actual": "node scripts/smoke-browser-render.mjs",
+    "screenshots:readme": "node scripts/capture-readme-screenshots.mjs",
     "smoke:contract": "WEBUTA_CONTRACT_SMOKE_REPORT=experiments/neural-singer/work/openutau-neural-contract/latest.json vitest run src/openutauNeuralContract.smoke.test.ts",
     "smoke:aihub-acquisition": "node scripts/smoke-aihub-acquisition-pipeline.mjs",
     "smoke:dataset-pipeline": "node scripts/smoke-dataset-first-pipeline.mjs",
@@ -77,7 +78,6 @@
     "voicebank:review-v3": "node scripts/prepare-utau-v3-listening-review.mjs",
     "voicebank:sample-review-v3": "node scripts/report-utau-v3-sample-review.mjs",
     "voicebank:v3": "node scripts/generate-korean-v3-synthetic-voicebank.mjs",
-    "voicebank:v3-kit": "node scripts/prepare-utau-v3-recording-kit.mjs",
     "voicebank:supertonic": "python3 scripts/generate-korean-supertonic-voicebank.py",
     "asset:teto": "node scripts/download-teto-asset.mjs"
   },
