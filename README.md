@@ -55,6 +55,7 @@ Kasane Teto assets are not bundled in this repository. For the real UTAU path, i
 - User-provided UTAU/OpenUTAU zip loading, including official Kasane Teto test coverage.
 - Voicebank alias coverage display, so missing syllables are visible before rendering.
 - Per-note render warnings for missing aliases, missing Hangul coda tails, and extreme sample pitch shifts.
+- Community release readiness card that separates automated V3 checks from the required human listening scorecard.
 - WAV render inspection for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
 - Local project and voicebank restore after refresh on the same browser.
 - PWA app-shell caching after the first online load.
@@ -131,6 +132,7 @@ Current verified local smoke coverage:
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the official Teto zip.
 - Bundled `WebUtau Korean V3 Synthetic` contains `615` WAV samples and `1437` oto.ini alias lines in the default web profile.
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium and exports a DAW-ready WAV.
+- The first-run browser smoke now verifies the community release readiness card is visible and still marks human listening scores as required.
 - `npm run voicebank:oto-v3` verifies all bundled sample aliases and oto timing windows against the generated V3 manifest.
 - `npm run voicebank:pitch-v3` audits all 615 bundled samples and currently reports max median pitch error near `4.5` cents.
 - `npm run voicebank:loop-v3` audits all 432 bundled CV/V sustain samples and currently reports max loop residual ratio near `0.059`.

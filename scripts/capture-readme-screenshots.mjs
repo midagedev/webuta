@@ -58,6 +58,7 @@ async function waitForAppReady(page) {
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank lyric coverage').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
 }
 
 async function startViteServer({ cwd, host, port }) {

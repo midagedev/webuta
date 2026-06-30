@@ -13,6 +13,7 @@
     Volume2,
   } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
+  import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
   import { GRID_SNAP_TICKS } from '../projectEditing'
   import type { NeuralModelCard, RendererId, SongNote, SongProject } from '../types'
   import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
@@ -132,6 +133,36 @@
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
+  let isBundledDefaultVoicebank = $derived(
+    Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
+  )
+  let releaseChecks = $derived([
+    {
+      label: 'V3 번들',
+      passed: isBundledDefaultVoicebank,
+      detail: isBundledDefaultVoicebank ? '기본 합성 UTAU 선택됨' : voicebank ? '사용자 ZIP 모드' : '보이스뱅크 로딩 대기',
+    },
+    {
+      label: '가사 매칭',
+      passed: Boolean(voicebankCoverage && voicebankCoverage.totalNotes > 0 && voicebankCoverage.fallbackNotes === 0),
+      detail: voicebankCoverage ? `${voicebankCoverage.matchedNotes}/${voicebankCoverage.totalNotes} notes` : 'coverage 대기',
+    },
+    {
+      label: '렌더 경고',
+      passed: Boolean(voicebankWarnings && voicebankWarnings.warningCount === 0),
+      detail: voicebankWarnings ? `${voicebankWarnings.warningCount} warnings` : 'diagnostics 대기',
+    },
+  ])
+  let automatedReleaseChecksPass = $derived(releaseChecks.every((check) => check.passed))
+  let releaseCardState = $derived(!voicebank ? 'idle' : automatedReleaseChecksPass ? 'review' : 'warning')
+  let releaseCardTitle = $derived(
+    !voicebank ? '공개 점검 대기' : automatedReleaseChecksPass ? 'V3 자동 점검 통과' : 'V3 공개 점검 필요',
+  )
+  let releaseCardSummary = $derived(
+    automatedReleaseChecksPass
+      ? '남은 단계: 생성된 WAV 청취 점수 저장'
+      : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
+  )
 </script>
 
 <aside class="left-rail">
@@ -159,6 +190,29 @@
     </div>
     <div class="channel-meter" aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class={`release-readiness-card ${releaseCardState}`} aria-label="Community release readiness">
+      <div class="release-readiness-head">
+        <span class={`status-dot ${automatedReleaseChecksPass ? 'planned' : voicebank ? 'blocked' : 'idle'}`}></span>
+        <div>
+          <strong>{releaseCardTitle}</strong>
+          <span>{releaseCardSummary}</span>
+        </div>
+      </div>
+      <div class="release-checks">
+        {#each releaseChecks as check (check.label)}
+          <div class:passed={check.passed}>
+            <span>{check.label}</span>
+            <strong>{check.passed ? 'OK' : 'CHECK'}</strong>
+            <em>{check.detail}</em>
+          </div>
+        {/each}
+        <div class="review-needed">
+          <span>청취 리뷰</span>
+          <strong>NEED</strong>
+          <em>listening-scores.local.json 필요</em>
+        </div>
+      </div>
     </div>
     <label class="field-label">
       BPM

@@ -599,6 +599,119 @@ button:disabled {
   background: #151b22;
 }
 
+.release-readiness-card {
+  display: grid;
+  gap: 9px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid #2a3441;
+  border-radius: 8px;
+  background: #151b22;
+}
+
+.release-readiness-card.warning {
+  border-color: #653317;
+  background: #251914;
+}
+
+.release-readiness-card.review {
+  border-color: #6a5313;
+  background: #221f13;
+}
+
+.release-readiness-head {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.release-readiness-head div,
+.release-checks div {
+  min-width: 0;
+}
+
+.release-readiness-head strong,
+.release-readiness-head span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.release-readiness-head strong {
+  color: #f4f7fb;
+  font-size: 13px;
+  font-weight: 880;
+  white-space: nowrap;
+}
+
+.release-readiness-head span {
+  color: #b6c0cc;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.release-checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.release-checks div {
+  display: grid;
+  gap: 1px;
+  padding: 6px 7px;
+  border: 1px solid #283442;
+  border-radius: 6px;
+  background: #10161d;
+}
+
+.release-checks div.passed {
+  border-color: #174f31;
+  background: #102019;
+}
+
+.release-checks .review-needed {
+  border-color: #695214;
+  background: #211d11;
+}
+
+.release-checks span,
+.release-checks strong,
+.release-checks em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.release-checks span {
+  color: #9facba;
+  font-size: 9px;
+  font-weight: 860;
+}
+
+.release-checks strong {
+  color: #e9f2f9;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.release-checks div.passed strong {
+  color: #78eba7;
+}
+
+.release-checks .review-needed strong {
+  color: #ffd36a;
+}
+
+.release-checks em {
+  color: #aeb8c5;
+  font-size: 10px;
+  font-style: normal;
+}
+
 .coverage-card strong,
 .coverage-card span,
 .coverage-card em,

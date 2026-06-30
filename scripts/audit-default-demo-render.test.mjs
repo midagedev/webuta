@@ -12,6 +12,7 @@ describe('default demo render audit report', () => {
         'first-run demo aliases fully matched',
         'first-run demo render warnings clear',
         'first-run lyric visible',
+        'community release readiness card visible',
         'desktop WAV download',
         'render history visible',
         'desktop no page horizontal overflow',

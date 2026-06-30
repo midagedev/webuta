@@ -362,6 +362,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.waitForFunction(
     () => {
       const input = document.querySelector('[aria-label="가사 라인"]')
@@ -376,6 +378,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',
     'first-run lyric visible',
+    'community release readiness card visible',
   ]
 }
 

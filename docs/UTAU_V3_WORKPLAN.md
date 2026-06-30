@@ -218,6 +218,9 @@ Recommended coverage shape:
 - [x] Add an offline listening scorecard that plays generated V3 WAVs and
   exports the `listening-scores.local.json` expected by the release audit,
   without asking anyone to record a voice.
+- [x] Add an app-visible community release readiness card that shows V3 bundled
+  status, lyric coverage, render warnings, and the remaining human listening
+  scorecard requirement.
 - [ ] Collect human listening scores for the V3 phrases and V2/V3 comparison
   fields; do not synthesize or fake these reviewer scores.
 - [x] Add screenshots and README copy that match the final UI; README
@@ -267,6 +270,7 @@ npm test -- scripts/audit-korean-v3-oto.test.mjs
 npm test -- scripts/analyze-korean-v3-loops.test.mjs
 npm test -- scripts/analyze-korean-v3-pitch.test.mjs
 npm test -- scripts/prepare-utau-v3-listening-review.test.mjs
+npm test -- src/components/LeftRail.test.ts
 npm test -- src/voicebank.test.ts src/renderers/utauSampleRenderer.test.ts
 npm run lint
 npm run build
@@ -293,8 +297,9 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
-  visible, desktop/mobile overflow checks pass, and the exported WAV is 44.1 kHz
-  mono 16-bit PCM, 6.56 seconds, 578384 bytes.
+  visible, the community release readiness card is visible, desktop/mobile
+  overflow checks pass, and the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56
+  seconds, 578384 bytes.
 - The default `도히도히 다이스키` melody is now E-G-E-A-G-A-F-E rather than a
   straight ascending test scale; regression tests pin this contour in the app
   fixture and listening-review pack.
@@ -331,6 +336,9 @@ Current verified V3 evidence:
   through long notes.
 - The left rail surfaces per-note render warnings for missing aliases, missing
   Hangul coda tails, and extreme sample pitch shifts before WAV render.
+- The left rail now surfaces a community release readiness card: bundled V3,
+  lyric coverage, and render warnings can pass automatically, while human
+  listening review remains explicitly marked as required.
 - Browser renderer selects the closest explicit pitch layer for the requested
   note tone; generated V3 tests verify `도` resolves to C4/F4/A4 layers.
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
@@ -376,7 +384,7 @@ Current verified V3 evidence:
   `content-length`.
 - GitHub Actions Pages run `28460675027` passed build, tests, artifact upload,
   and deploy for commit `c3924bb`.
-- `npm test`: 82 passed / 1 skipped files, 354 passed / 2 skipped tests.
+- `npm test`: 83 passed / 1 skipped files, 357 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.
