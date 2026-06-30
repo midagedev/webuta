@@ -710,7 +710,7 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open experiments/utau-v3/work/v3-listening-review/index.html, score the generated V3 WAVs plus V2/V3 comparisons in the local scorecard, and save listening-scores.local.json after a human listening pass.')
+    actions.push('Open public/review/v3/index.html or the deployed /review/v3/ scorecard, score the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, and place it at experiments/utau-v3/work/v3-listening-review/listening-scores.local.json.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')
