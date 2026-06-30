@@ -31,11 +31,25 @@ export type VoicebankTextMetadata = {
   excerpt: string
 }
 
+export type VoicebankOriginMetadata = {
+  path: string
+  type?: string
+  method?: string
+  synthesisProfile?: string
+  parseError?: string
+  generatedSynthetic: boolean
+  noHumanRecordingSource: boolean
+  noPublicOrPrivateRecordedDatasetSource: boolean
+  noThirdPartySingerOrCharacterSource: boolean
+  noTtsOrModelCheckpointOutput: boolean
+}
+
 export type VoicebankMetadata = {
   characterPath?: string
   readme?: VoicebankTextMetadata
   license?: VoicebankTextMetadata
   manifestPath?: string
+  origin?: VoicebankOriginMetadata
   prefixMapPaths?: string[]
   licenseStatus: 'license-file-present' | 'license-file-missing'
 }
@@ -693,15 +707,65 @@ async function readVoicebankMetadata(
   const manifestPath = Object.keys(files).find((path) => /(^|\/)[^/]+\.manifest\.json$/i.test(path) && !files[path].dir)
   const license = licensePath ? await readTextMetadata(files[licensePath], licensePath, limits) : undefined
   const readme = readmePath ? await readTextMetadata(files[readmePath], readmePath, limits) : undefined
+  const origin = manifestPath ? await readVoicebankOrigin(files[manifestPath], manifestPath, limits) : undefined
 
   return {
     characterPath,
     readme,
     license,
     manifestPath,
+    origin,
     prefixMapPaths: prefixMaps.map((prefixMap) => prefixMap.path),
     licenseStatus: license ? 'license-file-present' : 'license-file-missing',
   }
+}
+
+async function readVoicebankOrigin(
+  file: JSZip.JSZipObject,
+  path: string,
+  limits: VoicebankZipSafetyLimits,
+): Promise<VoicebankOriginMetadata> {
+  validateZipMemberSize(file, limits.maxSingleMetadataBytes, `voicebank manifest ${path}`)
+  const emptyOrigin = {
+    path,
+    generatedSynthetic: false,
+    noHumanRecordingSource: false,
+    noPublicOrPrivateRecordedDatasetSource: false,
+    noThirdPartySingerOrCharacterSource: false,
+    noTtsOrModelCheckpointOutput: false,
+  }
+  try {
+    const manifest = JSON.parse(await readZipText(file)) as Record<string, unknown>
+    const sourceLineage = isObjectRecord(manifest.sourceLineage) ? manifest.sourceLineage : {}
+    const synthesis = isObjectRecord(manifest.synthesis) ? manifest.synthesis : {}
+    const type = stringValue(manifest.type)
+    const method = stringValue(sourceLineage.method)
+    const synthesisProfile = stringValue(synthesis.profile)
+    return {
+      ...emptyOrigin,
+      type,
+      method,
+      synthesisProfile,
+      generatedSynthetic: Boolean(type?.includes('generated-synthetic') || method === 'deterministic-dsp-only'),
+      noHumanRecordingSource: sourceLineage.noHumanRecordingSource === true,
+      noPublicOrPrivateRecordedDatasetSource: sourceLineage.noPublicOrPrivateRecordedDatasetSource === true,
+      noThirdPartySingerOrCharacterSource: sourceLineage.noThirdPartySingerOrCharacterSource === true,
+      noTtsOrModelCheckpointOutput: sourceLineage.noTtsOrModelCheckpointOutput === true,
+    }
+  } catch (error) {
+    return {
+      ...emptyOrigin,
+      parseError: error instanceof Error ? error.message : String(error),
+    }
+  }
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function stringValue(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
 
 async function readPrefixMaps(files: ZipFileMap, limits: VoicebankZipSafetyLimits): Promise<VoicebankPrefixMap[]> {

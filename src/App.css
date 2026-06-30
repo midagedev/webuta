@@ -582,6 +582,7 @@ button:disabled {
 
 .coverage-card,
 .voicebank-license-card,
+.voicebank-origin-card,
 .render-warning-card,
 .lyric-match-chip,
 .render-note-chip {
@@ -594,6 +595,7 @@ button:disabled {
 
 .coverage-card,
 .voicebank-license-card,
+.voicebank-origin-card,
 .render-warning-card {
   margin-top: 8px;
   padding: 9px 10px;
@@ -739,6 +741,9 @@ button:disabled {
 .voicebank-license-card strong,
 .voicebank-license-card span,
 .voicebank-license-card em,
+.voicebank-origin-card strong,
+.voicebank-origin-card span,
+.voicebank-origin-card em,
 .render-warning-card strong,
 .render-warning-card span,
 .render-warning-card li,
@@ -751,6 +756,7 @@ button:disabled {
 
 .coverage-card strong,
 .voicebank-license-card strong,
+.voicebank-origin-card strong,
 .render-warning-card strong {
   color: #f4f7fb;
   font-weight: 860;
@@ -758,20 +764,23 @@ button:disabled {
 
 .coverage-card span,
 .voicebank-license-card span,
+.voicebank-origin-card span,
 .render-warning-card span {
   color: #aeb8c5;
   line-height: 1.35;
 }
 
 .coverage-card em,
-.voicebank-license-card em {
+.voicebank-license-card em,
+.voicebank-origin-card em {
   color: #8fa0b4;
   font-style: normal;
   line-height: 1.25;
 }
 
 .coverage-card.ready,
-.voicebank-license-card.ready {
+.voicebank-license-card.ready,
+.voicebank-origin-card.ready {
   border-color: #155c32;
   background: #10261b;
 }
@@ -780,6 +789,8 @@ button:disabled {
 .coverage-card.ready em,
 .voicebank-license-card.ready strong,
 .voicebank-license-card.ready em,
+.voicebank-origin-card.ready strong,
+.voicebank-origin-card.ready em,
 .render-warning-card.ready strong,
 .lyric-match-chip.ready {
   color: #78eba7;
@@ -787,6 +798,7 @@ button:disabled {
 
 .coverage-card.warning,
 .voicebank-license-card.warning,
+.voicebank-origin-card.warning,
 .render-warning-card.warning {
   border-color: #72500c;
   background: #2d2413;
@@ -796,12 +808,15 @@ button:disabled {
 .coverage-card.warning em,
 .voicebank-license-card.warning strong,
 .voicebank-license-card.warning em,
+.voicebank-origin-card.warning strong,
+.voicebank-origin-card.warning em,
 .render-warning-card.warning strong,
 .lyric-match-chip.warning {
   color: #ffd36a;
 }
 
-.voicebank-license-card span {
+.voicebank-license-card span,
+.voicebank-origin-card span {
   display: -webkit-box;
   max-height: 34px;
   overflow: hidden;

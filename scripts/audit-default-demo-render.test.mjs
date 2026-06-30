@@ -14,6 +14,7 @@ describe('default demo render audit report', () => {
         'first-run lyric visible',
         'community release readiness card visible',
         'voicebank license metadata visible',
+        'voicebank self-generated origin visible',
         'selected-note dynamics controls visible',
         'selected-note resampler controls visible',
         'selected-note timing controls visible',

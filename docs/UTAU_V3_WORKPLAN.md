@@ -456,6 +456,11 @@ Current verified V3 evidence:
   `readme.txt`; the left rail shows whether the current bundled or imported
   UTAU zip has license metadata, and browser smoke requires the bundled V3
   license card to be visible.
+- Voicebank loader now extracts generated-origin flags from
+  `webuta-ko-v3.manifest.json`; the left rail shows whether the active singer
+  is self-generated with no human recording, dataset source audio, or
+  TTS/model checkpoint output, and browser smoke requires the bundled V3
+  origin card to be visible.
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while

@@ -22,6 +22,11 @@ describe('LeftRail release readiness', () => {
     const licenseCard = screen.getByLabelText('Voicebank license metadata')
     expect(licenseCard.textContent).toContain('번들 V3 라이선스 포함')
     expect(licenseCard.textContent).toContain('Generated original sample data')
+    const originCard = screen.getByLabelText('Voicebank origin metadata')
+    expect(originCard.textContent).toContain('자체 생성 보이스')
+    expect(originCard.textContent).toContain('녹음 없음')
+    expect(originCard.textContent).toContain('TTS/모델 출력 아님')
+    expect(originCard.textContent).toContain('deterministic-dsp-only')
   })
 
   it('does not mark imported user zips as the bundled V3 release voicebank', () => {
@@ -30,7 +35,14 @@ describe('LeftRail release readiness', () => {
       makeProps({
         voicebankName: 'WebUtau // Test Teto',
         voicebankCacheStatus: 'saved',
-        voicebank: { ...makeVoicebank(), name: 'WebUtau // Test Teto' },
+        voicebank: {
+          ...makeVoicebank(),
+          name: 'WebUtau // Test Teto',
+          metadata: {
+            ...makeVoicebank().metadata,
+            origin: undefined,
+          },
+        },
       }),
     )
 
@@ -38,6 +50,7 @@ describe('LeftRail release readiness', () => {
     expect(releaseCard.textContent).toContain('V3 공개 점검 필요')
     expect(releaseCard.textContent).toContain('사용자 ZIP 모드')
     expect(screen.getByLabelText('Voicebank license metadata').textContent).toContain('사용자 ZIP 라이선스 포함')
+    expect(screen.getByLabelText('Voicebank origin metadata').textContent).toContain('출처 manifest 없음')
   })
 
   it('edits selected-note vibrato as a DAW parameter', async () => {
@@ -266,6 +279,17 @@ function makeVoicebank(): LoadedVoicebank {
         excerpt: 'Generated original sample data and metadata may be redistributed under the MIT license.',
       },
       manifestPath: 'webuta-ko-v3.manifest.json',
+      origin: {
+        path: 'webuta-ko-v3.manifest.json',
+        type: 'generated-synthetic-utau-cv-vc',
+        method: 'deterministic-dsp-only',
+        synthesisProfile: 'deterministic-dsp-bright-formant-v3',
+        generatedSynthetic: true,
+        noHumanRecordingSource: true,
+        noPublicOrPrivateRecordedDatasetSource: true,
+        noThirdPartySingerOrCharacterSource: true,
+        noTtsOrModelCheckpointOutput: true,
+      },
       licenseStatus: 'license-file-present',
     },
     entries: [],

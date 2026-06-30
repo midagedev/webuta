@@ -36,6 +36,46 @@ describe('voicebank zip loader', () => {
     expect(await voicebank.readSample(entry)).toBeInstanceOf(ArrayBuffer)
   })
 
+  it('extracts generated synthetic origin flags from a voicebank manifest', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
+    zip.file(
+      'WebUtau/webuta-ko-v3.manifest.json',
+      JSON.stringify({
+        type: 'generated-synthetic-utau-cv-vc',
+        sourceLineage: {
+          method: 'deterministic-dsp-only',
+          noHumanRecordingSource: true,
+          noPublicOrPrivateRecordedDatasetSource: true,
+          noThirdPartySingerOrCharacterSource: true,
+          noTtsOrModelCheckpointOutput: true,
+        },
+        synthesis: {
+          profile: 'deterministic-dsp-bright-formant-v3',
+        },
+      }),
+    )
+    zip.file('WebUtau/oto.ini', 'do_C4.wav=도,0,150,-560,70,30\n')
+    zip.file('WebUtau/do_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-v3.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(voicebank.metadata.manifestPath).toBe('WebUtau/webuta-ko-v3.manifest.json')
+    expect(voicebank.metadata.origin).toMatchObject({
+      path: 'WebUtau/webuta-ko-v3.manifest.json',
+      type: 'generated-synthetic-utau-cv-vc',
+      method: 'deterministic-dsp-only',
+      synthesisProfile: 'deterministic-dsp-bright-formant-v3',
+      generatedSynthetic: true,
+      noHumanRecordingSource: true,
+      noPublicOrPrivateRecordedDatasetSource: true,
+      noThirdPartySingerOrCharacterSource: true,
+      noTtsOrModelCheckpointOutput: true,
+    })
+  })
+
   it('rejects voicebank zips above the browser-safe import size', async () => {
     const zip = new JSZip()
     zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')

@@ -194,7 +194,19 @@
       : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
   )
   let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
+  let voicebankOriginState = $derived(!voicebank ? 'idle' : isSelfGeneratedVoicebank(voicebank) ? 'ready' : 'warning')
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
+
+  function isSelfGeneratedVoicebank(current: LoadedVoicebank | null) {
+    const origin = current?.metadata.origin
+    return Boolean(
+      origin?.generatedSynthetic &&
+        origin.noHumanRecordingSource &&
+        origin.noPublicOrPrivateRecordedDatasetSource &&
+        origin.noThirdPartySingerOrCharacterSource &&
+        origin.noTtsOrModelCheckpointOutput,
+    )
+  }
 
   function voicebankLicenseTitle() {
     if (!voicebank) {
@@ -227,6 +239,46 @@
       return '메타데이터 대기'
     }
     return voicebank.metadata.license?.path ?? voicebank.metadata.readme?.path ?? voicebank.metadata.characterPath ?? voicebank.sourceFileName
+  }
+
+  function voicebankOriginTitle() {
+    if (!voicebank) {
+      return '보이스 출처 대기'
+    }
+    if (isSelfGeneratedVoicebank(voicebank)) {
+      return isBundledDefaultVoicebank ? '자체 생성 보이스' : '생성 출처 확인됨'
+    }
+    if (voicebank.metadata.origin?.parseError) {
+      return 'manifest 읽기 실패'
+    }
+    if (voicebank.metadata.origin) {
+      return '출처 확인 필요'
+    }
+    return '출처 manifest 없음'
+  }
+
+  function voicebankOriginSummary() {
+    if (!voicebank) {
+      return '기본 V3 또는 UTAU ZIP이 로드되면 생성 출처를 확인합니다.'
+    }
+    if (isSelfGeneratedVoicebank(voicebank)) {
+      return '녹음 없음 · 데이터셋 없음 · TTS/모델 출력 아님'
+    }
+    if (voicebank.metadata.origin?.parseError) {
+      return voicebank.metadata.origin.parseError
+    }
+    if (voicebank.metadata.origin) {
+      return 'manifest에 자체 생성/무녹음 플래그가 충분하지 않습니다.'
+    }
+    return '사용자 ZIP은 license.txt/readme.txt에서 출처를 별도로 확인하세요.'
+  }
+
+  function voicebankOriginPath() {
+    if (!voicebank) {
+      return 'manifest 대기'
+    }
+    const origin = voicebank.metadata.origin
+    return origin?.method ?? origin?.synthesisProfile ?? origin?.type ?? voicebank.metadata.manifestPath ?? voicebank.sourceFileName
   }
 
   function updateVibrato(patch: Partial<NoteVibrato>) {
@@ -401,6 +453,11 @@
       <strong>{voicebankLicenseTitle()}</strong>
       <span>{voicebankLicenseSummary()}</span>
       <em>{voicebankLicensePath()}</em>
+    </div>
+    <div class={`voicebank-origin-card ${voicebankOriginState}`} aria-label="Voicebank origin metadata">
+      <strong>{voicebankOriginTitle()}</strong>
+      <span>{voicebankOriginSummary()}</span>
+      <em>{voicebankOriginPath()}</em>
     </div>
     <div class={`coverage-card ${voicebankCoverage?.fallbackNotes === 0 ? 'ready' : voicebank ? 'warning' : 'idle'}`} aria-label="Voicebank lyric coverage">
       {#if !voicebank}

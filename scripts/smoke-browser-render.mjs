@@ -366,6 +366,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Voicebank origin metadata').getByText('자체 생성 보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Voicebank origin metadata').getByText(/녹음 없음/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note dynamics').getByText('세기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note resampler').getByText('리샘플러').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note timing').getByText('타이밍').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -398,6 +400,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run lyric visible',
     'community release readiness card visible',
     'voicebank license metadata visible',
+    'voicebank self-generated origin visible',
     'selected-note dynamics controls visible',
     'selected-note resampler controls visible',
     'selected-note timing controls visible',

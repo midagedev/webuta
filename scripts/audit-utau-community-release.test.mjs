@@ -453,6 +453,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run lyric visible',
       'community release readiness card visible',
       'voicebank license metadata visible',
+      'voicebank self-generated origin visible',
       'selected-note vibrato controls visible',
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
