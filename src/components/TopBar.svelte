@@ -89,22 +89,22 @@
 
 <header class="topbar">
   <div class="nav-cluster" aria-label="Project navigation">
-    <button type="button" class="toolbar-button" title="새 프로젝트" onclick={onNewProject}>
+    <button type="button" class="toolbar-button project-action" title="새 프로젝트" onclick={onNewProject}>
       <FilePlus size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button" title="USTX 열기" onclick={() => projectInput?.click()}>
+    <button type="button" class="toolbar-button project-action" title="USTX 열기" onclick={() => projectInput?.click()}>
       <FolderOpen size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button" title="USTX 저장" onclick={onSaveProject}>
+    <button type="button" class="toolbar-button project-action" title="USTX 저장" onclick={onSaveProject}>
       <Save size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button" title="되돌리기" onclick={onUndo} disabled={!canUndo}>
+    <button type="button" class="toolbar-button edit-action" title="되돌리기" onclick={onUndo} disabled={!canUndo}>
       <Undo2 size={19} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button" title="다시 실행" onclick={onRedo} disabled={!canRedo}>
+    <button type="button" class="toolbar-button edit-action" title="다시 실행" onclick={onRedo} disabled={!canRedo}>
       <Redo2 size={19} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button" title="라이선스" onclick={onOpenLicenses}>
+    <button type="button" class="toolbar-button utility-action" title="라이선스" onclick={onOpenLicenses}>
       <Info size={19} aria-hidden="true" />
     </button>
     <div class="project-context" aria-label="Current project">
@@ -149,18 +149,18 @@
   <div class="export-cluster" aria-label="Project actions">
     <button
       type="button"
-      class="toolbar-button"
+      class="toolbar-button bank-action"
       title="보컬 ZIP 가져오기"
       onclick={() => voicebankInput?.click()}
       disabled={isLoadingVoicebank}
     >
       <Upload size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="export-button" onclick={() => void onShare()} disabled={isRendering}>
+    <button type="button" class="export-button share-action" onclick={() => void onShare()} disabled={isRendering}>
       <Share2 size={19} aria-hidden="true" />
       <span>공유</span>
     </button>
-    <button type="button" class="toolbar-button" title="WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
+    <button type="button" class="toolbar-button download-action" title="WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
       <Download size={19} aria-hidden="true" />
     </button>
   </div>

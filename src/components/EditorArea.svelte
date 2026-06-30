@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Download, FileDown, Mic, Share2 } from '@lucide/svelte'
+  import { onDestroy } from 'svelte'
+  import { Circle, Download, FileDown, Mic, Music2, Redo2, Scissors, Share2, Undo2 } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from '../types'
   import { projectDurationTicks, toneName } from '../music'
@@ -20,6 +21,7 @@
 
   type Props = {
     project: SongProject
+    performanceKeys: SongNote[]
     projectSourceLabel: string
     selectedNote: SongNote | undefined
     rows: number[]
@@ -39,13 +41,26 @@
     rendered: RenderedAudio | null
     notice: string
     isRendering: boolean
+    isRecording: boolean
+    isMetronomeOn: boolean
+    isQuantizeOn: boolean
+    nextPerformanceLyric: string
+    canUndo: boolean
+    canRedo: boolean
     playbackTime: number
     displayDuration: number
     onSaveProject: () => void
     onSelectNote: (note: SongNote) => void
+    onPerformNote: (note: SongNote) => void
     onChooseLyric: (lyric: string) => void
     onLyricLine: (line: string) => void
     onApplyLyricLine: () => void
+    onToggleRecording: () => void
+    onToggleMetronome: () => void
+    onToggleQuantize: () => void
+    onQuantize: () => void
+    onUndo: () => void
+    onRedo: () => void
     onGridClick: (event: MouseEvent) => void
     onNoteKeyDown: (event: KeyboardEvent, note: SongNote) => void
     onNotePointerDown: (event: PointerEvent, note: SongNote) => void
@@ -57,6 +72,7 @@
 
   let {
     project,
+    performanceKeys,
     projectSourceLabel,
     selectedNote,
     rows,
@@ -76,13 +92,26 @@
     rendered,
     notice,
     isRendering,
+    isRecording,
+    isMetronomeOn,
+    isQuantizeOn,
+    nextPerformanceLyric,
+    canUndo,
+    canRedo,
     playbackTime,
     displayDuration,
     onSaveProject,
     onSelectNote,
+    onPerformNote,
     onChooseLyric,
     onLyricLine,
     onApplyLyricLine,
+    onToggleRecording,
+    onToggleMetronome,
+    onToggleQuantize,
+    onQuantize,
+    onUndo,
+    onRedo,
     onGridClick,
     onNoteKeyDown,
     onNotePointerDown,
@@ -93,6 +122,44 @@
   }: Props = $props()
 
   let selectedNoteLabel = $derived(selectedNote ? `${selectedNote.lyric} · ${toneName(selectedNote.tone)}` : 'No note')
+  let previewHandledByPointer = false
+  let pressedPerformanceNoteId = $state<string | null>(null)
+  let performancePressTimer: ReturnType<typeof setTimeout> | undefined
+
+  onDestroy(() => {
+    if (performancePressTimer) {
+      clearTimeout(performancePressTimer)
+    }
+  })
+
+  function flashPerformanceKey(noteId: string) {
+    pressedPerformanceNoteId = noteId
+    if (performancePressTimer) {
+      clearTimeout(performancePressTimer)
+    }
+    performancePressTimer = setTimeout(() => {
+      if (pressedPerformanceNoteId === noteId) {
+        pressedPerformanceNoteId = null
+      }
+    }, 300)
+  }
+
+  function handlePreviewPointerDown(event: PointerEvent, note: SongNote) {
+    previewHandledByPointer = true
+    flashPerformanceKey(note.id)
+    onPerformNote(note)
+    event.preventDefault()
+  }
+
+  function handlePreviewClick(note: SongNote) {
+    if (previewHandledByPointer) {
+      previewHandledByPointer = false
+      flashPerformanceKey(note.id)
+      return
+    }
+    flashPerformanceKey(note.id)
+    onPerformNote(note)
+  }
 </script>
 
 <section class="editor-area">
@@ -126,9 +193,16 @@
     </div>
   </div>
 
-  <div class="mobile-note-strip" aria-label="Mobile note selector">
-    {#each project.notes as note (note.id)}
-      <button type="button" class={note.id === selectedNote?.id ? 'active' : ''} onclick={() => onSelectNote(note)}>
+  <div class="mobile-note-strip performance-keyboard" aria-label="Touch performance keyboard">
+    {#each performanceKeys as note, index (note.id)}
+      <button
+        type="button"
+        class={`${note.id === selectedNote?.id ? 'active' : ''} ${note.id === pressedPerformanceNoteId ? 'pressed' : ''}`}
+        title={`${note.lyric} ${toneName(note.tone)} 미리듣기`}
+        onpointerdown={(event) => handlePreviewPointerDown(event, note)}
+        onclick={() => handlePreviewClick(note)}
+      >
+        <small>{index + 1}</small>
         <strong>{note.lyric}</strong>
         <span>{toneName(note.tone)}</span>
       </button>
@@ -146,6 +220,55 @@
   <div class="lyric-line-editor" aria-label="Lyric line editor">
     <input aria-label="가사 라인" value={lyricLine} placeholder="도히도히 다이스키" oninput={(event) => onLyricLine(inputValue(event))} />
     <button type="button" onclick={onApplyLyricLine}>적용</button>
+  </div>
+
+  <div class={`performance-panel ${isRecording ? 'recording' : ''}`} aria-label="Performance controls">
+    <div class="performance-readout">
+      <span class={`status-dot ${isRecording ? 'recording' : isMetronomeOn ? 'ready' : 'idle'}`}></span>
+      <div>
+        <strong>{isRecording ? 'REC' : 'LIVE'}</strong>
+        <span>NEXT {nextPerformanceLyric} · {isQuantizeOn ? 'Q 1/16' : 'FREE'}</span>
+      </div>
+    </div>
+    <div class="performance-actions">
+      <button
+        type="button"
+        class={`performance-action record ${isRecording ? 'active' : ''}`}
+        aria-label={isRecording ? '녹음 정지' : '녹음 시작'}
+        onclick={onToggleRecording}
+      >
+        <Circle size={16} aria-hidden="true" />
+        <span>{isRecording ? 'STOP' : 'REC'}</span>
+      </button>
+      <button
+        type="button"
+        class={`performance-action ${isMetronomeOn ? 'active' : ''}`}
+        aria-label={isMetronomeOn ? '메트로놈 끄기' : '메트로놈 켜기'}
+        onclick={onToggleMetronome}
+      >
+        <Music2 size={16} aria-hidden="true" />
+        <span>MET</span>
+      </button>
+      <button
+        type="button"
+        class={`performance-action ${isQuantizeOn ? 'active' : ''}`}
+        aria-label={isQuantizeOn ? '퀀타이즈 입력 끄기' : '퀀타이즈 입력 켜기'}
+        onclick={onToggleQuantize}
+      >
+        <Scissors size={16} aria-hidden="true" />
+        <span>Q</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="전체 퀀타이즈" onclick={onQuantize}>
+        <Scissors size={16} aria-hidden="true" />
+        <span>FIX</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="되돌리기" onclick={onUndo} disabled={!canUndo}>
+        <Undo2 size={16} aria-hidden="true" />
+      </button>
+      <button type="button" class="performance-action" aria-label="다시 실행" onclick={onRedo} disabled={!canRedo}>
+        <Redo2 size={16} aria-hidden="true" />
+      </button>
+    </div>
   </div>
 
   <div class="arrangement-panel">

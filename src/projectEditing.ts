@@ -14,6 +14,14 @@ export type GridNoteInput = {
   lyric: string
 }
 
+export type TickNoteInput = {
+  start: number
+  duration: number
+  tone: number
+  lyric: string
+  gridTicks?: number
+}
+
 export function addNoteAfter(project: SongProject, anchor: SongNote | undefined, lyric = '라') {
   const part = ensurePrimaryPart(project)
   const start = anchor ? anchor.start + anchor.duration : project.notes.at(-1)?.start ?? 0
@@ -43,6 +51,18 @@ export function addNoteFromGrid(project: SongProject, input: GridNoteInput) {
   })
 }
 
+export function addNoteAtTick(project: SongProject, input: TickNoteInput) {
+  const part = ensurePrimaryPart(project)
+  const gridTicks = input.gridTicks ?? 0
+  return insertNote(project, {
+    part,
+    start: gridTicks > 0 ? snapTickToGrid(input.start, gridTicks) : Math.max(0, Math.round(input.start)),
+    duration: gridTicks > 0 ? Math.max(gridTicks, snapTickToGrid(input.duration, gridTicks)) : input.duration,
+    tone: input.tone,
+    lyric: input.lyric.trim() || '라',
+  })
+}
+
 export function updateNoteInProject(project: SongProject, noteId: string, patch: Partial<SongNote>) {
   const currentNote = project.notes.find((note) => note.id === noteId)
   if (!currentNote) {
@@ -58,6 +78,31 @@ export function updateNoteInProject(project: SongProject, noteId: string, patch:
         .sort((a, b) => a.start - b.start || a.tone - b.tone),
     },
     note,
+  }
+}
+
+export function quantizeProjectNotes(project: SongProject, gridTicks = GRID_SNAP_TICKS) {
+  let changedCount = 0
+  const notes = project.notes
+    .map((note) => {
+      const nextNote = sanitizeNote({
+        ...note,
+        start: snapTickToGrid(note.start, gridTicks),
+        duration: Math.max(gridTicks, snapTickToGrid(note.duration, gridTicks)),
+      })
+      if (nextNote.start !== note.start || nextNote.duration !== note.duration) {
+        changedCount += 1
+      }
+      return nextNote
+    })
+    .sort((a, b) => a.start - b.start || a.tone - b.tone)
+  return {
+    project: {
+      ...project,
+      parts: notes.reduce((parts, note) => expandPartForNote(parts, note), project.parts),
+      notes,
+    },
+    changedCount,
   }
 }
 
@@ -161,7 +206,11 @@ function ensurePrimaryPart(project: SongProject): VoicePart {
 }
 
 function snapTick(tick: number) {
-  return Math.round(tick / GRID_SNAP_TICKS) * GRID_SNAP_TICKS
+  return snapTickToGrid(tick, GRID_SNAP_TICKS)
+}
+
+export function snapTickToGrid(tick: number, gridTicks = GRID_SNAP_TICKS) {
+  return Math.max(0, Math.round(tick / gridTicks) * gridTicks)
 }
 
 function splitLyricChunk(chunk: string) {
