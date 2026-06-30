@@ -161,7 +161,10 @@
   let selectedPitchBend = $derived(normalizeNotePitchBend(selectedNote?.pitchBend))
   let selectedPitchBendEnabled = $derived(Boolean(selectedNote?.pitchBend && selectedPitchBend.points.length > 0))
   let selectedPitchBendPeak = $derived(pitchBendPeak(selectedPitchBend, selectedPitchBendEnabled))
-  let selectedPitchBendPath = $derived(pitchPreviewPath(selectedPitchBendPeak.timePercent, selectedPitchBendPeak.cents))
+  let selectedPitchBendPath = $derived(pitchPreviewPath(selectedPitchBend, selectedPitchBendEnabled))
+  let selectedPitchBendPointCount = $derived(selectedPitchBendEnabled ? selectedPitchBend.points.length : 0)
+  let selectedPitchBendMode = $derived(editablePitchMode(selectedPitchBend.modes?.[Math.max(0, selectedPitchBendPeak.index - 1)]))
+  let selectedPitchBendSnapFirst = $derived(selectedPitchBendEnabled && selectedPitchBend.snapFirst === true)
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
   let isBundledDefaultVoicebank = $derived(
     Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
@@ -293,39 +296,96 @@
     onTiming(sanitizeOptionalNoteTiming({ ...selectedTiming, ...patch }))
   }
 
-  function updatePitchBend(patch: { enabled?: boolean; cents?: number; timePercent?: number }) {
+  function updatePitchBend(patch: { enabled?: boolean; cents?: number; timePercent?: number; mode?: string; snapFirst?: boolean }) {
     const enabled = patch.enabled ?? selectedPitchBendEnabled
     if (!enabled) {
       onPitchBend(undefined)
       return
     }
-    const cents = clampPitchBend(patch.cents ?? selectedPitchBendPeak.cents)
-    const timePercent = clampPitchBendPercent(patch.timePercent ?? selectedPitchBendPeak.timePercent)
+    const current = selectedPitchBendEnabled && selectedPitchBend.points.some((point) => point.timePercent > 0 && point.timePercent < 100)
+      ? selectedPitchBend
+      : defaultPitchBend()
+    const points = current.points.map((point) => ({ ...point }))
+    const peak = pitchBendPeak(current, true)
+    const peakIndex = Math.max(0, Math.min(points.length - 1, peak.index))
+    if (patch.cents !== undefined) {
+      points[peakIndex] = {
+        ...points[peakIndex],
+        cents: clampPitchBend(patch.cents),
+      }
+    }
+    if (patch.timePercent !== undefined) {
+      points[peakIndex] = {
+        ...points[peakIndex],
+        timePercent: clampPitchBendPointPercent(points, peakIndex, patch.timePercent),
+      }
+    }
+    const modes = pitchBendModesForEditing(current, points.length)
+    if (patch.mode !== undefined) {
+      const mode = editablePitchMode(patch.mode)
+      for (const index of adjacentPitchModeIndexes(peakIndex, modes.length)) {
+        modes[index] = mode
+      }
+    }
     onPitchBend(
       sanitizeOptionalNotePitchBend({
-        points: [
-          { timePercent: 0, cents: 0 },
-          { timePercent, cents },
-          { timePercent: 100, cents: 0 },
-        ],
-        modes: ['s', 's'],
+        points,
+        ...(modes.length > 0 ? { modes } : {}),
+        snapFirst: patch.snapFirst ?? current.snapFirst ?? false,
       }),
     )
   }
 
   function pitchBendPeak(pitchBend: NotePitchBend, enabled: boolean) {
     if (!enabled || pitchBend.points.length === 0) {
-      return { timePercent: 50, cents: 40 }
+      return { timePercent: 50, cents: 40, index: 1 }
     }
-    const candidates = pitchBend.points.filter((point) => point.timePercent > 0 && point.timePercent < 100)
-    const points = candidates.length > 0 ? candidates : pitchBend.points
+    const allPoints = pitchBend.points.map((point, index) => ({ ...point, index }))
+    const candidates = allPoints.filter((point) => point.timePercent > 0 && point.timePercent < 100)
+    const points = candidates.length > 0 ? candidates : allPoints
     return points.reduce((peak, point) => (Math.abs(point.cents) > Math.abs(peak.cents) ? point : peak), points[0])
   }
 
-  function pitchPreviewPath(timePercent: number, cents: number) {
-    const x = clampPitchBendPercent(timePercent)
-    const y = 20 - (clampPitchBend(cents) / 1200) * 16
-    return `M 2 20 L ${x.toFixed(2)} ${y.toFixed(2)} L 98 20`
+  function pitchPreviewPath(pitchBend: NotePitchBend, enabled: boolean) {
+    const points = enabled && pitchBend.points.length > 0 ? pitchBend.points : defaultPitchBend().points
+    return points
+      .map((point, index) => {
+        const x = Math.max(2, Math.min(98, clampPitchBendPercentForPreview(point.timePercent)))
+        const y = 20 - (clampPitchBend(point.cents) / 1200) * 16
+        return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`
+      })
+      .join(' ')
+  }
+
+  function defaultPitchBend(): NotePitchBend {
+    return {
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 50, cents: 40 },
+        { timePercent: 100, cents: 0 },
+      ],
+      modes: ['l', 'l'],
+      snapFirst: false,
+    }
+  }
+
+  function pitchBendModesForEditing(pitchBend: NotePitchBend, pointCount: number) {
+    return Array.from({ length: Math.max(0, pointCount - 1) }, (_, index) => pitchBend.modes?.[index] ?? 'l')
+  }
+
+  function adjacentPitchModeIndexes(pointIndex: number, modeCount: number) {
+    const indexes = new Set<number>()
+    if (modeCount <= 0) {
+      return []
+    }
+    indexes.add(Math.max(0, Math.min(modeCount - 1, pointIndex - 1)))
+    indexes.add(Math.max(0, Math.min(modeCount - 1, pointIndex)))
+    return [...indexes]
+  }
+
+  function editablePitchMode(mode: unknown) {
+    const value = String(mode ?? '').trim().toLowerCase()
+    return value === 'i' || value === 'o' || value === 'io' || value === 'sp' ? value : 'l'
   }
 
   function clampPitchBend(value: number) {
@@ -334,6 +394,18 @@
 
   function clampPitchBendPercent(value: number) {
     return Math.max(10, Math.min(90, Number.isFinite(value) ? value : 50))
+  }
+
+  function clampPitchBendPointPercent(points: Array<{ timePercent: number }>, index: number, value: number) {
+    const previous = points[index - 1]
+    const next = points[index + 1]
+    const min = previous ? previous.timePercent + 1 : 0
+    const max = next ? next.timePercent - 1 : 100
+    return Math.max(min, Math.min(max, Number.isFinite(value) ? value : points[index]?.timePercent ?? 50))
+  }
+
+  function clampPitchBendPercentForPreview(value: number) {
+    return Math.max(0, Math.min(100, Number.isFinite(value) ? value : 50))
   }
 </script>
 
@@ -741,6 +813,10 @@
               <path class="curve-line" d={selectedPitchBendPath}></path>
             </svg>
           </div>
+          <div class="pitch-bend-meta" aria-label="Pitch bend point count">
+            <span>{selectedPitchBendPointCount} pts</span>
+            <span>{selectedPitchBendSnapFirst ? 'snap start' : 'free start'}</span>
+          </div>
           <label class="slider-field">
             <span>폭 <output>{Math.round(selectedPitchBendPeak.cents)}c</output></span>
             <input
@@ -766,6 +842,32 @@
               disabled={!selectedPitchBendEnabled}
               oninput={(event) => updatePitchBend({ timePercent: Number(inputValue(event)) })}
             />
+          </label>
+          <label class="field-label compact-field pitch-mode-field">
+            곡선
+            <select
+              aria-label="Pitch bend curve mode"
+              value={selectedPitchBendMode}
+              disabled={!selectedPitchBendEnabled}
+              onchange={(event) => updatePitchBend({ mode: inputValue(event) })}
+            >
+              <option value="l">Linear</option>
+              <option value="io">Smooth</option>
+              <option value="i">Ease in</option>
+              <option value="o">Ease out</option>
+              <option value="sp">Spline</option>
+            </select>
+          </label>
+          <label class="toggle-line pitch-snap-line">
+            <input
+              aria-label="Pitch bend snap first"
+              type="checkbox"
+              checked={selectedPitchBendSnapFirst}
+              disabled={!selectedPitchBendEnabled}
+              onchange={(event) => updatePitchBend({ snapFirst: (event.currentTarget as HTMLInputElement).checked })}
+            />
+            <span>첫 점 스냅</span>
+            <strong>{selectedPitchBendSnapFirst ? 'ON' : 'OFF'}</strong>
           </label>
         </div>
       </div>

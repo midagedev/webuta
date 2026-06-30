@@ -87,6 +87,7 @@ function pitchBendRatio(ratio: number, mode: string | undefined) {
     case 'o':
       return Math.sin((value * Math.PI) / 2)
     case 'io':
+    case 'sp':
       return (1 - Math.cos(value * Math.PI)) / 2
     default:
       return value

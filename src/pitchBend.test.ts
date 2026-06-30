@@ -57,4 +57,26 @@ describe('note pitch bend curves', () => {
     expect(notePitchBendCentsAt(note, 0.5)).toBeCloseTo(50, 3)
     expect(notePitchBendCentsAt(note, 0.75)).toBeCloseTo(85.355, 3)
   })
+
+  it('treats OpenUtau spline mode as a smooth curve for browser rendering', () => {
+    const note: SongNote = {
+      id: 'spline-note',
+      trackId: 'track',
+      partId: 'part',
+      start: 0,
+      duration: 480,
+      tone: 60,
+      lyric: '라',
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 100, cents: 100 },
+        ],
+        modes: ['sp'],
+      },
+    }
+
+    expect(notePitchBendCentsAt(note, 0.25)).toBeCloseTo(14.645, 3)
+    expect(notePitchBendCentsAt(note, 0.75)).toBeCloseTo(85.355, 3)
+  })
 })

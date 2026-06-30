@@ -90,7 +90,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] OpenUtau USTX `pitch.data` curves survive import/export, preserving
   millisecond point timing and basic curve shapes as WebUtau pitch bends.
 - [x] App tests cover selected-note pitch-bend controls for a simple editable
-  3-point curve.
+  3-point curve and verify imported pitch modes plus `snap_first` are preserved
+  when the selected-note editor adjusts an existing curve.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 

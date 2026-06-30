@@ -158,11 +158,12 @@ describe('LeftRail release readiness', () => {
         { timePercent: 50, cents: 40 },
         { timePercent: 100, cents: 0 },
       ],
-      modes: ['s', 's'],
+      modes: ['l', 'l'],
+      snapFirst: false,
     })
   })
 
-  it('updates an imported pitch bend curve from the selected-note controls', async () => {
+  it('updates an imported pitch bend curve without discarding OpenUtau shape metadata', async () => {
     const onPitchBend = vi.fn()
     const project = makeProject()
     project.notes[0] = {
@@ -173,7 +174,8 @@ describe('LeftRail release readiness', () => {
           { timePercent: 45, cents: -80 },
           { timePercent: 100, cents: 0 },
         ],
-        modes: ['s', 'r'],
+        modes: ['io', 'o'],
+        snapFirst: true,
       },
     }
     render(LeftRail, makeProps({ project, selectedNote: project.notes[0], onPitchBend }))
@@ -181,6 +183,8 @@ describe('LeftRail release readiness', () => {
     const pitchBendCard = screen.getByLabelText('Selected note pitch bend')
     expect(pitchBendCard.textContent).toContain('ON')
     expect(pitchBendCard.textContent).toContain('-80c')
+    expect(pitchBendCard.textContent).toContain('3 pts')
+    expect(pitchBendCard.textContent).toContain('snap start')
 
     await fireEvent.input(screen.getByLabelText('Pitch bend amount'), { target: { value: '120' } })
 
@@ -190,7 +194,32 @@ describe('LeftRail release readiness', () => {
         { timePercent: 45, cents: 120 },
         { timePercent: 100, cents: 0 },
       ],
-      modes: ['s', 's'],
+      modes: ['io', 'o'],
+      snapFirst: true,
+    })
+
+    await fireEvent.change(screen.getByLabelText('Pitch bend curve mode'), { target: { value: 'i' } })
+
+    expect(onPitchBend).toHaveBeenLastCalledWith({
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 45, cents: -80 },
+        { timePercent: 100, cents: 0 },
+      ],
+      modes: ['i', 'i'],
+      snapFirst: true,
+    })
+
+    await fireEvent.change(screen.getByLabelText('Pitch bend snap first'), { target: { checked: false } })
+
+    expect(onPitchBend).toHaveBeenLastCalledWith({
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 45, cents: -80 },
+        { timePercent: 100, cents: 0 },
+      ],
+      modes: ['io', 'o'],
+      snapFirst: false,
     })
   })
 })

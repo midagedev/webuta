@@ -250,6 +250,9 @@ Recommended coverage shape:
   WebUtau note-local pitch bends and back.
 - [x] Add selected-note pitch-bend controls for a simple editable 3-point curve
   with desktop/mobile smoke coverage.
+- [x] Preserve imported pitch curve metadata in the selected-note editor:
+  adjusting bend amount, position, curve mode, or first-point snap does not
+  discard existing OpenUtau USTX point data, shape modes, or `snap_first`.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
 ### M7. First-Run Musical Quality
@@ -491,7 +494,10 @@ Current verified V3 evidence:
 - OpenUtau USTX `pitch.data` now round-trips through the same WebUtau pitch-bend
   model. Point `x` values are interpreted as milliseconds from the note start,
   `y` values are converted from 0.1 semitone units to cents, `snap_first` is
-  preserved, and basic `l`/`i`/`o`/`io` shapes affect playback interpolation.
+  preserved, and basic `l`/`i`/`o`/`io`/`sp` shapes affect playback interpolation.
+- The selected-note pitch-bend card now previews the full imported curve,
+  reports point count and start-snap state, exposes curve mode/snap controls,
+  and preserves existing OpenUtau pitch metadata when editing a curve.
 - The left rail now exposes a selected-note pitch-bend card with an ON/OFF
   toggle, bend amount slider, bend position slider, and compact curve preview.
 - DAW editing controls now cover draw, drag, resize, duplicate, split, delete, lyric line
