@@ -153,7 +153,25 @@ describe('project editing helpers', () => {
   })
 
   it('duplicates a note immediately after the source note', () => {
-    const { project, sourceNote, duplicatedNote } = duplicateNoteInProject(demoProject, 'n8')
+    const sourceProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note) =>
+        note.id === 'n8'
+          ? {
+              ...note,
+              pitchBend: {
+                points: [
+                  { timePercent: 0, cents: 0 },
+                  { timePercent: 50, cents: 28 },
+                  { timePercent: 100, cents: 0 },
+                ],
+                modes: ['s', 'j'],
+              },
+            }
+          : note,
+      ),
+    }
+    const { project, sourceNote, duplicatedNote } = duplicateNoteInProject(sourceProject, 'n8')
 
     expect(sourceNote?.id).toBe('n8')
     expect(duplicatedNote).toMatchObject({
@@ -164,9 +182,17 @@ describe('project editing helpers', () => {
       tone: 64,
       lyric: '키',
       vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 50, cents: 28 },
+          { timePercent: 100, cents: 0 },
+        ],
+        modes: ['s', 'j'],
+      },
     })
     expect(duplicatedNote?.id).not.toBe('n8')
-    expect(project.notes).toHaveLength(demoProject.notes.length + 1)
+    expect(project.notes).toHaveLength(sourceProject.notes.length + 1)
     expect(project.parts[0].duration).toBeGreaterThanOrEqual(5760)
   })
 

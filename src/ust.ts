@@ -1,4 +1,5 @@
-import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { sanitizeOptionalNotePitchBend } from './pitchBend'
+import { TICKS_PER_BEAT, type NotePitchBend, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
@@ -31,6 +32,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
     }
     if (!isRestLyric(lyric)) {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
+      const pitchBend = parseUstPitchBend(section, duration)
       notes.push({
         id: `note-${index}`,
         trackId,
@@ -40,6 +42,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
         tone,
         lyric,
         ...(vibrato ? { vibrato } : {}),
+        ...(pitchBend ? { pitchBend } : {}),
       })
     }
     cursor += duration
@@ -133,6 +136,7 @@ export function serializeUst(project: SongProject) {
       lyric: note.lyric,
       tone: note.tone,
       vibrato: note.vibrato,
+      pitchBend: note.pitchBend,
       tempo: tempoAt(note.start),
     })
     sectionIndex += 1
@@ -191,6 +195,7 @@ function pushNoteSection(
     lyric: string
     tone: number
     vibrato?: NoteVibrato
+    pitchBend?: NotePitchBend
     tempo?: number
   },
 ) {
@@ -205,6 +210,9 @@ function pushNoteSection(
   sections.push('Modulation=0')
   if (note.vibrato) {
     sections.push(`VBR=${serializeUstVibrato(note.vibrato)}`)
+  }
+  if (note.pitchBend) {
+    sections.push(...serializeUstPitchBend(note.pitchBend, note.length))
   }
 }
 
@@ -235,6 +243,47 @@ function serializeUstVibrato(vibrato: NoteVibrato) {
   return [lengthPercent, periodMs, depthCents, 10, 10, 0, 0].join(',')
 }
 
+function parseUstPitchBend(section: UstSection, duration: number) {
+  const yValues = numberListField(section, 'PBY')
+  if (yValues.length === 0) {
+    return undefined
+  }
+  const pbs = numberListField(section, 'PBS')
+  const widths = numberListField(section, 'PBW')
+  const modes = stringListField(section, 'PBM')
+  let cursor = Number.isFinite(pbs[0]) ? pbs[0] : 0
+  const points = yValues.map((cents, index) => {
+    if (index > 0) {
+      cursor += Number.isFinite(widths[index - 1]) ? widths[index - 1] : 0
+    }
+    return {
+      timePercent: duration > 0 ? (cursor / duration) * 100 : 0,
+      cents,
+    }
+  })
+  return sanitizeOptionalNotePitchBend({ points, modes })
+}
+
+function serializeUstPitchBend(pitchBend: NotePitchBend, length: number) {
+  const normalized = sanitizeOptionalNotePitchBend(pitchBend)
+  if (!normalized) {
+    return []
+  }
+  const points = normalized.points
+  const ticks = points.map((point) => Math.round((point.timePercent / 100) * Math.max(1, length)))
+  const widths = ticks.slice(1).map((tick, index) => Math.max(0, tick - ticks[index]))
+  const lines = [
+    `PBS=${Math.max(0, ticks[0])},0`,
+    `PBY=${points.map((point) => formatPitchBendNumber(point.cents)).join(',')}`,
+  ]
+  if (widths.length > 0) {
+    const modes = normalized.modes ?? []
+    lines.splice(1, 0, `PBW=${widths.join(',')}`)
+    lines.push(`PBM=${widths.map((_, index) => cleanPitchBendMode(modes[index] ?? 's')).join(',')}`)
+  }
+  return lines
+}
+
 function stringField(section: UstSection | undefined, key: string, fallback = '') {
   const value = section?.fields.get(key)
   return value === undefined ? fallback : value
@@ -249,6 +298,17 @@ function numberField(section: UstSection | undefined, key: string, fallback: num
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+function numberListField(section: UstSection | undefined, key: string) {
+  return (section?.fields.get(key) ?? '')
+    .split(',')
+    .map((item) => Number(item.trim()))
+    .filter(Number.isFinite)
+}
+
+function stringListField(section: UstSection | undefined, key: string) {
+  return (section?.fields.get(key) ?? '').split(',').map((item) => item.trim())
+}
+
 function isRestLyric(lyric: string) {
   const trimmed = lyric.trim()
   return !trimmed || trimmed === 'R' || trimmed.toLowerCase() === 'rest' || trimmed === '쉼'
@@ -260,4 +320,12 @@ function cleanUstValue(value: string) {
 
 function formatNumber(value: number, fractionDigits: number) {
   return Number.isInteger(value) ? String(value) : value.toFixed(fractionDigits)
+}
+
+function formatPitchBendNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(3).replace(/\.?0+$/u, '')
+}
+
+function cleanPitchBendMode(value: string) {
+  return /^[a-z0-9_-]*$/iu.test(value) ? value : 's'
 }

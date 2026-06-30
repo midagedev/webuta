@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { demoProject } from '../demoProject'
+import { TICKS_PER_BEAT } from '../types'
 import { browserDemoRenderer, koreanDemoVoiceProfile } from './browserDemoRenderer'
 
 describe('browser demo renderer', () => {
@@ -43,6 +44,39 @@ describe('browser demo renderer', () => {
     const sharpOnset = energy(result.samples.slice(sharpStart + 80, sharpStart + 1200))
 
     expect(sharpOnset).toBeGreaterThan(softOnset * 1.1)
+  })
+
+  it('renders per-note pitch bend curves into the oscillator voice', async () => {
+    const baseNote = {
+      ...demoProject.notes[0],
+      id: 'bend',
+      duration: TICKS_PER_BEAT * 3,
+      tone: 60,
+      lyric: '라',
+      vibrato: { enabled: false, depthCents: 0, rateHz: 5.4, startPercent: 52 },
+    }
+    const straight = await browserDemoRenderer.render({
+      ...demoProject,
+      notes: [baseNote],
+    })
+    const bent = await browserDemoRenderer.render({
+      ...demoProject,
+      notes: [
+        {
+          ...baseNote,
+          pitchBend: {
+            points: [
+              { timePercent: 0, cents: 0 },
+              { timePercent: 50, cents: 500 },
+              { timePercent: 100, cents: 0 },
+            ],
+          },
+        },
+      ],
+    })
+    const difference = bent.samples.reduce((sum, sample, index) => sum + Math.abs(sample - (straight.samples[index] ?? 0)), 0)
+
+    expect(difference).toBeGreaterThan(20)
   })
 })
 

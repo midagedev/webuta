@@ -26,6 +26,10 @@ describe('classic UST compatibility layer', () => {
         'NoteNum=67',
         'Tempo=96',
         'VBR=60,180,32,10,10,0,0',
+        'PBS=0,0',
+        'PBW=240,240,480',
+        'PBY=0,35,-20,0',
+        'PBM=s,s,s',
         '[#TRACKEND]',
       ].join('\r\n'),
       'classic-hook.ust',
@@ -50,6 +54,15 @@ describe('classic UST compatibility layer', () => {
       tone: 67,
       lyric: '히',
       vibrato: { enabled: true, depthCents: 32, startPercent: 40 },
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 25, cents: 35 },
+          { timePercent: 50, cents: -20 },
+          { timePercent: 100, cents: 0 },
+        ],
+        modes: ['s', 's', 's'],
+      },
     })
     expect(project.source).toEqual({ fileName: 'classic-hook.ust', format: 'ust' })
   })
@@ -57,6 +70,21 @@ describe('classic UST compatibility layer', () => {
   it('serializes WebUtau notes to classic UST blocks with rests and vibrato', () => {
     const text = serializeUst({
       ...demoProject,
+      notes: demoProject.notes.map((note, index) =>
+        index === 0
+          ? {
+              ...note,
+              pitchBend: {
+                points: [
+                  { timePercent: 0, cents: 0 },
+                  { timePercent: 50, cents: 40 },
+                  { timePercent: 100, cents: 0 },
+                ],
+                modes: ['s', 'r'],
+              },
+            }
+          : note,
+      ),
       tempoChanges: [
         { position: 0, bpm: 112 },
         { position: 2160, bpm: 96 },
@@ -70,6 +98,10 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('Lyric=R')
     expect(text).toContain('Tempo=96')
     expect(text).toContain('VBR=56,179,20,10,10,0,0')
+    expect(text).toContain('PBS=0,0')
+    expect(text).toContain('PBW=210,210')
+    expect(text).toContain('PBY=0,40,0')
+    expect(text).toContain('PBM=s,r')
 
     const reparsed = parseUst(text, 'roundtrip.ust')
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
@@ -82,5 +114,11 @@ describe('classic UST compatibility layer', () => {
       depthCents: 20,
       startPercent: 44,
     })
+    expect(reparsed.notes[0].pitchBend?.points).toEqual([
+      { timePercent: 0, cents: 0 },
+      { timePercent: 50, cents: 40 },
+      { timePercent: 100, cents: 0 },
+    ])
+    expect(reparsed.notes[0].pitchBend?.modes).toEqual(['s', 'r'])
   })
 })

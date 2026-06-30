@@ -141,6 +141,31 @@ describe('neural render contract export', () => {
     expect(request.notes[1]).toMatchObject({ startSeconds: 0.5, durationSeconds: 1 })
   })
 
+  it('exports per-note pitch bend curves for server renderers', () => {
+    const project: SongProject = {
+      ...demoProject,
+      notes: [
+        {
+          ...demoProject.notes[0],
+          pitchBend: {
+            points: [
+              { timePercent: 0, cents: 0 },
+              { timePercent: 50, cents: 42 },
+              { timePercent: 100, cents: 0 },
+            ],
+          },
+        },
+      ],
+    }
+    const request = createNeuralRenderRequest(project)
+
+    expect(request.notes[0].pitchCurve).toEqual([
+      { timeRatio: 0, cents: 0 },
+      { timeRatio: 0.5, cents: 42 },
+      { timeRatio: 1, cents: 0 },
+    ])
+  })
+
   it('treats rest lyrics as silent events instead of pitched syllables', () => {
     const project: SongProject = {
       ...demoProject,

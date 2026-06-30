@@ -1,7 +1,7 @@
 import { masterMonoMix } from '../audio/mastering'
 import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
+import { notePitchCentsAt } from '../pitchBend'
 import type { SongNote, SongProject } from '../types'
-import { noteVibratoCentsAt } from '../vibrato'
 import {
   findBestEntryForLyric,
   findCodaTailEntryForLyric,
@@ -204,7 +204,7 @@ function mixPreparedSample(
     const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
     output[startSample + i] += sampleValue * envelope * 0.66
-    sourcePosition += rate * vibratoRateMultiplier(note, noteProgress, noteBodySamples)
+    sourcePosition += rate * pitchRateMultiplier(note, noteProgress, noteBodySamples)
   }
 }
 
@@ -229,13 +229,13 @@ function releaseSecondsForNote(
   return clamp(noteDurationSeconds * 0.2, 0.055, 0.16)
 }
 
-function vibratoRateMultiplier(note: SongNote, noteProgressSamples: number, noteBodySamples: number) {
+function pitchRateMultiplier(note: SongNote, noteProgressSamples: number, noteBodySamples: number) {
   if (noteBodySamples < SAMPLE_RATE * 0.42 || noteProgressSamples <= 0) {
     return 1
   }
   const progress = noteProgressSamples / noteBodySamples
   const seconds = noteProgressSamples / SAMPLE_RATE
-  const cents = noteVibratoCentsAt(note, progress, seconds)
+  const cents = notePitchCentsAt(note, progress, seconds)
   return 2 ** (cents / 1200)
 }
 

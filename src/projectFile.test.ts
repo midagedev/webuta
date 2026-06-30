@@ -4,7 +4,28 @@ import { isWebutaProjectFileName, parseWebutaProject, serializeWebutaProject } f
 
 describe('WebUtau project files', () => {
   it('round-trips a WebUtau project JSON file', () => {
-    const text = serializeWebutaProject({ ...demoProject, name: 'Saved Hook' }, '2026-06-30T00:00:00.000Z')
+    const text = serializeWebutaProject(
+      {
+        ...demoProject,
+        name: 'Saved Hook',
+        notes: demoProject.notes.map((note, index) =>
+          index === 0
+            ? {
+                ...note,
+                pitchBend: {
+                  points: [
+                    { timePercent: 0, cents: 0 },
+                    { timePercent: 40, cents: 24 },
+                    { timePercent: 100, cents: 0 },
+                  ],
+                  modes: ['s', 'r'],
+                },
+              }
+            : note,
+        ),
+      },
+      '2026-06-30T00:00:00.000Z',
+    )
     const project = parseWebutaProject(text, 'saved-hook.webutau.json')
 
     expect(project.name).toBe('Saved Hook')
@@ -15,6 +36,12 @@ describe('WebUtau project files', () => {
       rateHz: 5.6,
       startPercent: 44,
     })
+    expect(project.notes[0].pitchBend?.points).toEqual([
+      { timePercent: 0, cents: 0 },
+      { timePercent: 40, cents: 24 },
+      { timePercent: 100, cents: 0 },
+    ])
+    expect(project.notes[0].pitchBend?.modes).toEqual(['s', 'r'])
     expect(project.source).toEqual({
       fileName: 'saved-hook.webutau.json',
       format: 'webuta',

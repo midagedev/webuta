@@ -19,6 +19,7 @@ export type SongNote = {
   tone: number
   lyric: string
   vibrato?: NoteVibrato
+  pitchBend?: NotePitchBend
 }
 
 export type NoteVibrato = {
@@ -26,6 +27,16 @@ export type NoteVibrato = {
   depthCents: number
   rateHz: number
   startPercent: number
+}
+
+export type NotePitchPoint = {
+  timePercent: number
+  cents: number
+}
+
+export type NotePitchBend = {
+  points: NotePitchPoint[]
+  modes?: string[]
 }
 
 export type TempoChange = {

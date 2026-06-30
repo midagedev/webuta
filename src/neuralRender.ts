@@ -1,4 +1,5 @@
 import { durationTicksToSeconds, midiToHz, normalizedTempoChanges, sortedNotes, ticksToSecondsInProject } from './music'
+import { normalizeNotePitchBend } from './pitchBend'
 import { TICKS_PER_BEAT, type SongProject } from './types'
 
 const HANGUL_BASE = 0xac00
@@ -256,7 +257,7 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
       targetHz: isUnpitched ? null : midiToHz(note.tone),
       lyric: note.lyric,
       phonemes: phonemesForLyric(note.lyric),
-      pitchCurve: normalizePitchCurve(options.pitchCurves?.[note.id] ?? []),
+      pitchCurve: normalizePitchCurve([...pitchCurveFromNote(note), ...(options.pitchCurves?.[note.id] ?? [])]),
     })
     trackEnds.set(note.trackId, Math.max(previousEnd, note.start + note.duration))
   }
@@ -270,6 +271,13 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
     }
     return (a.midi ?? -1) - (b.midi ?? -1)
   })
+}
+
+function pitchCurveFromNote(note: SongProject['notes'][number]): NeuralPitchPoint[] {
+  return normalizeNotePitchBend(note.pitchBend).points.map((point) => ({
+    timeRatio: point.timePercent / 100,
+    cents: point.cents,
+  }))
 }
 
 export function phonemesForLyric(lyric: string): NeuralPhoneme[] {

@@ -151,6 +151,71 @@ describe('UTAU sample renderer', () => {
     expect(difference).toBeGreaterThan(16)
   })
 
+  it('uses per-note pitch bend curves when advancing the UTAU sample', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 80,
+      cutoffMs: 0,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(1.2, 44100), 44100)
+      },
+    } as unknown as AudioContext
+    const baseProject = makeSingleNoteProject()
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const straight = await renderer.render({
+      ...baseProject,
+      notes: [
+        {
+          ...baseProject.notes[0],
+          lyric: '라',
+          duration: TICKS_PER_BEAT * 3,
+          vibrato: { enabled: false, depthCents: 0, rateHz: 5.4, startPercent: 52 },
+        },
+      ],
+    })
+    const bent = await renderer.render({
+      ...baseProject,
+      notes: [
+        {
+          ...baseProject.notes[0],
+          lyric: '라',
+          duration: TICKS_PER_BEAT * 3,
+          vibrato: { enabled: false, depthCents: 0, rateHz: 5.4, startPercent: 52 },
+          pitchBend: {
+            points: [
+              { timePercent: 0, cents: 0 },
+              { timePercent: 50, cents: 500 },
+              { timePercent: 100, cents: 0 },
+            ],
+          },
+        },
+      ],
+    })
+    const difference = bent.samples.reduce((sum, sample, index) => sum + Math.abs(sample - (straight.samples[index] ?? 0)), 0)
+
+    expect(difference).toBeGreaterThan(16)
+  })
+
   it('preserves the first note attack when preutterance would start before the timeline', async () => {
     const entry: OtoEntry = {
       fileName: 'do_C4.wav',

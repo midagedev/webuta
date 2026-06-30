@@ -225,6 +225,10 @@ Recommended coverage shape:
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
   note timing.
+- [x] Preserve classic UST `PBS`/`PBW`/`PBY` pitch-bend curves and `PBM`
+  segment modes, save them in `.webutau.json`, export them back to UST, and
+  render the pitch curves in both the UTAU sample renderer and browser fallback
+  voice.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
 ### M7. First-Run Musical Quality
@@ -427,6 +431,11 @@ Current verified V3 evidence:
 - Selected notes now expose DAW-style vibrato controls. The setting is saved in
   `.webutau.json`, mapped to/from USTX `vibrato` blocks, and rendered as actual
   pitch movement in both the UTAU sample renderer and browser fallback voice.
+- Classic UST pitch bend fields `PBS`, `PBW`, and `PBY` are now parsed into
+  per-note pitch curves, while `PBM` segment modes are preserved for UST export.
+  The curves survive native project save/load, duplicate-note workflows, and
+  UST export, and they alter rendered pitch in both browser fallback and UTAU
+  sample renderer paths.
 - DAW editing controls now cover draw, drag, resize, duplicate, split, delete, lyric line
   apply, undo, and redo. The transport includes play, stop, loop playback,
   metronome toggle, BPM edit, render, download, and share.

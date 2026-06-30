@@ -1,4 +1,5 @@
 import { clampTone, makeId } from './music'
+import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { TICKS_PER_BEAT, type SongNote, type SongProject, type VoicePart } from './types'
 import { sanitizeOptionalNoteVibrato } from './vibrato'
 
@@ -144,6 +145,12 @@ export function duplicateNoteInProject(project: SongProject, noteId: string) {
     ...currentNote,
     id: makeId('note'),
     start: currentNote.start + currentNote.duration,
+    pitchBend: currentNote.pitchBend
+      ? {
+          points: currentNote.pitchBend.points.map((point) => ({ ...point })),
+          ...(currentNote.pitchBend.modes ? { modes: [...currentNote.pitchBend.modes] } : {}),
+        }
+      : undefined,
     vibrato: currentNote.vibrato ? { ...currentNote.vibrato } : undefined,
   })
   const notes = [...project.notes, duplicatedNote].sort((a, b) => a.start - b.start || a.tone - b.tone)
@@ -262,8 +269,9 @@ function expandPartForNote(parts: VoicePart[], note: SongNote) {
 }
 
 function sanitizeNote(note: SongNote): SongNote {
-  const { vibrato: rawVibrato, ...rest } = note
+  const { pitchBend: rawPitchBend, vibrato: rawVibrato, ...rest } = note
   const vibrato = sanitizeOptionalNoteVibrato(rawVibrato)
+  const pitchBend = sanitizeOptionalNotePitchBend(rawPitchBend)
   return {
     ...rest,
     start: Math.max(0, Math.round(note.start)),
@@ -271,6 +279,7 @@ function sanitizeNote(note: SongNote): SongNote {
     tone: clampTone(note.tone),
     lyric: note.lyric.trim() || '라',
     ...(vibrato ? { vibrato } : {}),
+    ...(pitchBend ? { pitchBend } : {}),
   }
 }
 

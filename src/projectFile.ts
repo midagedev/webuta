@@ -1,4 +1,5 @@
 import type { SongNote, SongProject, TempoChange, Track, VoicePart } from './types'
+import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { sanitizeOptionalNoteVibrato } from './vibrato'
 
 export const WEBUTA_PROJECT_FORMAT = 'webuta-project'
@@ -139,7 +140,8 @@ function isSongNote(value: unknown): value is SongNote {
     isFiniteNumber(value.duration) &&
     isFiniteNumber(value.tone) &&
     typeof value.lyric === 'string' &&
-    (value.vibrato === undefined || isNoteVibrato(value.vibrato))
+    (value.vibrato === undefined || isNoteVibrato(value.vibrato)) &&
+    (value.pitchBend === undefined || isNotePitchBend(value.pitchBend))
   )
 }
 
@@ -148,6 +150,13 @@ function isNoteVibrato(value: unknown) {
     return false
   }
   return sanitizeOptionalNoteVibrato(value) !== undefined
+}
+
+function isNotePitchBend(value: unknown) {
+  if (!isObject(value)) {
+    return false
+  }
+  return sanitizeOptionalNotePitchBend(value) !== undefined
 }
 
 function isProjectSource(value: unknown) {
