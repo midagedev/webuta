@@ -28,6 +28,11 @@ export type NoteVibrato = {
   startPercent: number
 }
 
+export type TempoChange = {
+  position: number
+  bpm: number
+}
+
 export type VoicePart = {
   id: string
   trackId: string
@@ -41,6 +46,7 @@ export type SongProject = {
   name: string
   comment: string
   bpm: number
+  tempoChanges?: TempoChange[]
   beatPerBar: number
   beatUnit: number
   tracks: Track[]

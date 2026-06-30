@@ -155,6 +155,7 @@ describe('App editing workflow', () => {
                 'Length=480',
                 'Lyric=도',
                 'NoteNum=64',
+                'Tempo=96',
                 '[#TRACKEND]',
               ].join('\r\n'),
             ],
@@ -169,6 +170,10 @@ describe('App editing workflow', () => {
       expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Imported Classic UST')
       expect(loadSavedProject()?.notes).toEqual([
         expect.objectContaining({ lyric: '도', tone: 64, start: 240, duration: 480 }),
+      ])
+      expect(loadSavedProject()?.tempoChanges).toEqual([
+        { position: 0, bpm: 132 },
+        { position: 240, bpm: 96 },
       ])
     })
     expect(screen.getAllByText('classic-hook.ust').length).toBeGreaterThan(0)

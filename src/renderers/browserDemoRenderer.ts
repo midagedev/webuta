@@ -1,4 +1,4 @@
-import { midiToHz, projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
+import { durationTicksToSeconds, midiToHz, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
 import type { SongNote, SongProject } from '../types'
 import { masterMonoMix } from '../audio/mastering'
 import { noteVibratoCentsAt } from '../vibrato'
@@ -40,8 +40,8 @@ function throwIfAborted(signal?: AbortSignal) {
 }
 
 function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
-  const startSample = Math.max(0, Math.floor(ticksToSeconds(note.start, project.bpm) * SAMPLE_RATE))
-  const length = Math.max(1, Math.floor(ticksToSeconds(note.duration, project.bpm) * SAMPLE_RATE))
+  const startSample = Math.max(0, Math.floor(ticksToSecondsInProject(note.start, project) * SAMPLE_RATE))
+  const length = Math.max(1, Math.floor(durationTicksToSeconds(project, note.start, note.duration) * SAMPLE_RATE))
   const frequency = midiToHz(note.tone)
   const voice = koreanDemoVoiceProfile(note.lyric)
 

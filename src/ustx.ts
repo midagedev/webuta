@@ -1,6 +1,7 @@
 import * as yaml from 'js-yaml'
-import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type TempoChange, type Track, type VoicePart } from './types'
 import { makeId } from './music'
+import { normalizedTempoChanges } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
 type AnyRecord = Record<string, unknown>
@@ -58,6 +59,7 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
 
   const tempos = arrayField(data, ['tempos'])
   const firstTempo = isRecord(tempos[0]) ? tempos[0] : undefined
+  const tempoChanges = parseUstxTempos(tempos, numberField(firstTempo ?? data, ['bpm'], 120))
   const timeSignatures = arrayField(data, ['time_signatures', 'timeSignatures'])
   const firstSignature = isRecord(timeSignatures[0]) ? timeSignatures[0] : undefined
   const rawTracks = arrayField(data, ['tracks'])
@@ -132,7 +134,8 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
     id: makeId('project'),
     name: stringField(data, ['name'], fileName.replace(/\.[^.]+$/, '') || 'Imported Project'),
     comment: stringField(data, ['comment'], ''),
-    bpm: numberField(firstTempo ?? data, ['bpm'], 120),
+    bpm: tempoChanges[0]?.bpm ?? numberField(firstTempo ?? data, ['bpm'], 120),
+    tempoChanges,
     beatPerBar: numberField(firstSignature ?? data, ['beat_per_bar', 'beatPerBar'], 4),
     beatUnit: numberField(firstSignature ?? data, ['beat_unit', 'beatUnit'], 4),
     tracks,
@@ -193,12 +196,10 @@ export function serializeUstx(project: SongProject) {
           beat_unit: project.beatUnit,
         },
       ],
-      tempos: [
-        {
-          position: 0,
-          bpm: project.bpm,
-        },
-      ],
+      tempos: normalizedTempoChanges(project).map((tempo) => ({
+        position: tempo.position,
+        bpm: tempo.bpm,
+      })),
       tracks,
       voice_parts: voiceParts,
       wave_parts: [],
@@ -209,6 +210,27 @@ export function serializeUstx(project: SongProject) {
       sortKeys: false,
     },
   )
+}
+
+function parseUstxTempos(values: unknown[], fallbackBpm: number): TempoChange[] {
+  const tempos = values
+    .map((item) => {
+      const record = isRecord(item) ? item : {}
+      return {
+        position: Math.max(0, Math.round(numberField(record, ['position'], 0))),
+        bpm: numberField(record, ['bpm'], fallbackBpm),
+      }
+    })
+    .filter((tempo) => Number.isFinite(tempo.bpm) && tempo.bpm > 0)
+    .sort((a, b) => a.position - b.position)
+  const withFallback = tempos[0]?.position === 0 ? tempos : [{ position: 0, bpm: fallbackBpm }, ...tempos]
+  const byPosition = new Map<number, number>()
+  for (const tempo of withFallback) {
+    byPosition.set(tempo.position, tempo.bpm)
+  }
+  return [...byPosition.entries()]
+    .map(([position, bpm]) => ({ position, bpm }))
+    .sort((a, b) => a.position - b.position)
 }
 
 function parseUstxVibrato(record: AnyRecord): NoteVibrato | undefined {

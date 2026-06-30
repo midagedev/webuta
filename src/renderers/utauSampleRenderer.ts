@@ -1,5 +1,5 @@
 import { masterMonoMix } from '../audio/mastering'
-import { projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
+import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
 import type { SongNote, SongProject } from '../types'
 import { noteVibratoCentsAt } from '../vibrato'
 import {
@@ -126,7 +126,7 @@ function mixCodaTailSample(
   )
   const sourceStart = Math.max(0, source.length - tailSamples)
   const outputTailSamples = Math.ceil(tailSamples / Math.max(0.001, rate))
-  const noteEndSample = Math.floor((ticksToSeconds(note.start + note.duration, project.bpm) + 0.02) * SAMPLE_RATE)
+  const noteEndSample = Math.floor((ticksToSecondsInProject(note.start + note.duration, project) + 0.02) * SAMPLE_RATE)
   const startSample = clampInt(noteEndSample - Math.floor(outputTailSamples * 0.55), 0, output.length - 1)
   const fadeInSamples = Math.max(24, Math.floor(outputTailSamples * 0.18))
   const fadeOutSamples = Math.max(48, Math.floor(outputTailSamples * 0.26))
@@ -166,8 +166,8 @@ function mixPreparedSample(
   playbackRate: number,
   entry?: OtoEntry,
 ) {
-  const noteStartSeconds = ticksToSeconds(note.start, project.bpm)
-  const noteDurationSeconds = ticksToSeconds(note.duration, project.bpm)
+  const noteStartSeconds = ticksToSecondsInProject(note.start, project)
+  const noteDurationSeconds = durationTicksToSeconds(project, note.start, note.duration)
   const preutteranceSeconds = Math.max(0, (entry?.preutteranceMs ?? 0) / 1000)
   const overlapSeconds = clamp((entry?.overlapMs ?? 18) / 1000, 0.008, 0.14)
   const releaseSeconds = releaseSecondsForNote(project, note, nextNote, noteDurationSeconds)
@@ -217,8 +217,8 @@ function releaseSecondsForNote(
   if (!nextNote || nextNote.trackId !== note.trackId) {
     return clamp(noteDurationSeconds * 0.22, 0.055, 0.18)
   }
-  const noteEndSeconds = ticksToSeconds(note.start + note.duration, project.bpm)
-  const nextStartSeconds = ticksToSeconds(nextNote.start, project.bpm)
+  const noteEndSeconds = ticksToSecondsInProject(note.start + note.duration, project)
+  const nextStartSeconds = ticksToSecondsInProject(nextNote.start, project)
   const gapSeconds = nextStartSeconds - noteEndSeconds
   if (gapSeconds <= 0.03) {
     return 0.035

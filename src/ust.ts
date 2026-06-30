@@ -1,5 +1,5 @@
 import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
-import { makeId, sanitizeFileName } from './music'
+import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
 type UstSection = {
@@ -19,11 +19,16 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
   const singer = stringField(settings, 'VoiceDir', '')
   let cursor = 0
   const notes: SongNote[] = []
+  const tempoChanges = [{ position: 0, bpm }]
 
   for (const [index, section] of noteSections.entries()) {
     const duration = Math.max(1, Math.round(numberField(section, 'Length', TICKS_PER_BEAT)))
     const lyric = stringField(section, 'Lyric', 'a')
     const tone = Math.round(numberField(section, 'NoteNum', 60))
+    const sectionTempo = numberField(section, 'Tempo', NaN)
+    if (Number.isFinite(sectionTempo) && sectionTempo > 0) {
+      tempoChanges.push({ position: cursor, bpm: sectionTempo })
+    }
     if (!isRestLyric(lyric)) {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
       notes.push({
@@ -64,6 +69,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
     name: projectName,
     comment: stringField(settings, 'Comment', ''),
     bpm,
+    tempoChanges: dedupeTempoChanges(tempoChanges),
     beatPerBar: 4,
     beatUnit: 4,
     tracks,
@@ -92,24 +98,42 @@ export function serializeUst(project: SongProject) {
     'Mode2=True',
   ]
   const notes = [...project.notes].sort((a, b) => a.start - b.start || a.tone - b.tone)
+  const tempos = normalizedTempoChanges(project)
+  const tempoByPosition = new Map(tempos.map((tempo) => [tempo.position, tempo.bpm]))
   let cursor = 0
   let sectionIndex = 0
 
-  for (const note of notes) {
-    if (note.start > cursor) {
+  function tempoAt(tick: number) {
+    return tick === 0 ? undefined : tempoByPosition.get(tick)
+  }
+
+  function nextTempoPositionBefore(targetTick: number) {
+    return tempos.find((tempo) => tempo.position > cursor && tempo.position < targetTick)?.position
+  }
+
+  function pushRestUntil(targetTick: number) {
+    while (cursor < targetTick) {
+      const nextTempoPosition = nextTempoPositionBefore(targetTick)
+      const endTick = nextTempoPosition ?? targetTick
       pushNoteSection(sections, sectionIndex, {
-        length: note.start - cursor,
+        length: endTick - cursor,
         lyric: 'R',
         tone: 60,
+        tempo: tempoAt(cursor),
       })
       sectionIndex += 1
-      cursor = note.start
+      cursor = endTick
     }
+  }
+
+  for (const note of notes) {
+    pushRestUntil(note.start)
     pushNoteSection(sections, sectionIndex, {
       length: note.duration,
       lyric: note.lyric,
       tone: note.tone,
       vibrato: note.vibrato,
+      tempo: tempoAt(note.start),
     })
     sectionIndex += 1
     cursor = Math.max(cursor, note.start + note.duration)
@@ -149,6 +173,16 @@ function parseUstSections(text: string) {
   return sections
 }
 
+function dedupeTempoChanges(tempoChanges: Array<{ position: number; bpm: number }>) {
+  const byPosition = new Map<number, number>()
+  for (const tempo of tempoChanges) {
+    byPosition.set(Math.max(0, Math.round(tempo.position)), tempo.bpm)
+  }
+  return [...byPosition.entries()]
+    .map(([position, bpm]) => ({ position, bpm }))
+    .sort((a, b) => a.position - b.position)
+}
+
 function pushNoteSection(
   sections: string[],
   index: number,
@@ -157,12 +191,16 @@ function pushNoteSection(
     lyric: string
     tone: number
     vibrato?: NoteVibrato
+    tempo?: number
   },
 ) {
   sections.push(`[#${String(index).padStart(4, '0')}]`)
   sections.push(`Length=${Math.max(1, Math.round(note.length))}`)
   sections.push(`Lyric=${cleanUstValue(note.lyric)}`)
   sections.push(`NoteNum=${Math.round(note.tone)}`)
+  if (note.tempo !== undefined) {
+    sections.push(`Tempo=${formatNumber(note.tempo, 2)}`)
+  }
   sections.push('Intensity=100')
   sections.push('Modulation=0')
   if (note.vibrato) {

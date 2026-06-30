@@ -8,6 +8,7 @@ describe('USTX compatibility layer', () => {
 
     expect(project.name).toBe('Sample USTX')
     expect(project.bpm).toBe(128)
+    expect(project.tempoChanges).toEqual([{ position: 0, bpm: 128 }])
     expect(project.tracks[0].name).toBe('Lead')
     expect(project.parts[0].start).toBe(480)
     expect(project.notes).toHaveLength(2)
@@ -19,12 +20,20 @@ describe('USTX compatibility layer', () => {
   })
 
   it('serializes back to a readable ustx YAML document', () => {
-    const project = parseUstx(sampleUstx, 'sample.ustx')
+    const project = {
+      ...parseUstx(sampleUstx, 'sample.ustx'),
+      tempoChanges: [
+        { position: 0, bpm: 128 },
+        { position: 960, bpm: 96 },
+      ],
+    }
     const text = serializeUstx(project)
 
     expect(text).toContain('ustx_version')
     expect(text).toContain('voice_parts')
     expect(text).toContain('lyric: la')
+    expect(text).toContain('position: 960')
+    expect(text).toContain('bpm: 96')
   })
 
   it('round-trips note vibrato through USTX vibrato blocks', () => {

@@ -24,6 +24,7 @@ describe('classic UST compatibility layer', () => {
         'Length=960',
         'Lyric=히',
         'NoteNum=67',
+        'Tempo=96',
         'VBR=60,180,32,10,10,0,0',
         '[#TRACKEND]',
       ].join('\r\n'),
@@ -32,6 +33,10 @@ describe('classic UST compatibility layer', () => {
 
     expect(project.name).toBe('Classic Hook')
     expect(project.bpm).toBe(128.5)
+    expect(project.tempoChanges).toEqual([
+      { position: 0, bpm: 128.5 },
+      { position: 720, bpm: 96 },
+    ])
     expect(project.tracks[0]).toMatchObject({
       singer: 'WebUtau Korean V3 Synthetic',
       phonemizer: 'classic UTAU',
@@ -50,17 +55,28 @@ describe('classic UST compatibility layer', () => {
   })
 
   it('serializes WebUtau notes to classic UST blocks with rests and vibrato', () => {
-    const text = serializeUst(demoProject)
+    const text = serializeUst({
+      ...demoProject,
+      tempoChanges: [
+        { position: 0, bpm: 112 },
+        { position: 2160, bpm: 96 },
+      ],
+    })
 
     expect(text).toContain('[#VERSION]\r\nUST Version1.2')
     expect(text).toContain('[#SETTING]')
     expect(text).toContain('ProjectName=First Vocal Sketch')
     expect(text).toContain('Lyric=도')
     expect(text).toContain('Lyric=R')
+    expect(text).toContain('Tempo=96')
     expect(text).toContain('VBR=56,179,20,10,10,0,0')
 
     const reparsed = parseUst(text, 'roundtrip.ust')
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(reparsed.tempoChanges).toEqual([
+      { position: 0, bpm: 112 },
+      { position: 2160, bpm: 96 },
+    ])
     expect(reparsed.notes.at(-1)?.vibrato).toMatchObject({
       enabled: true,
       depthCents: 20,

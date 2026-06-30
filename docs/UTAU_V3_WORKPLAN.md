@@ -223,6 +223,8 @@ Recommended coverage shape:
   material before rendering.
 - [x] Add project save/load/export/import.
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
+- [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
+  note timing.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
 ### M7. First-Run Musical Quality

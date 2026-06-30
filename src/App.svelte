@@ -11,7 +11,7 @@
   import { BUNDLED_UTAU_VOICEBANK_NAME, loadBundledUtauVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
   import { createDemoProject, createStarterProject, duplicateProject as createProjectDuplicate } from './demoProject'
-  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicks, ticksToSeconds, toneName } from './music'
+  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicksInProject, ticksToSecondsInProject, toneName } from './music'
   import {
     addNoteAfter,
     addNoteAtTick,
@@ -155,8 +155,8 @@
   const rows = $derived(pitchRows(range.min, range.max))
   const songTicks = $derived(Math.max(projectDurationTicks(project), TICKS_PER_BEAT * 8))
   const loopRange = $derived(normalizeLoopRange(loopStartTick, loopEndTick, songTicks))
-  const loopStartSeconds = $derived(ticksToSeconds(loopRange.start, project.bpm))
-  const loopEndSeconds = $derived(ticksToSeconds(loopRange.end, project.bpm))
+  const loopStartSeconds = $derived(ticksToSecondsInProject(loopRange.start, project))
+  const loopEndSeconds = $derived(ticksToSecondsInProject(loopRange.end, project))
   const gridWidth = $derived(Math.max(820, songTicks * TICK_WIDTH))
   const gridHeight = $derived(rows.length * ROW_HEIGHT)
   const displayDuration = $derived(rendered?.durationSeconds ?? 0)
@@ -728,7 +728,7 @@
 
   function recordPerformanceNote(templateNote: SongNote) {
     const lyric = nextLyricForPerformance(templateNote.lyric)
-    const rawTick = secondsToTicks((performance.now() - recordingStartedAtMs) / 1000, project.bpm)
+    const rawTick = secondsToTicksInProject((performance.now() - recordingStartedAtMs) / 1000, project)
     const start = isQuantizeOn ? snapTickToGrid(rawTick, GRID_SNAP_TICKS) : Math.max(0, Math.round(rawTick))
     const duration = isQuantizeOn ? GRID_SNAP_TICKS * 2 : Math.round(TICKS_PER_BEAT / 2)
     const result = addNoteAtTick(project, {
@@ -839,7 +839,7 @@
     loopEndTick = selectedNote.start + selectedNote.duration
     isLoopOn = true
     if (audioRef) {
-      audioRef.currentTime = ticksToSeconds(selectedNote.start, project.bpm)
+      audioRef.currentTime = ticksToSecondsInProject(selectedNote.start, project)
       playbackTime = audioRef.currentTime
     }
     notice = `Loop set to ${selectedNote.lyric} · ${toneName(selectedNote.tone)}`

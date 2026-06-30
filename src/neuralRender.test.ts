@@ -14,6 +14,7 @@ describe('neural render contract export', () => {
         title: 'First Vocal Sketch',
         bpm: 112,
         timebase: 480,
+        tempos: [{ position: 0, bpm: 112 }],
       },
       voice: {
         id: 'webuta-ko-neural-dev',
@@ -115,6 +116,29 @@ describe('neural render contract export', () => {
       phonemes: [{ symbol: 'sil', role: 'silence' }],
       pitchCurve: [],
     })
+  })
+
+  it('exports note seconds through the project tempo map', () => {
+    const project: SongProject = {
+      ...demoProject,
+      bpm: 120,
+      tempoChanges: [
+        { position: 0, bpm: 120 },
+        { position: 480, bpm: 60 },
+      ],
+      notes: [
+        { id: 'n1', trackId: 'track-main', partId: 'part-main', start: 0, duration: 480, tone: 60, lyric: '가' },
+        { id: 'n2', trackId: 'track-main', partId: 'part-main', start: 480, duration: 480, tone: 62, lyric: '나' },
+      ],
+    }
+    const request = createNeuralRenderRequest(project)
+
+    expect(request.project.tempos).toEqual([
+      { position: 0, bpm: 120 },
+      { position: 480, bpm: 60 },
+    ])
+    expect(request.notes[0]).toMatchObject({ startSeconds: 0, durationSeconds: 0.5 })
+    expect(request.notes[1]).toMatchObject({ startSeconds: 0.5, durationSeconds: 1 })
   })
 
   it('treats rest lyrics as silent events instead of pitched syllables', () => {

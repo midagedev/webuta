@@ -22,10 +22,20 @@ describe('WebUtau project files', () => {
   })
 
   it('accepts a raw project snapshot for recovery', () => {
-    const project = parseWebutaProject(JSON.stringify(demoProject), 'raw-project.json')
+    const project = parseWebutaProject(
+      JSON.stringify({
+        ...demoProject,
+        tempoChanges: [
+          { position: 0, bpm: 112 },
+          { position: 960, bpm: 96 },
+        ],
+      }),
+      'raw-project.json',
+    )
 
     expect(project.name).toBe('First Vocal Sketch')
     expect(project.source?.format).toBe('webuta')
+    expect(project.tempoChanges?.[1]).toEqual({ position: 960, bpm: 96 })
   })
 
   it('rejects malformed project payloads', () => {

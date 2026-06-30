@@ -1,4 +1,4 @@
-import { midiToHz, sortedNotes, ticksToSeconds } from './music'
+import { durationTicksToSeconds, midiToHz, normalizedTempoChanges, sortedNotes, ticksToSecondsInProject } from './music'
 import { TICKS_PER_BEAT, type SongProject } from './types'
 
 const HANGUL_BASE = 0xac00
@@ -121,6 +121,7 @@ export type NeuralRenderRequest = {
     title: string
     bpm: number
     timebase: number
+    tempos: Array<{ position: number; bpm: number }>
   }
   voice: {
     id: string
@@ -198,6 +199,7 @@ export function createNeuralRenderRequest(
       title: project.name,
       bpm: project.bpm,
       timebase: TICKS_PER_BEAT,
+      tempos: normalizedTempoChanges(project),
     },
     voice: {
       id: options.voiceId ?? 'webuta-ko-neural-dev',
@@ -229,8 +231,8 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
         partId: note.partId,
         startTick: previousEnd,
         durationTick: duration,
-        startSeconds: ticksToSeconds(previousEnd, project.bpm),
-        durationSeconds: ticksToSeconds(duration, project.bpm),
+        startSeconds: ticksToSecondsInProject(previousEnd, project),
+        durationSeconds: durationTicksToSeconds(project, previousEnd, duration),
         midi: null,
         targetHz: null,
         lyric: 'R',
@@ -248,8 +250,8 @@ function buildNeuralNotes(project: SongProject, options: NeuralRenderRequestOpti
       partId: note.partId,
       startTick: note.start,
       durationTick: note.duration,
-      startSeconds: ticksToSeconds(note.start, project.bpm),
-      durationSeconds: ticksToSeconds(note.duration, project.bpm),
+      startSeconds: ticksToSecondsInProject(note.start, project),
+      durationSeconds: durationTicksToSeconds(project, note.start, note.duration),
       midi: isUnpitched ? null : note.tone,
       targetHz: isUnpitched ? null : midiToHz(note.tone),
       lyric: note.lyric,

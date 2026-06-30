@@ -16,7 +16,10 @@ format.
     "id": "first-vocal-sketch",
     "title": "First Vocal Sketch",
     "bpm": 132,
-    "timebase": 480
+    "timebase": 480,
+    "tempos": [
+      { "position": 0, "bpm": 132 }
+    ]
   },
   "voice": {
     "id": "webuta-ko-neural-dev",
@@ -139,8 +142,9 @@ format.
 ## Required Fields
 
 - `version`: contract version.
-- `project.bpm`: tempo used to calculate seconds.
+- `project.bpm`: primary tempo, also used as the fallback tempo at tick `0`.
 - `project.timebase`: ticks per quarter note.
+- `project.tempos`: sorted tempo events used to calculate note seconds.
 - `voice.language`: BCP-47-ish language tag, initially `ko`.
 - `voice.renderer`: renderer family hint, initially `diffsinger` or `custom`.
 - `render.sampleRate`: output sample rate. WebUtau should request `44100`.

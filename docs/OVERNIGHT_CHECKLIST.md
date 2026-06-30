@@ -20,6 +20,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Add USTX YAML/JSON parser for modern OpenUtau project shape.
 - [x] Add USTX export for round-tripping simple vocal projects.
 - [x] Add classic UST import/export for UTAU community project exchange.
+- [x] Preserve UST/USTX tempo events and use them for browser render timing.
 - [x] Add native `.webutau.json` project save/import for browser-native work.
 - [x] Add touch-friendly first-screen editor with project actions, note editor, loop controls, and piano roll.
 - [x] Add browser-safe demo vocal renderer as fallback.
