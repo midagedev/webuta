@@ -359,7 +359,11 @@ async function selectLocalNeuralModel(page) {
 }
 
 async function assertDefaultV3DemoReady(page) {
-  await page.getByLabel('First run guide').getByText('첫 보컬 스케치').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterGuide = page.getByLabel('First run guide')
+  await starterGuide.getByText('첫 보컬 스케치').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByText('지금 할 일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -367,9 +371,14 @@ async function assertDefaultV3DemoReady(page) {
   await starterPath.getByText('재생').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('First run guide').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('First run guide').getByRole('button', { name: '컴포즈 모드 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('First run guide').getByRole('button', { name: '스타터 WAV 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByRole('button', { name: '컴포즈 모드 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByRole('button', { name: '스타터 WAV 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '작곡', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '편집', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '노트', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '믹서', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -407,7 +416,9 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run next action CTA visible',
     'first-run guided path visible',
+    'Korean mode navigation visible',
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',
     'first-run lyric visible',

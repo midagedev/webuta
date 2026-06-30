@@ -56,6 +56,9 @@ export async function captureReadmeScreenshots(options = {}) {
 async function waitForAppReady(page) {
   await page.getByLabel('Current project').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByText('지금 할 일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -67,6 +70,7 @@ async function waitForAppReady(page) {
   await page.getByLabel('Voicebank lyric coverage').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('link', { name: '청취 리뷰 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run guide').getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
 }
 
 async function startViteServer({ cwd, host, port }) {

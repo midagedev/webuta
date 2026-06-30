@@ -413,6 +413,8 @@ function readmeGate(paths) {
     for (const snippet of [
       'WebUtau Korean V3 Synthetic',
       'selected without importing a voicebank zip',
+      '지금 할 일',
+      '먼저 들어보기',
       '01 보이스',
       '02 재생',
       '03 WAV',
@@ -883,7 +885,7 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open public/review/v3/index.html or the deployed /review/v3/ scorecard, score the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
+    actions.push('Open public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/, use the scorecard progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')

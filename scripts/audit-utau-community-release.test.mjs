@@ -41,6 +41,8 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('human-listening: missing human listening scores')
     expect(report.problems.join('\n')).toContain('github-pages-v3: missing GitHub Pages deployment evidence')
     expect(report.nextActions.join('\n')).toContain('listening-scores.local.json')
+    expect(report.nextActions.join('\n')).toContain('https://midagedev.github.io/webuta/review/v3/')
+    expect(report.nextActions.join('\n')).toContain('progress/autosave')
   })
 
   it('blocks release when listening scores are below threshold', async () => {
@@ -717,7 +719,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `01 보이스`, `02 재생`, and `03 WAV`.',
+    'Confirm the first-run guide shows `지금 할 일`, `먼저 들어보기`, `01 보이스`, `02 재생`, and `03 WAV`.',
     'Tap `공유` or `스타터 WAV 다운로드`.',
     'Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files.',
     'Any optional imported voicebank zip remains user-provided and private to the browser.',

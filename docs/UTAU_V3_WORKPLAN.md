@@ -378,10 +378,10 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
-  visible, the first-run `01 보이스` / `02 재생` / `03 WAV` guided path is
-  visible, the community release readiness card is visible, desktop/mobile
-  overflow checks pass, and the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56
-  seconds, 578384 bytes.
+  visible, the first-run `지금 할 일` CTA, Korean mode navigation, and
+  `01 보이스` / `02 재생` / `03 WAV` guided path are visible, the community
+  release readiness card is visible, desktop/mobile overflow checks pass, and
+  the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
 - `npm run voicebank:demo-v3:pages` passes against
   `https://midagedev.github.io/webuta/`: the deployed app loads the bundled V3,
   the first-run demo aliases match 8/8, desktop/mobile layout checks pass, and

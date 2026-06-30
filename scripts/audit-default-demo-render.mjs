@@ -10,7 +10,9 @@ export const DEFAULT_REPORT = 'experiments/utau-v3/work/default-demo-render-audi
 const REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
   'first-run starter guide visible',
+  'first-run next action CTA visible',
   'first-run guided path visible',
+  'Korean mode navigation visible',
   'first-run demo aliases fully matched',
   'first-run demo render warnings clear',
   'first-run lyric visible',
