@@ -312,7 +312,7 @@ Recommended coverage shape:
   and matches their deployed byte sizes against local assets.
 - [x] GitHub Pages deployment passes the first-run default V3 Playwright demo
   audit, including desktop/mobile layout checks and live WAV download.
-- [ ] `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/`
+- [ ] `npm run release:audit-utau`
   passes.
 
 ## Working Commands
@@ -333,7 +333,6 @@ npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.js
 npm run voicebank:sample-review-v3
 npm run screenshots:readme
 npm run release:audit-utau
-npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/
 npm test -- scripts/audit-default-demo-render.test.mjs
 npm test -- scripts/audit-utau-community-release.test.mjs
 npm test -- scripts/generate-korean-v3-synthetic-voicebank.test.mjs
@@ -537,18 +536,13 @@ Current verified V3 evidence:
 - Release audit now verifies README screenshots are readable PNG/JPEG files
   with desktop/mobile minimum dimensions and byte sizes, not just placeholder
   files.
-- `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit.json`:
-  blocked only by missing human listening scores and missing Pages deployment
-  evidence before deploy; the local synthetic-origin gate passes on the real
-  bundled V3 zip.
-- `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/community-release-audit-pages.json`:
-  blocked only by missing human listening scores; live Pages loads
-  the previous deployed V3 zip until the `20260701-v3-synthetic-web-3` cache
-  version is deployed; after this change, rerun `npm run voicebank:demo-v3:pages`
-  and the Pages release audit to verify the live `48709111` byte zip.
+- `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit-pages.json`:
+  verifies the live Pages app, cache-busted bundled V3 zip, public listening
+  review scorecard, and all deployed V3/V2 review WAV byte sizes; currently the
+  remaining release blocker is the required human listening score file.
 - GitHub Actions Pages workflow is verified after release-gate pushes; it must
   pass build, tests, artifact upload, and deploy before sharing the live URL.
-- `npm test`: 85 passed / 1 skipped files, 364 passed / 2 skipped tests.
+- `npm test`: 92 passed / 1 skipped files, 427 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

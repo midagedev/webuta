@@ -18,7 +18,7 @@
     "smoke:dataset-pipeline": "node scripts/smoke-dataset-first-pipeline.mjs",
     "experimental:smoke:recorder": "node scripts/smoke-private-singer-recorder.mjs",
     "experimental:smoke:training-pipeline": "node scripts/smoke-private-singer-training-pipeline.mjs",
-    "release:audit-utau": "node scripts/audit-utau-community-release.mjs",
+    "release:audit-utau": "node scripts/audit-utau-community-release.mjs --pages-url https://midagedev.github.io/webuta/",
     "test": "vitest run",
     "test:teto": "RUN_TETO_ASSET=1 vitest run src/voicebank.teto.test.ts",
     "notices": "node scripts/generate-dependency-notices.mjs",

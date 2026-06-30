@@ -178,7 +178,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` validates and installs a human scorecard into the release-audit path.
-- `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
+- `npm run release:audit-utau` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
 - `npm run screenshots:readme` refreshes the desktop/mobile README screenshots from the live app UI.
 - Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.

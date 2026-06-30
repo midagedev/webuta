@@ -606,7 +606,7 @@ function makePackageJson() {
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
-      'release:audit-utau': 'node scripts/audit-utau-community-release.mjs',
+      'release:audit-utau': 'node scripts/audit-utau-community-release.mjs --pages-url https://midagedev.github.io/webuta/',
       'smoke:browser': 'node scripts/smoke-browser-render.mjs',
       'experimental:smoke:recorder': 'node scripts/smoke-private-singer-recorder.mjs',
       'experimental:neural:serve-recorder': 'node scripts/serve-private-singer-recorder.mjs',
