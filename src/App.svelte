@@ -125,6 +125,9 @@
   let voicebankLoadToken = 0
   let previewOscillator: OscillatorNode | null = null
   let previewGain: GainNode | null = null
+  let voicebankPreviewSource: AudioBufferSourceNode | null = null
+  let voicebankPreviewGain: GainNode | null = null
+  let isPreviewingVoicebankSample = $state(false)
   let isRecording = $state(false)
   let isMetronomeOn = $state(false)
   let isQuantizeOn = $state(true)
@@ -219,6 +222,7 @@
       window.removeEventListener('keydown', handleWindowKeyDown)
       stopMetronomeTimer()
       stopPreviewTone()
+      stopVoicebankSamplePreview()
     }
   })
 
@@ -993,6 +997,78 @@
     ].slice(0, 5)
   }
 
+  async function previewSelectedVoicebankSample() {
+    if (!voicebank || !selectedNote) {
+      notice = 'Select a UTAU note to preview'
+      return
+    }
+    if (isPreviewingVoicebankSample) {
+      return
+    }
+    isPreviewingVoicebankSample = true
+    const note = selectedNote
+    try {
+      stopPreviewTone()
+      stopVoicebankSamplePreview({ keepBusy: true })
+      const audioContext = getAudioContext()
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume()
+      }
+      const renderer = createUtauSampleRenderer(voicebank, audioContext)
+      const result = await renderer.render(makeVoicebankPreviewProject(note))
+      const buffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate)
+      buffer.copyToChannel(result.samples, 0)
+      const source = audioContext.createBufferSource()
+      const gain = audioContext.createGain()
+      source.buffer = buffer
+      gain.gain.setValueAtTime(0.82, audioContext.currentTime)
+      source.connect(gain)
+      gain.connect(audioContext.destination)
+      voicebankPreviewSource = source
+      voicebankPreviewGain = gain
+      source.onended = () => {
+        if (voicebankPreviewSource === source) {
+          voicebankPreviewSource = null
+          voicebankPreviewGain = null
+          isPreviewingVoicebankSample = false
+        }
+        source.disconnect()
+        gain.disconnect()
+      }
+      source.start()
+      notice = `UTAU sample ${note.lyric} · ${toneName(note.tone)}`
+    } catch (error) {
+      stopVoicebankSamplePreview()
+      notice = `Sample preview failed: ${formatErrorMessage(error)}`
+    }
+  }
+
+  function makeVoicebankPreviewProject(note: SongNote): SongProject {
+    const previewDuration = Math.max(note.duration, TICKS_PER_BEAT)
+    return {
+      ...project,
+      id: `${project.id}-sample-preview`,
+      name: `${project.name} Sample Preview`,
+      parts: project.parts.map((part, index) =>
+        index === 0
+          ? {
+              ...part,
+              start: 0,
+              duration: previewDuration + TICKS_PER_BEAT,
+            }
+          : part,
+      ),
+      notes: [
+        {
+          ...note,
+          id: `${note.id}-sample-preview`,
+          start: 0,
+          duration: previewDuration,
+        },
+      ],
+    }
+  }
+
   function throwIfRenderAborted(signal: AbortSignal) {
     if (signal.aborted) {
       throw new DOMException('Render cancelled.', 'AbortError')
@@ -1198,6 +1274,26 @@
     previewGain = null
   }
 
+  function stopVoicebankSamplePreview(options: { keepBusy?: boolean } = {}) {
+    const source = voicebankPreviewSource
+    const gain = voicebankPreviewGain
+    voicebankPreviewSource = null
+    voicebankPreviewGain = null
+    if (!options.keepBusy) {
+      isPreviewingVoicebankSample = false
+    }
+    if (!source) {
+      return
+    }
+    try {
+      source.stop()
+    } catch {
+      // Buffer source may already have ended.
+    }
+    source.disconnect()
+    gain?.disconnect()
+  }
+
   function downloadBlob(blob: Blob, fileName: string) {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -1301,11 +1397,13 @@
         {voicebankWarnings}
         {voicebankCacheStatus}
         {isLoadingVoicebank}
+        {isPreviewingVoicebankSample}
         {selectedRendererId}
         {selectedNeuralModelId}
         {neuralModels}
         {notice}
         onVoicebankFile={handleVoicebankFile}
+        onPreviewVoicebankSample={previewSelectedVoicebankSample}
         onBpm={(bpm) => updateProject({ bpm })}
         onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
         onRenderer={selectRenderer}

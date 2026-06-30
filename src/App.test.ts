@@ -212,6 +212,81 @@ describe('App editing workflow', () => {
     expect(screen.getByText('렌더 경고 없음')).toBeTruthy()
   })
 
+  it('previews the selected note through the loaded UTAU sample renderer', async () => {
+    await saveVoicebankFile(await makeMatchingVoicebankZip())
+    const decodedSamples = new Float32Array(44100).fill(0.12)
+    const decodedBuffer = {
+      sampleRate: 44100,
+      length: decodedSamples.length,
+      numberOfChannels: 1,
+      getChannelData: vi.fn(() => decodedSamples),
+    }
+    const decodeAudioData = vi.fn(async (_buffer: ArrayBuffer) => decodedBuffer)
+    const renderedBuffer = {
+      copyToChannel: vi.fn(),
+    }
+    const createBuffer = vi.fn((_channels: number, _length: number, _sampleRate: number) => renderedBuffer)
+    const source = {
+      buffer: null as AudioBuffer | null,
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      disconnect: vi.fn(),
+      onended: null as (() => void) | null,
+    }
+    const gain = {
+      gain: {
+        setValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    }
+    class FakeAudioContext {
+      state = 'running'
+      currentTime = 0
+      destination = {}
+
+      decodeAudioData(buffer: ArrayBuffer) {
+        return decodeAudioData(buffer)
+      }
+
+      createBuffer(channels: number, length: number, sampleRate: number) {
+        return createBuffer(channels, length, sampleRate)
+      }
+
+      createBufferSource() {
+        return source
+      }
+
+      createGain() {
+        return gain
+      }
+
+      resume() {
+        return Promise.resolve()
+      }
+    }
+    Object.defineProperty(window, 'AudioContext', {
+      value: FakeAudioContext,
+      configurable: true,
+    })
+
+    render(App)
+
+    await screen.findByText('WebUtau // Test Teto')
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }))
+
+    await waitFor(() => {
+      expect(decodeAudioData).toHaveBeenCalled()
+      expect(source.start).toHaveBeenCalledOnce()
+    })
+    expect(createBuffer).toHaveBeenCalledWith(1, expect.any(Number), 44100)
+    expect(renderedBuffer.copyToChannel).toHaveBeenCalledWith(expect.any(Float32Array), 0)
+    expect(source.connect).toHaveBeenCalledWith(gain)
+    expect(gain.connect).toHaveBeenCalled()
+    expect(screen.getAllByText('UTAU sample 도 · E4').length).toBeGreaterThan(0)
+  })
+
   it('shows fallback lyric coverage when the imported voicebank cannot match the demo line', async () => {
     await saveVoicebankFile(await makeVoicebankZip())
 

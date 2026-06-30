@@ -28,6 +28,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Add renderer registry for future OpenUtau server and WORLDLINE WASM engines.
 - [x] Add unit tests for parsing, rendering, and WAV output.
 - [x] Add a Kasane Teto UTAU entry point that links to the official download page and accepts a user-selected zip.
+- [x] Add selected-note UTAU sample preview so a loaded singer can be auditioned
+  without rendering the whole song.
 - [x] Add a non-redistributed `test-assets/` workflow and `npm run asset:teto` downloader for the official test zip.
 - [x] Add explicit `npm run test:teto` verification for the official zip.
 - [x] Use the official Teto zip to render at least one WAV through the browser app.
@@ -57,6 +59,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.
 - [x] App tests cover selected-note split/delete controls and selected-note loop region display.
+- [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams

@@ -14,6 +14,7 @@ const REQUIRED_CHECKS = [
   'first-run lyric visible',
   'community release readiness card visible',
   'community listening review scorecard linked',
+  'selected-note UTAU sample preview available',
   'desktop WAV download',
   'render history visible',
   'desktop no page horizontal overflow',

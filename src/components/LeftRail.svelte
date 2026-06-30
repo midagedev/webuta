@@ -39,11 +39,13 @@
     voicebankWarnings: VoicebankRenderWarningReport | null
     voicebankCacheStatus: VoicebankCacheStatus
     isLoadingVoicebank: boolean
+    isPreviewingVoicebankSample: boolean
     selectedRendererId: RendererId
     selectedNeuralModelId: string
     neuralModels: NeuralModelCard[]
     notice: string
     onVoicebankFile: (file: File) => Promise<void>
+    onPreviewVoicebankSample: () => void
     onBpm: (bpm: number) => void
     onBeat: (beatPerBar: number, beatUnit: number) => void
     onRenderer: (renderer: RendererId) => void
@@ -67,11 +69,13 @@
     voicebankWarnings,
     voicebankCacheStatus,
     isLoadingVoicebank,
+    isPreviewingVoicebankSample,
     selectedRendererId,
     selectedNeuralModelId,
     neuralModels,
     notice,
     onVoicebankFile,
+    onPreviewVoicebankSample,
     onBpm,
     onBeat,
     onRenderer,
@@ -248,6 +252,17 @@
       <button type="button" class="icon-text-button" onclick={() => voicebankInput?.click()} disabled={isLoadingVoicebank}>
         <Upload size={18} aria-hidden="true" />
         <span>ZIP</span>
+      </button>
+      <button
+        type="button"
+        class="icon-text-button"
+        aria-label="선택 노트 UTAU 샘플 미리듣기"
+        title="선택 노트 UTAU 샘플 미리듣기"
+        onclick={() => onPreviewVoicebankSample()}
+        disabled={!voicebank || !selectedNote || isLoadingVoicebank || isPreviewingVoicebankSample}
+      >
+        <Volume2 size={18} aria-hidden="true" />
+        <span>{isPreviewingVoicebankSample ? 'PLAY' : '샘플'}</span>
       </button>
       <a class="text-link-button" href="https://kasaneteto.jp/utau/" target="_blank" rel="noreferrer">
         Teto UTAU

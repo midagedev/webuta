@@ -205,6 +205,8 @@ Recommended coverage shape:
 - [x] Add piano keyboard and beat/bar ruler that remain readable on mobile.
 - [x] Add transport controls: play, stop, loop, metronome toggle, BPM edit,
   render, download, share.
+- [x] Add a selected-note UTAU sample preview that plays through the loaded
+  voicebank sample renderer, not just the oscillator touch keyboard.
 - [x] Add project save/load/export/import.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
