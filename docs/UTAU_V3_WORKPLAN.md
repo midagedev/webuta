@@ -360,9 +360,12 @@ Current verified V3 evidence:
   evidence before deploy; the local synthetic-origin gate passes on the real
   bundled V3 zip.
 - `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/community-release-audit-pages.json`:
-  must be rerun after the next Pages deployment so the live cache-busted zip
-  reports `20260701-v3-synthetic-web-2`; human listening scores are still the
-  final release blocker.
+  blocked only by missing human listening scores; live Pages loads
+  `voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-2` with HTTP 200 and
+  47944410 bytes, matching the local bundled zip byte-for-byte by
+  `content-length`.
+- GitHub Actions Pages run `28460675027` passed build, tests, artifact upload,
+  and deploy for commit `c3924bb`.
 - `npm test`: 82 passed / 1 skipped files, 354 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
