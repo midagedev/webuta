@@ -496,6 +496,43 @@ describe('UTAU sample renderer', () => {
     expect(energy(lateBody)).toBeGreaterThan(energy(earlyBody) * 0.45)
   })
 
+  it('de-clicks the loop wrap point during long UTAU sustains', async () => {
+    const entry: OtoEntry = {
+      fileName: 'do_C4.wav',
+      path: 'WebUtau/do_C4.wav',
+      alias: '도',
+      offsetMs: 0,
+      consonantMs: 100,
+      cutoffMs: 0,
+      preutteranceMs: 50,
+      overlapMs: 20,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeLoopWrapDiscontinuitySource(1.1, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render(makeLongNoteProject())
+    const sustainBody = result.samples.slice(Math.floor(0.72 * 44100), Math.floor(1.86 * 44100))
+
+    expect(maxSampleStep(sustainBody)).toBeLessThan(0.12)
+  })
+
   it('plays a Hangul coda tail once at release instead of looping it through the sustain body', async () => {
     const entry: OtoEntry = {
       fileName: 'yeon_C4.wav',
@@ -847,8 +884,28 @@ function makeEarlyCodaGestureSource(durationSeconds: number, sampleRate: number)
   return samples
 }
 
+function makeLoopWrapDiscontinuitySource(durationSeconds: number, sampleRate: number) {
+  const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
+  for (let i = 0; i < samples.length; i++) {
+    const t = i / sampleRate
+    const attack = Math.min(1, t / 0.08)
+    const release = Math.min(1, (durationSeconds - t) / 0.12)
+    const bodyRamp = Math.min(1, Math.max(0, (t - 0.3) / 0.62))
+    samples[i] = (-0.58 + bodyRamp * 1.16) * Math.max(0, Math.min(attack, release))
+  }
+  return samples
+}
+
 function energy(samples: Float32Array) {
   return samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length
+}
+
+function maxSampleStep(samples: Float32Array) {
+  let max = 0
+  for (let i = 1; i < samples.length; i++) {
+    max = Math.max(max, Math.abs(samples[i] - samples[i - 1]))
+  }
+  return max
 }
 
 function makeAudioBuffer(samples: Float32Array, sampleRate: number, rightSamples?: Float32Array) {

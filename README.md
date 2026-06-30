@@ -136,6 +136,7 @@ npm run voicebank:demo-v3
 npm run voicebank:demo-v3:pages
 npm run voicebank:oto-v3
 npm run voicebank:loop-v3
+npm run voicebank:sustain-v3
 npm run voicebank:pitch-v3
 npm run voicebank:clarity-v3
 npm run voicebank:review-v3
@@ -170,6 +171,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:oto-v3` verifies all bundled sample aliases and oto timing windows against the generated V3 manifest.
 - `npm run voicebank:pitch-v3` audits all 615 bundled samples and currently reports max median pitch error near `4.5` cents.
 - `npm run voicebank:loop-v3` audits all 432 bundled CV/V sustain samples and currently reports max loop residual ratio near `0.032`.
+- `npm run voicebank:sustain-v3` renders a long-note UTAU WAV through the browser app and checks sustain clicks, onset/coda energy, target pitch, and in-note pitch drift.
 - `npm run voicebank:clarity-v3` audits generated vowel-color separation and consonant onset strength before human listening review.
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.

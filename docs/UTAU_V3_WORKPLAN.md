@@ -280,6 +280,8 @@ Recommended coverage shape:
 - [x] `npm run voicebank:audit-v3` passes on the default synthetic V3 zip.
 - [x] `npm run voicebank:oto-v3` passes on the default synthetic V3 zip.
 - [x] `npm run voicebank:pitch-v3` passes on the default synthetic V3 zip.
+- [x] `npm run voicebank:sustain-v3` passes on a browser-rendered long-note UTAU
+  WAV and checks loop ticks, onset/coda energy, target pitch, and in-note drift.
 - [x] `npm run voicebank:clarity-v3` passes on the default synthetic V3 zip.
 - [x] V3 zip passes generated voicebank integrity test.
 - [x] `npm test` passes.
@@ -316,6 +318,7 @@ npm run voicebank:demo-v3
 npm run voicebank:demo-v3:pages
 npm run voicebank:oto-v3
 npm run voicebank:loop-v3
+npm run voicebank:sustain-v3
 npm run voicebank:pitch-v3
 npm run voicebank:clarity-v3
 npm run voicebank:review-v3
@@ -409,6 +412,10 @@ Current verified V3 evidence:
 - `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain
   samples audited, maximum loop residual ratio about 0.032, maximum seam jump
   about 0.077.
+- `npm run voicebank:sustain-v3` passes on the browser-rendered long-note audit:
+  9/9 rendered notes pass, click candidate count is 0, maximum sustain sample
+  step is about 0.076, maximum median pitch error is about 3.82 cents, and
+  maximum in-note pitch drift is about 13.7 cents.
 - `npm run voicebank:clarity-v3` passes on the default zip: 21/21 generated
   vowel-color samples and 378/378 main-pitch consonant onset samples audited,
   minimum vowel spectral distance about 0.012, minimum formant energy ratio

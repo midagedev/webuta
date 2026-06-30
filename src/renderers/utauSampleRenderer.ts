@@ -340,14 +340,19 @@ function readLoopedLinear(
 ) {
   const loopLength = Math.max(1, loop.end - loop.start)
   let position = sourcePosition
+  let wrappedOffset = -1
   if (position >= loop.end) {
-    position = loop.start + ((position - loop.start) % loopLength)
+    wrappedOffset = (position - loop.end) % loopLength
+    position = loop.start + wrappedOffset
   }
-  if (position >= loop.start && position < loop.start + loop.crossfade) {
-    const blend = (position - loop.start) / Math.max(1, loop.crossfade)
-    const loopHead = linearSample(source, position)
-    const loopTail = linearSample(source, loop.end - loop.crossfade + (position - loop.start))
-    return loopTail * (1 - blend) + loopHead * blend
+  if (wrappedOffset >= 0) {
+    const wrapFadeSamples = Math.min(loop.crossfade, Math.max(16, Math.floor(loopLength * 0.03)))
+    if (wrappedOffset < wrapFadeSamples) {
+      const blend = smoothstep(wrappedOffset / Math.max(1, wrapFadeSamples))
+      const loopHead = linearSample(source, position)
+      const loopTail = linearSample(source, loop.end - 1)
+      return loopTail * (1 - blend) + loopHead * blend
+    }
   }
   return linearSample(source, Math.min(position, loop.end - 1))
 }

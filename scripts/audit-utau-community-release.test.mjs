@@ -290,9 +290,11 @@ async function makeFixture(overrides = {}) {
   const root = mkdtempSync(join(tmpdir(), 'webuta-utau-release-audit-'))
   tempRoots.push(root)
   const work = join(root, 'experiments', 'utau-v3', 'work')
+  const longSustain = join(work, 'long-sustain-audit')
   const review = join(work, 'v3-listening-review')
   const docs = join(root, 'docs')
   mkdirSync(review, { recursive: true })
+  mkdirSync(longSustain, { recursive: true })
   mkdirSync(join(review, 'audio'), { recursive: true })
   mkdirSync(join(review, 'audio', 'legacy-v2'), { recursive: true })
   mkdirSync(join(docs, 'screenshots'), { recursive: true })
@@ -304,6 +306,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
   writeJson(join(work, 'v3-loop-audit.json'), passReport('v3-loop-audit-pass'))
+  writeJson(join(longSustain, 'long-sustain-audit.json'), passReport('utau-long-sustain-audit-pass'))
   writeJson(join(work, 'v3-clarity-audit.json'), passReport('v3-clarity-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
   writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
@@ -600,6 +603,7 @@ function makePackageJson() {
       'voicebank:v3': 'node scripts/generate-korean-v3-synthetic-voicebank.mjs',
       'voicebank:audit-v3': 'node scripts/audit-korean-v3-voicebank.mjs',
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
+      'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
       'release:audit-utau': 'node scripts/audit-utau-community-release.mjs',
       'smoke:browser': 'node scripts/smoke-browser-render.mjs',

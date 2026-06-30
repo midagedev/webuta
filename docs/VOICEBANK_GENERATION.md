@@ -22,16 +22,21 @@ audio, use TTS/model checkpoint output, or include Kasane Teto, Vocaloid, or
 any third-party singer asset.
 
 The current V3 synthesis profile is `deterministic-dsp-bright-formant-v3`.
-After regeneration, run the package, oto, pitch, loop, and clarity audits before
-publishing the zip:
+After regeneration, run the package, oto, pitch, loop, rendered long-sustain,
+and clarity audits before publishing the zip:
 
 ```sh
 npm run voicebank:audit-v3
 npm run voicebank:oto-v3
 npm run voicebank:pitch-v3
 npm run voicebank:loop-v3
+npm run voicebank:sustain-v3
 npm run voicebank:clarity-v3
 ```
+
+`voicebank:sustain-v3` uses the browser UTAU renderer, downloads the actual WAV
+users would receive, and checks long notes for loop ticks, sustain stability,
+onset/coda energy, target pitch error, and in-note pitch drift.
 
 ## Procedural Fallback
 
