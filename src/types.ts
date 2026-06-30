@@ -19,8 +19,22 @@ export type SongNote = {
   tone: number
   lyric: string
   intensity?: number
+  envelope?: NoteEnvelope
   vibrato?: NoteVibrato
   pitchBend?: NotePitchBend
+}
+
+export type NoteEnvelope = {
+  p1Ms: number
+  p2Ms: number
+  p3Ms: number
+  v1: number
+  v2: number
+  v3: number
+  v4: number
+  p4Ms?: number
+  p5Ms?: number
+  v5?: number
 }
 
 export type NoteVibrato = {

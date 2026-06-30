@@ -1,5 +1,6 @@
 import { masterMonoMix } from '../audio/mastering'
 import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
+import { noteEnvelopeGainAt } from '../envelope'
 import { noteIntensityGain } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import type { SongNote, SongProject } from '../types'
@@ -130,13 +131,18 @@ function mixCodaTailSample(
   const outputTailSamples = Math.ceil(tailSamples / Math.max(0.001, rate))
   const noteEndSample = Math.floor((ticksToSecondsInProject(note.start + note.duration, project) + 0.02) * SAMPLE_RATE)
   const startSample = clampInt(noteEndSample - Math.floor(outputTailSamples * 0.55), 0, output.length - 1)
+  const noteStartSample = Math.floor(ticksToSecondsInProject(note.start, project) * SAMPLE_RATE)
+  const noteDurationSeconds = durationTicksToSeconds(project, note.start, note.duration)
   const fadeInSamples = Math.max(24, Math.floor(outputTailSamples * 0.18))
   const fadeOutSamples = Math.max(48, Math.floor(outputTailSamples * 0.26))
   for (let i = 0; i < outputTailSamples && startSample + i < output.length; i += 1) {
     const sourcePosition = sourceStart + i * rate
     const fadeIn = smoothstep(i / fadeInSamples)
     const fadeOut = smoothstep((outputTailSamples - i) / fadeOutSamples)
-    output[startSample + i] += readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5 * intensityGain
+    const progressSeconds = (startSample + i - noteStartSample) / SAMPLE_RATE
+    const envelopeGain = noteEnvelopeGainAt(note, progressSeconds, noteDurationSeconds)
+    output[startSample + i] +=
+      readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5 * intensityGain * envelopeGain
   }
 }
 
@@ -206,7 +212,8 @@ function mixPreparedSample(
         : smoothstep(Math.min(1, elapsedOutputSamples / fadeInSamples))
     const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
-    output[startSample + i] += sampleValue * envelope * 0.66 * intensityGain
+    const expressionGain = noteEnvelopeGainAt(note, noteProgress / SAMPLE_RATE, noteDurationSeconds)
+    output[startSample + i] += sampleValue * envelope * 0.66 * intensityGain * expressionGain
     sourcePosition += rate * pitchRateMultiplier(note, noteProgress, noteBodySamples)
   }
 }

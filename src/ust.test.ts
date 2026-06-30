@@ -21,6 +21,7 @@ describe('classic UST compatibility layer', () => {
         'Lyric=도',
         'NoteNum=64',
         'Intensity=72',
+        'Envelope=0,18,90,0,100,65,8',
         '[#0002]',
         'Length=960',
         'Lyric=히',
@@ -48,7 +49,14 @@ describe('classic UST compatibility layer', () => {
     })
     expect(project.parts[0]).toMatchObject({ start: 0, duration: 1920 })
     expect(project.notes).toHaveLength(2)
-    expect(project.notes[0]).toMatchObject({ start: 240, duration: 480, tone: 64, lyric: '도', intensity: 72 })
+    expect(project.notes[0]).toMatchObject({
+      start: 240,
+      duration: 480,
+      tone: 64,
+      lyric: '도',
+      intensity: 72,
+      envelope: { p1Ms: 0, p2Ms: 18, p3Ms: 90, v1: 0, v2: 100, v3: 65, v4: 8 },
+    })
     expect(project.notes[1]).toMatchObject({
       start: 720,
       duration: 960,
@@ -76,6 +84,7 @@ describe('classic UST compatibility layer', () => {
           ? {
               ...note,
               intensity: 64,
+              envelope: { p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 },
               pitchBend: {
                 points: [
                   { timePercent: 0, cents: 0 },
@@ -99,6 +108,7 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('Lyric=도')
     expect(text).toContain('Lyric=R')
     expect(text).toContain('Intensity=64')
+    expect(text).toContain('Envelope=0,22,120,0,100,58,10')
     expect(text).toContain('Tempo=96')
     expect(text).toContain('VBR=56,179,20,10,10,0,0')
     expect(text).toContain('PBS=0,0')
@@ -109,6 +119,7 @@ describe('classic UST compatibility layer', () => {
     const reparsed = parseUst(text, 'roundtrip.ust')
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
     expect(reparsed.notes[0].intensity).toBe(64)
+    expect(reparsed.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 })
     expect(reparsed.tempoChanges).toEqual([
       { position: 0, bpm: 112 },
       { position: 2160, bpm: 96 },

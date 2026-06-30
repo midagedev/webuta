@@ -74,6 +74,28 @@ describe('LeftRail release readiness', () => {
     expect(onIntensity).toHaveBeenCalledWith(73)
   })
 
+  it('edits selected-note envelope as UST dynamics', async () => {
+    const onEnvelope = vi.fn()
+    render(LeftRail, makeProps({ onEnvelope }))
+
+    const envelopeCard = screen.getByLabelText('Selected note envelope')
+    expect(envelopeCard.textContent).toContain('엔벨로프')
+    expect(envelopeCard.textContent).toContain('어택')
+    expect(envelopeCard.textContent).toContain('릴리즈')
+
+    await fireEvent.input(screen.getByLabelText('Envelope attack'), { target: { value: '42' } })
+
+    expect(onEnvelope).toHaveBeenCalledWith({
+      p1Ms: 0,
+      p2Ms: 42,
+      p3Ms: 35,
+      v1: 0,
+      v2: 100,
+      v3: 100,
+      v4: 0,
+    })
+  })
+
   it('edits selected-note pitch bend as a simple curve', async () => {
     const onPitchBend = vi.fn()
     render(LeftRail, makeProps({ onPitchBend }))
@@ -176,6 +198,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onNudge: vi.fn(),
     onDuration: vi.fn(),
     onIntensity: vi.fn(),
+    onEnvelope: vi.fn(),
     onVibrato: vi.fn(),
     onPitchBend: vi.fn(),
     onAddNote: vi.fn(),

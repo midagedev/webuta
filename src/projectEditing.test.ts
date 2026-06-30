@@ -160,6 +160,7 @@ describe('project editing helpers', () => {
           ? {
               ...note,
               intensity: 74,
+              envelope: { p1Ms: 0, p2Ms: 28, p3Ms: 160, v1: 0, v2: 100, v3: 62, v4: 8 },
               pitchBend: {
                 points: [
                   { timePercent: 0, cents: 0 },
@@ -183,6 +184,7 @@ describe('project editing helpers', () => {
       tone: 64,
       lyric: '키',
       intensity: 74,
+      envelope: { p1Ms: 0, p2Ms: 28, p3Ms: 160, v1: 0, v2: 100, v3: 62, v4: 8 },
       vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
       pitchBend: {
         points: [

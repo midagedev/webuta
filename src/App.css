@@ -828,6 +828,7 @@ button:disabled {
 }
 
 .dynamics-card,
+.envelope-card,
 .vibrato-card,
 .pitch-bend-card {
   display: grid;
@@ -842,6 +843,18 @@ button:disabled {
 .dynamics-card {
   border-color: #263d35;
   background: #111d1a;
+}
+
+.envelope-card {
+  border-color: #31412a;
+  background: #151d11;
+}
+
+.envelope-card > strong {
+  color: #d8f77a;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .pitch-bend-card {

@@ -134,6 +134,59 @@ describe('UTAU sample renderer', () => {
     expect(loud).toBeGreaterThan(quiet * 2.2)
   })
 
+  it('renders per-note envelope as relative UTAU sample gain over time', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 80,
+      cutoffMs: 0,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(1.4, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeProject(),
+      notes: [
+        {
+          id: 'enveloped',
+          trackId: 'track',
+          partId: 'part',
+          start: 0,
+          duration: TICKS_PER_BEAT * 2,
+          tone: 60,
+          lyric: '라',
+          envelope: { p1Ms: 0, p2Ms: 20, p3Ms: 80, v1: 0, v2: 100, v3: 10, v4: 0 },
+        },
+        { id: 'plain', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 3, duration: TICKS_PER_BEAT * 2, tone: 60, lyric: '라' },
+      ],
+    })
+    const envelopedBody = energy(result.samples.slice(Math.floor(0.52 * 44100), Math.floor(0.88 * 44100)))
+    const plainBody = energy(result.samples.slice(Math.floor(2.12 * 44100), Math.floor(2.48 * 44100)))
+
+    expect(plainBody).toBeGreaterThan(envelopedBody * 2)
+  })
+
   it('uses per-note vibrato depth when advancing the UTAU sample', async () => {
     const entry: OtoEntry = {
       fileName: 'ra_C4.wav',

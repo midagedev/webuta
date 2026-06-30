@@ -93,6 +93,29 @@ describe('browser demo renderer', () => {
 
     expect(loud).toBeGreaterThan(quiet * 2)
   })
+
+  it('renders per-note envelope as a volume curve', async () => {
+    const result = await browserDemoRenderer.render({
+      ...demoProject,
+      bpm: 120,
+      notes: [
+        {
+          ...demoProject.notes[0],
+          id: 'enveloped',
+          start: 0,
+          duration: TICKS_PER_BEAT * 2,
+          tone: 60,
+          lyric: '라',
+          envelope: { p1Ms: 0, p2Ms: 20, p3Ms: 80, v1: 0, v2: 100, v3: 25, v4: 0 },
+        },
+        { ...demoProject.notes[1], id: 'plain', start: TICKS_PER_BEAT * 3, duration: TICKS_PER_BEAT * 2, tone: 60, lyric: '라' },
+      ],
+    })
+    const envelopedBody = energy(result.samples.slice(Math.floor(0.52 * 44100), Math.floor(0.88 * 44100)))
+    const plainBody = energy(result.samples.slice(Math.floor(2.02 * 44100), Math.floor(2.38 * 44100)))
+
+    expect(plainBody).toBeGreaterThan(envelopedBody * 2)
+  })
 })
 
 function energy(samples: Float32Array) {

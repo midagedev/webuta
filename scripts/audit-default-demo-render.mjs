@@ -15,6 +15,7 @@ const REQUIRED_CHECKS = [
   'community release readiness card visible',
   'voicebank license metadata visible',
   'selected-note dynamics controls visible',
+  'selected-note envelope controls visible',
   'selected-note vibrato controls visible',
   'selected-note pitch bend controls visible',
   'selected-note duplicate controls visible',

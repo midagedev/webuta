@@ -75,6 +75,9 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] App tests cover selected-note UTAU `Intensity`/dynamics controls; project
   and UST tests verify dynamics round-trip, and renderer tests verify dynamics
   changes rendered audio.
+- [x] App tests cover selected-note UST `Envelope` controls; project and UST
+  tests verify envelope round-trip, and renderer tests verify envelope changes
+  rendered volume over the note body.
 - [x] Classic UST `PBS`/`PBW`/`PBY` pitch-bend curves survive import/export and
   affect both browser fallback and UTAU sample renderer output.
 - [x] App tests cover selected-note pitch-bend controls for a simple editable

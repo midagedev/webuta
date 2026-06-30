@@ -1,4 +1,5 @@
 import { durationTicksToSeconds, midiToHz, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
+import { noteEnvelopeGainAt } from '../envelope'
 import { noteIntensityGain } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import type { SongNote, SongProject } from '../types'
@@ -63,6 +64,7 @@ function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
     const codaProgress = secondsLeft < voice.codaSeconds ? 1 - secondsLeft / Math.max(0.001, voice.codaSeconds) : 0
     const codaAmount = smoothstep(Math.max(0, Math.min(1, codaProgress)))
     const codaDamp = 1 - codaAmount * (1 - voice.codaDamp)
+    const envelopeGain = noteEnvelopeGainAt(note, t, length / SAMPLE_RATE)
     const breath = pseudoNoise(i + Math.floor(frequency)) * voice.air
     const consonant =
       pseudoNoise(i * 3 + voice.noiseSeed) * voice.onsetNoise * onsetEnvelope +
@@ -73,7 +75,8 @@ function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
       Math.sin(phase * 3.01) * voice.third +
       Math.sin(phase * 5.02) * voice.brightness
     const nasalOrLiquidTail = Math.sin(phase * 0.5) * voice.codaTone * codaAmount
-    output[startSample + i] += ((vowelTone * codaDamp + nasalOrLiquidTail + breath) * envelope + consonant) * 0.32 * intensityGain
+    output[startSample + i] +=
+      ((vowelTone * codaDamp + nasalOrLiquidTail + breath) * envelope + consonant) * 0.32 * intensityGain * envelopeGain
   }
 }
 

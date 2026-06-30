@@ -1,6 +1,7 @@
+import { parseUstEnvelope, serializeNoteEnvelope } from './envelope'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { normalizeNoteIntensity, sanitizeOptionalNoteIntensity } from './expression'
-import { TICKS_PER_BEAT, type NotePitchBend, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { TICKS_PER_BEAT, type NoteEnvelope, type NotePitchBend, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
@@ -35,6 +36,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
       const pitchBend = parseUstPitchBend(section, duration)
       const intensity = sanitizeOptionalNoteIntensity(numberField(section, 'Intensity', 100))
+      const envelope = parseUstEnvelope(stringField(section, 'Envelope', ''))
       notes.push({
         id: `note-${index}`,
         trackId,
@@ -44,6 +46,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
         tone,
         lyric,
         ...(intensity !== undefined ? { intensity } : {}),
+        ...(envelope !== undefined ? { envelope } : {}),
         ...(vibrato ? { vibrato } : {}),
         ...(pitchBend ? { pitchBend } : {}),
       })
@@ -139,6 +142,7 @@ export function serializeUst(project: SongProject) {
       lyric: note.lyric,
       tone: note.tone,
       intensity: note.intensity,
+      envelope: note.envelope,
       vibrato: note.vibrato,
       pitchBend: note.pitchBend,
       tempo: tempoAt(note.start),
@@ -199,6 +203,7 @@ function pushNoteSection(
     lyric: string
     tone: number
     intensity?: number
+    envelope?: NoteEnvelope
     vibrato?: NoteVibrato
     pitchBend?: NotePitchBend
     tempo?: number
@@ -213,6 +218,9 @@ function pushNoteSection(
   }
   sections.push(`Intensity=${normalizeNoteIntensity(note.intensity)}`)
   sections.push('Modulation=0')
+  if (note.envelope) {
+    sections.push(`Envelope=${serializeNoteEnvelope(note.envelope)}`)
+  }
   if (note.vibrato) {
     sections.push(`VBR=${serializeUstVibrato(note.vibrato)}`)
   }

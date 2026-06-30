@@ -15,10 +15,11 @@
   } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
+  import { normalizeNoteEnvelope, sanitizeOptionalNoteEnvelope } from '../envelope'
   import { normalizeNoteIntensity } from '../expression'
   import { normalizeNotePitchBend, sanitizeOptionalNotePitchBend } from '../pitchBend'
   import { GRID_SNAP_TICKS } from '../projectEditing'
-  import type { NeuralModelCard, NotePitchBend, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
+  import type { NeuralModelCard, NoteEnvelope, NotePitchBend, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
   import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
   import { normalizeNoteVibrato } from '../vibrato'
   import { rendererCapabilities } from '../renderers/registry'
@@ -58,6 +59,7 @@
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
     onIntensity: (intensity: number) => void
+    onEnvelope: (envelope: NoteEnvelope | undefined) => void
     onVibrato: (vibrato: NoteVibrato) => void
     onPitchBend: (pitchBend: NotePitchBend | undefined) => void
     onAddNote: () => void
@@ -91,6 +93,7 @@
     onNudge,
     onDuration,
     onIntensity,
+    onEnvelope,
     onVibrato,
     onPitchBend,
     onAddNote,
@@ -147,6 +150,7 @@
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
   let selectedIntensity = $derived(normalizeNoteIntensity(selectedNote?.intensity))
+  let selectedEnvelope = $derived(normalizeNoteEnvelope(selectedNote?.envelope))
   let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
   let selectedPitchBend = $derived(normalizeNotePitchBend(selectedNote?.pitchBend))
   let selectedPitchBendEnabled = $derived(Boolean(selectedNote?.pitchBend && selectedPitchBend.points.length > 0))
@@ -221,6 +225,10 @@
 
   function updateVibrato(patch: Partial<NoteVibrato>) {
     onVibrato(normalizeNoteVibrato({ ...selectedVibrato, ...patch }))
+  }
+
+  function updateEnvelope(patch: Partial<NoteEnvelope>) {
+    onEnvelope(sanitizeOptionalNoteEnvelope({ ...selectedEnvelope, ...patch }))
   }
 
   function updatePitchBend(patch: { enabled?: boolean; cents?: number; timePercent?: number }) {
@@ -489,6 +497,45 @@
               step="1"
               value={selectedIntensity}
               oninput={(event) => onIntensity(Number(inputValue(event)))}
+            />
+          </label>
+        </div>
+        <div class="envelope-card" aria-label="Selected note envelope">
+          <strong>엔벨로프</strong>
+          <label class="slider-field">
+            <span>어택 <output>{selectedEnvelope.p2Ms}ms</output></span>
+            <input
+              aria-label="Envelope attack"
+              type="range"
+              min="0"
+              max="400"
+              step="1"
+              value={selectedEnvelope.p2Ms}
+              oninput={(event) => updateEnvelope({ p2Ms: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>릴리즈 <output>{selectedEnvelope.p3Ms}ms</output></span>
+            <input
+              aria-label="Envelope release"
+              type="range"
+              min="0"
+              max="800"
+              step="1"
+              value={selectedEnvelope.p3Ms}
+              oninput={(event) => updateEnvelope({ p3Ms: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>서스테인 <output>{selectedEnvelope.v3}%</output></span>
+            <input
+              aria-label="Envelope sustain"
+              type="range"
+              min="0"
+              max="200"
+              step="1"
+              value={selectedEnvelope.v3}
+              oninput={(event) => updateEnvelope({ v3: Number(inputValue(event)) })}
             />
           </label>
         </div>

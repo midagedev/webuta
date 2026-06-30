@@ -219,6 +219,10 @@ Recommended coverage shape:
 - [x] Add selected-note UTAU `Intensity`/dynamics controls, preserve them in
   `.webutau.json` and UST import/export, and render the gain change through
   both the UTAU sample renderer and browser fallback voice.
+- [x] Add selected-note classic UST `Envelope` controls for attack, release,
+  and sustain level; preserve them in `.webutau.json` and UST import/export,
+  and render the volume curve in both the UTAU sample renderer and browser
+  fallback voice.
 - [x] Add a selected-note UTAU sample preview that plays through the loaded
   voicebank sample renderer, not just the oscillator touch keyboard.
 - [x] Show a current voicebank license metadata card beside coverage and render
@@ -422,6 +426,10 @@ Current verified V3 evidence:
 - Selected-note UTAU `Intensity` now lives in the note model, round-trips
   through UST, appears in the left-rail dynamics control, and changes rendered
   gain without depending on any recorded source material.
+- Selected-note classic UST `Envelope` now lives in the note model,
+  round-trips through UST, appears in the left-rail envelope card, and changes
+  rendered note volume over time without depending on any recorded source
+  material.
 - Imported UTAU voicebanks with `prefix.map` now use the map's pitch-specific
   prefix/suffix aliases before falling back to filename pitch inference.
 - Voicebank zip import now applies browser safety limits before parsing: the

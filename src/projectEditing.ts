@@ -1,4 +1,5 @@
 import { clampTone, makeId } from './music'
+import { sanitizeOptionalNoteEnvelope } from './envelope'
 import { sanitizeOptionalNoteIntensity } from './expression'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { TICKS_PER_BEAT, type SongNote, type SongProject, type VoicePart } from './types'
@@ -270,7 +271,8 @@ function expandPartForNote(parts: VoicePart[], note: SongNote) {
 }
 
 function sanitizeNote(note: SongNote): SongNote {
-  const { intensity: rawIntensity, pitchBend: rawPitchBend, vibrato: rawVibrato, ...rest } = note
+  const { envelope: rawEnvelope, intensity: rawIntensity, pitchBend: rawPitchBend, vibrato: rawVibrato, ...rest } = note
+  const envelope = sanitizeOptionalNoteEnvelope(rawEnvelope)
   const intensity = sanitizeOptionalNoteIntensity(rawIntensity)
   const vibrato = sanitizeOptionalNoteVibrato(rawVibrato)
   const pitchBend = sanitizeOptionalNotePitchBend(rawPitchBend)
@@ -281,6 +283,7 @@ function sanitizeNote(note: SongNote): SongNote {
     tone: clampTone(note.tone),
     lyric: note.lyric.trim() || '라',
     ...(intensity !== undefined ? { intensity } : {}),
+    ...(envelope !== undefined ? { envelope } : {}),
     ...(vibrato ? { vibrato } : {}),
     ...(pitchBend ? { pitchBend } : {}),
   }
