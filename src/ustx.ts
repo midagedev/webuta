@@ -1,6 +1,7 @@
 import * as yaml from 'js-yaml'
-import { TICKS_PER_BEAT, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId } from './music'
+import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
 type AnyRecord = Record<string, unknown>
 
@@ -88,6 +89,7 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
     const parsedNotes = partNotes
       .map((noteItem, noteIndex) => {
         const noteRecord = isRecord(noteItem) ? noteItem : {}
+        const vibrato = parseUstxVibrato(noteRecord)
         return {
           id: `note-${partIndex}-${noteIndex}`,
           trackId: tracks[trackNo].id,
@@ -96,6 +98,7 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
           duration: Math.max(10, numberField(noteRecord, ['duration'], TICKS_PER_BEAT)),
           tone: numberField(noteRecord, ['tone'], 60),
           lyric: stringField(noteRecord, ['lyric'], 'la'),
+          ...(vibrato ? { vibrato } : {}),
         }
       })
       .filter((note) => note.duration > 0)
@@ -170,6 +173,7 @@ export function serializeUstx(project: SongProject) {
           duration: note.duration,
           tone: note.tone,
           lyric: note.lyric,
+          ...(note.vibrato ? { vibrato: serializeUstxVibrato(note.vibrato) } : {}),
         })),
       curves: [],
     }
@@ -205,4 +209,34 @@ export function serializeUstx(project: SongProject) {
       sortKeys: false,
     },
   )
+}
+
+function parseUstxVibrato(record: AnyRecord): NoteVibrato | undefined {
+  const raw = record.vibrato
+  if (!isRecord(raw)) {
+    return undefined
+  }
+  const depthCents = numberField(raw, ['depth', 'depth_cents', 'depthCents'], 0)
+  const periodMs = numberField(raw, ['period', 'period_ms', 'periodMs'], 185)
+  const length = numberField(raw, ['length'], 48)
+  const startPercent = length <= 1 ? (1 - length) * 100 : 100 - length
+  return sanitizeOptionalNoteVibrato({
+    enabled: depthCents > 0 && length > 0,
+    depthCents,
+    rateHz: periodMs > 0 ? 1000 / periodMs : undefined,
+    startPercent,
+  })
+}
+
+function serializeUstxVibrato(vibrato: NoteVibrato) {
+  const normalized = normalizeNoteVibrato(vibrato)
+  return {
+    length: Math.round(100 - normalized.startPercent),
+    period: Math.round(1000 / normalized.rateHz),
+    depth: normalized.enabled ? Math.round(normalized.depthCents) : 0,
+    in: 10,
+    out: 10,
+    shift: 0,
+    drift: 0,
+  }
 }

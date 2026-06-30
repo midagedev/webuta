@@ -26,4 +26,40 @@ describe('USTX compatibility layer', () => {
     expect(text).toContain('voice_parts')
     expect(text).toContain('lyric: la')
   })
+
+  it('round-trips note vibrato through USTX vibrato blocks', () => {
+    const project = parseUstx(
+      [
+        'name: Vibrato USTX',
+        'tracks:',
+        '  - track_name: Lead',
+        'voice_parts:',
+        '  - name: Verse',
+        '    track_no: 0',
+        '    position: 0',
+        '    duration: 960',
+        '    notes:',
+        '      - position: 0',
+        '        duration: 960',
+        '        tone: 64',
+        '        lyric: 라',
+        '        vibrato:',
+        '          length: 58',
+        '          period: 180',
+        '          depth: 32',
+      ].join('\n'),
+      'vibrato.ustx',
+    )
+
+    expect(project.notes[0].vibrato).toMatchObject({
+      enabled: true,
+      depthCents: 32,
+      startPercent: 42,
+    })
+
+    const text = serializeUstx(project)
+    expect(text).toContain('vibrato:')
+    expect(text).toContain('depth: 32')
+    expect(text).toContain('period: 180')
+  })
 })

@@ -41,7 +41,16 @@ export const demoProject: SongProject = {
     { id: 'n5', trackId, partId, start: 2160, duration: 420, tone: 67, lyric: '다' },
     { id: 'n6', trackId, partId, start: 2640, duration: 360, tone: 69, lyric: '이' },
     { id: 'n7', trackId, partId, start: 3120, duration: 420, tone: 65, lyric: '스' },
-    { id: 'n8', trackId, partId, start: 3600, duration: 1080, tone: 64, lyric: '키' },
+    {
+      id: 'n8',
+      trackId,
+      partId,
+      start: 3600,
+      duration: 1080,
+      tone: 64,
+      lyric: '키',
+      vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
+    },
   ],
 }
 

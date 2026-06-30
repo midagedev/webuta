@@ -9,6 +9,12 @@ describe('WebUtau project files', () => {
 
     expect(project.name).toBe('Saved Hook')
     expect(project.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(project.notes.at(-1)?.vibrato).toMatchObject({
+      enabled: true,
+      depthCents: 20,
+      rateHz: 5.6,
+      startPercent: 44,
+    })
     expect(project.source).toEqual({
       fileName: 'saved-hook.webutau.json',
       format: 'webuta',

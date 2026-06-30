@@ -16,8 +16,9 @@
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
   import { GRID_SNAP_TICKS } from '../projectEditing'
-  import type { NeuralModelCard, RendererId, SongNote, SongProject } from '../types'
+  import type { NeuralModelCard, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
   import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
+  import { normalizeNoteVibrato } from '../vibrato'
   import { rendererCapabilities } from '../renderers/registry'
   import {
     formatCoverageMessage,
@@ -54,6 +55,7 @@
     onTone: (tone: number) => void
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
+    onVibrato: (vibrato: NoteVibrato) => void
     onAddNote: () => void
     onSplitNote: () => void
     onDeleteNote: () => void
@@ -84,6 +86,7 @@
     onTone,
     onNudge,
     onDuration,
+    onVibrato,
     onAddNote,
     onSplitNote,
     onDeleteNote,
@@ -137,6 +140,7 @@
   let selectedRenderWarnings = $derived(
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
+  let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
   let isBundledDefaultVoicebank = $derived(
     Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
@@ -202,6 +206,10 @@
       return '메타데이터 대기'
     }
     return voicebank.metadata.license?.path ?? voicebank.metadata.readme?.path ?? voicebank.metadata.characterPath ?? voicebank.sourceFileName
+  }
+
+  function updateVibrato(patch: Partial<NoteVibrato>) {
+    onVibrato(normalizeNoteVibrato({ ...selectedVibrato, ...patch }))
   }
 </script>
 
@@ -415,6 +423,50 @@
           <button type="button" class="small-button" onclick={() => onDuration(selectedNote!.duration + 120)}>
             길게
           </button>
+        </div>
+        <div class="vibrato-card" aria-label="Selected note vibrato">
+          <label class="toggle-line">
+            <input
+              type="checkbox"
+              checked={selectedVibrato.enabled}
+              onchange={(event) => updateVibrato({ enabled: (event.currentTarget as HTMLInputElement).checked })}
+            />
+            <span>비브라토</span>
+            <strong>{selectedVibrato.enabled ? 'ON' : 'OFF'}</strong>
+          </label>
+          <label class="slider-field">
+            <span>깊이 <output>{Math.round(selectedVibrato.depthCents)}c</output></span>
+            <input
+              type="range"
+              min="0"
+              max="80"
+              step="1"
+              value={selectedVibrato.depthCents}
+              oninput={(event) => updateVibrato({ depthCents: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>속도 <output>{selectedVibrato.rateHz.toFixed(1)}Hz</output></span>
+            <input
+              type="range"
+              min="3"
+              max="9"
+              step="0.1"
+              value={selectedVibrato.rateHz}
+              oninput={(event) => updateVibrato({ rateHz: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>시작 <output>{Math.round(selectedVibrato.startPercent)}%</output></span>
+            <input
+              type="range"
+              min="0"
+              max="90"
+              step="1"
+              value={selectedVibrato.startPercent}
+              oninput={(event) => updateVibrato({ startPercent: Number(inputValue(event)) })}
+            />
+          </label>
         </div>
       </div>
     {/if}

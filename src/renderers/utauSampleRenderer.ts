@@ -1,6 +1,7 @@
 import { masterMonoMix } from '../audio/mastering'
 import { projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
 import type { SongNote, SongProject } from '../types'
+import { noteVibratoCentsAt } from '../vibrato'
 import {
   findBestEntryForLyric,
   findCodaTailEntryForLyric,
@@ -20,9 +21,6 @@ const CODA_RELEASE_TAIL_MS = 240
 const CODA_LOOP_BODY_MS = 420
 const CODA_LOOP_TAIL_GAP_MS = 70
 const CONSONANT_GUARD_FADE_MS = 2
-const VIBRATO_RATE_HZ = 5.4
-const VIBRATO_DEPTH_CENTS = 16
-
 export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContext: AudioContext): VocalRenderer {
   const cache = new Map<string, Promise<AudioBuffer>>()
   return {
@@ -206,7 +204,7 @@ function mixPreparedSample(
     const release = smoothstep(Math.min(1, (noteBodySamples + fadeOutSamples - noteProgress) / fadeOutSamples))
     const envelope = Math.max(0, Math.min(attack, release))
     output[startSample + i] += sampleValue * envelope * 0.66
-    sourcePosition += rate * vibratoRateMultiplier(noteProgress, noteBodySamples)
+    sourcePosition += rate * vibratoRateMultiplier(note, noteProgress, noteBodySamples)
   }
 }
 
@@ -231,17 +229,13 @@ function releaseSecondsForNote(
   return clamp(noteDurationSeconds * 0.2, 0.055, 0.16)
 }
 
-function vibratoRateMultiplier(noteProgressSamples: number, noteBodySamples: number) {
+function vibratoRateMultiplier(note: SongNote, noteProgressSamples: number, noteBodySamples: number) {
   if (noteBodySamples < SAMPLE_RATE * 0.42 || noteProgressSamples <= 0) {
     return 1
   }
   const progress = noteProgressSamples / noteBodySamples
-  if (progress < 0.52 || progress > 0.96) {
-    return 1
-  }
   const seconds = noteProgressSamples / SAMPLE_RATE
-  const depthRamp = smoothstep(clamp((progress - 0.52) / 0.18, 0, 1))
-  const cents = Math.sin(seconds * Math.PI * 2 * VIBRATO_RATE_HZ) * VIBRATO_DEPTH_CENTS * depthRamp
+  const cents = noteVibratoCentsAt(note, progress, seconds)
   return 2 ** (cents / 1200)
 }
 

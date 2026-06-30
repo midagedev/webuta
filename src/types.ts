@@ -18,6 +18,14 @@ export type SongNote = {
   duration: number
   tone: number
   lyric: string
+  vibrato?: NoteVibrato
+}
+
+export type NoteVibrato = {
+  enabled: boolean
+  depthCents: number
+  rateHz: number
+  startPercent: number
 }
 
 export type VoicePart = {

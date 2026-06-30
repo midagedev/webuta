@@ -1,6 +1,7 @@
 import { midiToHz, projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
 import type { SongNote, SongProject } from '../types'
 import { masterMonoMix } from '../audio/mastering'
+import { noteVibratoCentsAt } from '../vibrato'
 import type { VocalRenderer } from './types'
 
 const SAMPLE_RATE = 44100
@@ -50,9 +51,8 @@ function mixNote(output: Float32Array, project: SongProject, note: SongNote) {
     const attack = smoothstep(Math.min(1, p / 0.08))
     const release = smoothstep(Math.min(1, (1 - p) / 0.12))
     const envelope = Math.min(attack, release)
-    const vibratoDepth = smoothstep(Math.min(1, Math.max(0, (p - 0.42) / 0.28))) * 0.0048
-    const vibrato = Math.sin(2 * Math.PI * 5.2 * t) * vibratoDepth
-    const phase = 2 * Math.PI * frequency * (1 + vibrato) * t
+    const vibratoCents = noteVibratoCentsAt(note, p, t)
+    const phase = 2 * Math.PI * frequency * 2 ** (vibratoCents / 1200) * t
     const onsetSeconds = Math.max(0.01, voice.onsetSeconds)
     const onsetProgress = Math.min(1, t / onsetSeconds)
     const onsetEdge = Math.min(1, t / 0.006)

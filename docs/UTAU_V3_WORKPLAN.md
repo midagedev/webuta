@@ -212,6 +212,8 @@ Recommended coverage shape:
 - [x] Add piano keyboard and beat/bar ruler that remain readable on mobile.
 - [x] Add transport controls: play, stop, loop, metronome toggle, BPM edit,
   render, download, share.
+- [x] Add per-note vibrato controls for depth, rate, and start position, with
+  sound-rendered output in the UTAU sample renderer and browser fallback voice.
 - [x] Add a selected-note UTAU sample preview that plays through the loaded
   voicebank sample renderer, not just the oscillator touch keyboard.
 - [x] Show a current voicebank license metadata card beside coverage and render
@@ -409,6 +411,9 @@ Current verified V3 evidence:
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while
   USTX import/export remains available for OpenUtau handoff.
+- Selected notes now expose DAW-style vibrato controls. The setting is saved in
+  `.webutau.json`, mapped to/from USTX `vibrato` blocks, and rendered as actual
+  pitch movement in both the UTAU sample renderer and browser fallback voice.
 - DAW editing controls now cover draw, drag, resize, split, delete, lyric line
   apply, undo, and redo. The transport includes play, stop, loop playback,
   metronome toggle, BPM edit, render, download, and share.

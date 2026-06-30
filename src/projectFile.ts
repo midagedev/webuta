@@ -1,4 +1,5 @@
 import type { SongNote, SongProject, Track, VoicePart } from './types'
+import { sanitizeOptionalNoteVibrato } from './vibrato'
 
 export const WEBUTA_PROJECT_FORMAT = 'webuta-project'
 export const WEBUTA_PROJECT_VERSION = 1
@@ -129,8 +130,16 @@ function isSongNote(value: unknown): value is SongNote {
     isFiniteNumber(value.start) &&
     isFiniteNumber(value.duration) &&
     isFiniteNumber(value.tone) &&
-    typeof value.lyric === 'string'
+    typeof value.lyric === 'string' &&
+    (value.vibrato === undefined || isNoteVibrato(value.vibrato))
   )
+}
+
+function isNoteVibrato(value: unknown) {
+  if (!isObject(value)) {
+    return false
+  }
+  return sanitizeOptionalNoteVibrato(value) !== undefined
 }
 
 function isProjectSource(value: unknown) {

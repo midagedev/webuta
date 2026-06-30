@@ -14,6 +14,7 @@ describe('default demo render audit report', () => {
         'first-run lyric visible',
         'community release readiness card visible',
         'voicebank license metadata visible',
+        'selected-note vibrato controls visible',
         'community listening review scorecard linked',
         'selected-note UTAU sample preview available',
         'desktop WAV download',

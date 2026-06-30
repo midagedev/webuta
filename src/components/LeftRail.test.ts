@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen } from '@testing-library/svelte'
 import { describe, expect, it, vi } from 'vitest'
 import LeftRail from './LeftRail.svelte'
 import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
@@ -38,6 +38,27 @@ describe('LeftRail release readiness', () => {
     expect(releaseCard.textContent).toContain('V3 공개 점검 필요')
     expect(releaseCard.textContent).toContain('사용자 ZIP 모드')
     expect(screen.getByLabelText('Voicebank license metadata').textContent).toContain('사용자 ZIP 라이선스 포함')
+  })
+
+  it('edits selected-note vibrato as a DAW parameter', async () => {
+    const onVibrato = vi.fn()
+    render(LeftRail, makeProps({ onVibrato }))
+
+    const vibratoCard = screen.getByLabelText('Selected note vibrato')
+    expect(vibratoCard.textContent).toContain('비브라토')
+    expect(vibratoCard.textContent).toContain('16c')
+
+    const depthSlider = vibratoCard.querySelector('input[type="range"]') as HTMLInputElement
+    await fireEvent.input(depthSlider, { target: { value: '34' } })
+
+    expect(onVibrato).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: true,
+        depthCents: 34,
+        rateHz: 5.4,
+        startPercent: 52,
+      }),
+    )
   })
 })
 
@@ -88,6 +109,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onTone: vi.fn(),
     onNudge: vi.fn(),
     onDuration: vi.fn(),
+    onVibrato: vi.fn(),
     onAddNote: vi.fn(),
     onSplitNote: vi.fn(),
     onDeleteNote: vi.fn(),

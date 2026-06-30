@@ -1,5 +1,6 @@
 import { clampTone, makeId } from './music'
 import { TICKS_PER_BEAT, type SongNote, type SongProject, type VoicePart } from './types'
+import { sanitizeOptionalNoteVibrato } from './vibrato'
 
 export const GRID_SNAP_TICKS = 120
 export const DEFAULT_NOTE_DURATION_TICKS = TICKS_PER_BEAT
@@ -237,12 +238,15 @@ function expandPartForNote(parts: VoicePart[], note: SongNote) {
 }
 
 function sanitizeNote(note: SongNote): SongNote {
+  const { vibrato: rawVibrato, ...rest } = note
+  const vibrato = sanitizeOptionalNoteVibrato(rawVibrato)
   return {
-    ...note,
+    ...rest,
     start: Math.max(0, Math.round(note.start)),
     duration: Math.max(GRID_SNAP_TICKS, Math.round(note.duration)),
     tone: clampTone(note.tone),
     lyric: note.lyric.trim() || '라',
+    ...(vibrato ? { vibrato } : {}),
   }
 }
 

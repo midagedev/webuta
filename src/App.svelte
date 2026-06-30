@@ -1415,6 +1415,7 @@
         onTone={(tone) => updateSelectedNote({ tone })}
         onNudge={updateSelectedNote}
         onDuration={(duration) => updateSelectedNote({ duration })}
+        onVibrato={(vibrato) => updateSelectedNote({ vibrato })}
         onAddNote={addNote}
         onSplitNote={splitSelectedNote}
         onDeleteNote={deleteSelectedNote}

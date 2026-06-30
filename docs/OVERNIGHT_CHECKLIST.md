@@ -66,6 +66,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.
 - [x] App tests cover selected-note split/delete controls and selected-note loop region display.
+- [x] App tests cover selected-note vibrato controls; project/USTX tests verify
+  vibrato round-trip, and renderer tests verify vibrato changes rendered audio.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
