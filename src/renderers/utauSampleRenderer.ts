@@ -1,7 +1,7 @@
 import { masterMonoMix } from '../audio/mastering'
 import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSecondsInProject } from '../music'
 import { noteEnvelopeGainAt } from '../envelope'
-import { noteIntensityGain } from '../expression'
+import { noteIntensityGain, noteVelocityRate } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import { normalizeNoteTiming } from '../timing'
 import type { SongNote, SongProject } from '../types'
@@ -194,6 +194,7 @@ function mixPreparedSample(
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
   const noteBodySamples = Math.max(1, Math.floor(noteDurationSeconds * SAMPLE_RATE))
   const intensityGain = noteIntensityGain(note)
+  const velocityRate = noteVelocityRate(note)
   const consonantOutputSamples = Math.max(
     Math.floor(preutteranceSeconds * SAMPLE_RATE),
     Math.floor((sourceWindow.consonantEnd - sourceWindow.start) / Math.max(0.001, rate)),
@@ -216,7 +217,8 @@ function mixPreparedSample(
     const envelope = Math.max(0, Math.min(attack, release))
     const expressionGain = noteEnvelopeGainAt(note, noteProgress / SAMPLE_RATE, noteDurationSeconds)
     output[startSample + i] += sampleValue * envelope * 0.66 * intensityGain * expressionGain
-    sourcePosition += rate * pitchRateMultiplier(note, noteProgress, noteBodySamples)
+    const consonantRate = elapsedOutputSamples <= consonantOutputSamples ? velocityRate : 1
+    sourcePosition += rate * consonantRate * pitchRateMultiplier(note, noteProgress, noteBodySamples)
   }
 }
 

@@ -241,6 +241,60 @@ describe('UTAU sample renderer', () => {
     expect(skippedEarly).toBeGreaterThan(plainEarly * 8)
   })
 
+  it('uses classic UST Velocity to advance the consonant source faster', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 300,
+      cutoffMs: 0,
+      preutteranceMs: 0,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeDelayedToneSource(0.9, 44100, 0.24), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeProject(),
+      bpm: 120,
+      notes: [
+        { id: 'plain', trackId: 'track', partId: 'part', start: 0, duration: TICKS_PER_BEAT, tone: 60, lyric: '라' },
+        {
+          id: 'fast-consonant',
+          trackId: 'track',
+          partId: 'part',
+          start: TICKS_PER_BEAT * 3,
+          duration: TICKS_PER_BEAT,
+          tone: 60,
+          lyric: '라',
+          velocity: 200,
+        },
+      ],
+    })
+    const plainAttack = energy(result.samples.slice(Math.floor(0.12 * 44100), Math.floor(0.18 * 44100)))
+    const fastAttack = energy(result.samples.slice(Math.floor(1.62 * 44100), Math.floor(1.68 * 44100)))
+
+    expect(fastAttack).toBeGreaterThan(plainAttack * 4)
+  })
+
   it('uses per-note vibrato depth when advancing the UTAU sample', async () => {
     const entry: OtoEntry = {
       fileName: 'ra_C4.wav',

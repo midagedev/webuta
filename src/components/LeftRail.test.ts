@@ -110,6 +110,24 @@ describe('LeftRail release readiness', () => {
     expect(onTiming).toHaveBeenCalledWith({ sampleStartMs: 44 })
   })
 
+  it('edits selected-note classic UST resampler fields', async () => {
+    const onNudge = vi.fn()
+    render(LeftRail, makeProps({ onNudge }))
+
+    const resamplerCard = screen.getByLabelText('Selected note resampler')
+    expect(resamplerCard.textContent).toContain('리샘플러')
+    expect(resamplerCard.textContent).toContain('속도')
+    expect(resamplerCard.textContent).toContain('모듈')
+
+    await fireEvent.input(screen.getByLabelText('Note velocity'), { target: { value: '151' } })
+    await fireEvent.input(screen.getByLabelText('Note modulation'), { target: { value: '22' } })
+    await fireEvent.input(screen.getByLabelText('Note flags'), { target: { value: 'g-2BRE20' } })
+
+    expect(onNudge).toHaveBeenCalledWith({ velocity: 151 })
+    expect(onNudge).toHaveBeenCalledWith({ modulation: 22 })
+    expect(onNudge).toHaveBeenCalledWith({ flags: 'g-2BRE20' })
+  })
+
   it('edits selected-note pitch bend as a simple curve', async () => {
     const onPitchBend = vi.fn()
     render(LeftRail, makeProps({ onPitchBend }))

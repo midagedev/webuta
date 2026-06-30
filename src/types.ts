@@ -19,6 +19,9 @@ export type SongNote = {
   tone: number
   lyric: string
   intensity?: number
+  velocity?: number
+  modulation?: number
+  flags?: string
   timing?: NoteTiming
   envelope?: NoteEnvelope
   vibrato?: NoteVibrato

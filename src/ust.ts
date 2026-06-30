@@ -1,6 +1,14 @@
 import { parseUstEnvelope, serializeNoteEnvelope } from './envelope'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
-import { normalizeNoteIntensity, sanitizeOptionalNoteIntensity } from './expression'
+import {
+  normalizeNoteIntensity,
+  normalizeNoteModulation,
+  normalizeNoteVelocity,
+  sanitizeOptionalNoteFlags,
+  sanitizeOptionalNoteIntensity,
+  sanitizeOptionalNoteModulation,
+  sanitizeOptionalNoteVelocity,
+} from './expression'
 import { formatTimingNumber, parseUstNoteTiming } from './timing'
 import { TICKS_PER_BEAT, type NoteEnvelope, type NotePitchBend, type NoteTiming, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
@@ -37,6 +45,9 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
       const pitchBend = parseUstPitchBend(section, duration)
       const intensity = sanitizeOptionalNoteIntensity(numberField(section, 'Intensity', 100))
+      const velocity = sanitizeOptionalNoteVelocity(numberField(section, 'Velocity', 100))
+      const modulation = sanitizeOptionalNoteModulation(numberField(section, 'Modulation', 0))
+      const flags = sanitizeOptionalNoteFlags(stringField(section, 'Flags', ''))
       const timing = parseUstNoteTiming({
         startPoint: optionalNumberField(section, 'StartPoint'),
         preutterance: optionalNumberField(section, 'PreUtterance'),
@@ -52,6 +63,9 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
         tone,
         lyric,
         ...(intensity !== undefined ? { intensity } : {}),
+        ...(velocity !== undefined ? { velocity } : {}),
+        ...(modulation !== undefined ? { modulation } : {}),
+        ...(flags !== undefined ? { flags } : {}),
         ...(timing !== undefined ? { timing } : {}),
         ...(envelope !== undefined ? { envelope } : {}),
         ...(vibrato ? { vibrato } : {}),
@@ -149,6 +163,9 @@ export function serializeUst(project: SongProject) {
       lyric: note.lyric,
       tone: note.tone,
       intensity: note.intensity,
+      velocity: note.velocity,
+      modulation: note.modulation,
+      flags: note.flags,
       timing: note.timing,
       envelope: note.envelope,
       vibrato: note.vibrato,
@@ -211,6 +228,9 @@ function pushNoteSection(
     lyric: string
     tone: number
     intensity?: number
+    velocity?: number
+    modulation?: number
+    flags?: string
     timing?: NoteTiming
     envelope?: NoteEnvelope
     vibrato?: NoteVibrato
@@ -234,8 +254,14 @@ function pushNoteSection(
   if (note.timing?.voiceOverlapMs !== undefined) {
     sections.push(`VoiceOverlap=${formatTimingNumber(note.timing.voiceOverlapMs)}`)
   }
+  if (note.velocity !== undefined) {
+    sections.push(`Velocity=${normalizeNoteVelocity(note.velocity)}`)
+  }
   sections.push(`Intensity=${normalizeNoteIntensity(note.intensity)}`)
-  sections.push('Modulation=0')
+  sections.push(`Modulation=${normalizeNoteModulation(note.modulation)}`)
+  if (note.flags) {
+    sections.push(`Flags=${cleanUstValue(note.flags)}`)
+  }
   if (note.envelope) {
     sections.push(`Envelope=${serializeNoteEnvelope(note.envelope)}`)
   }

@@ -75,6 +75,9 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] App tests cover selected-note UTAU `Intensity`/dynamics controls; project
   and UST tests verify dynamics round-trip, and renderer tests verify dynamics
   changes rendered audio.
+- [x] App tests cover selected-note classic UST resampler fields; project and
+  UST tests verify `Velocity`, `Modulation`, and `Flags` round-trip, and
+  renderer tests verify `Velocity` changes consonant/source movement.
 - [x] App tests cover selected-note UST timing override controls; project and
   UST tests verify `StartPoint`, `PreUtterance`, and `VoiceOverlap`
   round-trip, and renderer tests verify `StartPoint` changes source-sample

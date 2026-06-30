@@ -219,6 +219,10 @@ Recommended coverage shape:
 - [x] Add selected-note UTAU `Intensity`/dynamics controls, preserve them in
   `.webutau.json` and UST import/export, and render the gain change through
   both the UTAU sample renderer and browser fallback voice.
+- [x] Add selected-note classic UST resampler controls for `Velocity`,
+  `Modulation`, and `Flags`; preserve them in `.webutau.json` and UST
+  import/export, and apply `Velocity` to the UTAU sample renderer's consonant
+  source movement.
 - [x] Add selected-note classic UST timing override controls for `StartPoint`,
   `PreUtterance`, and `VoiceOverlap`; preserve them in `.webutau.json` and
   UST import/export, and apply them in the UTAU sample renderer.
@@ -429,6 +433,11 @@ Current verified V3 evidence:
 - Selected-note UTAU `Intensity` now lives in the note model, round-trips
   through UST, appears in the left-rail dynamics control, and changes rendered
   gain without depending on any recorded source material.
+- Selected-note classic UST resampler fields now live in the note model:
+  `Velocity`, `Modulation`, and `Flags` round-trip through UST and appear in
+  the left-rail resampler card. `Velocity` changes consonant/source movement in
+  the UTAU sample renderer; `Modulation` and `Flags` are preserved for UTAU
+  handoff.
 - Selected-note classic UST timing overrides now live in the note model,
   round-trip through UST, appear in the left-rail timing card, and let the UTAU
   sample renderer honor imported `StartPoint`, `PreUtterance`, and

@@ -13,6 +13,9 @@ describe('WebUtau project files', () => {
             ? {
                 ...note,
                 intensity: 82,
+                velocity: 142,
+                modulation: 9,
+                flags: 'g-2BRE20',
                 timing: { sampleStartMs: 25, preutteranceMs: 72, voiceOverlapMs: 20 },
                 envelope: { p1Ms: 0, p2Ms: 24, p3Ms: 140, v1: 0, v2: 100, v3: 60, v4: 12 },
                 pitchBend: {
@@ -46,6 +49,9 @@ describe('WebUtau project files', () => {
     ])
     expect(project.notes[0].pitchBend?.modes).toEqual(['s', 'r'])
     expect(project.notes[0].intensity).toBe(82)
+    expect(project.notes[0].velocity).toBe(142)
+    expect(project.notes[0].modulation).toBe(9)
+    expect(project.notes[0].flags).toBe('g-2BRE20')
     expect(project.notes[0].timing).toEqual({ sampleStartMs: 25, preutteranceMs: 72, voiceOverlapMs: 20 })
     expect(project.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 24, p3Ms: 140, v1: 0, v2: 100, v3: 60, v4: 12 })
     expect(project.source).toEqual({

@@ -23,7 +23,10 @@ describe('classic UST compatibility layer', () => {
         'StartPoint=35',
         'PreUtterance=80',
         'VoiceOverlap=22',
+        'Velocity=135',
         'Intensity=72',
+        'Modulation=18',
+        'Flags=g-3Y0',
         'Envelope=0,18,90,0,100,65,8',
         '[#0002]',
         'Length=960',
@@ -59,6 +62,9 @@ describe('classic UST compatibility layer', () => {
       lyric: '도',
       timing: { sampleStartMs: 35, preutteranceMs: 80, voiceOverlapMs: 22 },
       intensity: 72,
+      velocity: 135,
+      modulation: 18,
+      flags: 'g-3Y0',
       envelope: { p1Ms: 0, p2Ms: 18, p3Ms: 90, v1: 0, v2: 100, v3: 65, v4: 8 },
     })
     expect(project.notes[1]).toMatchObject({
@@ -88,6 +94,9 @@ describe('classic UST compatibility layer', () => {
           ? {
               ...note,
               intensity: 64,
+              velocity: 145,
+              modulation: 12,
+              flags: 'g-2BRE20',
               timing: { sampleStartMs: 28, preutteranceMs: 76, voiceOverlapMs: 18 },
               envelope: { p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 },
               pitchBend: {
@@ -115,7 +124,10 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('StartPoint=28')
     expect(text).toContain('PreUtterance=76')
     expect(text).toContain('VoiceOverlap=18')
+    expect(text).toContain('Velocity=145')
     expect(text).toContain('Intensity=64')
+    expect(text).toContain('Modulation=12')
+    expect(text).toContain('Flags=g-2BRE20')
     expect(text).toContain('Envelope=0,22,120,0,100,58,10')
     expect(text).toContain('Tempo=96')
     expect(text).toContain('VBR=56,179,20,10,10,0,0')
@@ -128,6 +140,9 @@ describe('classic UST compatibility layer', () => {
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
     expect(reparsed.notes[0].timing).toEqual({ sampleStartMs: 28, preutteranceMs: 76, voiceOverlapMs: 18 })
     expect(reparsed.notes[0].intensity).toBe(64)
+    expect(reparsed.notes[0].velocity).toBe(145)
+    expect(reparsed.notes[0].modulation).toBe(12)
+    expect(reparsed.notes[0].flags).toBe('g-2BRE20')
     expect(reparsed.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 })
     expect(reparsed.tempoChanges).toEqual([
       { position: 0, bpm: 112 },

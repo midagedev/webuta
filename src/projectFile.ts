@@ -1,6 +1,6 @@
 import type { SongNote, SongProject, TempoChange, Track, VoicePart } from './types'
 import { isValidNoteEnvelope } from './envelope'
-import { isValidNoteIntensity } from './expression'
+import { isValidNoteFlags, isValidNoteIntensity, isValidNoteModulation, isValidNoteVelocity } from './expression'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { isValidNoteTiming } from './timing'
 import { sanitizeOptionalNoteVibrato } from './vibrato'
@@ -144,6 +144,9 @@ function isSongNote(value: unknown): value is SongNote {
     isFiniteNumber(value.tone) &&
     typeof value.lyric === 'string' &&
     (value.intensity === undefined || isValidNoteIntensity(value.intensity)) &&
+    (value.velocity === undefined || isValidNoteVelocity(value.velocity)) &&
+    (value.modulation === undefined || isValidNoteModulation(value.modulation)) &&
+    (value.flags === undefined || isValidNoteFlags(value.flags)) &&
     (value.timing === undefined || isValidNoteTiming(value.timing)) &&
     (value.envelope === undefined || isValidNoteEnvelope(value.envelope)) &&
     (value.vibrato === undefined || isNoteVibrato(value.vibrato)) &&

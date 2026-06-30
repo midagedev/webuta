@@ -16,7 +16,7 @@
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
   import { normalizeNoteEnvelope, sanitizeOptionalNoteEnvelope } from '../envelope'
-  import { normalizeNoteIntensity } from '../expression'
+  import { normalizeNoteIntensity, normalizeNoteModulation, normalizeNoteVelocity, sanitizeOptionalNoteFlags } from '../expression'
   import { normalizeNotePitchBend, sanitizeOptionalNotePitchBend } from '../pitchBend'
   import { GRID_SNAP_TICKS } from '../projectEditing'
   import { normalizeNoteTiming, sanitizeOptionalNoteTiming } from '../timing'
@@ -153,6 +153,8 @@
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
   let selectedIntensity = $derived(normalizeNoteIntensity(selectedNote?.intensity))
+  let selectedVelocity = $derived(normalizeNoteVelocity(selectedNote?.velocity))
+  let selectedModulation = $derived(normalizeNoteModulation(selectedNote?.modulation))
   let selectedTiming = $derived(normalizeNoteTiming(selectedNote?.timing))
   let selectedEnvelope = $derived(normalizeNoteEnvelope(selectedNote?.envelope))
   let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
@@ -505,6 +507,42 @@
               step="1"
               value={selectedIntensity}
               oninput={(event) => onIntensity(Number(inputValue(event)))}
+            />
+          </label>
+        </div>
+        <div class="resampler-card" aria-label="Selected note resampler">
+          <strong>리샘플러</strong>
+          <label class="slider-field">
+            <span>속도 <output>{selectedVelocity}%</output></span>
+            <input
+              aria-label="Note velocity"
+              type="range"
+              min="0"
+              max="200"
+              step="1"
+              value={selectedVelocity}
+              oninput={(event) => onNudge({ velocity: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>모듈 <output>{selectedModulation}%</output></span>
+            <input
+              aria-label="Note modulation"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={selectedModulation}
+              oninput={(event) => onNudge({ modulation: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="field-label compact-field">
+            Flags
+            <input
+              aria-label="Note flags"
+              value={selectedNote.flags ?? ''}
+              maxlength="128"
+              oninput={(event) => onNudge({ flags: sanitizeOptionalNoteFlags(inputValue(event)) })}
             />
           </label>
         </div>

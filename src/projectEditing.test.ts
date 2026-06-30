@@ -160,6 +160,9 @@ describe('project editing helpers', () => {
           ? {
               ...note,
               intensity: 74,
+              velocity: 138,
+              modulation: 11,
+              flags: 'g-3Y0',
               timing: { sampleStartMs: 18, preutteranceMs: 70, voiceOverlapMs: 16 },
               envelope: { p1Ms: 0, p2Ms: 28, p3Ms: 160, v1: 0, v2: 100, v3: 62, v4: 8 },
               pitchBend: {
@@ -185,6 +188,9 @@ describe('project editing helpers', () => {
       tone: 64,
       lyric: '키',
       intensity: 74,
+      velocity: 138,
+      modulation: 11,
+      flags: 'g-3Y0',
       timing: { sampleStartMs: 18, preutteranceMs: 70, voiceOverlapMs: 16 },
       envelope: { p1Ms: 0, p2Ms: 28, p3Ms: 160, v1: 0, v2: 100, v3: 62, v4: 8 },
       vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },

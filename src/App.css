@@ -828,6 +828,7 @@ button:disabled {
 }
 
 .dynamics-card,
+.resampler-card,
 .timing-card,
 .envelope-card,
 .vibrato-card,
@@ -846,6 +847,11 @@ button:disabled {
   background: #111d1a;
 }
 
+.resampler-card {
+  border-color: #3f3b25;
+  background: #1b1910;
+}
+
 .timing-card {
   border-color: #28414a;
   background: #111b1f;
@@ -856,12 +862,17 @@ button:disabled {
   background: #151d11;
 }
 
+.resampler-card > strong,
 .timing-card > strong,
 .envelope-card > strong {
   color: #d8f77a;
   font-size: 0.76rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.compact-field {
+  margin: 0;
 }
 
 .pitch-bend-card {
