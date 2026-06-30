@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-30T23:01:44.127Z",
+  "generatedAt": "2026-06-30T23:34:46.969Z",
   "ok": true,
   "decision": "v3-listening-review-ready",
   "outDir": "public/review/v3",
@@ -125,7 +125,7 @@
         "passed": true,
         "problems": []
       },
-      "coverageText": "8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "coverageText": "8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
       "warningText": "렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
     },
     {
@@ -148,7 +148,7 @@
         "passed": true,
         "problems": []
       },
-      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
       "warningText": "렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음"
     },
     {
@@ -171,7 +171,7 @@
         "passed": true,
         "problems": []
       },
-      "coverageText": "6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "coverageText": "6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
       "warningText": "렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
     },
     {
@@ -194,7 +194,7 @@
         "passed": true,
         "problems": []
       },
-      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
       "warningText": "렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
     }
   ],

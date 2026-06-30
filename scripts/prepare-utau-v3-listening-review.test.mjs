@@ -6,6 +6,7 @@ import {
   fixedListeningReviewProjects,
   LISTENING_SCORE_FIELDS,
   makeListeningTemplate,
+  normalizeReviewStatusText,
   renderHtml,
 } from './prepare-utau-v3-listening-review.mjs'
 
@@ -52,6 +53,12 @@ describe('UTAU V3 listening review pack', () => {
     expect(template.comparisonScores).toEqual([])
   })
 
+  it('normalizes browser cache-only voicebank status out of review artifacts', () => {
+    expect(normalizeReviewStatusText('8/8 matched 현재 세션 전용')).toBe('8/8 matched')
+    expect(normalizeReviewStatusText('8/8 matched 이 기기에 저장 중')).toBe('8/8 matched')
+    expect(normalizeReviewStatusText('8/8 matched 이 기기 저장됨')).toBe('8/8 matched')
+  })
+
   it('renders an offline scorecard that can generate the listening-score JSON', () => {
     const phrase = {
       id: 'first-run-demo',
@@ -71,6 +78,8 @@ describe('UTAU V3 listening review pack', () => {
     expect(html).toContain('id="scorecardForm"')
     expect(html).toContain('Build listening-scores.local.json')
     expect(html).toContain('Clear saved draft')
+    expect(html).toContain('id="progressSummary"')
+    expect(html).toContain('Phrase scores 0/5')
     expect(html).toContain('webuta.v3ListeningReviewDraft.v1')
     expect(html).toContain('No recording step')
     expect(html).toContain('noRecordingRequired')
@@ -106,9 +115,13 @@ describe('UTAU V3 listening review pack', () => {
       }
       await page.click('#buildJson')
       const status = await page.locator('#status').textContent()
+      const progress = await page.locator('#progressSummary').textContent()
       const payload = JSON.parse(await page.locator('#scoreJson').inputValue())
 
       expect(status).toContain('passes')
+      expect(progress).toContain('Metadata 3/3')
+      expect(progress).toContain('Phrase scores 5/5 complete, 5/5 passing')
+      expect(progress).toContain('V2/V3 comparisons 0/0 complete, 0/0 passing')
       expect(payload.reviewEnvironment.noRecordingRequired).toBe(true)
       expect(payload.reviewer).toBe('fixture reviewer')
       expect(payload.decision).toBe('community-ready')
@@ -159,9 +172,11 @@ describe('UTAU V3 listening review pack', () => {
       await page.selectOption('[data-comparison-score]', '5')
       await page.click('#buildJson')
       const status = await page.locator('#status').textContent()
+      const progress = await page.locator('#progressSummary').textContent()
       const payload = JSON.parse(await page.locator('#scoreJson').inputValue())
 
       expect(status).toContain('passes')
+      expect(progress).toContain('V2/V3 comparisons 1/1 complete, 1/1 passing')
       expect(payload.thresholds.minV3PreferenceScore).toBe(4)
       expect(payload.comparisonScores[0]).toMatchObject({
         id: 'first-run-demo',

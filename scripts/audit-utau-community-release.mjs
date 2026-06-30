@@ -228,6 +228,7 @@ function publicReviewGate(paths) {
       'WebUtau Korean V3 Listening Review',
       'listening-scores.local.json',
       'No recording step',
+      'progressSummary',
     ]) {
       if (!html.includes(snippet)) {
         problems.push(`public review scorecard must include "${snippet}"`)

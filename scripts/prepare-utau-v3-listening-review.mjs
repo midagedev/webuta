@@ -380,10 +380,21 @@ async function waitForVoicebankCoverage(page) {
 }
 
 async function readVoicebankStatus(page) {
-  return page.evaluate(() => ({
+  const status = await page.evaluate(() => ({
     coverageText: document.querySelector('.coverage-card')?.textContent?.replace(/\s+/gu, ' ').trim() ?? '',
     warningText: document.querySelector('.render-warning-card')?.textContent?.replace(/\s+/gu, ' ').trim() ?? '',
   }))
+  return {
+    coverageText: normalizeReviewStatusText(status.coverageText),
+    warningText: normalizeReviewStatusText(status.warningText),
+  }
+}
+
+export function normalizeReviewStatusText(text) {
+  return String(text ?? '')
+    .replace(/\s*(현재 세션 전용|이 기기에 저장 중|이 기기 저장됨)\s*/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim()
 }
 
 async function renderAndSaveWav(page, wavPath) {
@@ -493,7 +504,9 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .output { display: grid; gap: 10px; padding: 16px; }
-    .draft-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+    .draft-note, .progress-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .progress-note.ok { color: var(--ok); font-weight: 800; }
+    .progress-note.warn { color: var(--warn); font-weight: 800; }
     .status { font-weight: 800; }
     .status.ok { color: var(--ok); }
     .status.warn { color: var(--warn); }
@@ -614,6 +627,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
           <button type="button" id="clearDraft">Clear saved draft</button>
           <span id="status" class="status warn">Scores not complete.</span>
         </div>
+        <p id="progressSummary" class="progress-note warn">Metadata 0/3 · Phrase scores 0/${phrases.length * LISTENING_SCORE_FIELDS.length} · V2/V3 comparisons 0/${comparisons.length}</p>
         <p id="draftStatus" class="draft-note">Draft autosave is active in this browser.</p>
         <textarea id="scoreJson" readonly spellcheck="false"></textarea>
       </section>
@@ -643,6 +657,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     const playbackInput = document.querySelector('#playback');
     const output = document.querySelector('#scoreJson');
     const status = document.querySelector('#status');
+    const progressSummary = document.querySelector('#progressSummary');
     const draftStatus = document.querySelector('#draftStatus');
     const downloadButton = document.querySelector('#downloadJson');
 
@@ -738,6 +753,49 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       status.textContent = problems.length === 0 ? 'Release listening scorecard passes.' : problems.slice(0, 3).join(' ');
       if (problems.length > 3) status.textContent += \` +\${problems.length - 3} more.\`;
       status.className = \`status \${problems.length === 0 ? 'ok' : 'warn'}\`;
+      progressSummary.textContent = summarizeProgress(payload);
+      progressSummary.className = \`progress-note \${problems.length === 0 ? 'ok' : 'warn'}\`;
+    }
+
+    function summarizeProgress(payload) {
+      const metadataDone = [
+        Boolean(payload.reviewer),
+        Boolean(payload.reviewedAt),
+        passingDecisions.has(payload.decision),
+      ].filter(Boolean).length;
+      const phraseTotal = payload.phraseScores.length * scoreFields.length;
+      let phraseDone = 0;
+      let phrasePassing = 0;
+      for (const phrase of payload.phraseScores) {
+        for (const field of scoreFields) {
+          const score = phrase[field.key];
+          const threshold = payload.thresholds[\`min\${field.key.charAt(0).toUpperCase()}\${field.key.slice(1)}\`] ?? 4;
+          if (typeof score === 'number') {
+            phraseDone += 1;
+            if (score >= threshold) {
+              phrasePassing += 1;
+            }
+          }
+        }
+      }
+      let comparisonDone = 0;
+      let comparisonPassing = 0;
+      const comparisonTotal = payload.comparisonScores?.length ?? 0;
+      for (const comparison of payload.comparisonScores ?? []) {
+        const score = comparison.v3PreferenceScore;
+        const threshold = payload.thresholds.minV3PreferenceScore ?? 4;
+        if (typeof score === 'number') {
+          comparisonDone += 1;
+          if (score >= threshold) {
+            comparisonPassing += 1;
+          }
+        }
+      }
+      return [
+        \`Metadata \${metadataDone}/3\`,
+        \`Phrase scores \${phraseDone}/\${phraseTotal} complete, \${phrasePassing}/\${phraseTotal} passing\`,
+        \`V2/V3 comparisons \${comparisonDone}/\${comparisonTotal} complete, \${comparisonPassing}/\${comparisonTotal} passing\`,
+      ].join(' · ');
     }
 
     function serializeDraft() {
@@ -855,6 +913,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     '',
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
     'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
+    'The scorecard shows metadata, phrase-score, and V2/V3 comparison progress so missing or below-threshold scores are visible before download.',
     'Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',

@@ -343,7 +343,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><code>listening-scores.local.json</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><code>listening-scores.local.json</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')

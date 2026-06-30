@@ -35,7 +35,9 @@
     .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .output { display: grid; gap: 10px; padding: 16px; }
-    .draft-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+    .draft-note, .progress-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .progress-note.ok { color: var(--ok); font-weight: 800; }
+    .progress-note.warn { color: var(--warn); font-weight: 800; }
     .status { font-weight: 800; }
     .status.ok { color: var(--ok); }
     .status.warn { color: var(--warn); }
@@ -98,7 +100,7 @@
               <h3>Legacy V2 baseline</h3>
               <audio controls src="audio/legacy-v2/01-first-run-demo-legacy-v2.wav"></audio>
               <p class="comparison-note">V2 WAV gate passed</p>
-              <p class="comparison-note">8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+              <p class="comparison-note">8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.</p>
             </div>
           </div>
           <label>V3 preference over legacy V2
@@ -198,7 +200,7 @@
               <h3>Legacy V2 baseline</h3>
               <audio controls src="audio/legacy-v2/02-coda-release-check-legacy-v2.wav"></audio>
               <p class="comparison-note">V2 WAV gate passed</p>
-              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.</p>
             </div>
           </div>
           <label>V3 preference over legacy V2
@@ -298,7 +300,7 @@
               <h3>Legacy V2 baseline</h3>
               <audio controls src="audio/legacy-v2/03-clear-cv-line-legacy-v2.wav"></audio>
               <p class="comparison-note">V2 WAV gate passed</p>
-              <p class="comparison-note">6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+              <p class="comparison-note">6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.</p>
             </div>
           </div>
           <label>V3 preference over legacy V2
@@ -398,7 +400,7 @@
               <h3>Legacy V2 baseline</h3>
               <audio controls src="audio/legacy-v2/04-vowel-color-check-legacy-v2.wav"></audio>
               <p class="comparison-note">V2 WAV gate passed</p>
-              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.</p>
             </div>
           </div>
           <label>V3 preference over legacy V2
@@ -487,6 +489,7 @@
           <button type="button" id="clearDraft">Clear saved draft</button>
           <span id="status" class="status warn">Scores not complete.</span>
         </div>
+        <p id="progressSummary" class="progress-note warn">Metadata 0/3 · Phrase scores 0/20 · V2/V3 comparisons 0/4</p>
         <p id="draftStatus" class="draft-note">Draft autosave is active in this browser.</p>
         <textarea id="scoreJson" readonly spellcheck="false"></textarea>
       </section>
@@ -504,7 +507,7 @@
   <script>
     const template = {"version":1,"reviewId":"webuta-ko-v3-synthetic-listening-review","reviewer":"","reviewedAt":"","decision":"","scoreScale":"1=unusable, 3=prototype, 5=community-release-ready","instructions":["Listen to the generated WAV phrases on headphones or neutral speakers.","Do not record new voice material for this review; score only the bundled synthetic V3 renders.","When legacy V2 comparison WAVs are present, score whether V3 is clearly more usable than V2.","Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds."],"reviewEnvironment":{"playback":"","reviewerNotes":"","noRecordingRequired":true},"rubric":[{"key":"koreanClarityScore","label":"Korean clarity","prompt":"Can a Korean listener recognize the intended lyric without reading along?"},{"key":"vowelStabilityScore","label":"Vowel stability","prompt":"Do sustained vowels hold pitch and color without wobble or collapse?"},{"key":"consonantClarityScore","label":"Consonant clarity","prompt":"Are attacks and final consonants clear without chopped starts or repeated codas?"},{"key":"musicalityScore","label":"Musicality","prompt":"Does the phrase feel usable as a musical vocal sketch rather than a test beep?"},{"key":"artifactScore","label":"Artifact control","prompt":"Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"}],"thresholds":{"minKoreanClarityScore":4,"minVowelStabilityScore":4,"minConsonantClarityScore":4,"minMusicalityScore":4,"minArtifactScore":4,"minV3PreferenceScore":4},"phraseScores":[{"id":"first-run-demo","title":"First-run hook","wavPath":"audio/01-first-run-demo.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"coda-release-check","title":"Batchim release check","wavPath":"audio/02-coda-release-check.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"clear-cv-line","title":"Clear CV line","wavPath":"audio/03-clear-cv-line.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"vowel-color-check","title":"Vowel color check","wavPath":"audio/04-vowel-color-check.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""}],"comparisonScores":[{"id":"first-run-demo","title":"First-run hook","v3WavPath":"audio/01-first-run-demo.wav","legacyV2WavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"coda-release-check","title":"Batchim release check","v3WavPath":"audio/02-coda-release-check.wav","legacyV2WavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"clear-cv-line","title":"Clear CV line","v3WavPath":"audio/03-clear-cv-line.wav","legacyV2WavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"vowel-color-check","title":"Vowel color check","v3WavPath":"audio/04-vowel-color-check.wav","legacyV2WavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","v3PreferenceScore":null,"notes":""}]};
     const phrases = [{"id":"first-run-demo","title":"First-run hook","description":"Default melody and lyric shown to a new visitor.","lyricLine":"도 히 도 히 다 이 스 키","wavPath":"audio/01-first-run-demo.wav","audioHref":"audio/01-first-run-demo.wav","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","description":"Long notes with final consonants; codas should happen once at release, not chatter in the sustain.","lyricLine":"연 한 랑 밤 말","wavPath":"audio/02-coda-release-check.wav","audioHref":"audio/02-coda-release-check.wav","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","description":"Common onset+vowel syllables for consonant attack clarity and vowel stability.","lyricLine":"가 나 다 라 마 사","wavPath":"audio/03-clear-cv-line.wav","audioHref":"audio/03-clear-cv-line.wav","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","description":"Pure vowel-color syllables across a short contour.","lyricLine":"아 이 우 에 오","wavPath":"audio/04-vowel-color-check.wav","audioHref":"audio/04-vowel-color-check.wav","gates":{"passed":true,"problems":[]}}];
-    const comparisons = [{"id":"first-run-demo","title":"First-run hook","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","audioHref":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","coverageText":"8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","audioHref":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","audioHref":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","coverageText":"6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","audioHref":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}}];
+    const comparisons = [{"id":"first-run-demo","title":"First-run hook","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","audioHref":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","coverageText":"8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.","warningText":"렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","audioHref":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.","warningText":"렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","audioHref":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","coverageText":"6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.","warningText":"렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","audioHref":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.","warningText":"렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}}];
     const scoreFields = [{"key":"koreanClarityScore","label":"Korean clarity","prompt":"Can a Korean listener recognize the intended lyric without reading along?"},{"key":"vowelStabilityScore","label":"Vowel stability","prompt":"Do sustained vowels hold pitch and color without wobble or collapse?"},{"key":"consonantClarityScore","label":"Consonant clarity","prompt":"Are attacks and final consonants clear without chopped starts or repeated codas?"},{"key":"musicalityScore","label":"Musicality","prompt":"Does the phrase feel usable as a musical vocal sketch rather than a test beep?"},{"key":"artifactScore","label":"Artifact control","prompt":"Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"}];
     const draftStorageKey = 'webuta.v3ListeningReviewDraft.v1';
     const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
@@ -514,6 +517,7 @@
     const playbackInput = document.querySelector('#playback');
     const output = document.querySelector('#scoreJson');
     const status = document.querySelector('#status');
+    const progressSummary = document.querySelector('#progressSummary');
     const draftStatus = document.querySelector('#draftStatus');
     const downloadButton = document.querySelector('#downloadJson');
 
@@ -609,6 +613,49 @@
       status.textContent = problems.length === 0 ? 'Release listening scorecard passes.' : problems.slice(0, 3).join(' ');
       if (problems.length > 3) status.textContent += ` +${problems.length - 3} more.`;
       status.className = `status ${problems.length === 0 ? 'ok' : 'warn'}`;
+      progressSummary.textContent = summarizeProgress(payload);
+      progressSummary.className = `progress-note ${problems.length === 0 ? 'ok' : 'warn'}`;
+    }
+
+    function summarizeProgress(payload) {
+      const metadataDone = [
+        Boolean(payload.reviewer),
+        Boolean(payload.reviewedAt),
+        passingDecisions.has(payload.decision),
+      ].filter(Boolean).length;
+      const phraseTotal = payload.phraseScores.length * scoreFields.length;
+      let phraseDone = 0;
+      let phrasePassing = 0;
+      for (const phrase of payload.phraseScores) {
+        for (const field of scoreFields) {
+          const score = phrase[field.key];
+          const threshold = payload.thresholds[`min${field.key.charAt(0).toUpperCase()}${field.key.slice(1)}`] ?? 4;
+          if (typeof score === 'number') {
+            phraseDone += 1;
+            if (score >= threshold) {
+              phrasePassing += 1;
+            }
+          }
+        }
+      }
+      let comparisonDone = 0;
+      let comparisonPassing = 0;
+      const comparisonTotal = payload.comparisonScores?.length ?? 0;
+      for (const comparison of payload.comparisonScores ?? []) {
+        const score = comparison.v3PreferenceScore;
+        const threshold = payload.thresholds.minV3PreferenceScore ?? 4;
+        if (typeof score === 'number') {
+          comparisonDone += 1;
+          if (score >= threshold) {
+            comparisonPassing += 1;
+          }
+        }
+      }
+      return [
+        `Metadata ${metadataDone}/3`,
+        `Phrase scores ${phraseDone}/${phraseTotal} complete, ${phrasePassing}/${phraseTotal} passing`,
+        `V2/V3 comparisons ${comparisonDone}/${comparisonTotal} complete, ${comparisonPassing}/${comparisonTotal} passing`,
+      ].join(' · ');
     }
 
     function serializeDraft() {
