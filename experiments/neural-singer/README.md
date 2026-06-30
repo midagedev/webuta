@@ -17,14 +17,17 @@ tooling checkouts.
 
 ## First Experiment Order
 
-This project is dataset-first. A production Korean singer is not considered
-"made" until we acquire or record a license-reviewed Korean singing dataset,
+This project is dataset-first for neural experiments, but the active WebUtau V3
+goal is no-recording and self-generated. A production neural Korean singer is
+not considered "made" until we acquire a license-reviewed Korean singing
+dataset that does not require the user or the user's family to record a voice,
 prepare it for training, and train/audit a real checkpoint from that data.
 The UTAU sample renderer, browser fake neural endpoint, CSD smoke data, and
 promotion scripts are only scaffolding and quality gates.
 
 1. Prepare the AI Hub licensed dataset intake.
-2. Download or record usable Korean singing data after access and terms review.
+2. Download usable Korean singing data after access and terms review; do not
+   ask the current user or family to record.
 3. Fill out the generated local registry only after the license review passes.
 4. Inspect, audit, ingest, align, and enhance the dataset.
 5. Train a real DiffSinger checkpoint from the approved dataset.
@@ -502,11 +505,17 @@ label coverage. The default target is the local CSD Korean research baseline;
 for AI Hub, run it only after the local registry has passed rights review and
 `allowedActions.localTraining=true`.
 
-## Original Private Singer Capture
+## Inactive Future Contributor Capture
 
-For the production-quality Korean voice path, the safest shippable source is an
-original singer recorded with written consent. Generate an ignored local capture
-kit with cue sheets, lyric sidecars, and a private registry template:
+This section is not part of the active WebUtau V3 goal. The user will not record
+a voice, and the project must not ask the user or the user's family for voice
+material. Keep these tools only as a historical pipeline prototype or as a
+future contributor path for a separate singer who explicitly wants to
+participate.
+
+For that separate future path, an original singer recorded with written consent
+can be prepared with an ignored local capture kit containing cue sheets, lyric
+sidecars, and a private registry template:
 
 ```sh
 npm run neural:prepare-private-singer -- \
@@ -532,7 +541,7 @@ This creates:
   until consent is reviewed, and points to the expected ignored
   `consent-form.signed.local.md` file
 
-Audit the prompt coverage before asking anyone to record:
+Audit the prompt coverage before any future consenting contributor records:
 
 ```sh
 npm run neural:audit-prompt-coverage -- \
@@ -941,7 +950,7 @@ voice quality even if objective gates pass.
 Copy `listening-scores.template.json` to an ignored `listening-scores.local.json`
 after the listening pass, fill reviewer/review date, set `decision` to `pass`
 only when the phrase set is acceptable, and score every phrase for Korean
-clarity, vowel stability, and artifacts. `private-family`, `public-demo`, and
+clarity, vowel stability, and artifacts. `private-lab`, `public-demo`, and
 `public-model` release audits require those scores to meet the
 `minListening*Score` thresholds.
 
@@ -1057,7 +1066,7 @@ The gate checks dataset rights, model release intent, checkpoint audit evidence,
 quality-summary gates, quality comparison, browser smoke evidence, listening
 scores, and the model terms block. A `local-research` model can pass without a
 listening score sheet or provider archive-drop evidence for diagnostics only. A
-`private-family`, `public-demo`, or `public-model` handoff still needs a
+`private-lab`, `public-demo`, or `public-model` handoff still needs a
 `checkpoint-ready` `neural:audit-checkpoint` report that includes provider
 archive-drop provenance, plus human listening scores tied to the rendered
 quality run. A public model release additionally requires public model

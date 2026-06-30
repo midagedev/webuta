@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notes": "Local checkpoint audit example. Copy this to an ignored run-specific manifest for real AIHub/private-singer checkpoints. The bundled example is a 1-step CSD smoke checkpoint and is not production voice-quality evidence.",
+  "notes": "Local checkpoint audit example. Copy this to an ignored run-specific manifest for real AIHub or approved local checkpoints. The bundled example is a 1-step CSD smoke checkpoint and is not production voice-quality evidence.",
   "model": {
     "id": "webuta-ko-neural-dev",
     "name": "WebUtau KO Neural Development Smoke",

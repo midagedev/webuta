@@ -93,7 +93,7 @@ describe('local neural renderer', () => {
             name: 'WebUtau KO V1',
             language: 'ko',
             status: 'ready',
-            releaseStatus: 'private-family',
+            releaseStatus: 'private-lab',
             licenseSummary: 'Consent-reviewed private model.',
             usageNote: 'Checkpoint 200000 is available.',
           },
@@ -106,7 +106,7 @@ describe('local neural renderer', () => {
       id: 'webuta-ko-v1',
       rendererId: 'local-neural',
       status: 'ready',
-      releaseStatus: 'private-family',
+      releaseStatus: 'private-lab',
       endpoint: 'http://127.0.0.1:8787/render',
     })
   })

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const DEFAULT_MANIFEST = 'experiments/neural-singer/model-release.example.json'
 const DEFAULT_REGISTRY = 'experiments/neural-singer/dataset-registry.example.json'
 const PUBLIC_RELEASE_INTENTS = new Set(['public-demo', 'public-model'])
-const PRIVATE_RELEASE_INTENTS = new Set(['local-research', 'private-family'])
+const PRIVATE_RELEASE_INTENTS = new Set(['local-research', 'private-lab'])
 
 export function auditNeuralReleaseReadiness(options = {}) {
   const manifestPath = resolve(options.manifest ?? DEFAULT_MANIFEST)
@@ -68,7 +68,7 @@ function validateManifestShape(manifest) {
       }
     }
     if (!PRIVATE_RELEASE_INTENTS.has(manifest.model.releaseIntent) && !PUBLIC_RELEASE_INTENTS.has(manifest.model.releaseIntent)) {
-      problems.push('model.releaseIntent must be local-research, private-family, public-demo, or public-model.')
+      problems.push('model.releaseIntent must be local-research, private-lab, public-demo, or public-model.')
     }
   }
   if (!Array.isArray(manifest.datasetIds) || manifest.datasetIds.length === 0) {
@@ -317,7 +317,7 @@ function validateReleaseTerms(manifest) {
   if (publicIntent && ['local-research', 'planned'].includes(manifest.model?.releaseStatus)) {
     problems.push(`Public release cannot use model.releaseStatus=${manifest.model.releaseStatus}.`)
   }
-  if (!publicIntent && !['local-research', 'private-family', 'user-provided', 'planned'].includes(manifest.model?.releaseStatus)) {
+  if (!publicIntent && !['local-research', 'private-lab', 'user-provided', 'planned'].includes(manifest.model?.releaseStatus)) {
     problems.push(`Private/research release intent has unexpected model.releaseStatus=${manifest.model?.releaseStatus}.`)
   }
   return problems

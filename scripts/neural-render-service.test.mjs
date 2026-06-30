@@ -123,7 +123,7 @@ describe('local neural render service', () => {
             id: 'webuta-ko-v1',
             name: 'WebUtau KO V1',
             renderer: 'diffsinger',
-            releaseStatus: 'private-family',
+            releaseStatus: 'private-lab',
           },
           datasetIds: ['licensed-ko'],
           runtime: {
@@ -155,7 +155,7 @@ describe('local neural render service', () => {
           id: 'webuta-ko-v1',
           name: 'WebUtau KO V1',
           status: 'ready',
-          releaseStatus: 'private-family',
+          releaseStatus: 'private-lab',
           licenseSummary: 'Consent-reviewed private model.',
         },
       })

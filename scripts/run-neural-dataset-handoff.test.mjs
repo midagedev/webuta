@@ -248,7 +248,7 @@ function makeRegistry(localPath, localTraining) {
         localPath,
         licenseStatus: localTraining ? 'license-reviewed-local-training' : 'review-required-aihub-terms',
         redistribution: 'private-local-only',
-        modelPublishing: localTraining ? 'private-family-allowed' : 'review-required-aihub-terms',
+        modelPublishing: localTraining ? 'private-lab-allowed' : 'review-required-aihub-terms',
         singerIdentity: 'licensed-dataset',
         language: ['ko'],
         annotationTypes: ['audio', 'midi', 'csv', 'json', 'note-timing', 'pitch'],

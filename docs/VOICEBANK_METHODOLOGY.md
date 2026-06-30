@@ -260,7 +260,7 @@ Current experiment status:
 ### Phase 2: Korean CVVC-lite
 
 - Keep the CV bank for compatibility.
-- Generate or record common `VC` final-consonant tails.
+- Generate common `VC` final-consonant tails for the bundled V3 path.
 - Update the lyric matcher/phonemizer to preserve batchim instead of always
   reducing to CV.
 - Add visible coverage reporting for coda support.

@@ -5,6 +5,19 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const DEFAULT_OUT = 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json'
+export const EXPECTED_REVIEW_ID = 'webuta-ko-v3-synthetic-listening-review'
+export const EXPECTED_PHRASE_SCORES = [
+  ['first-run-demo', 'audio/01-first-run-demo.wav'],
+  ['coda-release-check', 'audio/02-coda-release-check.wav'],
+  ['clear-cv-line', 'audio/03-clear-cv-line.wav'],
+  ['vowel-color-check', 'audio/04-vowel-color-check.wav'],
+]
+export const EXPECTED_COMPARISON_SCORES = [
+  ['first-run-demo', 'audio/01-first-run-demo.wav', 'audio/legacy-v2/01-first-run-demo-legacy-v2.wav'],
+  ['coda-release-check', 'audio/02-coda-release-check.wav', 'audio/legacy-v2/02-coda-release-check-legacy-v2.wav'],
+  ['clear-cv-line', 'audio/03-clear-cv-line.wav', 'audio/legacy-v2/03-clear-cv-line-legacy-v2.wav'],
+  ['vowel-color-check', 'audio/04-vowel-color-check.wav', 'audio/legacy-v2/04-vowel-color-check-legacy-v2.wav'],
+]
 
 const SCORE_KEYS = [
   'koreanClarityScore',
@@ -65,6 +78,9 @@ export function validateScores(scores, problems = []) {
   if (scores.version !== 1) {
     problems.push('listening score version must be 1')
   }
+  if (scores.reviewId !== EXPECTED_REVIEW_ID) {
+    problems.push(`listening score reviewId must be ${EXPECTED_REVIEW_ID}`)
+  }
   if (typeof scores.reviewer !== 'string' || scores.reviewer.trim().length === 0) {
     problems.push('human listening scores must include reviewer')
   }
@@ -78,6 +94,8 @@ export function validateScores(scores, problems = []) {
   if (scores.reviewEnvironment?.noRecordingRequired !== true) {
     problems.push('reviewEnvironment.noRecordingRequired must be true')
   }
+  validateExpectedPhraseScores(scores.phraseScores, problems)
+  validateExpectedComparisonScores(scores.comparisonScores, problems)
   const thresholds = scores.thresholds ?? {}
   for (const [index, phrase] of (scores.phraseScores ?? []).entries()) {
     for (const key of SCORE_KEYS) {
@@ -106,6 +124,49 @@ export function validateScores(scores, problems = []) {
     problems.push('human listening scores must include at least four V2/V3 comparison scores')
   }
   return problems
+}
+
+function validateExpectedPhraseScores(phraseScores, problems) {
+  const scoresById = mapById(phraseScores)
+  const actualIds = Array.isArray(phraseScores) ? phraseScores.map((phrase) => phrase.id).sort() : []
+  const expectedIds = EXPECTED_PHRASE_SCORES.map(([id]) => id).sort()
+  if (actualIds.join('|') !== expectedIds.join('|')) {
+    problems.push(`human listening phrase IDs must be exactly ${expectedIds.join(', ')}`)
+  }
+  for (const [id, wavPath] of EXPECTED_PHRASE_SCORES) {
+    const score = scoresById.get(id)
+    if (!score) {
+      continue
+    }
+    if (score.wavPath !== wavPath) {
+      problems.push(`phrase ${id} wavPath must be ${wavPath}`)
+    }
+  }
+}
+
+function validateExpectedComparisonScores(comparisonScores, problems) {
+  const scoresById = mapById(comparisonScores)
+  const actualIds = Array.isArray(comparisonScores) ? comparisonScores.map((comparison) => comparison.id).sort() : []
+  const expectedIds = EXPECTED_COMPARISON_SCORES.map(([id]) => id).sort()
+  if (actualIds.join('|') !== expectedIds.join('|')) {
+    problems.push(`human listening comparison IDs must be exactly ${expectedIds.join(', ')}`)
+  }
+  for (const [id, v3WavPath, legacyV2WavPath] of EXPECTED_COMPARISON_SCORES) {
+    const score = scoresById.get(id)
+    if (!score) {
+      continue
+    }
+    if (score.v3WavPath !== v3WavPath) {
+      problems.push(`comparison ${id} v3WavPath must be ${v3WavPath}`)
+    }
+    if (score.legacyV2WavPath !== legacyV2WavPath) {
+      problems.push(`comparison ${id} legacyV2WavPath must be ${legacyV2WavPath}`)
+    }
+  }
+}
+
+function mapById(items) {
+  return new Map(Array.isArray(items) ? items.map((item) => [item.id, item]) : [])
 }
 
 function readJson(path, problems) {

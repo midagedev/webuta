@@ -204,8 +204,8 @@ function releaseIntentForStatus(status) {
   if (status === 'public-beta') {
     return 'public-demo'
   }
-  if (status === 'private-family') {
-    return 'private-family'
+  if (status === 'private-lab') {
+    return 'private-lab'
   }
   return 'local-research'
 }

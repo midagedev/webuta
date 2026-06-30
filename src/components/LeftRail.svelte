@@ -115,7 +115,7 @@
     if (status === 'local-research') {
       return 'Research'
     }
-    if (status === 'private-family') {
+    if (status === 'private-lab') {
       return 'Private'
     }
     if (status === 'public-beta') {

@@ -438,7 +438,7 @@ function checkReleaseReadiness(source) {
     nextAction: production
       ? 'Keep the release audit with the final model bundle.'
       : ready
-        ? 'Replace the smoke/research release audit with a real private-family or public-release audit.'
+        ? 'Replace the smoke/research release audit with a real private-lab or public-release audit.'
         : 'Run npm run neural:audit-release with checkpoint, quality, listening, browser, and license evidence.',
   })
 }

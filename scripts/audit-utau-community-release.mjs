@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import JSZip from 'jszip'
+import { validateScores as validateListeningScores } from './accept-utau-v3-listening-scores.mjs'
 
 const DEFAULTS = {
   voicebankAudit: 'experiments/utau-v3/work/v3-voicebank-audit.json',
@@ -51,16 +52,6 @@ const DEMO_REQUIRED_CHECKS = [
   'mobile piano keyboard and bar ruler visible',
   'mobile no page horizontal overflow',
 ]
-
-const SCORE_KEYS = [
-  'koreanClarityScore',
-  'vowelStabilityScore',
-  'consonantClarityScore',
-  'musicalityScore',
-  'artifactScore',
-]
-
-const PASSING_LISTENING_DECISIONS = new Set(['community-ready', 'release-ready', 'pass'])
 
 export async function auditUtauCommunityRelease(options = {}) {
   const root = resolve(options.cwd ?? process.cwd())
@@ -299,46 +290,7 @@ function listeningScoresGate(path) {
   const problems = []
   const scores = readOptionalJson(path, 'human listening scores', problems)
   if (scores) {
-    if (scores.version !== 1) {
-      problems.push('listening score version must be 1')
-    }
-    if (typeof scores.reviewer !== 'string' || scores.reviewer.trim().length === 0) {
-      problems.push('human listening scores must include reviewer')
-    }
-    if (typeof scores.reviewedAt !== 'string' || scores.reviewedAt.trim().length === 0) {
-      problems.push('human listening scores must include reviewedAt')
-    }
-    const decision = String(scores.decision ?? '').trim().toLowerCase()
-    if (!PASSING_LISTENING_DECISIONS.has(decision)) {
-      problems.push('human listening decision must be community-ready, release-ready, or pass')
-    }
-    const thresholds = scores.thresholds ?? {}
-    for (const [index, phrase] of (scores.phraseScores ?? []).entries()) {
-      for (const key of SCORE_KEYS) {
-        const score = phrase[key]
-        const threshold = thresholds[`min${capitalize(key)}`] ?? 4
-        if (typeof score !== 'number') {
-          problems.push(`phrase ${phrase.id ?? index} ${key} must be scored`)
-        } else if (score < threshold) {
-          problems.push(`phrase ${phrase.id ?? index} ${key} ${score} is below ${threshold}`)
-        }
-      }
-    }
-    if (!Array.isArray(scores.phraseScores) || scores.phraseScores.length < 4) {
-      problems.push('human listening scores must include at least four phrase scores')
-    }
-    for (const [index, comparison] of (scores.comparisonScores ?? []).entries()) {
-      const score = comparison.v3PreferenceScore
-      const threshold = thresholds.minV3PreferenceScore ?? 4
-      if (typeof score !== 'number') {
-        problems.push(`comparison ${comparison.id ?? index} v3PreferenceScore must be scored`)
-      } else if (score < threshold) {
-        problems.push(`comparison ${comparison.id ?? index} v3PreferenceScore ${score} is below ${threshold}`)
-      }
-    }
-    if (!Array.isArray(scores.comparisonScores) || scores.comparisonScores.length < 4) {
-      problems.push('human listening scores must include at least four V2/V3 comparison scores')
-    }
+    validateListeningScores(scores, problems)
   }
   return makeGate('human-listening', 'Human listening review scores', path, problems, scores ? { phraseCount: scores.phraseScores?.length ?? 0, comparisonCount: scores.comparisonScores?.length ?? 0 } : null)
 }
@@ -856,10 +808,6 @@ function nextActionsForProblems(problems) {
     actions.push('Regenerate the failing evidence report, then rerun npm run release:audit-utau.')
   }
   return actions
-}
-
-function capitalize(value) {
-  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`
 }
 
 function normalizeUrl(value) {

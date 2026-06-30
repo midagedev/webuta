@@ -35,7 +35,7 @@ describe('neural checkpoint promotion', () => {
       model: {
         id: 'webuta-ko-v1',
         renderer: 'diffsinger',
-        releaseStatus: 'private-family',
+        releaseStatus: 'private-lab',
       },
       service: {
         port: 8787,
@@ -60,7 +60,7 @@ describe('neural checkpoint promotion', () => {
     expect(release).toMatchObject({
       model: {
         id: 'webuta-ko-v1',
-        releaseIntent: 'private-family',
+        releaseIntent: 'private-lab',
       },
       evidence: {
         modelCheckpoint: fixture.auditPath,
@@ -147,7 +147,7 @@ function makePromotionFixture(options = {}) {
       id: 'webuta-ko-v1',
       name: 'WebUtau KO V1',
       renderer: 'diffsinger',
-      releaseStatus: options.releaseStatus ?? 'private-family',
+      releaseStatus: options.releaseStatus ?? 'private-lab',
     },
     datasetIds: ['licensed-ko'],
     runtime,
@@ -170,7 +170,7 @@ function makePromotionFixture(options = {}) {
       id: 'webuta-ko-v1',
       name: 'WebUtau KO V1',
       renderer: 'diffsinger',
-      releaseStatus: options.releaseStatus ?? 'private-family',
+      releaseStatus: options.releaseStatus ?? 'private-lab',
     },
     datasets: [
       {

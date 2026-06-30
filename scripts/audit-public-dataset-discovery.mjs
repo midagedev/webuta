@@ -135,7 +135,7 @@ export function auditPublicDatasetDiscovery(options = {}) {
     nextActions: [
       'Use CSD/GTSinger only for local research quality iteration.',
       'Use speech/reference corpora only for pronunciation, ASR, or discovery checks.',
-      'For completion, acquire and review AI Hub singing data or record a consent-reviewed private singer.',
+      'For completion, acquire and review release-safe singing data; do not ask the current user or family to record.',
     ],
     problems,
     candidates: audited,

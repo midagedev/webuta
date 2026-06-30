@@ -290,7 +290,7 @@ function makeRegistry(localPath, localTraining) {
         localPath,
         licenseStatus: localTraining ? 'license-reviewed-local-training' : 'review-required-aihub-terms',
         redistribution: 'private-local-only',
-        modelPublishing: localTraining ? 'private-family-allowed' : 'review-required-aihub-terms',
+        modelPublishing: localTraining ? 'private-lab-allowed' : 'review-required-aihub-terms',
         singerIdentity: 'licensed-dataset',
         language: ['ko'],
         annotationTypes: ['audio', 'midi', 'csv', 'json', 'note-timing', 'pitch'],
@@ -430,7 +430,7 @@ function makeCheckpointAudit(production) {
           id: 'webuta-ko-v1',
           name: 'WebUtau KO V1',
           renderer: 'diffsinger',
-          releaseStatus: 'private-family',
+          releaseStatus: 'private-lab',
         }
       : {
           id: 'webuta-ko-neural-dev',
@@ -443,7 +443,7 @@ function makeCheckpointAudit(production) {
           {
             id: 'aihub-guide-vocal',
             licenseStatus: 'license-reviewed-local-training',
-            modelPublishing: 'private-family-allowed',
+            modelPublishing: 'private-lab-allowed',
           },
         ]
       : [
@@ -469,7 +469,7 @@ function makeRenderProfileAudit(production) {
       ? {
           id: 'webuta-ko-v1',
           name: 'WebUtau KO V1',
-          releaseStatus: 'private-family',
+          releaseStatus: 'private-lab',
         }
       : {
           id: 'webuta-ko-neural-dev',
@@ -489,15 +489,15 @@ function makeReleaseAudit() {
     model: {
       id: 'webuta-ko-v1',
       name: 'WebUtau KO V1',
-      releaseIntent: 'private-family',
-      releaseStatus: 'private-family',
+      releaseIntent: 'private-lab',
+      releaseStatus: 'private-lab',
     },
     evidence: {
       datasets: [
         {
           id: 'aihub-guide-vocal',
           licenseStatus: 'license-reviewed-local-training',
-          modelPublishing: 'private-family-allowed',
+          modelPublishing: 'private-lab-allowed',
         },
       ],
     },

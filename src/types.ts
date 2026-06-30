@@ -71,7 +71,7 @@ export type NeuralModelCard = {
   rendererId: RendererId
   language: string
   status: RendererStatus
-  releaseStatus: 'bundled' | 'local-research' | 'private-family' | 'public-beta' | 'planned' | 'user-provided'
+  releaseStatus: 'bundled' | 'local-research' | 'private-lab' | 'public-beta' | 'planned' | 'user-provided'
   licenseSummary: string
   usageNote: string
   endpoint?: string

@@ -31,7 +31,7 @@ describe('neural model cards', () => {
       rendererId: 'local-neural',
       language: 'ko',
       status: 'ready',
-      releaseStatus: 'private-family',
+      releaseStatus: 'private-lab',
       licenseSummary: 'Consent-reviewed private model.',
       usageNote: 'Checkpoint 200000 is available.',
       endpoint: 'http://127.0.0.1:8787/render',

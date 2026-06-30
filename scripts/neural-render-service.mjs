@@ -306,7 +306,7 @@ function readOptionalJson(path) {
 }
 
 function normalizeReleaseStatus(value) {
-  return ['bundled', 'local-research', 'private-family', 'public-beta', 'planned', 'user-provided'].includes(value)
+  return ['bundled', 'local-research', 'private-lab', 'public-beta', 'planned', 'user-provided'].includes(value)
     ? value
     : 'local-research'
 }

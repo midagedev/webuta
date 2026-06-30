@@ -40,8 +40,11 @@ The neural singer path is successful when WebUtau can:
 
 This is not a replacement for UTAU compatibility. It is a second rendering mode.
 
-Non-negotiable production rule: the real Korean singer must come from a
-license-reviewed Korean singing dataset or consent-reviewed private recordings.
+Non-negotiable production rule for the current goal: do not ask the user or the
+user's family to record a voice. The active releasable WebUtau default remains
+the self-generated UTAU V3 pack; any neural singer must come from a
+license-reviewed Korean singing dataset that can be used without new user
+recording, or from a separate future contributor project with explicit consent.
 Browser TTS, hand-built beeps, fake neural smoke servers, and CSD smoke
 checkpoints are useful for wiring and diagnostics only; they are not the voice
 product.
@@ -455,7 +458,7 @@ Exit criteria:
 - [x] Convert a small dataset into final DiffSinger-compatible training data
   after MFA/TextGrid alignment.
 - [x] Add a reusable DiffSinger training-run preparation step for real
-  AIHub/private enhanced datasets.
+  AIHub/approved enhanced datasets.
 - [x] Add a production preflight gate so training-run preparation cannot pass
   as a real candidate without readiness evidence, dataset lineage, provider
   archive provenance, enough minutes/items, and a meaningful update budget.
@@ -613,8 +616,9 @@ Important limitation:
 
 ### M3b. Production Korean candidate training
 
-- [ ] Acquire or record a license-reviewed Korean singing dataset with at least
-  the first-prototype target of 30-60 clean aligned minutes.
+- [ ] Acquire a license-reviewed Korean singing dataset with at least the
+  first-prototype target of 30-60 clean aligned minutes, without asking the
+  current user or family to record.
 - [x] Use the full GTSinger processed-metadata route instead of the older
   partial MFA route: 2,295 items / 8.27 hours now build into a DiffSinger
   enhanced dataset and binary training set.
@@ -826,7 +830,7 @@ Current local status:
 - Smoke run `smoke-1step-20260630T091620-m7` rendered the original 5 phrases and passed
   the current objective signal-health gates. This proves the evaluation loop,
   not production voice quality.
-- Any non-research model handoff, including `private-family`, requires a human
+- Any non-research model handoff, including `private-lab`, requires a human
   listening pass using the `minListening*Score` thresholds in
   `quality-phrases.json`, plus a license-reviewed production-track checkpoint.
 
@@ -983,7 +987,7 @@ Current status as of 2026-06-30:
   drift. The top-level roadmap audit requires a production enhanced-dataset
   report before considering the real checkpoint path complete.
 - [x] `npm run neural:audit-release` now requires human listening score
-  evidence for every non-research handoff, including `private-family`; objective
+  evidence for every non-research handoff, including `private-lab`; objective
   diagnostics alone are not enough to claim a clear Korean singing voice.
 
 Do these next, in order:
@@ -1057,58 +1061,45 @@ the real dataset and checkpoint exist.
 10. Train the first real DiffSinger baseline for several thousand steps on a
    GPU.
 11. Use CSD as research-only comparison/baseline data, not as release proof.
-12. If the licensed dataset path is blocked or a distinct voice is needed, run
-   `npm run neural:serve-recorder` and record dry vocal WAVs into
-   `experiments/neural-singer/datasets/original-private-singer/wavs/`.
-13. Review and fill the generated consent template before enabling local
-   training on the private registry. The private registry now points to
-   `consent-form.signed.local.md`; `npm run neural:audit-datasets` blocks
-   `allowedActions.localTraining=true` when `Singer signature:`, `Date:`, or
-   `Reviewer:` is missing.
-14. Run `npm run neural:audit-recordings` to compare recorded WAV takes against
-   their per-take neural request guides. Write both the JSON diagnostics report
-   and the failed-take review CSV; failed takes should be re-recorded or
-   trimmed before ingest. Use the report's planned/ready/needs-review coverage
-   buckets and `coverageCritical` CSV column to avoid losing rare Korean
-   onsets, vowels, or batchim when rejecting takes. Re-record any take that
-   fails `guide-tick-leakage`; that usually means headphone guide audio bled
-   into the microphone.
-15. Run `npm run neural:ingest-dataset -- --recording-audit
-   <recording-audit.json>` for private-singer data so only takes with `ok:
-   true` become training segments.
-16. Run `npm run neural:audit-readiness` on the ingest summary. It must pass
+12. If the licensed dataset path is blocked, keep the active releasable path on
+   the self-generated UTAU V3 pack instead of asking the current user or family
+   to record. Private-recorder tooling is skipped for this goal.
+13. Use the private-recorder consent/audit/ingest steps only for a separate
+   future contributor singer who explicitly opts in; do not treat those steps
+   as blockers for the current no-recording WebUtau V3 release.
+14. Run `npm run neural:audit-readiness` on the ingest summary. It must pass
    local-training, duration, lyric annotation, phoneme coverage, RMS, silence,
    and voiced-F0 gates before training.
-17. Run `npm run neural:prepare-diffsinger-training -- --production
+15. Run `npm run neural:prepare-diffsinger-training -- --production
     --provider-drop-audit <provider-drop-audit-report>` on the enhanced AI
-   Hub/private DiffSinger dataset to generate the real training config,
+   Hub/approved DiffSinger dataset to generate the real training config,
    runbook, and checkpoint manifest template.
-18. Run `npm run neural:prepare-diffsinger-gpu-job` for that training manifest,
+16. Run `npm run neural:prepare-diffsinger-gpu-job` for that training manifest,
    review the dataset license for private remote/GPU compute, then upload with
    `WEBUTA_ACCEPT_REMOTE_DATASET_UPLOAD=1`.
-16. Train the first real DiffSinger baseline for several thousand steps on a
+17. Train the first real DiffSinger baseline for several thousand steps on a
     GPU, then run `npm run neural:run-checkpoint-handoff -- --manifest
     <local-checkpoint-manifest> --registry <local-registry> --work-dir
     experiments/neural-singer/work/checkpoint-handoff`. This wraps
     `neural:audit-checkpoint`, `neural:promote-checkpoint`, and
     `neural:audit-render-profile`; it must pass before treating the checkpoint
     as usable by the local render service.
-17. Run the generated `serve-render.sh`, perform browser verification against
+18. Run the generated `serve-render.sh`, perform browser verification against
     the same endpoint, then rerun `neural:run-checkpoint-handoff` with
     `--require-browser-smoke --browser-smoke <local-neural-smoke.json>` before
     treating the promoted profile as release-candidate evidence.
 19. Render the fixed phrase set with
    `npm run neural:evaluate-quality -- --accept-local-research-license` and
    compare objective diagnostics. Copy the generated
-   `listening-scores.template.json` to an ignored local scores file and fill the
-   human listening scores before any `private-family`, `public-demo`, or
-   `public-model` release audit.
+   `listening-scores.template.json` to an ignored local scores file and fill
+   the human listening scores before any public demo or public model release
+   audit.
 20. Feed the best checkpoint back through the local neural render service and
     verify the Svelte app can choose, render, cancel, retry, and export it.
-20. Run `npm run smoke:browser:neural:actual -- --neural-endpoint <endpoint>
+21. Run `npm run smoke:browser:neural:actual -- --neural-endpoint <endpoint>
     --out experiments/neural-singer/work/browser-smoke/neural-latest.json` and
     attach the report to the model release manifest.
-21. Run `npm run neural:audit-release` for the intended model release with the
+22. Run `npm run neural:audit-release` for the intended model release with the
     `neural:audit-checkpoint` report attached as `evidence.modelCheckpoint`. If
     it blocks public publishing, keep GitHub Pages static-only and document the
     private local companion flow.

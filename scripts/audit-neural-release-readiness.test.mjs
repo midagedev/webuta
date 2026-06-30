@@ -14,7 +14,7 @@ afterEach(() => {
 })
 
 describe('neural release readiness audit', () => {
-  it('passes a private-family release with license, quality, comparison, browser, and listening evidence', () => {
+  it('passes a private-lab release with license, quality, comparison, browser, and listening evidence', () => {
     const fixture = makeReleaseFixture({
       manifest: {
         evidence: {
@@ -38,7 +38,7 @@ describe('neural release readiness audit', () => {
     expect(report.nextActions).toEqual(['Model release gate passed. Keep the report with release artifacts.'])
   })
 
-  it('blocks private-family release until human listening scores are attached', () => {
+  it('blocks private-lab release until human listening scores are attached', () => {
     const fixture = makeReleaseFixture()
 
     const report = auditNeuralReleaseReadiness({
@@ -401,7 +401,7 @@ function makeReleaseFixture(overrides = {}) {
         id: 'webuta-ko-private-v1',
         name: 'WebUtau KO Private V1',
         renderer: 'diffsinger',
-        releaseStatus: 'private-family',
+        releaseStatus: 'private-lab',
       },
       datasets: [
         {
@@ -454,8 +454,8 @@ function makeReleaseFixture(overrides = {}) {
       model: {
         id: 'webuta-ko-private-v1',
         name: 'WebUtau KO Private V1',
-        releaseIntent: 'private-family',
-        releaseStatus: 'private-family',
+        releaseIntent: 'private-lab',
+        releaseStatus: 'private-lab',
       },
       datasetIds: ['licensed-local-singer'],
       evidence: {

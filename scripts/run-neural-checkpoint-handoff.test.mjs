@@ -140,7 +140,7 @@ function makeCheckpointFixture(options = {}) {
         id: 'licensed-ko',
         name: 'Licensed Korean Fixture',
         licenseStatus: 'license-reviewed-local-training',
-        modelPublishing: 'private-family-allowed',
+        modelPublishing: 'private-lab-allowed',
         redistribution: 'private-local-only',
         allowedActions: {
           localTraining: true,
@@ -170,7 +170,7 @@ function makeCheckpointFixture(options = {}) {
       id: 'webuta-ko-v1',
       name: 'WebUtau KO V1',
       renderer: 'diffsinger',
-      releaseStatus: 'private-family',
+      releaseStatus: 'private-lab',
     },
     datasetIds: ['licensed-ko'],
     training: {
