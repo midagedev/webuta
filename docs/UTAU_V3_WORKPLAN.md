@@ -239,6 +239,8 @@ Recommended coverage shape:
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
   note timing.
+- [x] Preserve OpenUtau USTX `phonemeExpressions` for `vel`, `vol`, and
+  `mod`, mapped to selected-note velocity, intensity, and modulation controls.
 - [x] Preserve classic UST `PBS`/`PBW`/`PBY` pitch-bend curves and `PBM`
   segment modes, save them in `.webutau.json`, export them back to UST, and
   render the pitch curves in both the UTAU sample renderer and browser fallback
@@ -465,6 +467,9 @@ Current verified V3 evidence:
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while
   classic UST and USTX import/export remain available for UTAU/OpenUtau handoff.
+- USTX import/export now preserves OpenUtau `phonemeExpressions` for `vel`,
+  `vol`, and `mod`, so WebUtau velocity, intensity, and modulation edits survive
+  the OpenUtau handoff path.
 - Selected notes now expose DAW-style vibrato controls. The setting is saved in
   `.webutau.json`, mapped to/from USTX `vibrato` blocks, and rendered as actual
   pitch movement in both the UTAU sample renderer and browser fallback voice.

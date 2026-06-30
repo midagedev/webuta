@@ -71,4 +71,62 @@ describe('USTX compatibility layer', () => {
     expect(text).toContain('depth: 32')
     expect(text).toContain('period: 180')
   })
+
+  it('round-trips OpenUtau phoneme expressions for UTAU resampler handoff', () => {
+    const project = parseUstx(
+      [
+        'name: Expression USTX',
+        'tracks:',
+        '  - track_name: Lead',
+        'voice_parts:',
+        '  - name: Verse',
+        '    track_no: 0',
+        '    position: 0',
+        '    duration: 960',
+        '    notes:',
+        '      - position: 0',
+        '        duration: 960',
+        '        tone: 64',
+        '        lyric: 라',
+        '        phonemeExpressions:',
+        '          - index: 0',
+        '            abbr: vel',
+        '            value: 143',
+        '          - index: 0',
+        '            abbr: vol',
+        '            value: 82',
+        '          - index: 0',
+        '            abbr: mod',
+        '            value: 24',
+      ].join('\n'),
+      'expressions.ustx',
+    )
+
+    expect(project.notes[0]).toMatchObject({
+      velocity: 143,
+      intensity: 82,
+      modulation: 24,
+    })
+
+    const text = serializeUstx(project)
+    expect(text).toContain('phonemeExpressions:')
+    expect(text).toContain('abbr: vel')
+    expect(text).toContain('value: 143')
+    expect(text).toContain('abbr: vol')
+    expect(text).toContain('value: 82')
+    expect(text).toContain('abbr: mod')
+    expect(text).toContain('value: 24')
+  })
+
+  it('omits default OpenUtau phoneme expressions from USTX export', () => {
+    const project = parseUstx(sampleUstx, 'sample.ustx')
+    project.notes[0] = {
+      ...project.notes[0],
+      velocity: 100,
+      intensity: 100,
+      modulation: 0,
+    }
+
+    expect(serializeUstx(project)).not.toContain('phonemeExpressions:')
+  })
 })

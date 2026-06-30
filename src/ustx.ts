@@ -1,5 +1,13 @@
 import * as yaml from 'js-yaml'
 import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type TempoChange, type Track, type VoicePart } from './types'
+import {
+  normalizeNoteIntensity,
+  normalizeNoteModulation,
+  normalizeNoteVelocity,
+  sanitizeOptionalNoteIntensity,
+  sanitizeOptionalNoteModulation,
+  sanitizeOptionalNoteVelocity,
+} from './expression'
 import { makeId } from './music'
 import { normalizedTempoChanges } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
@@ -92,6 +100,7 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
       .map((noteItem, noteIndex) => {
         const noteRecord = isRecord(noteItem) ? noteItem : {}
         const vibrato = parseUstxVibrato(noteRecord)
+        const expressions = parseUstxPhonemeExpressions(noteRecord)
         return {
           id: `note-${partIndex}-${noteIndex}`,
           trackId: tracks[trackNo].id,
@@ -100,6 +109,7 @@ export function parseUstx(text: string, fileName = 'project.ustx'): SongProject 
           duration: Math.max(10, numberField(noteRecord, ['duration'], TICKS_PER_BEAT)),
           tone: numberField(noteRecord, ['tone'], 60),
           lyric: stringField(noteRecord, ['lyric'], 'la'),
+          ...expressions,
           ...(vibrato ? { vibrato } : {}),
         }
       })
@@ -171,13 +181,17 @@ export function serializeUstx(project: SongProject) {
       notes: project.notes
         .filter((note) => note.partId === part.id)
         .sort((a, b) => a.start - b.start)
-        .map((note) => ({
-          position: note.start - part.start,
-          duration: note.duration,
-          tone: note.tone,
-          lyric: note.lyric,
-          ...(note.vibrato ? { vibrato: serializeUstxVibrato(note.vibrato) } : {}),
-        })),
+        .map((note) => {
+          const phonemeExpressions = serializeUstxPhonemeExpressions(note)
+          return {
+            position: note.start - part.start,
+            duration: note.duration,
+            tone: note.tone,
+            lyric: note.lyric,
+            ...(phonemeExpressions.length > 0 ? { phonemeExpressions } : {}),
+            ...(note.vibrato ? { vibrato: serializeUstxVibrato(note.vibrato) } : {}),
+          }
+        }),
       curves: [],
     }
   })
@@ -248,6 +262,80 @@ function parseUstxVibrato(record: AnyRecord): NoteVibrato | undefined {
     rateHz: periodMs > 0 ? 1000 / periodMs : undefined,
     startPercent,
   })
+}
+
+function parseUstxPhonemeExpressions(record: AnyRecord) {
+  const rawExpressions = arrayField(record, ['phonemeExpressions', 'phoneme_expressions'])
+  const intensity = sanitizeOptionalNoteIntensity(phonemeExpressionValue(rawExpressions, 'vol'))
+  const velocity = sanitizeOptionalNoteVelocity(phonemeExpressionValue(rawExpressions, 'vel'))
+  const modulation = sanitizeOptionalNoteModulation(phonemeExpressionValue(rawExpressions, 'mod'))
+  return {
+    ...(intensity !== undefined ? { intensity } : {}),
+    ...(velocity !== undefined ? { velocity } : {}),
+    ...(modulation !== undefined ? { modulation } : {}),
+  }
+}
+
+function phonemeExpressionValue(expressions: unknown[], abbr: string) {
+  const matches = expressions
+    .map((item, order) => ({
+      record: isRecord(item) ? item : {},
+      order,
+    }))
+    .filter(({ record }) => stringField(record, ['abbr']).toLowerCase() === abbr)
+    .map(({ record, order }) => ({
+      value: numberField(record, ['value'], Number.NaN),
+      index: optionalNumberField(record, ['index']),
+      order,
+    }))
+    .filter((expression) => Number.isFinite(expression.value))
+    .sort((left, right) => expressionIndexScore(left.index) - expressionIndexScore(right.index) || left.order - right.order)
+  return matches[0]?.value
+}
+
+function expressionIndexScore(index: number | undefined) {
+  if (index === 0 || index === undefined) {
+    return 0
+  }
+  return Math.abs(index) + 1
+}
+
+function optionalNumberField(record: AnyRecord, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value
+    }
+    if (typeof value === 'string' && value.trim() !== '' && Number.isFinite(Number(value))) {
+      return Number(value)
+    }
+  }
+  return undefined
+}
+
+function serializeUstxPhonemeExpressions(note: SongNote) {
+  const expressions = []
+  const velocity = sanitizeOptionalNoteVelocity(note.velocity)
+  const intensity = sanitizeOptionalNoteIntensity(note.intensity)
+  const modulation = sanitizeOptionalNoteModulation(note.modulation)
+  if (velocity !== undefined) {
+    expressions.push(ustxPhonemeExpression('vel', normalizeNoteVelocity(velocity)))
+  }
+  if (intensity !== undefined) {
+    expressions.push(ustxPhonemeExpression('vol', normalizeNoteIntensity(intensity)))
+  }
+  if (modulation !== undefined) {
+    expressions.push(ustxPhonemeExpression('mod', normalizeNoteModulation(modulation)))
+  }
+  return expressions
+}
+
+function ustxPhonemeExpression(abbr: string, value: number) {
+  return {
+    index: 0,
+    abbr,
+    value,
+  }
 }
 
 function serializeUstxVibrato(vibrato: NoteVibrato) {
