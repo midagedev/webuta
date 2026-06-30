@@ -22,6 +22,7 @@
     "test": "vitest run",
     "test:teto": "RUN_TETO_ASSET=1 vitest run src/voicebank.teto.test.ts",
     "notices": "node scripts/generate-dependency-notices.mjs",
+    "voicebank:accept-review-v3": "node scripts/accept-utau-v3-listening-scores.mjs",
     "neural:audit-datasets": "node scripts/audit-neural-datasets.mjs",
     "neural:audit-checkpoint": "node scripts/audit-neural-model-checkpoint.mjs",
     "neural:audit-prompt-coverage": "node scripts/audit-private-singer-prompt-coverage.mjs",

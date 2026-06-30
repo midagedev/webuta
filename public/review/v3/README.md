@@ -6,6 +6,7 @@ Open: index.html
 Score template: listening-scores.local.template.json
 
 Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.
+Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.
 No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.
 Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.
 This pack also includes legacy V2 baseline WAVs. Score whether V3 is clearly better than V2 before release.

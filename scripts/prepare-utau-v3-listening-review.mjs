@@ -514,6 +514,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
     </div>
     <p>Template path: <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
+    <p>After downloading the JSON, accept it into the release audit with <code>npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json</code>.</p>
     <form id="scorecardForm">
       <section class="meta" aria-label="Review metadata">
         <label>Reviewer
@@ -760,6 +761,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     `Score template: ${listeningTemplatePath}`,
     '',
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
+    'Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
     comparisons.length

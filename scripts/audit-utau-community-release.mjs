@@ -317,6 +317,7 @@ function readmeGate(paths) {
   const license = readOptionalText(paths.licenseBoundaries, 'license boundaries doc', problems)
   if (readme) {
     const requiredSnippets = [
+      '## No Recording Needed',
       '## Screenshots',
       'docs/screenshots/webuta-desktop.jpg',
       'docs/screenshots/webuta-mobile.jpg',
@@ -324,6 +325,7 @@ function readmeGate(paths) {
       'WebUtau Korean V3 Synthetic',
       'not recorded from a human singer',
       'derived from public/private recorded datasets',
+      'must not ask the user, the user\'s family, or reviewers to record new voice material',
       'Kasane Teto assets are not bundled',
       'License Boundaries',
     ]
@@ -710,7 +712,7 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open public/review/v3/index.html or the deployed /review/v3/ scorecard, score the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, and place it at experiments/utau-v3/work/v3-listening-review/listening-scores.local.json.')
+    actions.push('Open public/review/v3/index.html or the deployed /review/v3/ scorecard, score the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')

@@ -464,6 +464,8 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
+    '## No Recording Needed',
+    'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
     'Kasane Teto assets are not bundled in this repository.',
     'See License Boundaries.',
     '## Screenshots',
