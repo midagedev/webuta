@@ -159,6 +159,7 @@ Current verified local smoke coverage:
 - Bundled `WebUtau Korean V3 Synthetic` contains `615` WAV samples and `1437` oto.ini alias lines in the default web profile.
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium and exports a DAW-ready WAV.
 - `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, and live WAV download.
+- The first-run browser smoke verifies the `01 보이스` / `02 재생` / `03 WAV` guided path is visible before WAV handoff.
 - The first-run browser smoke now verifies the community release readiness card is visible and still marks human listening scores as required.
 - The first-run browser smoke verifies the current voicebank license metadata card and bundled V3 license excerpt are visible.
 - The first-run browser smoke verifies the bundled V3 self-generated origin card is visible.
@@ -179,6 +180,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` validates and installs a human scorecard into the release-audit path.
 - `npm run release:audit-utau` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
+- `npm run release:audit-utau` also verifies the WAV/DAW QA checklist follows the bundled V3 first-run path instead of an old Teto-import-first flow.
 - `npm run screenshots:readme` refreshes the desktop/mobile README screenshots from the live app UI.
 - Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.

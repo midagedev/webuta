@@ -378,6 +378,7 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
+  visible, the first-run `01 보이스` / `02 재생` / `03 WAV` guided path is
   visible, the community release readiness card is visible, desktop/mobile
   overflow checks pass, and the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56
   seconds, 578384 bytes.
@@ -536,13 +537,16 @@ Current verified V3 evidence:
 - Release audit now verifies README screenshots are readable PNG/JPEG files
   with desktop/mobile minimum dimensions and byte sizes, not just placeholder
   files.
+- Release audit now verifies `docs/WAV_DAW_QA.md` follows the bundled
+  `WebUtau Korean V3 Synthetic` first-run flow and does not point reviewers at
+  an old Teto-import-first release path.
 - `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit-pages.json`:
   verifies the live Pages app, cache-busted bundled V3 zip, public listening
   review scorecard, and all deployed V3/V2 review WAV byte sizes; currently the
   remaining release blocker is the required human listening score file.
 - GitHub Actions Pages workflow is verified after release-gate pushes; it must
   pass build, tests, artifact upload, and deploy before sharing the live URL.
-- `npm test`: 92 passed / 1 skipped files, 427 passed / 2 skipped tests.
+- `npm test`: 92 passed / 1 skipped files, 428 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

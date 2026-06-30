@@ -23,6 +23,7 @@ const DEFAULTS = {
   packageJson: 'package.json',
   readme: 'README.md',
   licenseBoundaries: 'docs/LICENSE_BOUNDARIES.md',
+  wavDawQa: 'docs/WAV_DAW_QA.md',
   bundledVoicebank: 'src/bundledVoicebank.ts',
   voicebankZip: 'public/voicebanks/webuta-ko-v3.zip',
   desktopScreenshot: 'docs/screenshots/webuta-desktop.jpg',
@@ -373,6 +374,7 @@ function readmeGate(paths) {
   const problems = []
   const readme = readOptionalText(paths.readme, 'README', problems)
   const license = readOptionalText(paths.licenseBoundaries, 'license boundaries doc', problems)
+  const wavDawQa = readOptionalText(paths.wavDawQa, 'WAV / DAW QA doc', problems)
   if (readme) {
     const requiredSnippets = [
       '## No Recording Needed',
@@ -406,11 +408,30 @@ function readmeGate(paths) {
       }
     }
   }
+  if (wavDawQa) {
+    for (const snippet of [
+      'WebUtau Korean V3 Synthetic',
+      'selected without importing a voicebank zip',
+      '01 보이스',
+      '02 재생',
+      '03 WAV',
+      '스타터 WAV 다운로드',
+      'Optional compatibility pass',
+      'Any optional imported voicebank zip remains user-provided and private to the browser',
+    ]) {
+      if (!wavDawQa.includes(snippet)) {
+        problems.push(`WAV / DAW QA doc must include "${snippet}"`)
+      }
+    }
+    if (/Import the official Kasane Teto UTAU\/OpenUTAU zip from Files/u.test(wavDawQa)) {
+      problems.push('WAV / DAW QA doc must not make Kasane Teto import the default release path')
+    }
+  }
   const screenshots = [
     inspectScreenshot(paths.desktopScreenshot, { label: 'desktop', minWidth: 1000, minHeight: 700, minBytes: 80_000 }, problems),
     inspectScreenshot(paths.mobileScreenshot, { label: 'mobile', minWidth: 360, minHeight: 700, minBytes: 40_000 }, problems),
   ].filter(Boolean)
-  return makeGate('readme-release-docs', 'README screenshots, license notes, and honest limitations', paths.readme, problems, {
+  return makeGate('readme-release-docs', 'README, WAV/DAW QA, screenshots, license notes, and honest limitations', paths.readme, problems, {
     desktopScreenshot: paths.desktopScreenshot,
     mobileScreenshot: paths.mobileScreenshot,
     screenshots,
