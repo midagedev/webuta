@@ -3,8 +3,10 @@ import { demoProject } from './demoProject'
 import { TICKS_PER_BEAT, type SongProject } from './types'
 import {
   addNoteAfter,
+  addNoteAtTick,
   addNoteFromGrid,
   applyLyricLineToProject,
+  quantizeProjectNotes,
   tokenizeLyricLine,
   updateNoteInProject,
 } from './projectEditing'
@@ -37,6 +39,21 @@ describe('project editing helpers', () => {
     expect(note.tone).toBe(70)
     expect(note.lyric).toBe('도')
     expect(project.notes.at(-1)?.start).toBeGreaterThanOrEqual(note.start)
+  })
+
+  it('adds quantized live-recorded notes at a timeline tick', () => {
+    const { project, note } = addNoteAtTick(demoProject, {
+      start: 233,
+      duration: 181,
+      tone: 62,
+      lyric: '가',
+      gridTicks: 120,
+    })
+
+    expect(note.start).toBe(240)
+    expect(note.duration).toBe(240)
+    expect(note.lyric).toBe('가')
+    expect(project.notes).toHaveLength(demoProject.notes.length + 1)
   })
 
   it('extends the active part when a new note lands beyond the current part end', () => {
@@ -72,6 +89,20 @@ describe('project editing helpers', () => {
     expect(note?.tone).toBe(84)
     expect(note?.lyric).toBe('키')
     expect(project.parts[0].duration).toBeGreaterThanOrEqual(TICKS_PER_BEAT * 14)
+  })
+
+  it('quantizes note starts and lengths across the project', () => {
+    const unquantizedProject: SongProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note, index) =>
+        index === 0 ? { ...note, start: 61, duration: 421 } : note,
+      ),
+    }
+
+    const { project, changedCount } = quantizeProjectNotes(unquantizedProject, 120)
+
+    expect(changedCount).toBe(4)
+    expect(project.notes[0]).toMatchObject({ start: 120, duration: 480 })
   })
 
   it('keeps the project unchanged when a note is missing', () => {

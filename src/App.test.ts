@@ -150,6 +150,96 @@ describe('App editing workflow', () => {
     expect((screen.getByLabelText('가사') as HTMLInputElement).value).toBe('키')
   })
 
+  it('plays a short preview from the touch performance keyboard', () => {
+    const start = vi.fn()
+    const stop = vi.fn()
+    const oscillator = {
+      type: 'sine',
+      frequency: { setValueAtTime: vi.fn() },
+      connect: vi.fn(),
+      start,
+      stop,
+      disconnect: vi.fn(),
+      onended: null as (() => void) | null,
+    }
+    const gain = {
+      gain: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+    }
+    class FakeAudioContext {
+      state = 'running'
+      currentTime = 0
+      destination = {}
+
+      createOscillator() {
+        return oscillator
+      }
+
+      createGain() {
+        return gain
+      }
+
+      resume() {
+        return Promise.resolve()
+      }
+    }
+    Object.defineProperty(window, 'AudioContext', {
+      value: FakeAudioContext,
+      configurable: true,
+    })
+
+    render(App)
+
+    const keyboard = screen.getByLabelText('Touch performance keyboard')
+    const previewButton = within(keyboard).getAllByRole('button')[1]
+    fireEvent.pointerDown(previewButton, { pointerId: 1 })
+
+    expect(start).toHaveBeenCalledOnce()
+    expect(previewButton.className).toContain('pressed')
+    const previewFrequency = oscillator.frequency.setValueAtTime.mock.calls[0][0]
+    expect(previewFrequency).toBeCloseTo(293.66, 2)
+    expect(oscillator.frequency.setValueAtTime).toHaveBeenCalledWith(previewFrequency, 0)
+    expect(screen.getByText('히 · D4')).toBeTruthy()
+    expect(screen.getAllByText('Preview 도 · D4').length).toBeGreaterThan(0)
+  })
+
+  it('records touch performance notes from the lyric queue as one undoable take', async () => {
+    const now = vi.spyOn(performance, 'now')
+    now.mockReturnValue(1000)
+    render(App)
+
+    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: '가 나' } })
+    fireEvent.click(screen.getByRole('button', { name: '녹음 시작' }))
+
+    const keyboard = screen.getByLabelText('Touch performance keyboard')
+    now.mockReturnValue(1250)
+    fireEvent.pointerDown(within(keyboard).getAllByRole('button')[0], { pointerId: 1 })
+    now.mockReturnValue(1500)
+    fireEvent.pointerDown(within(keyboard).getAllByRole('button')[1], { pointerId: 2 })
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.notes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ lyric: '가', tone: 60, start: 240, duration: 240 }),
+          expect.objectContaining({ lyric: '나', tone: 62, start: 480, duration: 240 }),
+        ]),
+      )
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: '녹음 정지' }))
+    fireEvent.click(screen.getAllByRole('button', { name: '되돌리기' }).at(-1)!)
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes).toHaveLength(8)
+    })
+    now.mockRestore()
+  })
+
   it('undoes and redoes a lyric pad edit', async () => {
     render(App)
 
@@ -210,6 +300,8 @@ describe('App editing workflow', () => {
 
   it('generates and applies a melody from compose mode lyrics', async () => {
     render(App)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Compose' }))
 
     fireEvent.input(screen.getByLabelText('Compose mode').querySelector('textarea') as HTMLTextAreaElement, {
       target: { value: '사랑해' },

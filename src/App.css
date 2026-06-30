@@ -801,6 +801,13 @@ button:disabled {
   box-shadow: 0 0 0 3px rgba(167, 176, 187, 0.12);
 }
 
+.status-dot.recording {
+  background: #ff4b66;
+  box-shadow:
+    0 0 0 3px rgba(255, 75, 102, 0.18),
+    0 0 14px rgba(255, 75, 102, 0.48);
+}
+
 .editor-area {
   min-width: 0;
   min-height: 0;
@@ -1289,6 +1296,102 @@ button:disabled {
     linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 35%),
     linear-gradient(180deg, #70e99d 0%, #26bc6a 100%);
   font-weight: 900;
+}
+
+.performance-panel,
+.performance-readout,
+.performance-actions,
+.performance-action {
+  display: flex;
+  align-items: center;
+}
+
+.performance-panel {
+  min-height: 48px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #080c10;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0) 34%),
+    #151b22;
+}
+
+.performance-panel.recording {
+  border-color: rgba(255, 75, 102, 0.52);
+  box-shadow: 0 0 18px rgba(255, 75, 102, 0.16);
+}
+
+.performance-readout {
+  min-width: 122px;
+  gap: 9px;
+}
+
+.performance-readout div {
+  min-width: 0;
+}
+
+.performance-readout strong,
+.performance-readout span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.performance-readout strong {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.performance-readout span {
+  margin-top: 2px;
+  color: #9faab8;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.performance-actions {
+  min-width: 0;
+  justify-content: flex-end;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.performance-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.performance-action {
+  min-width: 38px;
+  min-height: 36px;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  color: #f1f5f9;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 34%),
+    #3a4350;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.performance-action.active {
+  color: #120817;
+  background:
+    linear-gradient(135deg, var(--tracker-pink, #ff4bca), var(--tracker-cyan, #58f4ff));
+}
+
+.performance-action.record.active {
+  color: #fff7ff;
+  background:
+    linear-gradient(135deg, #ff274d, #b81445);
 }
 
 .mobile-mascot-banner {
@@ -3377,5 +3480,734 @@ button:disabled {
     padding: 8px;
     margin: 0;
     width: 100%;
+  }
+}
+
+/* Mobile app compaction: keep the editor in one viewport and move details behind mode tabs. */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell {
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .topbar {
+    position: relative;
+    top: auto;
+    order: 1;
+    min-height: 54px;
+    padding: max(6px, env(safe-area-inset-top)) 8px 6px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "nav transport export";
+    align-items: center;
+    gap: 7px;
+  }
+
+  .nav-cluster {
+    grid-area: nav;
+    gap: 5px;
+    justify-content: flex-start;
+  }
+
+  .nav-cluster .project-action,
+  .nav-cluster .utility-action,
+  .project-context {
+    display: none;
+  }
+
+  .nav-cluster .toolbar-button,
+  .export-button {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+  }
+
+  .transport-center {
+    grid-area: transport;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+  }
+
+  .transport-center .transport-button {
+    display: none;
+  }
+
+  .play-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .lcd-panel {
+    min-height: 42px;
+    grid-template-columns: minmax(42px, 0.72fr) minmax(0, 1.45fr) minmax(38px, 0.7fr);
+    gap: 5px;
+    padding: 4px 7px;
+  }
+
+  .lcd-counter,
+  .lcd-meta {
+    font-size: 8px;
+  }
+
+  .project-title {
+    font-size: 12px;
+  }
+
+  .export-cluster {
+    grid-area: export;
+    gap: 0;
+  }
+
+  .export-cluster .bank-action,
+  .export-cluster .download-action {
+    display: none;
+  }
+
+  .export-button {
+    justify-content: center;
+    padding: 0;
+    border-radius: 4px;
+  }
+
+  .export-button span {
+    display: none;
+  }
+
+  .mode-strip {
+    order: 3;
+    min-height: 46px;
+    padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "tabs";
+    border-top: 1px solid var(--tracker-line);
+    border-bottom: 0;
+  }
+
+  .mode-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 3px;
+    overflow: visible;
+  }
+
+  .mode-tab {
+    min-width: 0;
+    min-height: 36px;
+    gap: 4px;
+    padding: 0 4px;
+    font-size: 10px;
+  }
+
+  .mode-tab span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workspace {
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: block;
+  }
+
+  .main-stack {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .editor-area {
+    height: 100%;
+    min-height: 0;
+    gap: 7px;
+    padding: 8px;
+    overflow: auto;
+  }
+
+  .left-rail {
+    display: none;
+  }
+
+  .workspace.mode-compose .main-stack {
+    overflow: auto;
+  }
+
+  .workspace.mode-compose .editor-area,
+  .workspace.mode-rows .main-stack,
+  .workspace.mode-mixer .main-stack {
+    display: none;
+  }
+
+  .workspace.mode-compose .composer-panel {
+    margin: 8px;
+    padding: 10px;
+  }
+
+  .workspace.mode-rows .left-rail,
+  .workspace.mode-mixer .left-rail {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(238px, 84vw));
+    align-content: start;
+    gap: 8px;
+    padding: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-top: 0;
+    scroll-snap-type: x mandatory;
+  }
+
+  .workspace.mode-rows .left-rail .tool-panel,
+  .workspace.mode-mixer .left-rail .tool-panel {
+    max-height: calc(100svh - 116px);
+    overflow: auto;
+  }
+
+  .workspace.mode-rows .note-panel,
+  .workspace.mode-mixer .engine-panel {
+    order: -1;
+  }
+
+  .timeline-header,
+  .tracker-strip,
+  .mobile-mascot-banner,
+  .arrangement-panel {
+    display: none;
+  }
+
+  .editor-toolbar {
+    order: 1;
+    min-height: 30px;
+  }
+
+  .editor-toolbar strong {
+    font-size: 13px;
+  }
+
+  .editor-chips span {
+    min-height: 24px;
+    padding: 0 6px;
+    font-size: 9px;
+  }
+
+  .piano-roll-frame {
+    order: 4;
+    flex: 0 0 auto;
+    min-height: clamp(278px, calc(100svh - 330px), 520px);
+    max-height: none;
+  }
+
+  .mobile-note-strip.performance-keyboard {
+    order: 5;
+    position: sticky;
+    bottom: 0;
+    z-index: 12;
+    flex: 0 0 74px;
+    gap: 6px;
+    margin: auto -2px 0;
+    min-height: 74px;
+    padding: 7px 2px 8px;
+    border-top: 1px solid var(--tracker-line-hot);
+    overflow-y: hidden;
+    background:
+      linear-gradient(180deg, rgba(7, 8, 16, 0), rgba(7, 8, 16, 0.92) 22%),
+      rgba(7, 8, 16, 0.96);
+  }
+
+  .mobile-note-strip.performance-keyboard button {
+    min-width: 62px;
+    min-height: 58px;
+    grid-template-rows: 12px 1fr 12px;
+    border-color: rgba(88, 244, 255, 0.45);
+    border-radius: 6px;
+    touch-action: manipulation;
+    transition:
+      transform 90ms ease,
+      filter 90ms ease;
+  }
+
+  .mobile-note-strip.performance-keyboard button:active {
+    transform: translateY(2px) scale(0.98);
+    filter: brightness(1.18);
+  }
+
+  .mobile-note-strip.performance-keyboard small {
+    align-self: start;
+    color: rgba(18, 8, 23, 0.62);
+    font-family: var(--tracker-mono);
+    font-size: 9px;
+    font-weight: 950;
+  }
+
+  .mobile-note-strip.performance-keyboard strong {
+    font-size: 18px;
+  }
+
+  .lyric-line-editor {
+    order: 2;
+  }
+
+  .performance-panel {
+    order: 3;
+    min-height: 46px;
+    gap: 8px;
+    padding: 6px 7px;
+    border-radius: 4px;
+  }
+
+  .performance-readout {
+    min-width: 92px;
+    gap: 7px;
+  }
+
+  .performance-readout strong {
+    font-family: var(--tracker-mono);
+    font-size: 11px;
+  }
+
+  .performance-readout span {
+    font-family: var(--tracker-mono);
+    font-size: 9px;
+  }
+
+  .performance-actions {
+    gap: 5px;
+  }
+
+  .performance-action {
+    min-width: 36px;
+    min-height: 34px;
+    padding: 0 8px;
+    border-radius: 4px;
+    font-family: var(--tracker-mono);
+    font-size: 10px;
+  }
+
+  .lyric-pads {
+    order: 6;
+    padding-bottom: 1px;
+  }
+
+  .lyric-pads button {
+    min-height: 38px;
+  }
+
+  .bottom-dock {
+    order: 7;
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 761px) {
+  .workspace.mode-pattern .timeline-header,
+  .workspace.mode-pattern .tracker-strip,
+  .workspace.mode-pattern .lyric-pads {
+    display: none;
+  }
+
+  .workspace.mode-pattern .editor-area {
+    gap: 8px;
+  }
+
+  .workspace.mode-pattern .lyric-line-editor,
+  .workspace.mode-pattern .performance-panel {
+    flex: 0 0 auto;
+  }
+
+  .workspace.mode-pattern .lyric-line-editor {
+    order: 1;
+  }
+
+  .workspace.mode-pattern .performance-panel {
+    order: 2;
+  }
+
+  .workspace.mode-pattern .arrangement-panel {
+    order: 3;
+    min-height: 82px;
+    grid-template-rows: 26px 56px;
+  }
+
+  .workspace.mode-pattern .ruler-grid {
+    height: 26px;
+  }
+
+  .workspace.mode-pattern .track-lane-grid {
+    height: 56px;
+  }
+
+  .workspace.mode-pattern .vocal-region {
+    top: 8px;
+    bottom: 8px;
+  }
+
+  .workspace.mode-pattern .editor-toolbar {
+    order: 4;
+    min-height: 30px;
+  }
+
+  .workspace.mode-pattern .piano-roll-frame {
+    order: 5;
+    flex: 1 1 auto;
+    min-height: min(36svh, 288px) !important;
+    overflow: auto;
+  }
+
+  .workspace.mode-pattern .performance-keyboard {
+    order: 6;
+    min-height: 62px;
+    display: flex;
+    gap: 7px;
+    padding: 6px 0 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  .workspace.mode-pattern .performance-keyboard::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workspace.mode-pattern .performance-keyboard button {
+    min-width: 72px;
+    min-height: 54px;
+    display: grid;
+    grid-template-rows: 12px 1fr 12px;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid rgba(88, 244, 255, 0.45);
+    border-radius: 6px;
+    color: #120817;
+    background:
+      linear-gradient(135deg, var(--tracker-green, #9dff6a), var(--tracker-cyan, #58f4ff));
+    font-family: var(--tracker-mono);
+    font-weight: 950;
+    touch-action: manipulation;
+  }
+
+  .workspace.mode-pattern .performance-keyboard button.active {
+    background:
+      linear-gradient(135deg, var(--glam-cream, #fff1bd), var(--tracker-pink, #ff4bca));
+  }
+
+  .workspace.mode-pattern .performance-keyboard small,
+  .workspace.mode-pattern .performance-keyboard span {
+    font-size: 10px;
+  }
+
+  .workspace.mode-pattern .performance-keyboard strong {
+    font-size: 18px;
+  }
+
+  .workspace.mode-pattern .bottom-dock {
+    order: 7;
+    flex: 0 0 auto;
+  }
+}
+
+/* Interaction polish: keep controls tactile without changing layout metrics. */
+:root {
+  --reaction-ring: rgba(88, 244, 255, 0.46);
+  --reaction-glow: rgba(255, 75, 202, 0.22);
+  --reaction-press: rgba(4, 7, 14, 0.18);
+}
+
+.toolbar-button,
+.transport-button,
+.icon-button,
+.play-button,
+.export-button,
+.dock-action,
+.small-button,
+.icon-text-button,
+.text-link-button,
+.mode-tab,
+.composer-action,
+.performance-action,
+.lyric-pads button,
+.lyric-line-editor button,
+.performance-keyboard button,
+.field-label input,
+.field-label select,
+.composer-lyrics textarea,
+.composer-controls select,
+.lyric-line-editor input,
+.note-block {
+  transition:
+    transform 115ms ease,
+    filter 115ms ease,
+    border-color 115ms ease,
+    box-shadow 115ms ease,
+    background-color 115ms ease;
+}
+
+.toolbar-button,
+.transport-button,
+.icon-button,
+.play-button,
+.export-button,
+.dock-action,
+.small-button,
+.icon-text-button,
+.text-link-button,
+.mode-tab,
+.composer-action,
+.performance-action,
+.lyric-pads button,
+.lyric-line-editor button,
+.performance-keyboard button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.note-block:focus-visible,
+.roll-grid:focus-visible {
+  outline: 2px solid var(--reaction-ring);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 4px rgba(88, 244, 255, 0.13),
+    0 0 18px rgba(88, 244, 255, 0.16);
+}
+
+button:disabled,
+button:disabled:hover,
+button:disabled:active {
+  transform: none;
+  filter: grayscale(0.18) brightness(0.88);
+  box-shadow: none;
+}
+
+.performance-action,
+.dock-action,
+.composer-action,
+.lyric-line-editor button {
+  position: relative;
+  overflow: hidden;
+}
+
+.performance-action::after,
+.dock-action::after,
+.composer-action::after,
+.lyric-line-editor button::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 46%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 115ms ease;
+}
+
+.performance-action:active,
+.dock-action:active,
+.composer-action:active,
+.lyric-line-editor button:active,
+.lyric-pads button:active,
+.mode-tab:active,
+.performance-keyboard button:active,
+.performance-keyboard button.pressed {
+  transform: translateY(2px) scale(0.985);
+  filter: brightness(1.12);
+}
+
+.performance-action:active::after,
+.dock-action:active::after,
+.composer-action:active::after,
+.lyric-line-editor button:active::after {
+  opacity: 1;
+}
+
+.performance-action.active,
+.mode-tab.active,
+.lyric-pads button.active,
+.performance-keyboard button.active,
+.performance-keyboard button.pressed {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.13),
+    0 0 18px var(--reaction-glow);
+}
+
+.performance-keyboard button.active {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.performance-keyboard button.pressed {
+  transform: translateY(2px) scale(0.985);
+  filter: brightness(1.14);
+}
+
+.performance-action.record.active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px rgba(255, 75, 102, 0.34),
+    0 0 22px rgba(255, 75, 102, 0.32);
+}
+
+.performance-panel.recording .status-dot.recording {
+  animation: recording-pulse 1180ms ease-in-out infinite;
+}
+
+.field-label input,
+.field-label select,
+.composer-lyrics textarea,
+.composer-controls select,
+.lyric-line-editor input {
+  transition:
+    border-color 115ms ease,
+    box-shadow 115ms ease,
+    background-color 115ms ease,
+    filter 115ms ease;
+}
+
+.field-label input:focus,
+.field-label select:focus,
+.composer-lyrics textarea:focus,
+.composer-controls select:focus,
+.lyric-line-editor input:focus {
+  border-color: var(--reaction-ring);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.24),
+    0 0 0 3px rgba(88, 244, 255, 0.12);
+}
+
+.note-block {
+  transform-origin: center;
+}
+
+.note-block:active {
+  transform: translateY(1px) scale(0.99);
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 4px 12px rgba(4, 7, 14, 0.3);
+}
+
+.note-block.selected {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1px rgba(255, 213, 106, 0.38),
+    0 0 18px rgba(255, 186, 62, 0.2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .performance-action:hover,
+  .dock-action:hover,
+  .composer-action:hover,
+  .lyric-line-editor button:hover,
+  .lyric-pads button:hover,
+  .mode-tab:hover,
+  .performance-keyboard button:hover {
+    border-color: rgba(88, 244, 255, 0.58);
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px rgba(88, 244, 255, 0.16),
+      0 10px 20px rgba(4, 7, 14, 0.18),
+      0 0 18px rgba(88, 244, 255, 0.12);
+  }
+
+  .toolbar-button:hover,
+  .transport-button:hover,
+  .icon-button:hover,
+  .play-button:hover,
+  .export-button:hover,
+  .small-button:hover,
+  .icon-text-button:hover,
+  .text-link-button:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px rgba(88, 244, 255, 0.12),
+      0 8px 18px rgba(4, 7, 14, 0.18);
+  }
+
+  .field-label input:hover,
+  .field-label select:hover,
+  .composer-lyrics textarea:hover,
+  .composer-controls select:hover,
+  .lyric-line-editor input:hover {
+    border-color: rgba(88, 244, 255, 0.36);
+    filter: brightness(1.04);
+  }
+
+  .note-block:hover {
+    border-color: rgba(88, 244, 255, 0.66);
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 0 1px rgba(88, 244, 255, 0.2),
+      0 8px 18px rgba(4, 7, 14, 0.24);
+  }
+}
+
+@keyframes recording-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 3px rgba(255, 75, 102, 0.18),
+      0 0 14px rgba(255, 75, 102, 0.48);
+  }
+  50% {
+    transform: scale(1.22);
+    box-shadow:
+      0 0 0 6px rgba(255, 75, 102, 0.08),
+      0 0 22px rgba(255, 75, 102, 0.62);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar-button,
+  .transport-button,
+  .icon-button,
+  .play-button,
+  .export-button,
+  .dock-action,
+  .small-button,
+  .icon-text-button,
+  .text-link-button,
+  .mode-tab,
+  .composer-action,
+  .performance-action,
+  .lyric-pads button,
+  .lyric-line-editor button,
+  .performance-keyboard button,
+  .field-label input,
+  .field-label select,
+  .composer-lyrics textarea,
+  .composer-controls select,
+  .lyric-line-editor input,
+  .note-block,
+  .performance-action::after,
+  .dock-action::after,
+  .composer-action::after,
+  .lyric-line-editor button::after {
+    transition: none;
+  }
+
+  .performance-panel.recording .status-dot.recording {
+    animation: none;
   }
 }

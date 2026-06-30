@@ -11,12 +11,16 @@
   import { BUNDLED_KOREAN_LITE_VOICEBANK_NAME, loadBundledKoreanLiteVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
   import { createDemoProject } from './demoProject'
-  import { pitchRange, projectDurationTicks, sanitizeFileName } from './music'
+  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicks, toneName } from './music'
   import {
     addNoteAfter,
+    addNoteAtTick,
     addNoteFromGrid,
     applyLyricLineToProject,
     GRID_SNAP_TICKS,
+    quantizeProjectNotes,
+    snapTickToGrid,
+    tokenizeLyricLine,
     updateNoteInProject,
   } from './projectEditing'
   import {
@@ -81,15 +85,28 @@
   let notice = $state('Ready')
   let paintLyric = $state('도')
   let lyricLine = $state(formatLyricLine(initialProject.notes))
-  let activeMode = $state<WorkspaceMode>('compose')
+  let isLyricLinePinned = $state(false)
+  let activeMode = $state<WorkspaceMode>('pattern')
   let composerLyrics = $state(formatLyricLine(initialProject.notes).replaceAll(' ', ''))
   let composerMood = $state<ComposerMood>('bright')
   let isAboutOpen = $state(false)
   let voicebankCacheStatus = $state<VoicebankCacheStatus>('idle')
+  let performanceKeys = $state<SongNote[]>(initialProject.notes.slice(0, 8))
   let hasMounted = false
   let audioRef = $state<HTMLAudioElement | null>(null)
   let notePointer: NotePointerState | null = null
   let voicebankLoadToken = 0
+  let previewOscillator: OscillatorNode | null = null
+  let previewGain: GainNode | null = null
+  let isRecording = $state(false)
+  let isMetronomeOn = $state(false)
+  let isQuantizeOn = $state(true)
+  let lyricCursor = $state(0)
+  let recordingStartedAtMs = 0
+  let recordingOriginProject: SongProject | null = null
+  let recordingLyricTokens = $state<string[]>([])
+  let metronomeTimer: ReturnType<typeof window.setInterval> | null = null
+  let metronomeBeat = 0
 
   const project = $derived(projectHistory.present)
   const canUndo = $derived(projectHistory.past.length > 0)
@@ -107,9 +124,14 @@
   const barCount = $derived(Math.ceil(beatCount / project.beatPerBar))
   const playheadLeft = $derived(displayDuration > 0 ? Math.min(gridWidth, (playbackTime / displayDuration) * gridWidth) : 0)
   const composerSuggestion = $derived(composeFromLyrics(composerLyrics, composerMood))
+  const liveLyricTokens = $derived(tokenizeLyricLine(lyricLine))
+  const activeLyricTokens = $derived(recordingLyricTokens.length > 0 ? recordingLyricTokens : liveLyricTokens)
+  const nextPerformanceLyric = $derived(activeLyricTokens[lyricCursor % activeLyricTokens.length] ?? paintLyric)
 
   $effect(() => {
-    lyricLine = formatLyricLine(project.notes)
+    if (!isLyricLinePinned) {
+      lyricLine = formatLyricLine(project.notes)
+    }
     if (hasMounted) {
       saveProject(project)
     }
@@ -152,7 +174,11 @@
     }
 
     window.addEventListener('keydown', handleWindowKeyDown)
-    return () => window.removeEventListener('keydown', handleWindowKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleWindowKeyDown)
+      stopMetronomeTimer()
+      stopPreviewTone()
+    }
   })
 
   async function restoreVoicebank() {
@@ -222,6 +248,8 @@
     const nextProject = parseUstx(text, file.name)
     projectHistory = replaceProjectHistory(nextProject)
     selectedNoteId = nextProject.notes[0]?.id ?? ''
+    performanceKeys = nextProject.notes.slice(0, 8)
+    isLyricLinePinned = false
     projectSourceLabel = file.name
     clearRendered()
     notice = `${file.name} loaded`
@@ -262,6 +290,8 @@
     const nextProject = createDemoProject()
     projectHistory = replaceProjectHistory(nextProject)
     selectedNoteId = nextProject.notes[0]?.id ?? ''
+    performanceKeys = nextProject.notes.slice(0, 8)
+    isLyricLinePinned = false
     paintLyric = '도'
     projectSourceLabel = 'Built-in Hangul demo'
     clearRendered()
@@ -323,8 +353,11 @@
       notice = 'No lyrics applied'
       return
     }
+    isLyricLinePinned = false
     commitProject(result.project)
     paintLyric = result.tokens[0] ?? paintLyric
+    lyricCursor = 0
+    recordingLyricTokens = []
     notice = `${result.appliedCount} lyrics applied`
     clearRendered()
   }
@@ -337,7 +370,9 @@
     const nextProject = applyMelodySuggestion(project, composerSuggestion)
     commitProject(nextProject)
     selectedNoteId = nextProject.notes[0]?.id ?? ''
+    performanceKeys = nextProject.notes.slice(0, 12)
     paintLyric = nextProject.notes[0]?.lyric ?? paintLyric
+    isLyricLinePinned = false
     lyricLine = formatLyricLine(nextProject.notes)
     projectSourceLabel = `Composer · ${formatChordLine(composerSuggestion.chords.slice(0, 4))}`
     activeMode = 'pattern'
@@ -348,6 +383,25 @@
   function selectNote(note: SongNote) {
     selectedNoteId = note.id
     paintLyric = note.lyric
+  }
+
+  function previewNote(note: SongNote) {
+    const lyric = nextLyricForPerformance(note.lyric)
+    selectNote(note)
+    paintLyric = lyric
+    playPreviewTone({ ...note, lyric })
+    lyricCursor += 1
+    if (typeof navigator.vibrate === 'function') {
+      navigator.vibrate(8)
+    }
+  }
+
+  function performNote(note: SongNote) {
+    if (isRecording) {
+      recordPerformanceNote(note)
+      return
+    }
+    previewNote(note)
   }
 
   function chooseLyric(lyric: string) {
@@ -484,6 +538,132 @@
     clearRendered()
   }
 
+  function toggleRecording() {
+    if (isRecording) {
+      stopRecording()
+      return
+    }
+    startRecording()
+  }
+
+  function startRecording() {
+    recordingOriginProject = project
+    recordingStartedAtMs = performance.now()
+    recordingLyricTokens = liveLyricTokens.length > 0 ? liveLyricTokens : [paintLyric]
+    lyricCursor = 0
+    isRecording = true
+    clearRendered()
+    if (isMetronomeOn) {
+      startMetronomeTimer()
+    }
+    notice = `REC armed · next ${nextPerformanceLyric}`
+  }
+
+  function stopRecording() {
+    isRecording = false
+    if (recordingOriginProject) {
+      projectHistory = commitPresentFromSnapshot(projectHistory, recordingOriginProject)
+    }
+    recordingOriginProject = null
+    recordingLyricTokens = []
+    notice = 'Recording committed'
+  }
+
+  function recordPerformanceNote(templateNote: SongNote) {
+    const lyric = nextLyricForPerformance(templateNote.lyric)
+    const rawTick = secondsToTicks((performance.now() - recordingStartedAtMs) / 1000, project.bpm)
+    const start = isQuantizeOn ? snapTickToGrid(rawTick, GRID_SNAP_TICKS) : Math.max(0, Math.round(rawTick))
+    const duration = isQuantizeOn ? GRID_SNAP_TICKS * 2 : Math.round(TICKS_PER_BEAT / 2)
+    const result = addNoteAtTick(project, {
+      start,
+      duration,
+      tone: templateNote.tone,
+      lyric,
+      gridTicks: isQuantizeOn ? GRID_SNAP_TICKS : undefined,
+    })
+    replaceProject(result.project)
+    selectedNoteId = result.note.id
+    paintLyric = lyric
+    lyricCursor += 1
+    clearRendered()
+    playPreviewTone(result.note)
+    notice = `REC ${result.note.lyric} · ${toneName(result.note.tone)}`
+  }
+
+  function nextLyricForPerformance(fallback: string) {
+    const tokens = activeLyricTokens.length > 0 ? activeLyricTokens : [fallback]
+    return tokens[lyricCursor % tokens.length] ?? fallback
+  }
+
+  function toggleMetronome() {
+    isMetronomeOn = !isMetronomeOn
+    if (isMetronomeOn) {
+      startMetronomeTimer()
+      notice = 'Metronome on'
+    } else {
+      stopMetronomeTimer()
+      notice = 'Metronome off'
+    }
+  }
+
+  function startMetronomeTimer() {
+    stopMetronomeTimer()
+    metronomeBeat = 0
+    playMetronomeClick(true)
+    const intervalMs = Math.max(120, 60000 / project.bpm)
+    metronomeTimer = window.setInterval(() => {
+      metronomeBeat = (metronomeBeat + 1) % project.beatPerBar
+      playMetronomeClick(metronomeBeat === 0)
+    }, intervalMs)
+  }
+
+  function stopMetronomeTimer() {
+    if (!metronomeTimer) {
+      return
+    }
+    window.clearInterval(metronomeTimer)
+    metronomeTimer = null
+  }
+
+  function playMetronomeClick(accent: boolean) {
+    try {
+      const audioContext = getAudioContext()
+      if (audioContext.state === 'suspended') {
+        void audioContext.resume().catch(() => undefined)
+      }
+      const now = audioContext.currentTime
+      const oscillator = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+      oscillator.type = 'square'
+      oscillator.frequency.setValueAtTime(accent ? 1320 : 880, now)
+      gain.gain.setValueAtTime(0.0001, now)
+      gain.gain.exponentialRampToValueAtTime(accent ? 0.16 : 0.1, now + 0.006)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06)
+      oscillator.connect(gain)
+      gain.connect(audioContext.destination)
+      oscillator.start(now)
+      oscillator.stop(now + 0.07)
+      oscillator.onended = () => {
+        oscillator.disconnect()
+        gain.disconnect()
+      }
+    } catch {
+      notice = 'Metronome unavailable'
+    }
+  }
+
+  function quantizeCurrentProject() {
+    const result = quantizeProjectNotes(project, GRID_SNAP_TICKS)
+    if (result.changedCount === 0) {
+      notice = 'Already quantized'
+      return
+    }
+    commitProject(result.project)
+    selectedNoteId = reconcileSelectedNoteId(result.project, selectedNoteId)
+    clearRendered()
+    notice = `${result.changedCount} notes quantized`
+  }
+
   async function renderProject() {
     isRendering = true
     notice = 'Rendering WAV'
@@ -617,6 +797,56 @@
 
   let audioContextSingleton: AudioContext | null = null
 
+  function playPreviewTone(note: SongNote) {
+    try {
+      const audioContext = getAudioContext()
+      if (audioContext.state === 'suspended') {
+        void audioContext.resume().catch(() => undefined)
+      }
+      stopPreviewTone()
+      const now = audioContext.currentTime
+      const oscillator = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+      oscillator.type = 'triangle'
+      oscillator.frequency.setValueAtTime(midiToHz(note.tone), now)
+      gain.gain.setValueAtTime(0.0001, now)
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.014)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24)
+      oscillator.connect(gain)
+      gain.connect(audioContext.destination)
+      oscillator.start(now)
+      oscillator.stop(now + 0.28)
+      previewOscillator = oscillator
+      previewGain = gain
+      oscillator.onended = () => {
+        if (previewOscillator === oscillator) {
+          previewOscillator = null
+          previewGain = null
+        }
+        oscillator.disconnect()
+        gain.disconnect()
+      }
+      notice = `Preview ${note.lyric} · ${toneName(note.tone)}`
+    } catch {
+      notice = 'Touch preview unavailable'
+    }
+  }
+
+  function stopPreviewTone() {
+    if (!previewOscillator) {
+      return
+    }
+    try {
+      previewOscillator.stop()
+    } catch {
+      // Oscillator may already be stopped by the scheduled release.
+    }
+    previewOscillator.disconnect()
+    previewGain?.disconnect()
+    previewOscillator = null
+    previewGain = null
+  }
+
   function downloadBlob(blob: Blob, fileName: string) {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -677,31 +907,33 @@
 
   <ModeStrip {activeMode} {voicebankName} {voicebank} {voicebankCoverage} {notice} onMode={(mode) => (activeMode = mode)} />
 
-  <section class="workspace">
-    <LeftRail
-      {project}
-      {selectedNote}
-      {selectedLyricMatch}
-      {voicebank}
-      {voicebankName}
-      {voicebankCoverage}
-      {voicebankCacheStatus}
-      {isLoadingVoicebank}
-      {notice}
-      onVoicebankFile={handleVoicebankFile}
-      onBpm={(bpm) => updateProject({ bpm })}
-      onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
-      onSelectDemoVoice={() => (notice = `${voicebankName} selected`)}
-      onLyric={(lyric) => {
-        paintLyric = lyric
-        updateSelectedNote({ lyric })
-      }}
-      onTone={(tone) => updateSelectedNote({ tone })}
-      onNudge={updateSelectedNote}
-      onDuration={(duration) => updateSelectedNote({ duration })}
-      onAddNote={addNote}
-      onDeleteNote={deleteSelectedNote}
-    />
+  <section class={`workspace mode-${activeMode}`}>
+    {#key activeMode}
+      <LeftRail
+        {project}
+        {selectedNote}
+        {selectedLyricMatch}
+        {voicebank}
+        {voicebankName}
+        {voicebankCoverage}
+        {voicebankCacheStatus}
+        {isLoadingVoicebank}
+        {notice}
+        onVoicebankFile={handleVoicebankFile}
+        onBpm={(bpm) => updateProject({ bpm })}
+        onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
+        onSelectDemoVoice={() => (notice = `${voicebankName} selected`)}
+        onLyric={(lyric) => {
+          paintLyric = lyric
+          updateSelectedNote({ lyric })
+        }}
+        onTone={(tone) => updateSelectedNote({ tone })}
+        onNudge={updateSelectedNote}
+        onDuration={(duration) => updateSelectedNote({ duration })}
+        onAddNote={addNote}
+        onDeleteNote={deleteSelectedNote}
+      />
+    {/key}
 
     <div class="main-stack">
       {#if activeMode === 'compose'}
@@ -718,6 +950,7 @@
 
       <EditorArea
         {project}
+        {performanceKeys}
         {projectSourceLabel}
         {selectedNote}
         {rows}
@@ -737,13 +970,31 @@
         {rendered}
         {notice}
         {isRendering}
+        {isRecording}
+        {isMetronomeOn}
+        {isQuantizeOn}
+        {nextPerformanceLyric}
+        canUndo={canUndo && !isRecording}
+        {canRedo}
         {playbackTime}
         {displayDuration}
         onSaveProject={downloadUstx}
         onSelectNote={selectNote}
+        onPerformNote={performNote}
         onChooseLyric={chooseLyric}
-        onLyricLine={(line) => (lyricLine = line)}
+        onLyricLine={(line) => {
+          lyricLine = line
+          isLyricLinePinned = true
+          lyricCursor = 0
+          recordingLyricTokens = []
+        }}
         onApplyLyricLine={applyLyricLine}
+        onToggleRecording={toggleRecording}
+        onToggleMetronome={toggleMetronome}
+        onToggleQuantize={() => (isQuantizeOn = !isQuantizeOn)}
+        onQuantize={quantizeCurrentProject}
+        onUndo={undoProject}
+        onRedo={redoProject}
         onGridClick={handleGridClick}
         onNoteKeyDown={handleNoteKeyDown}
         onNotePointerDown={startNotePointer}

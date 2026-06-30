@@ -88,7 +88,7 @@
 </script>
 
 <aside class="left-rail">
-  <section class="tool-panel">
+  <section class="tool-panel pattern-panel">
     <div class="panel-heading">
       <Sparkles size={18} aria-hidden="true" />
       <h2>패턴</h2>
@@ -172,7 +172,7 @@
     </div>
   </section>
 
-  <section class="tool-panel">
+  <section class="tool-panel note-panel">
     <div class="panel-heading">
       <Scissors size={18} aria-hidden="true" />
       <h2>노트</h2>
