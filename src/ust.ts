@@ -1,7 +1,8 @@
 import { parseUstEnvelope, serializeNoteEnvelope } from './envelope'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { normalizeNoteIntensity, sanitizeOptionalNoteIntensity } from './expression'
-import { TICKS_PER_BEAT, type NoteEnvelope, type NotePitchBend, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { formatTimingNumber, parseUstNoteTiming } from './timing'
+import { TICKS_PER_BEAT, type NoteEnvelope, type NotePitchBend, type NoteTiming, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
 import { makeId, normalizedTempoChanges, sanitizeFileName } from './music'
 import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
 
@@ -36,6 +37,11 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
       const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
       const pitchBend = parseUstPitchBend(section, duration)
       const intensity = sanitizeOptionalNoteIntensity(numberField(section, 'Intensity', 100))
+      const timing = parseUstNoteTiming({
+        startPoint: optionalNumberField(section, 'StartPoint'),
+        preutterance: optionalNumberField(section, 'PreUtterance'),
+        voiceOverlap: optionalNumberField(section, 'VoiceOverlap'),
+      })
       const envelope = parseUstEnvelope(stringField(section, 'Envelope', ''))
       notes.push({
         id: `note-${index}`,
@@ -46,6 +52,7 @@ export function parseUst(text: string, fileName = 'project.ust'): SongProject {
         tone,
         lyric,
         ...(intensity !== undefined ? { intensity } : {}),
+        ...(timing !== undefined ? { timing } : {}),
         ...(envelope !== undefined ? { envelope } : {}),
         ...(vibrato ? { vibrato } : {}),
         ...(pitchBend ? { pitchBend } : {}),
@@ -142,6 +149,7 @@ export function serializeUst(project: SongProject) {
       lyric: note.lyric,
       tone: note.tone,
       intensity: note.intensity,
+      timing: note.timing,
       envelope: note.envelope,
       vibrato: note.vibrato,
       pitchBend: note.pitchBend,
@@ -203,6 +211,7 @@ function pushNoteSection(
     lyric: string
     tone: number
     intensity?: number
+    timing?: NoteTiming
     envelope?: NoteEnvelope
     vibrato?: NoteVibrato
     pitchBend?: NotePitchBend
@@ -215,6 +224,15 @@ function pushNoteSection(
   sections.push(`NoteNum=${Math.round(note.tone)}`)
   if (note.tempo !== undefined) {
     sections.push(`Tempo=${formatNumber(note.tempo, 2)}`)
+  }
+  if (note.timing?.sampleStartMs !== undefined) {
+    sections.push(`StartPoint=${formatTimingNumber(note.timing.sampleStartMs)}`)
+  }
+  if (note.timing?.preutteranceMs !== undefined) {
+    sections.push(`PreUtterance=${formatTimingNumber(note.timing.preutteranceMs)}`)
+  }
+  if (note.timing?.voiceOverlapMs !== undefined) {
+    sections.push(`VoiceOverlap=${formatTimingNumber(note.timing.voiceOverlapMs)}`)
   }
   sections.push(`Intensity=${normalizeNoteIntensity(note.intensity)}`)
   sections.push('Modulation=0')
@@ -309,6 +327,15 @@ function numberField(section: UstSection | undefined, key: string, fallback: num
   }
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function optionalNumberField(section: UstSection | undefined, key: string) {
+  const value = section?.fields.get(key)
+  if (value === undefined || value.trim() === '') {
+    return undefined
+  }
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
 }
 
 function numberListField(section: UstSection | undefined, key: string) {

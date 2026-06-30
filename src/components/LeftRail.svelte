@@ -19,7 +19,8 @@
   import { normalizeNoteIntensity } from '../expression'
   import { normalizeNotePitchBend, sanitizeOptionalNotePitchBend } from '../pitchBend'
   import { GRID_SNAP_TICKS } from '../projectEditing'
-  import type { NeuralModelCard, NoteEnvelope, NotePitchBend, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
+  import { normalizeNoteTiming, sanitizeOptionalNoteTiming } from '../timing'
+  import type { NeuralModelCard, NoteEnvelope, NotePitchBend, NoteTiming, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
   import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
   import { normalizeNoteVibrato } from '../vibrato'
   import { rendererCapabilities } from '../renderers/registry'
@@ -59,6 +60,7 @@
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
     onIntensity: (intensity: number) => void
+    onTiming: (timing: NoteTiming | undefined) => void
     onEnvelope: (envelope: NoteEnvelope | undefined) => void
     onVibrato: (vibrato: NoteVibrato) => void
     onPitchBend: (pitchBend: NotePitchBend | undefined) => void
@@ -93,6 +95,7 @@
     onNudge,
     onDuration,
     onIntensity,
+    onTiming,
     onEnvelope,
     onVibrato,
     onPitchBend,
@@ -150,6 +153,7 @@
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
   let selectedIntensity = $derived(normalizeNoteIntensity(selectedNote?.intensity))
+  let selectedTiming = $derived(normalizeNoteTiming(selectedNote?.timing))
   let selectedEnvelope = $derived(normalizeNoteEnvelope(selectedNote?.envelope))
   let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
   let selectedPitchBend = $derived(normalizeNotePitchBend(selectedNote?.pitchBend))
@@ -229,6 +233,10 @@
 
   function updateEnvelope(patch: Partial<NoteEnvelope>) {
     onEnvelope(sanitizeOptionalNoteEnvelope({ ...selectedEnvelope, ...patch }))
+  }
+
+  function updateTiming(patch: Partial<NoteTiming>) {
+    onTiming(sanitizeOptionalNoteTiming({ ...selectedTiming, ...patch }))
   }
 
   function updatePitchBend(patch: { enabled?: boolean; cents?: number; timePercent?: number }) {
@@ -497,6 +505,45 @@
               step="1"
               value={selectedIntensity}
               oninput={(event) => onIntensity(Number(inputValue(event)))}
+            />
+          </label>
+        </div>
+        <div class="timing-card" aria-label="Selected note timing">
+          <strong>타이밍</strong>
+          <label class="slider-field">
+            <span>시작점 <output>{selectedTiming.sampleStartMs ?? 0}ms</output></span>
+            <input
+              aria-label="Sample start point"
+              type="range"
+              min="0"
+              max="600"
+              step="1"
+              value={selectedTiming.sampleStartMs ?? 0}
+              oninput={(event) => updateTiming({ sampleStartMs: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>프리 <output>{selectedTiming.preutteranceMs ?? 0}ms</output></span>
+            <input
+              aria-label="Preutterance override"
+              type="range"
+              min="0"
+              max="400"
+              step="1"
+              value={selectedTiming.preutteranceMs ?? 0}
+              oninput={(event) => updateTiming({ preutteranceMs: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>겹침 <output>{selectedTiming.voiceOverlapMs ?? 0}ms</output></span>
+            <input
+              aria-label="Voice overlap override"
+              type="range"
+              min="0"
+              max="240"
+              step="1"
+              value={selectedTiming.voiceOverlapMs ?? 0}
+              oninput={(event) => updateTiming({ voiceOverlapMs: Number(inputValue(event)) })}
             />
           </label>
         </div>

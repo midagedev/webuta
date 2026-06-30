@@ -20,6 +20,9 @@ describe('classic UST compatibility layer', () => {
         'Length=480',
         'Lyric=도',
         'NoteNum=64',
+        'StartPoint=35',
+        'PreUtterance=80',
+        'VoiceOverlap=22',
         'Intensity=72',
         'Envelope=0,18,90,0,100,65,8',
         '[#0002]',
@@ -54,6 +57,7 @@ describe('classic UST compatibility layer', () => {
       duration: 480,
       tone: 64,
       lyric: '도',
+      timing: { sampleStartMs: 35, preutteranceMs: 80, voiceOverlapMs: 22 },
       intensity: 72,
       envelope: { p1Ms: 0, p2Ms: 18, p3Ms: 90, v1: 0, v2: 100, v3: 65, v4: 8 },
     })
@@ -84,6 +88,7 @@ describe('classic UST compatibility layer', () => {
           ? {
               ...note,
               intensity: 64,
+              timing: { sampleStartMs: 28, preutteranceMs: 76, voiceOverlapMs: 18 },
               envelope: { p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 },
               pitchBend: {
                 points: [
@@ -107,6 +112,9 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('ProjectName=First Vocal Sketch')
     expect(text).toContain('Lyric=도')
     expect(text).toContain('Lyric=R')
+    expect(text).toContain('StartPoint=28')
+    expect(text).toContain('PreUtterance=76')
+    expect(text).toContain('VoiceOverlap=18')
     expect(text).toContain('Intensity=64')
     expect(text).toContain('Envelope=0,22,120,0,100,58,10')
     expect(text).toContain('Tempo=96')
@@ -118,6 +126,7 @@ describe('classic UST compatibility layer', () => {
 
     const reparsed = parseUst(text, 'roundtrip.ust')
     expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(reparsed.notes[0].timing).toEqual({ sampleStartMs: 28, preutteranceMs: 76, voiceOverlapMs: 18 })
     expect(reparsed.notes[0].intensity).toBe(64)
     expect(reparsed.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 })
     expect(reparsed.tempoChanges).toEqual([

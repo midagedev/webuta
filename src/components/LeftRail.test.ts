@@ -96,6 +96,20 @@ describe('LeftRail release readiness', () => {
     })
   })
 
+  it('edits selected-note UST timing overrides', async () => {
+    const onTiming = vi.fn()
+    render(LeftRail, makeProps({ onTiming }))
+
+    const timingCard = screen.getByLabelText('Selected note timing')
+    expect(timingCard.textContent).toContain('타이밍')
+    expect(timingCard.textContent).toContain('시작점')
+    expect(timingCard.textContent).toContain('프리')
+
+    await fireEvent.input(screen.getByLabelText('Sample start point'), { target: { value: '44' } })
+
+    expect(onTiming).toHaveBeenCalledWith({ sampleStartMs: 44 })
+  })
+
   it('edits selected-note pitch bend as a simple curve', async () => {
     const onPitchBend = vi.fn()
     render(LeftRail, makeProps({ onPitchBend }))
@@ -198,6 +212,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onNudge: vi.fn(),
     onDuration: vi.fn(),
     onIntensity: vi.fn(),
+    onTiming: vi.fn(),
     onEnvelope: vi.fn(),
     onVibrato: vi.fn(),
     onPitchBend: vi.fn(),

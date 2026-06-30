@@ -219,6 +219,9 @@ Recommended coverage shape:
 - [x] Add selected-note UTAU `Intensity`/dynamics controls, preserve them in
   `.webutau.json` and UST import/export, and render the gain change through
   both the UTAU sample renderer and browser fallback voice.
+- [x] Add selected-note classic UST timing override controls for `StartPoint`,
+  `PreUtterance`, and `VoiceOverlap`; preserve them in `.webutau.json` and
+  UST import/export, and apply them in the UTAU sample renderer.
 - [x] Add selected-note classic UST `Envelope` controls for attack, release,
   and sustain level; preserve them in `.webutau.json` and UST import/export,
   and render the volume curve in both the UTAU sample renderer and browser
@@ -426,6 +429,10 @@ Current verified V3 evidence:
 - Selected-note UTAU `Intensity` now lives in the note model, round-trips
   through UST, appears in the left-rail dynamics control, and changes rendered
   gain without depending on any recorded source material.
+- Selected-note classic UST timing overrides now live in the note model,
+  round-trip through UST, appear in the left-rail timing card, and let the UTAU
+  sample renderer honor imported `StartPoint`, `PreUtterance`, and
+  `VoiceOverlap` values.
 - Selected-note classic UST `Envelope` now lives in the note model,
   round-trips through UST, appears in the left-rail envelope card, and changes
   rendered note volume over time without depending on any recorded source

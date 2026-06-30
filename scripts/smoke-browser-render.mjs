@@ -367,6 +367,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note dynamics').getByText('세기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Selected note timing').getByText('타이밍').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note envelope').getByText('엔벨로프').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note vibrato').getByText('비브라토').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note pitch bend').getByText('피치 벤드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -397,6 +398,7 @@ async function assertDefaultV3DemoReady(page) {
     'community release readiness card visible',
     'voicebank license metadata visible',
     'selected-note dynamics controls visible',
+    'selected-note timing controls visible',
     'selected-note envelope controls visible',
     'selected-note vibrato controls visible',
     'selected-note pitch bend controls visible',

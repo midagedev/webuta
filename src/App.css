@@ -828,6 +828,7 @@ button:disabled {
 }
 
 .dynamics-card,
+.timing-card,
 .envelope-card,
 .vibrato-card,
 .pitch-bend-card {
@@ -845,11 +846,17 @@ button:disabled {
   background: #111d1a;
 }
 
+.timing-card {
+  border-color: #28414a;
+  background: #111b1f;
+}
+
 .envelope-card {
   border-color: #31412a;
   background: #151d11;
 }
 
+.timing-card > strong,
 .envelope-card > strong {
   color: #d8f77a;
   font-size: 0.76rem;

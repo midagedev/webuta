@@ -3,6 +3,7 @@ import { durationTicksToSeconds, projectDurationSeconds, sortedNotes, ticksToSec
 import { noteEnvelopeGainAt } from '../envelope'
 import { noteIntensityGain } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
+import { normalizeNoteTiming } from '../timing'
 import type { SongNote, SongProject } from '../types'
 import {
   findBestEntryForLyric,
@@ -174,10 +175,11 @@ function mixPreparedSample(
   playbackRate: number,
   entry?: OtoEntry,
 ) {
+  const timing = normalizeNoteTiming(note.timing)
   const noteStartSeconds = ticksToSecondsInProject(note.start, project)
   const noteDurationSeconds = durationTicksToSeconds(project, note.start, note.duration)
-  const preutteranceSeconds = Math.max(0, (entry?.preutteranceMs ?? 0) / 1000)
-  const overlapSeconds = clamp((entry?.overlapMs ?? 18) / 1000, 0.008, 0.14)
+  const preutteranceSeconds = Math.max(0, (timing.preutteranceMs ?? entry?.preutteranceMs ?? 0) / 1000)
+  const overlapSeconds = clamp((timing.voiceOverlapMs ?? entry?.overlapMs ?? 18) / 1000, 0.008, 0.14)
   const releaseSeconds = releaseSecondsForNote(project, note, nextNote, noteDurationSeconds)
   const renderStartSeconds = noteStartSeconds - preutteranceSeconds
   const startSample = Math.max(0, Math.floor(renderStartSeconds * SAMPLE_RATE))
@@ -185,7 +187,7 @@ function mixPreparedSample(
   const length = Math.max(1, Math.ceil(renderLengthSeconds * SAMPLE_RATE))
   const sourceRateRatio = sourceSampleRate / SAMPLE_RATE
   const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
-  const sourceWindow = makeSourceWindow(source.length, sourceSampleRate, entry)
+  const sourceWindow = makeSourceWindow(source.length, sourceSampleRate, entry, timing.sampleStartMs ?? 0)
   const loop = makeLoopWindow(sourceWindow, sourceSampleRate, hasHangulCoda(note.lyric))
   const fadeInSamples = Math.max(16, Math.floor(overlapSeconds * SAMPLE_RATE))
   const consonantGuardFadeSamples = Math.max(12, msToSamples(CONSONANT_GUARD_FADE_MS, SAMPLE_RATE))
@@ -249,8 +251,8 @@ function pitchRateMultiplier(note: SongNote, noteProgressSamples: number, noteBo
   return 2 ** (cents / 1200)
 }
 
-function makeSourceWindow(sourceLength: number, sampleRate: number, entry?: OtoEntry) {
-  const offset = msToSamples(entry?.offsetMs ?? 0, sampleRate)
+function makeSourceWindow(sourceLength: number, sampleRate: number, entry?: OtoEntry, sampleStartMs = 0) {
+  const offset = msToSamples((entry?.offsetMs ?? 0) + sampleStartMs, sampleRate)
   const cutoff = entry?.cutoffMs ?? 0
   const start = clampInt(offset, 0, Math.max(0, sourceLength - 1))
   const end =

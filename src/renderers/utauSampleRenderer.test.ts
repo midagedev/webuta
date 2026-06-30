@@ -187,6 +187,60 @@ describe('UTAU sample renderer', () => {
     expect(plainBody).toBeGreaterThan(envelopedBody * 2)
   })
 
+  it('applies UST StartPoint timing override when reading the source sample', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 80,
+      cutoffMs: 0,
+      preutteranceMs: 0,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeDelayedToneSource(0.9, 44100, 0.24), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeProject(),
+      bpm: 120,
+      notes: [
+        { id: 'plain', trackId: 'track', partId: 'part', start: 0, duration: TICKS_PER_BEAT, tone: 60, lyric: '라' },
+        {
+          id: 'start-point',
+          trackId: 'track',
+          partId: 'part',
+          start: TICKS_PER_BEAT * 3,
+          duration: TICKS_PER_BEAT,
+          tone: 60,
+          lyric: '라',
+          timing: { sampleStartMs: 240 },
+        },
+      ],
+    })
+    const plainEarly = energy(result.samples.slice(Math.floor(0.02 * 44100), Math.floor(0.06 * 44100)))
+    const skippedEarly = energy(result.samples.slice(Math.floor(1.52 * 44100), Math.floor(1.56 * 44100)))
+
+    expect(skippedEarly).toBeGreaterThan(plainEarly * 8)
+  })
+
   it('uses per-note vibrato depth when advancing the UTAU sample', async () => {
     const entry: OtoEntry = {
       fileName: 'ra_C4.wav',
@@ -696,6 +750,21 @@ function makeVocalSourceWithRelease(durationSeconds: number, sampleRate: number)
     if (t > durationSeconds - 0.18) {
       samples[i] *= Math.max(0, (durationSeconds - t) / 0.18)
     }
+  }
+  return samples
+}
+
+function makeDelayedToneSource(durationSeconds: number, sampleRate: number, delaySeconds: number) {
+  const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
+  const delaySamples = Math.floor(delaySeconds * sampleRate)
+  for (let i = delaySamples; i < samples.length; i++) {
+    const t = (i - delaySamples) / sampleRate
+    const envelope = Math.min(1, t / 0.02, (durationSeconds - i / sampleRate) / 0.04)
+    samples[i] =
+      (Math.sin(2 * Math.PI * 261.63 * t) * 0.58 +
+        Math.sin(2 * Math.PI * 523.25 * t) * 0.16 +
+        Math.sin(2 * Math.PI * 784.9 * t) * 0.06) *
+      Math.max(0, envelope)
   }
   return samples
 }
