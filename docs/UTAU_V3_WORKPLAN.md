@@ -221,6 +221,8 @@ Recommended coverage shape:
 - [x] Add an app-visible community release readiness card that shows V3 bundled
   status, lyric coverage, render warnings, and the remaining human listening
   scorecard requirement.
+- [x] Publish the generated V3 listening scorecard and WAV review pack as
+  `public/review/v3/` so the live app can link reviewers directly to it.
 - [ ] Collect human listening scores for the V3 phrases and V2/V3 comparison
   fields; do not synthesize or fake these reviewer scores.
 - [x] Add screenshots and README copy that match the final UI; README
@@ -242,6 +244,7 @@ Recommended coverage shape:
 - [x] V3 sustained CV/V samples pass loop/crossfade audit.
 - [x] V3 sample review preflight report passes with zero hard sample flags.
 - [x] README includes screenshots, license notes, and honest limitations.
+- [x] Published V3 listening scorecard is available as a GitHub Pages asset.
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
 - [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
@@ -258,6 +261,7 @@ npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
 npm run voicebank:review-v3
+npm run voicebank:publish-review-v3
 npm run voicebank:sample-review-v3
 npm run screenshots:readme
 npm run release:audit-utau
@@ -270,6 +274,7 @@ npm test -- scripts/audit-korean-v3-oto.test.mjs
 npm test -- scripts/analyze-korean-v3-loops.test.mjs
 npm test -- scripts/analyze-korean-v3-pitch.test.mjs
 npm test -- scripts/prepare-utau-v3-listening-review.test.mjs
+npm test -- scripts/publish-utau-v3-listening-review.test.mjs
 npm test -- src/components/LeftRail.test.ts
 npm test -- src/voicebank.test.ts src/renderers/utauSampleRenderer.test.ts
 npm run lint
@@ -315,6 +320,10 @@ Current verified V3 evidence:
   phrase scores, V2/V3 preference scores, and download the
   `listening-scores.local.json` required by `npm run release:audit-utau`.
   Human listening scores are still required before community-ready release.
+- `npm run voicebank:publish-review-v3` publishes the scorecard, template,
+  sanitized manifest, 4 V3 WAVs, and 4 legacy V2 comparison WAVs under
+  `public/review/v3/`; no local absolute paths remain in the public manifest or
+  scorecard files.
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.
@@ -338,7 +347,8 @@ Current verified V3 evidence:
   Hangul coda tails, and extreme sample pitch shifts before WAV render.
 - The left rail now surfaces a community release readiness card: bundled V3,
   lyric coverage, and render warnings can pass automatically, while human
-  listening review remains explicitly marked as required.
+  listening review remains explicitly marked as required. The card links to the
+  published `review/v3/index.html` scorecard.
 - Browser renderer selects the closest explicit pitch layer for the requested
   note tone; generated V3 tests verify `도` resolves to C4/F4/A4 layers.
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
@@ -368,6 +378,8 @@ Current verified V3 evidence:
 - Release audit now requires the listening review pack and human score file to
   include four V2/V3 comparison entries, with V3 preference scores of at least
   4/5 before community release.
+- Release audit now requires the published `public/review/v3/` scorecard,
+  sanitized public manifest, and all V3/V2 review WAVs before community release.
 - Release audit now requires the V3 sample review preflight report to be ready,
   no-recording, and free of hard sample flags before community release.
 - Release audit now verifies README screenshots are readable PNG/JPEG files
@@ -384,7 +396,7 @@ Current verified V3 evidence:
   `content-length`.
 - GitHub Actions Pages run `28460675027` passed build, tests, artifact upload,
   and deploy for commit `c3924bb`.
-- `npm test`: 83 passed / 1 skipped files, 357 passed / 2 skipped tests.
+- `npm test`: 84 passed / 1 skipped files, 359 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

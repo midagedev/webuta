@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WebUtau Korean V3 Listening Review</title>
+  <style>
+    :root { color-scheme: dark; --bg: #11131a; --panel: #191d27; --line: #303848; --text: #f4f7fb; --muted: #b8c2d1; --ok: #9cff8a; --warn: #ffd166; --accent: #83f7ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1100px, calc(100vw - 28px)); margin: 0 auto; padding: 28px 0 48px; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 48px); letter-spacing: 0; }
+    h2, h3 { letter-spacing: 0; }
+    p { color: var(--muted); line-height: 1.55; }
+    code { color: #9cff8a; word-break: break-all; }
+    form { display: grid; gap: 16px; }
+    .notice, article, fieldset, .output { border: 1px solid #2d3544; border-radius: 8px; background: var(--panel); }
+    .notice { padding: 14px 16px; }
+    .notice strong { color: var(--accent); }
+    .meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    input, select, textarea, button { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #10131b; color: var(--text); font: inherit; }
+    input, select, textarea { padding: 10px 11px; }
+    textarea { min-height: 82px; resize: vertical; }
+    button { width: auto; padding: 10px 14px; cursor: pointer; font-weight: 800; }
+    article { display: grid; gap: 12px; margin: 16px 0; padding: 16px; }
+    audio { width: 100%; }
+    fieldset { margin: 0; padding: 12px; }
+    legend { padding: 0 6px; color: var(--accent); font-weight: 800; }
+    .scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .comparison-grid > div { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #10131b; }
+    .comparison-grid h3 { margin: 0 0 8px; font-size: 15px; }
+    .comparison-note { margin: 6px 0 0; font-size: 12px; }
+    .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .output { display: grid; gap: 10px; padding: 16px; }
+    .status { font-weight: 800; }
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+    #scoreJson { min-height: 320px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    th, td { padding: 9px; border-bottom: 1px solid #303848; text-align: left; }
+    .ok { color: var(--ok); font-weight: 800; }
+    @media (max-width: 760px) {
+      .meta, .scores, .comparison-grid { grid-template-columns: 1fr; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WebUtau Korean V3 Listening Review</h1>
+    <p>Listen to the generated V3 WAVs and generate <code>listening-scores.local.json</code> for the release audit.</p>
+    <div class="notice">
+      <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
+    </div>
+    <p>Template path: <code>listening-scores.local.template.json</code>. A phrase should score 4/5 or higher before community release.</p>
+    <form id="scorecardForm">
+      <section class="meta" aria-label="Review metadata">
+        <label>Reviewer
+          <input id="reviewer" autocomplete="name" placeholder="name or handle" required>
+        </label>
+        <label>Reviewed at
+          <input id="reviewedAt" type="datetime-local" required>
+        </label>
+        <label>Decision
+          <select id="decision" required>
+            <option value="">Choose after scoring</option>
+            <option value="community-ready">community-ready</option>
+            <option value="release-ready">release-ready</option>
+            <option value="pass">pass</option>
+            <option value="needs-tuning">needs-tuning</option>
+            <option value="fail">fail</option>
+          </select>
+        </label>
+      </section>
+      <label>Playback notes
+        <input id="playback" placeholder="headphones, speakers, phone speaker, etc.">
+      </label>
+      <article data-phrase-id="first-run-demo">
+        <h2>First-run hook</h2>
+        <p>Default melody and lyric shown to a new visitor.</p>
+        <p><strong>Lyrics:</strong> 도 히 도 히 다 이 스 키</p>
+        <audio controls src="audio/01-first-run-demo.wav"></audio>
+        <p class="ok">WAV gate passed</p>
+        <section aria-label="V3 versus legacy V2 comparison">
+          <h3>V3 vs legacy V2</h3>
+          <div class="comparison-grid">
+            <div>
+              <h3>Current V3 synthetic</h3>
+              <audio controls src="audio/01-first-run-demo.wav"></audio>
+              <p class="comparison-note">V3 WAV gate passed</p>
+            </div>
+            <div>
+              <h3>Legacy V2 baseline</h3>
+              <audio controls src="audio/legacy-v2/01-first-run-demo-legacy-v2.wav"></audio>
+              <p class="comparison-note">V2 WAV gate passed</p>
+              <p class="comparison-note">8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+            </div>
+          </div>
+          <label>V3 preference over legacy V2
+            <select data-comparison-index="0" data-comparison-score required>
+              <option value="">-</option>
+              <option value="1">1 - V2 is better</option>
+              <option value="2">2 - V3 is worse or unclear</option>
+              <option value="3">3 - roughly tied</option>
+              <option value="4">4 - V3 is clearly better</option>
+              <option value="5">5 - V3 is dramatically better</option>
+            </select>
+            <span class="score-help">Community release expects V3 to be clearly better than the old bundled V2 baseline.</span>
+          </label>
+          <label>Comparison notes
+            <textarea data-comparison-index="0" data-comparison-notes placeholder="What improved or regressed compared with V2?"></textarea>
+          </label>
+        </section>
+        <fieldset>
+          <legend>Scores</legend>
+          <div class="scores">
+            <label>Korean clarity
+                <select data-phrase-index="0" data-score-key="koreanClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Can a Korean listener recognize the intended lyric without reading along?</span>
+              </label>
+<label>Vowel stability
+                <select data-phrase-index="0" data-score-key="vowelStabilityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Do sustained vowels hold pitch and color without wobble or collapse?</span>
+              </label>
+<label>Consonant clarity
+                <select data-phrase-index="0" data-score-key="consonantClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are attacks and final consonants clear without chopped starts or repeated codas?</span>
+              </label>
+<label>Musicality
+                <select data-phrase-index="0" data-score-key="musicalityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Does the phrase feel usable as a musical vocal sketch rather than a test beep?</span>
+              </label>
+<label>Artifact control
+                <select data-phrase-index="0" data-score-key="artifactScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are clicks, chatter, clipping, and loop seams controlled enough for sharing?</span>
+              </label>
+          </div>
+        </fieldset>
+        <label>Phrase notes
+          <textarea data-phrase-index="0" data-notes placeholder="What sounded clear or broken?"></textarea>
+        </label>
+      </article>
+<article data-phrase-id="coda-release-check">
+        <h2>Batchim release check</h2>
+        <p>Long notes with final consonants; codas should happen once at release, not chatter in the sustain.</p>
+        <p><strong>Lyrics:</strong> 연 한 랑 밤 말</p>
+        <audio controls src="audio/02-coda-release-check.wav"></audio>
+        <p class="ok">WAV gate passed</p>
+        <section aria-label="V3 versus legacy V2 comparison">
+          <h3>V3 vs legacy V2</h3>
+          <div class="comparison-grid">
+            <div>
+              <h3>Current V3 synthetic</h3>
+              <audio controls src="audio/02-coda-release-check.wav"></audio>
+              <p class="comparison-note">V3 WAV gate passed</p>
+            </div>
+            <div>
+              <h3>Legacy V2 baseline</h3>
+              <audio controls src="audio/legacy-v2/02-coda-release-check-legacy-v2.wav"></audio>
+              <p class="comparison-note">V2 WAV gate passed</p>
+              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+            </div>
+          </div>
+          <label>V3 preference over legacy V2
+            <select data-comparison-index="1" data-comparison-score required>
+              <option value="">-</option>
+              <option value="1">1 - V2 is better</option>
+              <option value="2">2 - V3 is worse or unclear</option>
+              <option value="3">3 - roughly tied</option>
+              <option value="4">4 - V3 is clearly better</option>
+              <option value="5">5 - V3 is dramatically better</option>
+            </select>
+            <span class="score-help">Community release expects V3 to be clearly better than the old bundled V2 baseline.</span>
+          </label>
+          <label>Comparison notes
+            <textarea data-comparison-index="1" data-comparison-notes placeholder="What improved or regressed compared with V2?"></textarea>
+          </label>
+        </section>
+        <fieldset>
+          <legend>Scores</legend>
+          <div class="scores">
+            <label>Korean clarity
+                <select data-phrase-index="1" data-score-key="koreanClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Can a Korean listener recognize the intended lyric without reading along?</span>
+              </label>
+<label>Vowel stability
+                <select data-phrase-index="1" data-score-key="vowelStabilityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Do sustained vowels hold pitch and color without wobble or collapse?</span>
+              </label>
+<label>Consonant clarity
+                <select data-phrase-index="1" data-score-key="consonantClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are attacks and final consonants clear without chopped starts or repeated codas?</span>
+              </label>
+<label>Musicality
+                <select data-phrase-index="1" data-score-key="musicalityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Does the phrase feel usable as a musical vocal sketch rather than a test beep?</span>
+              </label>
+<label>Artifact control
+                <select data-phrase-index="1" data-score-key="artifactScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are clicks, chatter, clipping, and loop seams controlled enough for sharing?</span>
+              </label>
+          </div>
+        </fieldset>
+        <label>Phrase notes
+          <textarea data-phrase-index="1" data-notes placeholder="What sounded clear or broken?"></textarea>
+        </label>
+      </article>
+<article data-phrase-id="clear-cv-line">
+        <h2>Clear CV line</h2>
+        <p>Common onset+vowel syllables for consonant attack clarity and vowel stability.</p>
+        <p><strong>Lyrics:</strong> 가 나 다 라 마 사</p>
+        <audio controls src="audio/03-clear-cv-line.wav"></audio>
+        <p class="ok">WAV gate passed</p>
+        <section aria-label="V3 versus legacy V2 comparison">
+          <h3>V3 vs legacy V2</h3>
+          <div class="comparison-grid">
+            <div>
+              <h3>Current V3 synthetic</h3>
+              <audio controls src="audio/03-clear-cv-line.wav"></audio>
+              <p class="comparison-note">V3 WAV gate passed</p>
+            </div>
+            <div>
+              <h3>Legacy V2 baseline</h3>
+              <audio controls src="audio/legacy-v2/03-clear-cv-line-legacy-v2.wav"></audio>
+              <p class="comparison-note">V2 WAV gate passed</p>
+              <p class="comparison-note">6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+            </div>
+          </div>
+          <label>V3 preference over legacy V2
+            <select data-comparison-index="2" data-comparison-score required>
+              <option value="">-</option>
+              <option value="1">1 - V2 is better</option>
+              <option value="2">2 - V3 is worse or unclear</option>
+              <option value="3">3 - roughly tied</option>
+              <option value="4">4 - V3 is clearly better</option>
+              <option value="5">5 - V3 is dramatically better</option>
+            </select>
+            <span class="score-help">Community release expects V3 to be clearly better than the old bundled V2 baseline.</span>
+          </label>
+          <label>Comparison notes
+            <textarea data-comparison-index="2" data-comparison-notes placeholder="What improved or regressed compared with V2?"></textarea>
+          </label>
+        </section>
+        <fieldset>
+          <legend>Scores</legend>
+          <div class="scores">
+            <label>Korean clarity
+                <select data-phrase-index="2" data-score-key="koreanClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Can a Korean listener recognize the intended lyric without reading along?</span>
+              </label>
+<label>Vowel stability
+                <select data-phrase-index="2" data-score-key="vowelStabilityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Do sustained vowels hold pitch and color without wobble or collapse?</span>
+              </label>
+<label>Consonant clarity
+                <select data-phrase-index="2" data-score-key="consonantClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are attacks and final consonants clear without chopped starts or repeated codas?</span>
+              </label>
+<label>Musicality
+                <select data-phrase-index="2" data-score-key="musicalityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Does the phrase feel usable as a musical vocal sketch rather than a test beep?</span>
+              </label>
+<label>Artifact control
+                <select data-phrase-index="2" data-score-key="artifactScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are clicks, chatter, clipping, and loop seams controlled enough for sharing?</span>
+              </label>
+          </div>
+        </fieldset>
+        <label>Phrase notes
+          <textarea data-phrase-index="2" data-notes placeholder="What sounded clear or broken?"></textarea>
+        </label>
+      </article>
+<article data-phrase-id="vowel-color-check">
+        <h2>Vowel color check</h2>
+        <p>Pure vowel-color syllables across a short contour.</p>
+        <p><strong>Lyrics:</strong> 아 이 우 에 오</p>
+        <audio controls src="audio/04-vowel-color-check.wav"></audio>
+        <p class="ok">WAV gate passed</p>
+        <section aria-label="V3 versus legacy V2 comparison">
+          <h3>V3 vs legacy V2</h3>
+          <div class="comparison-grid">
+            <div>
+              <h3>Current V3 synthetic</h3>
+              <audio controls src="audio/04-vowel-color-check.wav"></audio>
+              <p class="comparison-note">V3 WAV gate passed</p>
+            </div>
+            <div>
+              <h3>Legacy V2 baseline</h3>
+              <audio controls src="audio/legacy-v2/04-vowel-color-check-legacy-v2.wav"></audio>
+              <p class="comparison-note">V2 WAV gate passed</p>
+              <p class="comparison-note">5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용</p>
+            </div>
+          </div>
+          <label>V3 preference over legacy V2
+            <select data-comparison-index="3" data-comparison-score required>
+              <option value="">-</option>
+              <option value="1">1 - V2 is better</option>
+              <option value="2">2 - V3 is worse or unclear</option>
+              <option value="3">3 - roughly tied</option>
+              <option value="4">4 - V3 is clearly better</option>
+              <option value="5">5 - V3 is dramatically better</option>
+            </select>
+            <span class="score-help">Community release expects V3 to be clearly better than the old bundled V2 baseline.</span>
+          </label>
+          <label>Comparison notes
+            <textarea data-comparison-index="3" data-comparison-notes placeholder="What improved or regressed compared with V2?"></textarea>
+          </label>
+        </section>
+        <fieldset>
+          <legend>Scores</legend>
+          <div class="scores">
+            <label>Korean clarity
+                <select data-phrase-index="3" data-score-key="koreanClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Can a Korean listener recognize the intended lyric without reading along?</span>
+              </label>
+<label>Vowel stability
+                <select data-phrase-index="3" data-score-key="vowelStabilityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Do sustained vowels hold pitch and color without wobble or collapse?</span>
+              </label>
+<label>Consonant clarity
+                <select data-phrase-index="3" data-score-key="consonantClarityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are attacks and final consonants clear without chopped starts or repeated codas?</span>
+              </label>
+<label>Musicality
+                <select data-phrase-index="3" data-score-key="musicalityScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Does the phrase feel usable as a musical vocal sketch rather than a test beep?</span>
+              </label>
+<label>Artifact control
+                <select data-phrase-index="3" data-score-key="artifactScore" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">Are clicks, chatter, clipping, and loop seams controlled enough for sharing?</span>
+              </label>
+          </div>
+        </fieldset>
+        <label>Phrase notes
+          <textarea data-phrase-index="3" data-notes placeholder="What sounded clear or broken?"></textarea>
+        </label>
+      </article>
+      <section class="output">
+        <div class="actions">
+          <button type="button" id="buildJson">Build listening-scores.local.json</button>
+          <button type="button" id="downloadJson">Download JSON</button>
+          <span id="status" class="status warn">Scores not complete.</span>
+        </div>
+        <textarea id="scoreJson" readonly spellcheck="false"></textarea>
+      </section>
+    </form>
+    <table>
+      <thead><tr><th>Phrase</th><th>Focus</th><th>WAV</th></tr></thead>
+      <tbody>
+        <tr><td>First-run hook</td><td>Default melody and lyric shown to a new visitor.</td><td><code>audio/01-first-run-demo.wav</code></td></tr>
+<tr><td>Batchim release check</td><td>Long notes with final consonants; codas should happen once at release, not chatter in the sustain.</td><td><code>audio/02-coda-release-check.wav</code></td></tr>
+<tr><td>Clear CV line</td><td>Common onset+vowel syllables for consonant attack clarity and vowel stability.</td><td><code>audio/03-clear-cv-line.wav</code></td></tr>
+<tr><td>Vowel color check</td><td>Pure vowel-color syllables across a short contour.</td><td><code>audio/04-vowel-color-check.wav</code></td></tr>
+      </tbody>
+    </table>
+  </main>
+  <script>
+    const template = {"version":1,"reviewId":"webuta-ko-v3-synthetic-listening-review","reviewer":"","reviewedAt":"","decision":"","scoreScale":"1=unusable, 3=prototype, 5=community-release-ready","instructions":["Listen to the generated WAV phrases on headphones or neutral speakers.","Do not record new voice material for this review; score only the bundled synthetic V3 renders.","When legacy V2 comparison WAVs are present, score whether V3 is clearly more usable than V2.","Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds."],"reviewEnvironment":{"playback":"","reviewerNotes":"","noRecordingRequired":true},"rubric":[{"key":"koreanClarityScore","label":"Korean clarity","prompt":"Can a Korean listener recognize the intended lyric without reading along?"},{"key":"vowelStabilityScore","label":"Vowel stability","prompt":"Do sustained vowels hold pitch and color without wobble or collapse?"},{"key":"consonantClarityScore","label":"Consonant clarity","prompt":"Are attacks and final consonants clear without chopped starts or repeated codas?"},{"key":"musicalityScore","label":"Musicality","prompt":"Does the phrase feel usable as a musical vocal sketch rather than a test beep?"},{"key":"artifactScore","label":"Artifact control","prompt":"Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"}],"thresholds":{"minKoreanClarityScore":4,"minVowelStabilityScore":4,"minConsonantClarityScore":4,"minMusicalityScore":4,"minArtifactScore":4,"minV3PreferenceScore":4},"phraseScores":[{"id":"first-run-demo","title":"First-run hook","wavPath":"audio/01-first-run-demo.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"coda-release-check","title":"Batchim release check","wavPath":"audio/02-coda-release-check.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"clear-cv-line","title":"Clear CV line","wavPath":"audio/03-clear-cv-line.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""},{"id":"vowel-color-check","title":"Vowel color check","wavPath":"audio/04-vowel-color-check.wav","koreanClarityScore":null,"vowelStabilityScore":null,"consonantClarityScore":null,"musicalityScore":null,"artifactScore":null,"notes":""}],"comparisonScores":[{"id":"first-run-demo","title":"First-run hook","v3WavPath":"audio/01-first-run-demo.wav","legacyV2WavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"coda-release-check","title":"Batchim release check","v3WavPath":"audio/02-coda-release-check.wav","legacyV2WavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"clear-cv-line","title":"Clear CV line","v3WavPath":"audio/03-clear-cv-line.wav","legacyV2WavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","v3PreferenceScore":null,"notes":""},{"id":"vowel-color-check","title":"Vowel color check","v3WavPath":"audio/04-vowel-color-check.wav","legacyV2WavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","v3PreferenceScore":null,"notes":""}]};
+    const phrases = [{"id":"first-run-demo","title":"First-run hook","description":"Default melody and lyric shown to a new visitor.","lyricLine":"도 히 도 히 다 이 스 키","wavPath":"audio/01-first-run-demo.wav","audioHref":"audio/01-first-run-demo.wav","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","description":"Long notes with final consonants; codas should happen once at release, not chatter in the sustain.","lyricLine":"연 한 랑 밤 말","wavPath":"audio/02-coda-release-check.wav","audioHref":"audio/02-coda-release-check.wav","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","description":"Common onset+vowel syllables for consonant attack clarity and vowel stability.","lyricLine":"가 나 다 라 마 사","wavPath":"audio/03-clear-cv-line.wav","audioHref":"audio/03-clear-cv-line.wav","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","description":"Pure vowel-color syllables across a short contour.","lyricLine":"아 이 우 에 오","wavPath":"audio/04-vowel-color-check.wav","audioHref":"audio/04-vowel-color-check.wav","gates":{"passed":true,"problems":[]}}];
+    const comparisons = [{"id":"first-run-demo","title":"First-run hook","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","audioHref":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","coverageText":"8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","audioHref":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","audioHref":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","coverageText":"6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","audioHref":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}}];
+    const scoreFields = [{"key":"koreanClarityScore","label":"Korean clarity","prompt":"Can a Korean listener recognize the intended lyric without reading along?"},{"key":"vowelStabilityScore","label":"Vowel stability","prompt":"Do sustained vowels hold pitch and color without wobble or collapse?"},{"key":"consonantClarityScore","label":"Consonant clarity","prompt":"Are attacks and final consonants clear without chopped starts or repeated codas?"},{"key":"musicalityScore","label":"Musicality","prompt":"Does the phrase feel usable as a musical vocal sketch rather than a test beep?"},{"key":"artifactScore","label":"Artifact control","prompt":"Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"}];
+    const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
+    const reviewerInput = document.querySelector('#reviewer');
+    const reviewedAtInput = document.querySelector('#reviewedAt');
+    const decisionInput = document.querySelector('#decision');
+    const playbackInput = document.querySelector('#playback');
+    const output = document.querySelector('#scoreJson');
+    const status = document.querySelector('#status');
+    const downloadButton = document.querySelector('#downloadJson');
+
+    reviewedAtInput.value = toLocalDateTime(new Date());
+    document.querySelector('#buildJson').addEventListener('click', updateOutput);
+    downloadButton.addEventListener('click', downloadJson);
+    document.querySelector('#scorecardForm').addEventListener('input', updateOutput);
+    updateOutput();
+
+    function buildPayload() {
+      const phraseScores = phrases.map((phrase, phraseIndex) => {
+        const scores = Object.fromEntries(scoreFields.map((field) => {
+          const select = document.querySelector(`[data-phrase-index="${phraseIndex}"][data-score-key="${field.key}"]`);
+          const value = select?.value ? Number(select.value) : null;
+          return [field.key, value];
+        }));
+        const notes = document.querySelector(`[data-phrase-index="${phraseIndex}"][data-notes]`)?.value ?? '';
+        return {
+          id: phrase.id,
+          title: phrase.title,
+          wavPath: phrase.wavPath,
+          ...scores,
+          notes,
+        };
+      });
+      const comparisonScores = comparisons.map((comparison, comparisonIndex) => {
+        const select = document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-score]`);
+        const notes = document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-notes]`)?.value ?? '';
+        return {
+          id: comparison.id,
+          title: comparison.title,
+          v3WavPath: phrases.find((phrase) => phrase.id === comparison.id)?.wavPath ?? '',
+          legacyV2WavPath: comparison.wavPath,
+          v3PreferenceScore: select?.value ? Number(select.value) : null,
+          notes,
+        };
+      });
+      return {
+        ...template,
+        reviewer: reviewerInput.value.trim(),
+        reviewedAt: reviewedAtInput.value ? new Date(reviewedAtInput.value).toISOString() : '',
+        decision: decisionInput.value,
+        reviewEnvironment: {
+          playback: playbackInput.value.trim(),
+          reviewerNotes: '',
+          noRecordingRequired: true,
+        },
+        phraseScores,
+        comparisonScores,
+      };
+    }
+
+    function validatePayload(payload) {
+      const problems = [];
+      if (!payload.reviewer) problems.push('Reviewer is required.');
+      if (!payload.reviewedAt) problems.push('Reviewed-at time is required.');
+      if (!payload.decision) problems.push('Decision is required.');
+      if (payload.decision && !passingDecisions.has(payload.decision)) {
+        problems.push('Decision will intentionally block release.');
+      }
+      for (const phrase of payload.phraseScores) {
+        for (const field of scoreFields) {
+          const score = phrase[field.key];
+          const threshold = payload.thresholds[`min${field.key.charAt(0).toUpperCase()}${field.key.slice(1)}`] ?? 4;
+          if (typeof score !== 'number') {
+            problems.push(`${phrase.id}: ${field.label} is not scored.`);
+          } else if (score < threshold) {
+            problems.push(`${phrase.id}: ${field.label} ${score} is below ${threshold}.`);
+          }
+        }
+      }
+      for (const comparison of payload.comparisonScores ?? []) {
+        const score = comparison.v3PreferenceScore;
+        const threshold = payload.thresholds.minV3PreferenceScore ?? 4;
+        if (typeof score !== 'number') {
+          problems.push(`${comparison.id}: V3 preference over legacy V2 is not scored.`);
+        } else if (score < threshold) {
+          problems.push(`${comparison.id}: V3 preference ${score} is below ${threshold}.`);
+        }
+      }
+      return problems;
+    }
+
+    function updateOutput() {
+      const payload = buildPayload();
+      const problems = validatePayload(payload);
+      output.value = JSON.stringify(payload, null, 2);
+      status.textContent = problems.length === 0 ? 'Release listening scorecard passes.' : problems.slice(0, 3).join(' ');
+      if (problems.length > 3) status.textContent += ` +${problems.length - 3} more.`;
+      status.className = `status ${problems.length === 0 ? 'ok' : 'warn'}`;
+    }
+
+    function downloadJson() {
+      updateOutput();
+      const blob = new Blob([output.value + '\n'], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'listening-scores.local.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function toLocalDateTime(date) {
+      const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+      return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+    }
+  </script>
+</body>
+</html>

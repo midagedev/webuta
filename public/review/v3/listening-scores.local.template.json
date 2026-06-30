@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "reviewId": "webuta-ko-v3-synthetic-listening-review",
+  "reviewer": "",
+  "reviewedAt": "",
+  "decision": "",
+  "scoreScale": "1=unusable, 3=prototype, 5=community-release-ready",
+  "instructions": [
+    "Listen to the generated WAV phrases on headphones or neutral speakers.",
+    "Do not record new voice material for this review; score only the bundled synthetic V3 renders.",
+    "When legacy V2 comparison WAVs are present, score whether V3 is clearly more usable than V2.",
+    "Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds."
+  ],
+  "reviewEnvironment": {
+    "playback": "",
+    "reviewerNotes": "",
+    "noRecordingRequired": true
+  },
+  "rubric": [
+    {
+      "key": "koreanClarityScore",
+      "label": "Korean clarity",
+      "prompt": "Can a Korean listener recognize the intended lyric without reading along?"
+    },
+    {
+      "key": "vowelStabilityScore",
+      "label": "Vowel stability",
+      "prompt": "Do sustained vowels hold pitch and color without wobble or collapse?"
+    },
+    {
+      "key": "consonantClarityScore",
+      "label": "Consonant clarity",
+      "prompt": "Are attacks and final consonants clear without chopped starts or repeated codas?"
+    },
+    {
+      "key": "musicalityScore",
+      "label": "Musicality",
+      "prompt": "Does the phrase feel usable as a musical vocal sketch rather than a test beep?"
+    },
+    {
+      "key": "artifactScore",
+      "label": "Artifact control",
+      "prompt": "Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"
+    }
+  ],
+  "thresholds": {
+    "minKoreanClarityScore": 4,
+    "minVowelStabilityScore": 4,
+    "minConsonantClarityScore": 4,
+    "minMusicalityScore": 4,
+    "minArtifactScore": 4,
+    "minV3PreferenceScore": 4
+  },
+  "phraseScores": [
+    {
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "wavPath": "audio/01-first-run-demo.wav",
+      "koreanClarityScore": null,
+      "vowelStabilityScore": null,
+      "consonantClarityScore": null,
+      "musicalityScore": null,
+      "artifactScore": null,
+      "notes": ""
+    },
+    {
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "wavPath": "audio/02-coda-release-check.wav",
+      "koreanClarityScore": null,
+      "vowelStabilityScore": null,
+      "consonantClarityScore": null,
+      "musicalityScore": null,
+      "artifactScore": null,
+      "notes": ""
+    },
+    {
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "wavPath": "audio/03-clear-cv-line.wav",
+      "koreanClarityScore": null,
+      "vowelStabilityScore": null,
+      "consonantClarityScore": null,
+      "musicalityScore": null,
+      "artifactScore": null,
+      "notes": ""
+    },
+    {
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "wavPath": "audio/04-vowel-color-check.wav",
+      "koreanClarityScore": null,
+      "vowelStabilityScore": null,
+      "consonantClarityScore": null,
+      "musicalityScore": null,
+      "artifactScore": null,
+      "notes": ""
+    }
+  ],
+  "comparisonScores": [
+    {
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "v3WavPath": "audio/01-first-run-demo.wav",
+      "legacyV2WavPath": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
+      "v3PreferenceScore": null,
+      "notes": ""
+    },
+    {
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "v3WavPath": "audio/02-coda-release-check.wav",
+      "legacyV2WavPath": "audio/legacy-v2/02-coda-release-check-legacy-v2.wav",
+      "v3PreferenceScore": null,
+      "notes": ""
+    },
+    {
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "v3WavPath": "audio/03-clear-cv-line.wav",
+      "legacyV2WavPath": "audio/legacy-v2/03-clear-cv-line-legacy-v2.wav",
+      "v3PreferenceScore": null,
+      "notes": ""
+    },
+    {
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "v3WavPath": "audio/04-vowel-color-check.wav",
+      "legacyV2WavPath": "audio/legacy-v2/04-vowel-color-check-legacy-v2.wav",
+      "v3PreferenceScore": null,
+      "notes": ""
+    }
+  ]
+}

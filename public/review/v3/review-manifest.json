@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "generatedAt": "2026-06-30T16:37:04.115Z",
+  "ok": true,
+  "decision": "v3-listening-review-ready",
+  "outDir": "public/review/v3",
+  "audioDir": "public/review/v3/audio",
+  "indexHtmlPath": "public/review/v3/index.html",
+  "readmePath": "public/review/v3/README.md",
+  "listeningTemplatePath": "public/review/v3/listening-scores.local.template.json",
+  "phraseCount": 4,
+  "comparisonCount": 4,
+  "thresholds": {
+    "minDurationSeconds": 1.8,
+    "maxDurationSeconds": 12,
+    "minBytes": 180000,
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitsPerSample": 16
+  },
+  "phrases": [
+    {
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "description": "Default melody and lyric shown to a new visitor.",
+      "lyricLine": "도 히 도 히 다 이 스 키",
+      "projectName": "V3 Review 01 First Run",
+      "wavPath": "audio/01-first-run-demo.wav",
+      "audioHref": "audio/01-first-run-demo.wav",
+      "wav": {
+        "path": "audio/01-first-run-demo.wav",
+        "bytes": 578384,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 6.557142857142857
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      }
+    },
+    {
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "description": "Long notes with final consonants; codas should happen once at release, not chatter in the sustain.",
+      "lyricLine": "연 한 랑 밤 말",
+      "projectName": "V3 Review 02 Batchim",
+      "wavPath": "audio/02-coda-release-check.wav",
+      "audioHref": "audio/02-coda-release-check.wav",
+      "wav": {
+        "path": "audio/02-coda-release-check.wav",
+        "bytes": 563846,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 6.392312925170068
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      }
+    },
+    {
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "description": "Common onset+vowel syllables for consonant attack clarity and vowel stability.",
+      "lyricLine": "가 나 다 라 마 사",
+      "projectName": "V3 Review 03 CV",
+      "wavPath": "audio/03-clear-cv-line.wav",
+      "audioHref": "audio/03-clear-cv-line.wav",
+      "wav": {
+        "path": "audio/03-clear-cv-line.wav",
+        "bytes": 470850,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 5.337936507936508
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      }
+    },
+    {
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "description": "Pure vowel-color syllables across a short contour.",
+      "lyricLine": "아 이 우 에 오",
+      "projectName": "V3 Review 04 Vowels",
+      "wavPath": "audio/04-vowel-color-check.wav",
+      "audioHref": "audio/04-vowel-color-check.wav",
+      "wav": {
+        "path": "audio/04-vowel-color-check.wav",
+        "bytes": 497886,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 5.644467120181406
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "description": "Legacy V2 baseline for First-run hook.",
+      "voicebankName": "WebUtau Korean V2 Legacy",
+      "lyricLine": "도 히 도 히 다 이 스 키",
+      "wavPath": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
+      "audioHref": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
+      "wav": {
+        "path": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
+        "bytes": 578384,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 6.557142857142857
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      },
+      "coverageText": "8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "warningText": "렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
+    },
+    {
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "description": "Legacy V2 baseline for Batchim release check.",
+      "voicebankName": "WebUtau Korean V2 Legacy",
+      "lyricLine": "연 한 랑 밤 말",
+      "wavPath": "audio/legacy-v2/02-coda-release-check-legacy-v2.wav",
+      "audioHref": "audio/legacy-v2/02-coda-release-check-legacy-v2.wav",
+      "wav": {
+        "path": "audio/legacy-v2/02-coda-release-check-legacy-v2.wav",
+        "bytes": 563846,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 6.392312925170068
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      },
+      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "warningText": "렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음"
+    },
+    {
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "description": "Legacy V2 baseline for Clear CV line.",
+      "voicebankName": "WebUtau Korean V2 Legacy",
+      "lyricLine": "가 나 다 라 마 사",
+      "wavPath": "audio/legacy-v2/03-clear-cv-line-legacy-v2.wav",
+      "audioHref": "audio/legacy-v2/03-clear-cv-line-legacy-v2.wav",
+      "wav": {
+        "path": "audio/legacy-v2/03-clear-cv-line-legacy-v2.wav",
+        "bytes": 470850,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 5.337936507936508
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      },
+      "coverageText": "6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "warningText": "렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
+    },
+    {
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "description": "Legacy V2 baseline for Vowel color check.",
+      "voicebankName": "WebUtau Korean V2 Legacy",
+      "lyricLine": "아 이 우 에 오",
+      "wavPath": "audio/legacy-v2/04-vowel-color-check-legacy-v2.wav",
+      "audioHref": "audio/legacy-v2/04-vowel-color-check-legacy-v2.wav",
+      "wav": {
+        "path": "audio/legacy-v2/04-vowel-color-check-legacy-v2.wav",
+        "bytes": 497886,
+        "sampleRate": 44100,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 5.644467120181406
+      },
+      "gates": {
+        "passed": true,
+        "problems": []
+      },
+      "coverageText": "5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용",
+      "warningText": "렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
+    }
+  ],
+  "problems": [],
+  "nextSteps": [
+    "Open index.html",
+    "Use the HTML scorecard to download listening-scores.local.json",
+    "Tune generator consonant/noise/formant profiles if any phrase or V2 comparison scores below 4/5."
+  ],
+  "publishedForWeb": true
+}

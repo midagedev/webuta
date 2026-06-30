@@ -12,6 +12,8 @@ const DEFAULTS = {
   loopAudit: 'experiments/utau-v3/work/v3-loop-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
+  publicReviewIndex: 'public/review/v3/index.html',
+  publicReviewManifest: 'public/review/v3/review-manifest.json',
   sampleReview: 'experiments/utau-v3/work/v3-sample-review-report.json',
   listeningScores: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
   readme: 'README.md',
@@ -37,6 +39,8 @@ const DEMO_REQUIRED_CHECKS = [
   'first-run demo aliases fully matched',
   'first-run demo render warnings clear',
   'first-run lyric visible',
+  'community release readiness card visible',
+  'community listening review scorecard linked',
   'desktop WAV download',
   'render history visible',
   'desktop no page horizontal overflow',
@@ -68,6 +72,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('loop-stability', 'V3 sustain loop audit', paths.loopAudit, EXPECTED_DECISIONS.loopAudit),
     demoGate(paths.demoAudit),
     reviewPackGate(paths.reviewManifest),
+    publicReviewGate(paths),
     sampleReviewGate(paths.sampleReview),
     listeningScoresGate(paths.listeningScores),
     readmeGate(paths),
@@ -170,6 +175,60 @@ function reviewPackGate(path) {
     }
   }
   return makeGate('listening-pack', 'Browser-rendered V3 listening review pack', path, problems, summarizeReport(report))
+}
+
+function publicReviewGate(paths) {
+  const problems = []
+  const html = readOptionalText(paths.publicReviewIndex, 'public V3 listening review scorecard', problems)
+  const manifest = readOptionalJson(paths.publicReviewManifest, 'public V3 listening review manifest', problems)
+  if (html) {
+    for (const snippet of [
+      'WebUtau Korean V3 Listening Review',
+      'listening-scores.local.json',
+      'No recording step',
+    ]) {
+      if (!html.includes(snippet)) {
+        problems.push(`public review scorecard must include "${snippet}"`)
+      }
+    }
+  }
+  if (manifest) {
+    if (manifest.ok !== true || manifest.decision !== EXPECTED_DECISIONS.reviewManifest) {
+      problems.push('public review manifest must describe a ready review pack')
+    }
+    if (manifest.publishedForWeb !== true) {
+      problems.push('public review manifest must be sanitized for web publishing')
+    }
+    if (JSON.stringify(manifest).includes('/Users/')) {
+      problems.push('public review manifest must not contain local absolute paths')
+    }
+    if ((manifest.phraseCount ?? 0) < 4 || (manifest.comparisonCount ?? 0) < 4) {
+      problems.push('public review manifest must include four V3 phrases and four legacy comparisons')
+    }
+    const baseDir = dirname(paths.publicReviewManifest)
+    for (const item of [...(manifest.phrases ?? []), ...(manifest.comparisons ?? [])]) {
+      const href = item.audioHref ?? item.wavPath
+      if (typeof href !== 'string' || href.length === 0) {
+        problems.push(`public review item ${item.id ?? '(unknown)'} is missing audioHref`)
+        continue
+      }
+      if (href.startsWith('/') || /^[a-z][a-z0-9+.-]*:/iu.test(href)) {
+        problems.push(`public review item ${item.id ?? '(unknown)'} must use relative audio href`)
+        continue
+      }
+      const audioPath = resolve(baseDir, href)
+      if (!existsSync(audioPath)) {
+        problems.push(`public review audio missing: ${href}`)
+      } else if (readFileSync(audioPath).byteLength < 180_000) {
+        problems.push(`public review audio too small: ${href}`)
+      }
+    }
+  }
+  return makeGate('public-listening-review', 'Published V3 listening review scorecard', paths.publicReviewIndex, problems, manifest ? {
+    phraseCount: manifest.phraseCount ?? null,
+    comparisonCount: manifest.comparisonCount ?? null,
+    publishedForWeb: manifest.publishedForWeb ?? null,
+  } : null)
 }
 
 function sampleReviewGate(path) {
@@ -521,7 +580,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     problems.push(`GitHub Pages V3 zip bytes ${evidence.voicebank?.bytes ?? 'missing'} do not match local bundled zip ${localBytes}`)
   }
   const checks = new Set(evidence.checks ?? [])
-  for (const check of ['pages app loaded', 'pages V3 zip cache-busted', 'pages V3 zip bytes match local bundle']) {
+  for (const check of ['pages app loaded', 'pages V3 zip cache-busted', 'pages V3 zip bytes match local bundle', 'pages V3 listening review scorecard loaded']) {
     if (!checks.has(check)) {
       problems.push(`GitHub Pages evidence missing check: ${check}`)
     }
@@ -534,12 +593,15 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
     base.pathname += '/'
   }
   const app = await fetchWithProblem(base, 'GitHub Pages app', problems)
+  const reviewUrl = new URL('review/v3/index.html', base)
   const zipUrl = new URL(`voicebanks/${bundled.file}`, base)
   zipUrl.searchParams.set('v', bundled.version)
+  const review = await fetchWithProblem(reviewUrl, 'GitHub Pages V3 listening review', problems)
   const zip = await fetchWithProblem(zipUrl, 'GitHub Pages V3 zip', problems, { method: 'HEAD' })
   const evidence = {
     ok: problems.length === 0,
     url: base.href,
+    reviewUrl: reviewUrl.href,
     voicebankUrl: zipUrl.href,
     voicebank: {
       file: bundled.file,
@@ -555,6 +617,9 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
   }
   if (zip?.ok) {
     evidence.checks.push('pages V3 zip cache-busted')
+  }
+  if (review?.ok) {
+    evidence.checks.push('pages V3 listening review scorecard loaded')
   }
   if (zip?.ok && localBytes !== null && evidence.voicebank.bytes === localBytes) {
     evidence.checks.push('pages V3 zip bytes match local bundle')
@@ -646,6 +711,9 @@ function nextActionsForProblems(problems) {
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
     actions.push('Open experiments/utau-v3/work/v3-listening-review/index.html, score the generated V3 WAVs plus V2/V3 comparisons in the local scorecard, and save listening-scores.local.json after a human listening pass.')
+  }
+  if (problems.some((problem) => problem.includes('public-listening-review'))) {
+    actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')
   }
   if (problems.some((problem) => problem.includes('github-pages-v3'))) {
     actions.push('Deploy to GitHub Pages and rerun this audit with --pages-url https://midagedev.github.io/webuta/.')

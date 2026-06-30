@@ -18,6 +18,7 @@ describe('LeftRail release readiness', () => {
     expect(releaseCard.textContent).toContain('8/8 notes')
     expect(releaseCard.textContent).toContain('0 warnings')
     expect(releaseCard.textContent).toContain('listening-scores.local.json 필요')
+    expect(screen.getByRole('link', { name: '청취 리뷰 열기' }).getAttribute('href')).toBe('/review/v3/index.html')
   })
 
   it('does not mark imported user zips as the bundled V3 release voicebank', () => {

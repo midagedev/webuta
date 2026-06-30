@@ -4,6 +4,7 @@
     ArrowLeft,
     ArrowRight,
     ArrowUp,
+    ExternalLink,
     Plus,
     Scissors,
     ShieldCheck,
@@ -163,6 +164,7 @@
       ? '남은 단계: 생성된 WAV 청취 점수 저장'
       : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
   )
+  const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
 </script>
 
 <aside class="left-rail">
@@ -213,6 +215,10 @@
           <em>listening-scores.local.json 필요</em>
         </div>
       </div>
+      <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
+        <ExternalLink size={14} aria-hidden="true" />
+        <span>청취 리뷰 열기</span>
+      </a>
     </div>
     <label class="field-label">
       BPM

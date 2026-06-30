@@ -182,6 +182,7 @@ async function makeFixture(overrides = {}) {
   mkdirSync(join(docs, 'screenshots'), { recursive: true })
   mkdirSync(join(root, 'src'), { recursive: true })
   mkdirSync(join(root, 'public', 'voicebanks'), { recursive: true })
+  mkdirSync(join(root, 'public', 'review', 'v3', 'audio', 'legacy-v2'), { recursive: true })
   writeJson(join(work, 'v3-voicebank-audit.json'), passReport('v3-voicebank-audit-pass'))
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
@@ -197,6 +198,24 @@ async function makeFixture(overrides = {}) {
   writeFileSync(join(review, 'audio', 'legacy-v2', '03-clear-cv-line-legacy-v2.wav'), 'wav')
   writeFileSync(join(review, 'audio', 'legacy-v2', '04-vowel-color-check-legacy-v2.wav'), 'wav')
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
+  writeFileSync(
+    join(root, 'public', 'review', 'v3', 'index.html'),
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><code>listening-scores.local.json</code>',
+  )
+  writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
+  writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
+  for (const fileName of ['01-first-run-demo.wav', '02-coda-release-check.wav', '03-clear-cv-line.wav', '04-vowel-color-check.wav']) {
+    writeFileSync(join(root, 'public', 'review', 'v3', 'audio', fileName), Buffer.alloc(200_000, 1))
+  }
+  for (const fileName of [
+    '01-first-run-demo-legacy-v2.wav',
+    '02-coda-release-check-legacy-v2.wav',
+    '03-clear-cv-line-legacy-v2.wav',
+    '04-vowel-color-check-legacy-v2.wav',
+  ]) {
+    writeFileSync(join(root, 'public', 'review', 'v3', 'audio', 'legacy-v2', fileName), Buffer.alloc(200_000, 1))
+  }
+  writeJson(join(root, 'public', 'review', 'v3', 'review-manifest.json'), makePublicReviewManifest())
   if (!overrides.omitListeningScores) {
     writeJson(join(review, 'listening-scores.local.json'), deepMerge(makeListeningScores(), overrides.listeningScores ?? {}))
   }
@@ -224,7 +243,12 @@ async function makeFixture(overrides = {}) {
         version: '20260630-v3-synthetic-web-1',
         bytes: readFileSync(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip')).byteLength,
       },
-      checks: ['pages app loaded', 'pages V3 zip cache-busted', 'pages V3 zip bytes match local bundle'],
+      checks: [
+        'pages app loaded',
+        'pages V3 zip cache-busted',
+        'pages V3 zip bytes match local bundle',
+        'pages V3 listening review scorecard loaded',
+      ],
     },
   )
   return { root, pagesReport }
@@ -306,6 +330,8 @@ function makeDemoReport() {
       'first-run demo aliases fully matched',
       'first-run demo render warnings clear',
       'first-run lyric visible',
+      'community release readiness card visible',
+      'community listening review scorecard linked',
       'desktop WAV download',
       'render history visible',
       'desktop no page horizontal overflow',
@@ -346,6 +372,36 @@ function makeReviewManifest(review) {
       wavPath: join(review, 'audio', 'legacy-v2', fileName.replace('.wav', '-legacy-v2.wav')),
       gates: { passed: true },
     })),
+  }
+}
+
+function makePublicReviewManifest() {
+  const phrases = [
+    ['first-run-demo', '01-first-run-demo.wav'],
+    ['coda-release-check', '02-coda-release-check.wav'],
+    ['clear-cv-line', '03-clear-cv-line.wav'],
+    ['vowel-color-check', '04-vowel-color-check.wav'],
+  ]
+  return {
+    ...passReport('v3-listening-review-ready'),
+    publishedForWeb: true,
+    phraseCount: 4,
+    comparisonCount: 4,
+    phrases: phrases.map(([id, fileName]) => ({
+      id,
+      wavPath: `audio/${fileName}`,
+      audioHref: `audio/${fileName}`,
+      gates: { passed: true },
+    })),
+    comparisons: phrases.map(([id, fileName]) => {
+      const legacyName = fileName.replace('.wav', '-legacy-v2.wav')
+      return {
+        id,
+        wavPath: `audio/legacy-v2/${legacyName}`,
+        audioHref: `audio/legacy-v2/${legacyName}`,
+        gates: { passed: true },
+      }
+    }),
   }
 }
 

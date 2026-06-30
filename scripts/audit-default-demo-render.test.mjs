@@ -13,6 +13,7 @@ describe('default demo render audit report', () => {
         'first-run demo render warnings clear',
         'first-run lyric visible',
         'community release readiness card visible',
+        'community listening review scorecard linked',
         'desktop WAV download',
         'render history visible',
         'desktop no page horizontal overflow',

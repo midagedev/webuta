@@ -56,6 +56,7 @@ Kasane Teto assets are not bundled in this repository. For the real UTAU path, i
 - Voicebank alias coverage display, so missing syllables are visible before rendering.
 - Per-note render warnings for missing aliases, missing Hangul coda tails, and extreme sample pitch shifts.
 - Community release readiness card that separates automated V3 checks from the required human listening scorecard.
+- Public V3 listening review scorecard under `review/v3/`, linked from the app, for scoring generated V3 WAVs against the legacy V2 baseline.
 - WAV render inspection for RIFF/WAVE PCM, 16-bit, mono, 44100 Hz output.
 - Local project and voicebank restore after refresh on the same browser.
 - PWA app-shell caching after the first online load.
@@ -118,6 +119,7 @@ npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
 npm run voicebank:review-v3
+npm run voicebank:publish-review-v3
 npm run screenshots:readme
 npm run lint
 npm test
@@ -137,6 +139,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:pitch-v3` audits all 615 bundled samples and currently reports max median pitch error near `4.5` cents.
 - `npm run voicebank:loop-v3` audits all 432 bundled CV/V sustain samples and currently reports max loop residual ratio near `0.059`.
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
+- `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run screenshots:readme` refreshes the desktop/mobile README screenshots from the live app UI.
 - Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
@@ -157,6 +160,7 @@ The current interface uses an original cyber vocal mascot illustration and a den
 - Product copy should say `vocal synth`, `singing voice editor`, or `cyber vocal`. It should not imply Vocaloid compatibility.
 - No third-party singer likeness, Teto character art, or Teto voicebank files are bundled.
 - `public/voicebanks/webuta-ko-v3.zip` is the generated V3 starter voicebank; regenerate it with `npm run voicebank:v3`.
+- `public/review/v3/index.html` is the generated V3 listening scorecard; regenerate it with `npm run voicebank:review-v3` and `npm run voicebank:publish-review-v3`.
 - When the bundled voicebank changes, bump `BUNDLED_UTAU_VOICEBANK_VERSION` in `src/bundledVoicebank.ts` so browsers fetch the new zip.
 
 ## Deploy To GitHub Pages

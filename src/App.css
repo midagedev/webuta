@@ -712,6 +712,25 @@ button:disabled {
   font-style: normal;
 }
 
+.release-review-link {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #715a18;
+  border-radius: 6px;
+  color: #ffe28a;
+  background: #2a2412;
+  font-size: 11px;
+  font-weight: 880;
+  text-decoration: none;
+}
+
+.release-review-link:hover {
+  background: #3a3017;
+}
+
 .coverage-card strong,
 .coverage-card span,
 .coverage-card em,

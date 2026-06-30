@@ -364,6 +364,12 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
+  await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const reviewHref = await reviewLink.getAttribute('href')
+  if (!reviewHref?.includes('/review/v3/index.html')) {
+    throw new Error(`Unexpected listening review href: ${reviewHref ?? 'missing'}`)
+  }
   await page.waitForFunction(
     () => {
       const input = document.querySelector('[aria-label="가사 라인"]')
@@ -379,6 +385,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run demo render warnings clear',
     'first-run lyric visible',
     'community release readiness card visible',
+    'community listening review scorecard linked',
   ]
 }
 
