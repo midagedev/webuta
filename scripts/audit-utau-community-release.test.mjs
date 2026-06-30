@@ -136,9 +136,9 @@ async function makeFixture(overrides = {}) {
   writeFileSync(
     join(root, 'src', 'bundledVoicebank.ts'),
     [
-      "export const BUNDLED_KOREAN_LITE_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
-      "export const BUNDLED_KOREAN_LITE_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_KOREAN_LITE_VOICEBANK_VERSION = '20260630-v3-synthetic-web-1'",
+      "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
+      "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260630-v3-synthetic-web-1'",
       '',
     ].join('\n'),
   )

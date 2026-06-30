@@ -117,7 +117,7 @@ Recommended coverage shape:
 
 - [x] Reset the project goal to UTAU-first community release.
 - [x] Keep the first-run demo lyric as `도히도히 다이스키`.
-- [ ] Rename V2 in UI/docs as legacy once V3 artifacts exist.
+- [x] Rename V2 in UI/docs as legacy once V3 artifacts exist.
 - [x] Add an app-visible current project/title indicator and a real New Project
   flow if still missing from the browser UI.
 - [x] Ensure the default renderer is the bundled UTAU sample renderer, not the
@@ -182,7 +182,7 @@ Recommended coverage shape:
 - [x] Add crossfade diagnostics for loop discontinuities.
 - [x] Add pitch-layer selection by target MIDI note and alias.
 - [x] Add per-note render warnings for fallback, missing alias, or extreme pitch shift.
-- [ ] Verify imported Teto and bundled V3 both render without regressions.
+- [x] Verify imported Teto and bundled V3 both render without regressions.
 
 ### M6. Vocal-Synth DAW Workflow
 
@@ -310,6 +310,13 @@ Current verified V3 evidence:
 - DAW editing controls now cover draw, drag, resize, split, delete, lyric line
   apply, undo, and redo. The transport includes play, stop, loop playback,
   metronome toggle, BPM edit, render, download, and share.
+- App code now names the bundled default as `BUNDLED_UTAU_VOICEBANK_*` instead
+  of the older `KOREAN_LITE` default path; the old exports remain only as
+  compatibility aliases. V2/Supertonic docs are marked legacy.
+- `npm run test:teto` passes against the ignored official
+  `test-assets/TETO-OUset240323.zip`: 2 tests pass, the official zip loads,
+  Japanese/Korean alias mappings resolve, and the built-in Korean demo renders
+  through the UTAU sample renderer with bounded non-silent output.
 - Browser demo audit verifies the piano keyboard and bar ruler are visible on
   both desktop and mobile widths, with no page-level horizontal overflow.
 - Generated-zip integrity test verifies the first-run demo phrase has 8/8

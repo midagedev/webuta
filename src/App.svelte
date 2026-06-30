@@ -8,7 +8,7 @@
   import ModeStrip from './components/ModeStrip.svelte'
   import TopBar from './components/TopBar.svelte'
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
-  import { BUNDLED_KOREAN_LITE_VOICEBANK_NAME, loadBundledKoreanLiteVoicebankFile } from './bundledVoicebank'
+  import { BUNDLED_UTAU_VOICEBANK_NAME, loadBundledUtauVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
   import { createDemoProject, createStarterProject, duplicateProject as createProjectDuplicate } from './demoProject'
   import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicks, ticksToSeconds, toneName } from './music'
@@ -93,7 +93,7 @@
   let projectSourceLabel = $state(restoredProject ? 'Saved browser draft' : 'Built-in Hangul demo')
   let selectedNoteId = $state(initialProject.notes[0]?.id ?? '')
   let rendered = $state<RenderedAudio | null>(null)
-  let voicebankName = $state(BUNDLED_KOREAN_LITE_VOICEBANK_NAME)
+  let voicebankName = $state(BUNDLED_UTAU_VOICEBANK_NAME)
   let voicebank = $state<LoadedVoicebank | null>(null)
   let isRendering = $state(false)
   let isLoadingVoicebank = $state(false)
@@ -275,10 +275,10 @@
   async function restoreBundledVoicebank() {
     const loadToken = ++voicebankLoadToken
     isLoadingVoicebank = true
-    notice = 'Loading bundled Korean voicebank'
+    notice = 'Loading bundled V3 UTAU voicebank'
     voicebankCacheStatus = 'restoring'
     try {
-      const file = await loadBundledKoreanLiteVoicebankFile()
+      const file = await loadBundledUtauVoicebankFile()
       const loaded = await loadVoicebankZip(file)
       if (loadToken !== voicebankLoadToken) {
         return

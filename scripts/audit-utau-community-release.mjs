@@ -409,9 +409,10 @@ async function fetchWithProblem(url, label, problems, init = {}) {
 function readBundledVoicebank(path) {
   const text = readFileSync(path, 'utf8')
   return {
-    name: readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_NAME'),
-    file: readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_FILE'),
-    version: readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_VERSION'),
+    name: readExportedString(text, 'BUNDLED_UTAU_VOICEBANK_NAME') || readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_NAME'),
+    file: readExportedString(text, 'BUNDLED_UTAU_VOICEBANK_FILE') || readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_FILE'),
+    version:
+      readExportedString(text, 'BUNDLED_UTAU_VOICEBANK_VERSION') || readExportedString(text, 'BUNDLED_KOREAN_LITE_VOICEBANK_VERSION'),
   }
 }
 
