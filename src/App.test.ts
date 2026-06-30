@@ -90,6 +90,27 @@ describe('App editing workflow', () => {
     expect(screen.getAllByText('Built-in Hangul demo').length).toBeGreaterThan(0)
   })
 
+  it('surfaces a first-run guide with direct starter actions', async () => {
+    render(App)
+
+    const guide = screen.getByLabelText('First run guide')
+
+    expect(within(guide).getByText('첫 보컬 스케치')).toBeTruthy()
+    expect(within(guide).getByText('도 히 도 히 다 이 스 키')).toBeTruthy()
+    expect(within(guide).getByRole('button', { name: '스타터 재생' })).toBeTruthy()
+    expect(within(guide).getByRole('button', { name: '스타터 WAV 다운로드' })).toBeTruthy()
+
+    fireEvent.click(within(guide).getByRole('button', { name: '가사 라인 적용' }))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('8 lyrics applied').length).toBeGreaterThan(0)
+    })
+
+    fireEvent.click(within(guide).getByRole('button', { name: '컴포즈 모드 열기' }))
+
+    expect(screen.getByLabelText('Compose mode')).toBeTruthy()
+  })
+
   it('duplicates the current project without overwriting the original draft name', async () => {
     saveProject({
       ...demoProject,
@@ -608,7 +629,7 @@ describe('App editing workflow', () => {
 
     fireEvent.click(grid, { clientX: 167, clientY: 53 })
 
-    expect(screen.getByText(/9 notes/)).toBeTruthy()
+    expect(screen.getAllByText(/9 notes/).length).toBeGreaterThan(0)
   })
 
   it('duplicates the selected note as one undoable edit', async () => {

@@ -6,6 +6,7 @@
   import EditorArea from './components/EditorArea.svelte'
   import LeftRail from './components/LeftRail.svelte'
   import ModeStrip from './components/ModeStrip.svelte'
+  import StarterGuide from './components/StarterGuide.svelte'
   import TopBar from './components/TopBar.svelte'
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
   import { BUNDLED_UTAU_VOICEBANK_NAME, loadBundledUtauVoicebankFile } from './bundledVoicebank'
@@ -1466,6 +1467,20 @@
     {/key}
 
     <div class="main-stack">
+      <StarterGuide
+        {project}
+        {voicebankName}
+        {voicebankCoverage}
+        {rendered}
+        {isRendering}
+        {isPlaying}
+        onResetDemoProject={resetDemoProject}
+        onApplyLyricLine={applyLyricLine}
+        onOpenCompose={() => (activeMode = 'compose')}
+        onPlayPause={playOrPause}
+        onDownloadWav={downloadWav}
+      />
+
       {#if activeMode === 'compose'}
         <ComposerPanel
           lyrics={composerLyrics}

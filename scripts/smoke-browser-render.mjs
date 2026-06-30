@@ -359,6 +359,10 @@ async function selectLocalNeuralModel(page) {
 }
 
 async function assertDefaultV3DemoReady(page) {
+  await page.getByLabel('First run guide').getByText('첫 보컬 스케치').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run guide').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run guide').getByRole('button', { name: '컴포즈 모드 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run guide').getByRole('button', { name: '스타터 WAV 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -395,6 +399,7 @@ async function assertDefaultV3DemoReady(page) {
   )
   return [
     'default V3 voicebank loaded',
+    'first-run starter guide visible',
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',
     'first-run lyric visible',

@@ -451,6 +451,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
     ...passReport('default-demo-render-pass'),
     requiredChecks: [
       'default V3 voicebank loaded',
+      'first-run starter guide visible',
       'first-run demo aliases fully matched',
       'first-run demo render warnings clear',
       'first-run lyric visible',

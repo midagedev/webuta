@@ -43,6 +43,7 @@ const EXPECTED_DECISIONS = {
 
 const DEMO_REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
+  'first-run starter guide visible',
   'first-run demo aliases fully matched',
   'first-run demo render warnings clear',
   'first-run lyric visible',
