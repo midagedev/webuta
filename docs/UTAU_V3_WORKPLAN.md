@@ -254,6 +254,8 @@ Recommended coverage shape:
 - [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
 - [x] GitHub Pages deployment loads all 8 public V3/V2 listening review WAVs
   and matches their deployed byte sizes against local assets.
+- [x] GitHub Pages deployment passes the first-run default V3 Playwright demo
+  audit, including desktop/mobile layout checks and live WAV download.
 - [ ] `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/`
   passes.
 
@@ -263,6 +265,7 @@ Recommended coverage shape:
 npm run voicebank:v3
 npm run voicebank:audit-v3
 npm run voicebank:demo-v3
+npm run voicebank:demo-v3:pages
 npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
@@ -313,6 +316,10 @@ Current verified V3 evidence:
   visible, the community release readiness card is visible, desktop/mobile
   overflow checks pass, and the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56
   seconds, 578384 bytes.
+- `npm run voicebank:demo-v3:pages` passes against
+  `https://midagedev.github.io/webuta/`: the deployed app loads the bundled V3,
+  the first-run demo aliases match 8/8, desktop/mobile layout checks pass, and
+  the live WAV download is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
 - The default `도히도히 다이스키` melody is now E-G-E-A-G-A-F-E rather than a
   straight ascending test scale; regression tests pin this contour in the app
   fixture and listening-review pack.
@@ -394,6 +401,9 @@ Current verified V3 evidence:
   sanitized public manifest, and all V3/V2 review WAVs before community release;
   with `--pages-url`, it HEAD-checks all 8 deployed WAV files and verifies their
   byte sizes against local assets.
+- Release audit now requires the deployed default-demo browser audit generated
+  by `npm run voicebank:demo-v3:pages`, so GitHub Pages proves default V3
+  loading, desktop/mobile layout, and live WAV download before release.
 - Release audit now requires the V3 sample review preflight report to be ready,
   no-recording, and free of hard sample flags before community release.
 - Release audit now verifies README screenshots are readable PNG/JPEG files
@@ -407,10 +417,11 @@ Current verified V3 evidence:
   blocked only by missing human listening scores; live Pages loads
   `voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-2` with HTTP 200 and
   47944410 bytes, matching the local bundled zip byte-for-byte by
-  `content-length`.
-- GitHub Actions Pages run `28460675027` passed build, tests, artifact upload,
-  and deploy for commit `c3924bb`.
-- `npm test`: 85 passed / 1 skipped files, 362 passed / 2 skipped tests.
+  `content-length`; it also verifies all 8 deployed V3/V2 review WAVs and the
+  deployed first-run default V3 browser demo audit.
+- GitHub Actions Pages workflow is verified after release-gate pushes; it must
+  pass build, tests, artifact upload, and deploy before sharing the live URL.
+- `npm test`: 85 passed / 1 skipped files, 364 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

@@ -44,6 +44,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Default V3 demo browser audit passes: V3 selected, aliases 8/8 matched,
   render warnings clear, piano-roll key/ruler labels visible on desktop/mobile,
   and WAV export DAW-ready.
+- [x] Deployed GitHub Pages app passes the same first-run V3 browser audit and
+  live WAV download check.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
 - [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and

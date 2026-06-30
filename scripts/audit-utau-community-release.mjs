@@ -11,6 +11,7 @@ const DEFAULTS = {
   pitchAudit: 'experiments/utau-v3/work/v3-pitch-audit.json',
   loopAudit: 'experiments/utau-v3/work/v3-loop-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
+  pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   publicReviewIndex: 'public/review/v3/index.html',
   publicReviewManifest: 'public/review/v3/review-manifest.json',
@@ -71,6 +72,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('pitch-stability', 'V3 pitch audit', paths.pitchAudit, EXPECTED_DECISIONS.pitchAudit),
     reportGate('loop-stability', 'V3 sustain loop audit', paths.loopAudit, EXPECTED_DECISIONS.loopAudit),
     demoGate(paths.demoAudit),
+    pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
     reviewPackGate(paths.reviewManifest),
     publicReviewGate(paths),
     sampleReviewGate(paths.sampleReview),
@@ -133,21 +135,45 @@ function demoGate(path) {
   const problems = []
   const report = readOptionalJson(path, 'default V3 demo render audit', problems)
   if (report) {
-    if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.demoAudit) {
-      problems.push('default demo render audit must pass')
-    }
-    const checks = new Set((report.requiredChecks ?? []).filter((check) => check.passed).map((check) => check.check))
-    for (const check of DEMO_REQUIRED_CHECKS) {
-      if (!checks.has(check)) {
-        problems.push(`missing passed demo check: ${check}`)
-      }
-    }
-    const wav = report.download?.wav ?? {}
-    if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
-      problems.push('demo WAV must be 44.1 kHz mono 16-bit PCM')
-    }
+    validateDefaultDemoReport(report, problems)
   }
   return makeGate('default-demo', 'First-run default demo render audit', path, problems, summarizeReport(report))
+}
+
+function pagesDemoGate(path, pagesUrl) {
+  const problems = []
+  const report = readOptionalJson(path, 'GitHub Pages default V3 demo render audit', problems)
+  if (report) {
+    validateDefaultDemoReport(report, problems)
+    const smokeUrl = report.smoke?.url ?? ''
+    if (!/^https?:\/\//u.test(smokeUrl)) {
+      problems.push(`Pages demo smoke URL must be a deployed URL, got ${smokeUrl || 'missing'}`)
+    }
+    if (pagesUrl && normalizeUrl(smokeUrl) !== normalizeUrl(pagesUrl)) {
+      problems.push(`Pages demo smoke URL ${smokeUrl || 'missing'} does not match ${pagesUrl}`)
+    }
+  }
+  return makeGate('pages-default-demo', 'GitHub Pages first-run default demo browser audit', path, problems, {
+    ...summarizeReport(report),
+    url: report?.smoke?.url ?? null,
+    wav: report?.download?.wav ?? null,
+  })
+}
+
+function validateDefaultDemoReport(report, problems) {
+  if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.demoAudit) {
+    problems.push('default demo render audit must pass')
+  }
+  const checks = new Set((report.requiredChecks ?? []).filter((check) => check.passed).map((check) => check.check))
+  for (const check of DEMO_REQUIRED_CHECKS) {
+    if (!checks.has(check)) {
+      problems.push(`missing passed demo check: ${check}`)
+    }
+  }
+  const wav = report.download?.wav ?? {}
+  if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
+    problems.push('demo WAV must be 44.1 kHz mono 16-bit PCM')
+  }
 }
 
 function reviewPackGate(path) {
@@ -817,6 +843,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('github-pages-v3'))) {
     actions.push('Deploy to GitHub Pages and rerun this audit with --pages-url https://midagedev.github.io/webuta/.')
   }
+  if (problems.some((problem) => problem.includes('pages-default-demo'))) {
+    actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, and WAV download behavior.')
+  }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')
   }
@@ -831,6 +860,19 @@ function nextActionsForProblems(problems) {
 
 function capitalize(value) {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+}
+
+function normalizeUrl(value) {
+  try {
+    const url = new URL(value)
+    if (!url.pathname.endsWith('/')) {
+      url.pathname += '/'
+    }
+    url.hash = ''
+    return url.href
+  } catch {
+    return String(value ?? '')
+  }
 }
 
 function writeJson(path, value) {
@@ -848,6 +890,8 @@ function parseArgs(argv) {
       options.pagesUrl = argv[++index]
     } else if (arg === '--pages-report') {
       options.pagesReport = argv[++index]
+    } else if (arg === '--pages-demo-audit') {
+      options.pagesDemoAudit = argv[++index]
     } else if (arg === '--listening-scores') {
       options.listeningScores = argv[++index]
     } else if (arg === '--sample-review') {
@@ -861,6 +905,7 @@ function parseArgs(argv) {
           '  --report path            Write release gate report JSON',
           '  --pages-url url          Verify a live GitHub Pages deployment',
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
+          '  --pages-demo-audit path  Override deployed browser demo audit JSON path',
           '  --listening-scores path  Override human listening score JSON path',
           '  --sample-review path     Override V3 sample review report JSON path',
           '',

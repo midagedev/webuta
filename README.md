@@ -119,6 +119,7 @@ npm run notices
 npm run voicebank:v3
 npm run voicebank:audit-v3
 npm run voicebank:demo-v3
+npm run voicebank:demo-v3:pages
 npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
@@ -139,6 +140,7 @@ Current verified local smoke coverage:
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the official Teto zip.
 - Bundled `WebUtau Korean V3 Synthetic` contains `615` WAV samples and `1437` oto.ini alias lines in the default web profile.
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium and exports a DAW-ready WAV.
+- `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, and live WAV download.
 - The first-run browser smoke now verifies the community release readiness card is visible and still marks human listening scores as required.
 - `npm run voicebank:oto-v3` verifies all bundled sample aliases and oto timing windows against the generated V3 manifest.
 - `npm run voicebank:pitch-v3` audits all 615 bundled samples and currently reports max median pitch error near `4.5` cents.

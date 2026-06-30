@@ -180,6 +180,24 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('audio/01-first-run-demo.wav is unexpectedly small')
   })
 
+  it('blocks release when the deployed browser demo smoke is stale', async () => {
+    const fixture = await makeFixture({
+      pagesDemo: {
+        ...makeDemoReport('https://old.example.test/webuta/'),
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+      pagesUrl: 'https://midagedev.github.io/webuta/',
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('pages-default-demo: Pages demo smoke URL https://old.example.test/webuta/ does not match https://midagedev.github.io/webuta/')
+    expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
+  })
+
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
     const fixture = await makeFixture({ badSyntheticOrigin: true })
 
@@ -226,6 +244,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
   writeJson(join(work, 'v3-loop-audit.json'), passReport('v3-loop-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
+  writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
   writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
   writeFileSync(join(review, 'audio', '01-first-run-demo.wav'), 'wav')
   writeFileSync(join(review, 'audio', '02-coda-release-check.wav'), 'wav')
@@ -362,7 +381,7 @@ function passReport(decision) {
   }
 }
 
-function makeDemoReport() {
+function makeDemoReport(url = 'http://127.0.0.1:5173/') {
   return {
     ...passReport('default-demo-render-pass'),
     requiredChecks: [
@@ -386,7 +405,13 @@ function makeDemoReport() {
         sampleRate: 44100,
         channels: 1,
         bitsPerSample: 16,
+        durationSeconds: 6.55,
+        bytes: 578384,
       },
+    },
+    smoke: {
+      mode: 'static',
+      url,
     },
   }
 }
