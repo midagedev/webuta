@@ -56,6 +56,13 @@ export async function captureReadmeScreenshots(options = {}) {
 async function waitForAppReady(page) {
   await page.getByLabel('Current project').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterPath = page.getByLabel('Starter path')
+  await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('02').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('재생').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank lyric coverage').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
