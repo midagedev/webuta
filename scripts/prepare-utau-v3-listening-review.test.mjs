@@ -1,3 +1,4 @@
+import { createServer } from 'node:http'
 import { chromium } from 'playwright'
 import { describe, expect, it } from 'vitest'
 import {
@@ -69,6 +70,8 @@ describe('UTAU V3 listening review pack', () => {
 
     expect(html).toContain('id="scorecardForm"')
     expect(html).toContain('Build listening-scores.local.json')
+    expect(html).toContain('Clear saved draft')
+    expect(html).toContain('webuta.v3ListeningReviewDraft.v1')
     expect(html).toContain('No recording step')
     expect(html).toContain('noRecordingRequired')
     expect(html).toContain('data-score-key="koreanClarityScore"')
@@ -171,6 +174,46 @@ describe('UTAU V3 listening review pack', () => {
     }
   }, 30_000)
 
+  it('restores an in-progress listening scorecard draft after reload', async () => {
+    const html = renderHtml({
+      phrases: [
+        {
+          id: 'first-run-demo',
+          title: 'First Run',
+          description: 'Default hook.',
+          lyricLine: '도 히 도 히 다 이 스 키',
+          wavPath: '/tmp/first.wav',
+          audioHref: 'audio/01-first-run-demo.wav',
+          gates: { passed: true, problems: [] },
+        },
+      ],
+      listeningTemplatePath: '/tmp/listening-scores.local.template.json',
+    })
+    const server = await serveHtml(html)
+    const browser = await chromium.launch()
+    try {
+      const page = await browser.newPage()
+      await page.goto(server.url)
+      await page.fill('#reviewer', 'draft reviewer')
+      await page.fill('#playback', 'phone speaker')
+      await page.selectOption('[data-score-key="koreanClarityScore"]', '4')
+      await page.fill('[data-notes]', 'ㄷ attack is understandable')
+      await expectDraftStatus(page, 'Draft saved')
+
+      await page.reload()
+
+      await page.waitForSelector('#reviewer')
+      expect(await page.locator('#reviewer').inputValue()).toBe('draft reviewer')
+      expect(await page.locator('#playback').inputValue()).toBe('phone speaker')
+      expect(await page.locator('[data-score-key="koreanClarityScore"]').inputValue()).toBe('4')
+      expect(await page.locator('[data-notes]').inputValue()).toBe('ㄷ attack is understandable')
+      await expectDraftStatus(page, 'Saved draft restored')
+    } finally {
+      await browser.close()
+      await server.close()
+    }
+  }, 30_000)
+
   it('evaluates DAW-ready WAV metrics for review artifacts', () => {
     expect(
       evaluateWav({
@@ -195,3 +238,34 @@ describe('UTAU V3 listening review pack', () => {
     expect(failed.problems.join('\n')).toContain('duration 0.500s')
   })
 })
+
+async function serveHtml(html) {
+  const server = createServer((req, res) => {
+    if (req.url?.endsWith('.wav')) {
+      res.writeHead(200, { 'content-type': 'audio/wav' })
+      res.end('RIFF')
+      return
+    }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
+    res.end(html)
+  })
+  await new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', resolve)
+  })
+  const address = server.address()
+  if (!address || typeof address === 'string') {
+    throw new Error('Unable to start test server.')
+  }
+  return {
+    url: `http://127.0.0.1:${address.port}/`,
+    close: () => new Promise((resolve) => server.close(resolve)),
+  }
+}
+
+async function expectDraftStatus(page, text) {
+  await page.waitForFunction(
+    (expected) => document.querySelector('#draftStatus')?.textContent?.includes(expected),
+    text,
+  )
+}

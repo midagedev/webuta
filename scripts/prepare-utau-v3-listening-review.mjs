@@ -493,6 +493,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .output { display: grid; gap: 10px; padding: 16px; }
+    .draft-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
     .status { font-weight: 800; }
     .status.ok { color: var(--ok); }
     .status.warn { color: var(--warn); }
@@ -610,8 +611,10 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
         <div class="actions">
           <button type="button" id="buildJson">Build listening-scores.local.json</button>
           <button type="button" id="downloadJson">Download JSON</button>
+          <button type="button" id="clearDraft">Clear saved draft</button>
           <span id="status" class="status warn">Scores not complete.</span>
         </div>
+        <p id="draftStatus" class="draft-note">Draft autosave is active in this browser.</p>
         <textarea id="scoreJson" readonly spellcheck="false"></textarea>
       </section>
     </form>
@@ -632,6 +635,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     const phrases = ${jsonForHtml(phrasePayload)};
     const comparisons = ${jsonForHtml(comparisonPayload)};
     const scoreFields = ${jsonForHtml(LISTENING_SCORE_FIELDS)};
+    const draftStorageKey = 'webuta.v3ListeningReviewDraft.v1';
     const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
     const reviewerInput = document.querySelector('#reviewer');
     const reviewedAtInput = document.querySelector('#reviewedAt');
@@ -639,12 +643,18 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     const playbackInput = document.querySelector('#playback');
     const output = document.querySelector('#scoreJson');
     const status = document.querySelector('#status');
+    const draftStatus = document.querySelector('#draftStatus');
     const downloadButton = document.querySelector('#downloadJson');
 
     reviewedAtInput.value = toLocalDateTime(new Date());
+    restoreDraft();
     document.querySelector('#buildJson').addEventListener('click', updateOutput);
     downloadButton.addEventListener('click', downloadJson);
-    document.querySelector('#scorecardForm').addEventListener('input', updateOutput);
+    document.querySelector('#clearDraft').addEventListener('click', clearDraft);
+    document.querySelector('#scorecardForm').addEventListener('input', () => {
+      updateOutput();
+      saveDraft();
+    });
     updateOutput();
 
     function buildPayload() {
@@ -730,8 +740,91 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       status.className = \`status \${problems.length === 0 ? 'ok' : 'warn'}\`;
     }
 
+    function serializeDraft() {
+      return {
+        reviewer: reviewerInput.value,
+        reviewedAt: reviewedAtInput.value,
+        decision: decisionInput.value,
+        playback: playbackInput.value,
+        phraseScores: phrases.map((phrase, phraseIndex) => ({
+          id: phrase.id,
+          scores: Object.fromEntries(scoreFields.map((field) => {
+            const select = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-score-key="\${field.key}"]\`);
+            return [field.key, select?.value ?? ''];
+          })),
+          notes: document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-notes]\`)?.value ?? '',
+        })),
+        comparisonScores: comparisons.map((comparison, comparisonIndex) => ({
+          id: comparison.id,
+          score: document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-score]\`)?.value ?? '',
+          notes: document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-notes]\`)?.value ?? '',
+        })),
+      };
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem(draftStorageKey, JSON.stringify(serializeDraft()));
+        draftStatus.textContent = 'Draft saved in this browser.';
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+      }
+    }
+
+    function restoreDraft() {
+      let draft = null;
+      try {
+        const text = localStorage.getItem(draftStorageKey);
+        draft = text ? JSON.parse(text) : null;
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+        return;
+      }
+      if (!draft || typeof draft !== 'object') {
+        return;
+      }
+      reviewerInput.value = typeof draft.reviewer === 'string' ? draft.reviewer : reviewerInput.value;
+      reviewedAtInput.value = typeof draft.reviewedAt === 'string' && draft.reviewedAt ? draft.reviewedAt : reviewedAtInput.value;
+      decisionInput.value = typeof draft.decision === 'string' ? draft.decision : decisionInput.value;
+      playbackInput.value = typeof draft.playback === 'string' ? draft.playback : playbackInput.value;
+      for (const [phraseIndex, phraseDraft] of (draft.phraseScores ?? []).entries()) {
+        for (const field of scoreFields) {
+          const select = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-score-key="\${field.key}"]\`);
+          const value = phraseDraft?.scores?.[field.key];
+          if (select && typeof value === 'string') {
+            select.value = value;
+          }
+        }
+        const notes = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-notes]\`);
+        if (notes && typeof phraseDraft?.notes === 'string') {
+          notes.value = phraseDraft.notes;
+        }
+      }
+      for (const [comparisonIndex, comparisonDraft] of (draft.comparisonScores ?? []).entries()) {
+        const select = document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-score]\`);
+        const notes = document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-notes]\`);
+        if (select && typeof comparisonDraft?.score === 'string') {
+          select.value = comparisonDraft.score;
+        }
+        if (notes && typeof comparisonDraft?.notes === 'string') {
+          notes.value = comparisonDraft.notes;
+        }
+      }
+      draftStatus.textContent = 'Saved draft restored in this browser.';
+    }
+
+    function clearDraft() {
+      try {
+        localStorage.removeItem(draftStorageKey);
+        draftStatus.textContent = 'Saved draft cleared.';
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+      }
+    }
+
     function downloadJson() {
       updateOutput();
+      saveDraft();
       const blob = new Blob([output.value + '\\n'], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -761,6 +854,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     `Score template: ${listeningTemplatePath}`,
     '',
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
+    'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
     'Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',

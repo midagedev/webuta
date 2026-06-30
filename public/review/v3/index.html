@@ -35,6 +35,7 @@
     .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .output { display: grid; gap: 10px; padding: 16px; }
+    .draft-note { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
     .status { font-weight: 800; }
     .status.ok { color: var(--ok); }
     .status.warn { color: var(--warn); }
@@ -483,8 +484,10 @@
         <div class="actions">
           <button type="button" id="buildJson">Build listening-scores.local.json</button>
           <button type="button" id="downloadJson">Download JSON</button>
+          <button type="button" id="clearDraft">Clear saved draft</button>
           <span id="status" class="status warn">Scores not complete.</span>
         </div>
+        <p id="draftStatus" class="draft-note">Draft autosave is active in this browser.</p>
         <textarea id="scoreJson" readonly spellcheck="false"></textarea>
       </section>
     </form>
@@ -503,6 +506,7 @@
     const phrases = [{"id":"first-run-demo","title":"First-run hook","description":"Default melody and lyric shown to a new visitor.","lyricLine":"도 히 도 히 다 이 스 키","wavPath":"audio/01-first-run-demo.wav","audioHref":"audio/01-first-run-demo.wav","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","description":"Long notes with final consonants; codas should happen once at release, not chatter in the sustain.","lyricLine":"연 한 랑 밤 말","wavPath":"audio/02-coda-release-check.wav","audioHref":"audio/02-coda-release-check.wav","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","description":"Common onset+vowel syllables for consonant attack clarity and vowel stability.","lyricLine":"가 나 다 라 마 사","wavPath":"audio/03-clear-cv-line.wav","audioHref":"audio/03-clear-cv-line.wav","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","description":"Pure vowel-color syllables across a short contour.","lyricLine":"아 이 우 에 오","wavPath":"audio/04-vowel-color-check.wav","audioHref":"audio/04-vowel-color-check.wav","gates":{"passed":true,"problems":[]}}];
     const comparisons = [{"id":"first-run-demo","title":"First-run hook","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","audioHref":"audio/legacy-v2/01-first-run-demo-legacy-v2.wav","coverageText":"8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"coda-release-check","title":"Batchim release check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","audioHref":"audio/legacy-v2/02-coda-release-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 5개 0개 alias 오류 · 5개 주의 연 받침 tail 없음한 받침 tail 없음랑 받침 tail 없음","gates":{"passed":true,"problems":[]}},{"id":"clear-cv-line","title":"Clear CV line","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","audioHref":"audio/legacy-v2/03-clear-cv-line-legacy-v2.wav","coverageText":"6/6 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 6개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}},{"id":"vowel-color-check","title":"Vowel color check","voicebankName":"WebUtau Korean V2 Legacy","wavPath":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","audioHref":"audio/legacy-v2/04-vowel-color-check-legacy-v2.wav","coverageText":"5/5 matched 현재 5개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다. 현재 세션 전용","warningText":"렌더 경고 없음 5개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.","gates":{"passed":true,"problems":[]}}];
     const scoreFields = [{"key":"koreanClarityScore","label":"Korean clarity","prompt":"Can a Korean listener recognize the intended lyric without reading along?"},{"key":"vowelStabilityScore","label":"Vowel stability","prompt":"Do sustained vowels hold pitch and color without wobble or collapse?"},{"key":"consonantClarityScore","label":"Consonant clarity","prompt":"Are attacks and final consonants clear without chopped starts or repeated codas?"},{"key":"musicalityScore","label":"Musicality","prompt":"Does the phrase feel usable as a musical vocal sketch rather than a test beep?"},{"key":"artifactScore","label":"Artifact control","prompt":"Are clicks, chatter, clipping, and loop seams controlled enough for sharing?"}];
+    const draftStorageKey = 'webuta.v3ListeningReviewDraft.v1';
     const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
     const reviewerInput = document.querySelector('#reviewer');
     const reviewedAtInput = document.querySelector('#reviewedAt');
@@ -510,12 +514,18 @@
     const playbackInput = document.querySelector('#playback');
     const output = document.querySelector('#scoreJson');
     const status = document.querySelector('#status');
+    const draftStatus = document.querySelector('#draftStatus');
     const downloadButton = document.querySelector('#downloadJson');
 
     reviewedAtInput.value = toLocalDateTime(new Date());
+    restoreDraft();
     document.querySelector('#buildJson').addEventListener('click', updateOutput);
     downloadButton.addEventListener('click', downloadJson);
-    document.querySelector('#scorecardForm').addEventListener('input', updateOutput);
+    document.querySelector('#clearDraft').addEventListener('click', clearDraft);
+    document.querySelector('#scorecardForm').addEventListener('input', () => {
+      updateOutput();
+      saveDraft();
+    });
     updateOutput();
 
     function buildPayload() {
@@ -601,8 +611,91 @@
       status.className = `status ${problems.length === 0 ? 'ok' : 'warn'}`;
     }
 
+    function serializeDraft() {
+      return {
+        reviewer: reviewerInput.value,
+        reviewedAt: reviewedAtInput.value,
+        decision: decisionInput.value,
+        playback: playbackInput.value,
+        phraseScores: phrases.map((phrase, phraseIndex) => ({
+          id: phrase.id,
+          scores: Object.fromEntries(scoreFields.map((field) => {
+            const select = document.querySelector(`[data-phrase-index="${phraseIndex}"][data-score-key="${field.key}"]`);
+            return [field.key, select?.value ?? ''];
+          })),
+          notes: document.querySelector(`[data-phrase-index="${phraseIndex}"][data-notes]`)?.value ?? '',
+        })),
+        comparisonScores: comparisons.map((comparison, comparisonIndex) => ({
+          id: comparison.id,
+          score: document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-score]`)?.value ?? '',
+          notes: document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-notes]`)?.value ?? '',
+        })),
+      };
+    }
+
+    function saveDraft() {
+      try {
+        localStorage.setItem(draftStorageKey, JSON.stringify(serializeDraft()));
+        draftStatus.textContent = 'Draft saved in this browser.';
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+      }
+    }
+
+    function restoreDraft() {
+      let draft = null;
+      try {
+        const text = localStorage.getItem(draftStorageKey);
+        draft = text ? JSON.parse(text) : null;
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+        return;
+      }
+      if (!draft || typeof draft !== 'object') {
+        return;
+      }
+      reviewerInput.value = typeof draft.reviewer === 'string' ? draft.reviewer : reviewerInput.value;
+      reviewedAtInput.value = typeof draft.reviewedAt === 'string' && draft.reviewedAt ? draft.reviewedAt : reviewedAtInput.value;
+      decisionInput.value = typeof draft.decision === 'string' ? draft.decision : decisionInput.value;
+      playbackInput.value = typeof draft.playback === 'string' ? draft.playback : playbackInput.value;
+      for (const [phraseIndex, phraseDraft] of (draft.phraseScores ?? []).entries()) {
+        for (const field of scoreFields) {
+          const select = document.querySelector(`[data-phrase-index="${phraseIndex}"][data-score-key="${field.key}"]`);
+          const value = phraseDraft?.scores?.[field.key];
+          if (select && typeof value === 'string') {
+            select.value = value;
+          }
+        }
+        const notes = document.querySelector(`[data-phrase-index="${phraseIndex}"][data-notes]`);
+        if (notes && typeof phraseDraft?.notes === 'string') {
+          notes.value = phraseDraft.notes;
+        }
+      }
+      for (const [comparisonIndex, comparisonDraft] of (draft.comparisonScores ?? []).entries()) {
+        const select = document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-score]`);
+        const notes = document.querySelector(`[data-comparison-index="${comparisonIndex}"][data-comparison-notes]`);
+        if (select && typeof comparisonDraft?.score === 'string') {
+          select.value = comparisonDraft.score;
+        }
+        if (notes && typeof comparisonDraft?.notes === 'string') {
+          notes.value = comparisonDraft.notes;
+        }
+      }
+      draftStatus.textContent = 'Saved draft restored in this browser.';
+    }
+
+    function clearDraft() {
+      try {
+        localStorage.removeItem(draftStorageKey);
+        draftStatus.textContent = 'Saved draft cleared.';
+      } catch {
+        draftStatus.textContent = 'Draft autosave is unavailable in this browser.';
+      }
+    }
+
     function downloadJson() {
       updateOutput();
+      saveDraft();
       const blob = new Blob([output.value + '\n'], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
