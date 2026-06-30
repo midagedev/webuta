@@ -6,7 +6,11 @@ export type RenderResult = {
   durationSeconds: number
 }
 
+export type RenderOptions = {
+  signal?: AbortSignal
+}
+
 export type VocalRenderer = {
   capability: RendererCapability
-  render(project: SongProject): Promise<RenderResult>
+  render(project: SongProject, options?: RenderOptions): Promise<RenderResult>
 }

@@ -37,8 +37,8 @@
         <span>Voicebanks are user-provided downloads. No Teto voicebank or singer artwork is bundled.</span>
       </section>
       <section>
-        <strong>WebUtau Korean Lite</strong>
-        <span>The bundled starter voicebank contains original generated UTAU-style CV samples and metadata.</span>
+        <strong>WebUtau Korean V3 Synthetic</strong>
+        <span>The bundled starter voicebank contains original DSP-generated UTAU-style samples and metadata, with no human recording, TTS output, or cloned singer likeness.</span>
       </section>
       <section>
         <strong>Artwork</strong>

@@ -160,6 +160,213 @@ describe('UTAU sample renderer', () => {
 
     expect(energy(lateBody)).toBeGreaterThan(energy(earlyBody) * 0.45)
   })
+
+  it('plays a Hangul coda tail once at release instead of looping it through the sustain body', async () => {
+    const entry: OtoEntry = {
+      fileName: 'yeon_C4.wav',
+      path: 'WebUtau/yeon_C4.wav',
+      alias: '연',
+      offsetMs: 0,
+      consonantMs: 95,
+      cutoffMs: 0,
+      preutteranceMs: 40,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeCodaTailOnlySource(1.0, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeLongNoteProject(),
+      notes: [{ ...makeLongNoteProject().notes[0], lyric: '연' }],
+    })
+    const sustainBody = result.samples.slice(Math.floor(0.8 * 44100), Math.floor(1.2 * 44100))
+    const releaseTail = result.samples.slice(Math.floor(2.06 * 44100), Math.floor(2.24 * 44100))
+
+    const sustainEnergy = energy(sustainBody)
+    const releaseEnergy = energy(releaseTail)
+
+    expect(sustainEnergy).toBeLessThan(0.002)
+    expect(releaseEnergy).toBeGreaterThan(0.01)
+    expect(releaseEnergy).toBeGreaterThan(sustainEnergy * 8)
+  })
+
+  it('keeps early nasal coda gestures out of the repeated sustain loop', async () => {
+    const entry: OtoEntry = {
+      fileName: 'yeon_C4.wav',
+      path: 'WebUtau/yeon_C4.wav',
+      alias: '연',
+      offsetMs: 0,
+      consonantMs: 95,
+      cutoffMs: 0,
+      preutteranceMs: 40,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeEarlyCodaGestureSource(1.0, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeLongNoteProject(),
+      notes: [{ ...makeLongNoteProject().notes[0], lyric: '연' }],
+    })
+    const sustainBody = result.samples.slice(Math.floor(0.8 * 44100), Math.floor(1.2 * 44100))
+    const releaseTail = result.samples.slice(Math.floor(2.06 * 44100), Math.floor(2.24 * 44100))
+
+    expect(energy(sustainBody)).toBeLessThan(0.002)
+    expect(energy(releaseTail)).toBeGreaterThan(0.003)
+  })
+
+  it('overlays a VC coda tail when a Hangul batchim lyric falls back to its CV alias', async () => {
+    const cvEntry: OtoEntry = {
+      fileName: 'ga_C4.wav',
+      path: 'WebUtau/ga_C4.wav',
+      alias: '가',
+      offsetMs: 0,
+      consonantMs: 95,
+      cutoffMs: 0,
+      preutteranceMs: 40,
+      overlapMs: 18,
+    }
+    const vcEntry: OtoEntry = {
+      fileName: 'a_n_C4.wav',
+      path: 'WebUtau/a_n_C4.wav',
+      alias: 'ㅏㄴ',
+      offsetMs: 0,
+      consonantMs: 70,
+      cutoffMs: -260,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [cvEntry, vcEntry],
+      aliases: [cvEntry.alias, vcEntry.alias],
+      sampleCount: 2,
+      wavCount: 2,
+      async readSample(entry) {
+        return new Uint8Array([entry.path.includes('a_n') ? 2 : 1]).buffer
+      },
+    }
+    const audioContext = {
+      async decodeAudioData(buffer: ArrayBuffer) {
+        const marker = new Uint8Array(buffer)[0]
+        return marker === 2
+          ? makeAudioBuffer(makeCodaTailOnlySource(0.86, 44100), 44100)
+          : makeAudioBuffer(makeVocalSourceWithRelease(1.0, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeLongNoteProject(),
+      notes: [{ ...makeLongNoteProject().notes[0], lyric: '간' }],
+    })
+    const releaseTail = result.samples.slice(Math.floor(2.06 * 44100), Math.floor(2.24 * 44100))
+
+    expect(energy(releaseTail)).toBeGreaterThan(0.01)
+  })
+
+  it('uses CV sustain plus VC tail for Hangul coda lyrics even when an exact CVC sample exists', async () => {
+    const cvEntry: OtoEntry = {
+      fileName: 'yeo_C4.wav',
+      path: 'WebUtau/yeo_C4.wav',
+      alias: '여',
+      offsetMs: 0,
+      consonantMs: 95,
+      cutoffMs: 0,
+      preutteranceMs: 40,
+      overlapMs: 18,
+    }
+    const cvcEntry: OtoEntry = {
+      fileName: 'yeon_C4.wav',
+      path: 'WebUtau/yeon_C4.wav',
+      alias: '연',
+      offsetMs: 0,
+      consonantMs: 95,
+      cutoffMs: 0,
+      preutteranceMs: 40,
+      overlapMs: 18,
+    }
+    const vcEntry: OtoEntry = {
+      fileName: 'yeo_n_C4.wav',
+      path: 'WebUtau/yeo_n_C4.wav',
+      alias: 'ㅕㄴ',
+      offsetMs: 0,
+      consonantMs: 70,
+      cutoffMs: -260,
+      preutteranceMs: 30,
+      overlapMs: 18,
+    }
+    const requestedPaths: string[] = []
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      entries: [cvcEntry, cvEntry, vcEntry],
+      aliases: [cvcEntry.alias, cvEntry.alias, vcEntry.alias],
+      sampleCount: 3,
+      wavCount: 3,
+      async readSample(entry) {
+        requestedPaths.push(entry.path)
+        return new Uint8Array([entry.path.includes('yeo_n') ? 2 : entry.path.includes('yeon') ? 3 : 1]).buffer
+      },
+    }
+    const audioContext = {
+      async decodeAudioData(buffer: ArrayBuffer) {
+        const marker = new Uint8Array(buffer)[0]
+        if (marker === 2) {
+          return makeAudioBuffer(makeCodaTailOnlySource(0.86, 44100), 44100)
+        }
+        if (marker === 3) {
+          return makeAudioBuffer(makeEarlyCodaGestureSource(1.0, 44100), 44100)
+        }
+        return makeAudioBuffer(makeVocalSourceWithRelease(1.0, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    await renderer.render({
+      ...makeLongNoteProject(),
+      notes: [{ ...makeLongNoteProject().notes[0], lyric: '연' }],
+    })
+
+    expect(requestedPaths).toContain('WebUtau/yeo_C4.wav')
+    expect(requestedPaths).toContain('WebUtau/yeo_n_C4.wav')
+    expect(requestedPaths).not.toContain('WebUtau/yeon_C4.wav')
+  })
 })
 
 function makeProject(): SongProject {
@@ -243,6 +450,30 @@ function makeVocalSourceWithRelease(durationSeconds: number, sampleRate: number)
     if (t > durationSeconds - 0.18) {
       samples[i] *= Math.max(0, (durationSeconds - t) / 0.18)
     }
+  }
+  return samples
+}
+
+function makeCodaTailOnlySource(durationSeconds: number, sampleRate: number) {
+  const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
+  const tailStart = Math.floor((durationSeconds - 0.22) * sampleRate)
+  for (let i = tailStart; i < samples.length; i++) {
+    const t = i / sampleRate
+    const progress = (i - tailStart) / Math.max(1, samples.length - tailStart)
+    const envelope = Math.min(1, progress / 0.15, (1 - progress) / 0.22)
+    samples[i] = Math.sin(2 * Math.PI * 180 * t) * 0.55 * Math.max(0, envelope)
+  }
+  return samples
+}
+
+function makeEarlyCodaGestureSource(durationSeconds: number, sampleRate: number) {
+  const samples = new Float32Array(Math.floor(durationSeconds * sampleRate))
+  const tailStart = Math.floor((durationSeconds - 0.42) * sampleRate)
+  for (let i = tailStart; i < samples.length; i++) {
+    const t = i / sampleRate
+    const progress = (i - tailStart) / Math.max(1, samples.length - tailStart)
+    const envelope = Math.min(1, progress / 0.12, (1 - progress) / 0.22)
+    samples[i] = Math.sin(2 * Math.PI * 180 * t) * 0.46 * Math.max(0, envelope)
   }
   return samples
 }

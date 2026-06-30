@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "notes": "Copy this file to an ignored local registry before adding private paths or restricted dataset details.",
+  "datasets": [
+    {
+      "id": "csd-korean-research-baseline",
+      "name": "Children's Song Dataset Korean subset",
+      "sourceUrl": "https://zenodo.org/records/4916302",
+      "localPath": "experiments/neural-singer/datasets/csd/",
+      "licenseStatus": "cc-by-nc-sa-4.0-research-only",
+      "redistribution": "original-license-noncommercial-sharealike",
+      "modelPublishing": "no-commercial-release-review-required",
+      "singerIdentity": "public-dataset",
+      "language": ["ko"],
+      "audioHours": null,
+      "annotationTypes": ["audio", "lyrics", "midi", "csv", "phoneme-annotations"],
+      "allowedActions": {
+        "localTraining": true,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "Zenodo record 4916302 lists CC BY-NC-SA 4.0 and says the dataset is primarily for research purposes.",
+        "Do not use for commercial product demos or public model releases without a separate rights review.",
+        "Dataset contains 50 Korean and 50 English songs, 200 total recordings, with WAV, MIDI, lyric, txt, and csv annotations."
+      ]
+    },
+    {
+      "id": "gtsinger-korean-research-baseline",
+      "name": "GTSinger Korean subset",
+      "sourceUrl": "https://huggingface.co/datasets/GTSinger/GTSinger",
+      "localPath": "experiments/neural-singer/datasets/gtsinger-korean/",
+      "inventoryRoots": ["repository/Korean", "repository/processed/Korean"],
+      "licenseStatus": "cc-by-nc-sa-4.0-research-only",
+      "redistribution": "original-license-noncommercial-sharealike",
+      "modelPublishing": "research-only-review-required",
+      "singerIdentity": "public-dataset",
+      "language": ["ko"],
+      "audioHours": null,
+      "annotationTypes": ["audio", "json", "textgrid", "musicxml", "processed-metadata"],
+      "qualityGates": {
+        "minAnnotatedRatio": 0.95
+      },
+      "allowedActions": {
+        "localTraining": true,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "GTSinger README says the full corpus is provided for free and links dataset_license.md.",
+        "dataset_license.md declares CC BY-NC-SA 4.0. Use only for research/noncommercial local training unless a separate rights review approves broader release.",
+        "Use this to improve Korean SVS preprocessing, alignment, and checkpoint smoke quality; do not treat it as product/public-model release evidence."
+      ]
+    },
+    {
+      "id": "kss-korean-speech-pronunciation-aux",
+      "name": "KSS Korean Single Speaker Speech auxiliary corpus",
+      "sourceUrl": "https://huggingface.co/datasets/Bingsu/KSS_Dataset",
+      "localPath": "experiments/neural-singer/datasets/kss-korean-speech/",
+      "licenseStatus": "cc-by-nc-sa-4.0-research-only",
+      "redistribution": "original-license-noncommercial-sharealike",
+      "modelPublishing": "not-singing-data-release-review-required",
+      "singerIdentity": "public-speech-dataset",
+      "language": ["ko"],
+      "audioHours": 12,
+      "annotationTypes": ["audio", "text", "tts-transcript"],
+      "allowedActions": {
+        "localTraining": false,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "KSS is a Korean TTS speech corpus, not singing data.",
+        "Use only as an auxiliary pronunciation/normalization experiment source; it cannot satisfy the Korean singing dataset milestone by itself.",
+        "Hugging Face metadata and README mark it as CC BY-NC-SA 4.0 / NC-SA 4.0, so keep it research/noncommercial unless a separate rights review approves broader use."
+      ]
+    },
+    {
+      "id": "aihub-guide-vocal",
+      "name": "AI Hub multi-timbre guide vocal data",
+      "sourceUrl": "https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=473",
+      "localPath": "experiments/neural-singer/datasets/aihub-guide-vocal/",
+      "licenseStatus": "review-required-aihub-terms",
+      "redistribution": "review-required-aihub-terms",
+      "modelPublishing": "review-required-aihub-terms",
+      "singerIdentity": "licensed-dataset",
+      "language": ["ko"],
+      "audioHours": null,
+      "annotationTypes": ["audio", "midi", "csv", "json", "note-timing", "pitch"],
+      "licenseReview": {
+        "requiresReview": true,
+        "templatePath": "experiments/neural-singer/datasets/aihub-guide-vocal/metadata/license-review.local.template.md",
+        "reviewedPath": "experiments/neural-singer/datasets/aihub-guide-vocal/metadata/license-review.local.md",
+        "requiredFields": [
+          "Reviewer",
+          "Review date",
+          "Account/download approval confirmed",
+          "Local training allowed"
+        ]
+      },
+      "qualityGates": {
+        "minAnnotatedRatio": 0.95,
+        "minProviderArchiveCount": 1,
+        "minProviderArchiveTotalBytes": 1073741824
+      },
+      "allowedActions": {
+        "localTraining": false,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "Primary dataset-first candidate for SVS because the AI Hub page describes WAV/MIDI/CSV filenames and note timing/pitch metadata.",
+        "Requires AI Hub account/access and terms review before download/use.",
+        "Do not enable localTraining until the license review confirms model training is allowed."
+      ]
+    },
+    {
+      "id": "aihub-multispeaker-singing",
+      "name": "AI Hub multi-speaker singing data",
+      "sourceUrl": "https://aihub.or.kr/aihubdata/data/view.do?dataSetSn=465",
+      "localPath": "experiments/neural-singer/datasets/aihub-multispeaker-singing/",
+      "licenseStatus": "review-required",
+      "redistribution": "unknown",
+      "modelPublishing": "review-required",
+      "singerIdentity": "licensed-dataset",
+      "language": ["ko"],
+      "audioHours": null,
+      "annotationTypes": ["audio", "lyrics", "metadata"],
+      "licenseReview": {
+        "requiresReview": true,
+        "templatePath": "experiments/neural-singer/datasets/aihub-multispeaker-singing/metadata/license-review.local.template.md",
+        "reviewedPath": "experiments/neural-singer/datasets/aihub-multispeaker-singing/metadata/license-review.local.md",
+        "requiredFields": [
+          "Reviewer",
+          "Review date",
+          "Account/download approval confirmed",
+          "Local training allowed"
+        ]
+      },
+      "qualityGates": {
+        "minAnnotatedRatio": 0.95,
+        "minProviderArchiveCount": 1,
+        "minProviderArchiveTotalBytes": 1073741824
+      },
+      "allowedActions": {
+        "localTraining": false,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "AI Hub page lists this as Korean audio singing data built in 2021 and shows about 39.94 GB.",
+        "Requires account/access and a license review before use.",
+        "Use as a broader Korean singing corpus only after local training and generated-model terms are reviewed."
+      ]
+    },
+    {
+      "id": "original-private-singer",
+      "name": "Original recorded singer",
+      "sourceUrl": null,
+      "localPath": "experiments/neural-singer/datasets/original-private-singer/",
+      "licenseStatus": "not-recorded-yet",
+      "redistribution": "private-until-consent",
+      "modelPublishing": "requires-written-release",
+      "singerIdentity": "private",
+      "language": ["ko"],
+      "audioHours": 0,
+      "annotationTypes": ["audio", "lyrics", "score", "consent"],
+      "allowedActions": {
+        "localTraining": false,
+        "publicModelRelease": false,
+        "publicAudioExamples": false
+      },
+      "reviewNotes": [
+        "Do not train until consent, recording scope, model usage, and publishing rights are written down."
+      ]
+    }
+  ]
+}

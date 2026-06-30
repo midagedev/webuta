@@ -140,7 +140,13 @@ export function applyMelodySuggestion(project: SongProject, suggestion: MelodySu
     ...project,
     name: project.name.trim() ? project.name : 'Generated Vocal Sketch',
     bpm: suggestion.bpm,
-    tracks: [{ ...track, singer: track.singer ?? 'WebUtau Korean Lite', phonemizer: track.phonemizer ?? 'generated melody' }],
+    tracks: [
+      {
+        ...track,
+        singer: track.singer ?? 'WebUtau Korean V3 Synthetic',
+        phonemizer: track.phonemizer ?? 'generated melody',
+      },
+    ],
     parts: [part],
     notes: suggestion.notes.map((note) => ({
       ...note,

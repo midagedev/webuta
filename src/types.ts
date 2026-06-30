@@ -52,7 +52,7 @@ export type RenderedAudio = {
   wavInfo: WavInfo
 }
 
-export type RendererId = 'browser-demo' | 'utau-sample' | 'openutau-server' | 'worldline-wasm'
+export type RendererId = 'browser-demo' | 'utau-sample' | 'local-neural' | 'openutau-server' | 'worldline-wasm'
 
 export type RendererStatus = 'ready' | 'planned' | 'blocked'
 
@@ -63,6 +63,37 @@ export type RendererCapability = {
   exportWav: boolean
   realtimePreview: boolean
   notes: string
+}
+
+export type NeuralModelCard = {
+  id: string
+  name: string
+  rendererId: RendererId
+  language: string
+  status: RendererStatus
+  releaseStatus: 'bundled' | 'local-research' | 'private-family' | 'public-beta' | 'planned' | 'user-provided'
+  licenseSummary: string
+  usageNote: string
+  endpoint?: string
+}
+
+export type RenderHistoryEntry = {
+  id: string
+  createdAt: string
+  projectName: string
+  rendererId: RendererId
+  rendererName: string
+  status: 'success' | 'failed' | 'cancelled'
+  fileName: string
+  durationSeconds: number | null
+  detail: string
+}
+
+export type RenderProgress = {
+  phase: 'idle' | 'preparing' | 'rendering' | 'encoding' | 'ready' | 'failed' | 'cancelling' | 'cancelled'
+  label: string
+  percent: number
+  cancellable: boolean
 }
 
 export type WorkspaceMode = 'compose' | 'pattern' | 'rows' | 'mixer'

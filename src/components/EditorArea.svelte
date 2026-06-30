@@ -1,8 +1,32 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { Circle, Download, FileDown, Mic, Music2, Redo2, Scissors, Share2, Undo2 } from '@lucide/svelte'
+  import {
+    Circle,
+    Download,
+    FileDown,
+    History,
+    Mic,
+    Music2,
+    Redo2,
+    Repeat2,
+    RotateCcw,
+    Scissors,
+    Share2,
+    Target,
+    Trash2,
+    Undo2,
+    X,
+  } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
-  import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject } from '../types'
+  import {
+    TICKS_PER_BEAT,
+    type RenderedAudio,
+    type RenderHistoryEntry,
+    type RenderProgress,
+    type RendererId,
+    type SongNote,
+    type SongProject,
+  } from '../types'
   import { projectDurationTicks, toneName } from '../music'
   import {
     compactLyricLine,
@@ -39,11 +63,18 @@
     voicebankCoverage: VoicebankCoverage | null
     voicebankCacheStatus: VoicebankCacheStatus
     rendered: RenderedAudio | null
+    selectedRendererId: RendererId
+    currentRendererName: string
+    renderHistory: RenderHistoryEntry[]
+    renderProgress: RenderProgress
     notice: string
     isRendering: boolean
     isRecording: boolean
     isMetronomeOn: boolean
     isQuantizeOn: boolean
+    isLoopOn: boolean
+    loopStartTick: number
+    loopEndTick: number
     nextPerformanceLyric: string
     canUndo: boolean
     canRedo: boolean
@@ -58,7 +89,11 @@
     onToggleRecording: () => void
     onToggleMetronome: () => void
     onToggleQuantize: () => void
+    onToggleLoop: () => void
+    onSetLoopToSelection: () => void
     onQuantize: () => void
+    onSplitNote: () => void
+    onDeleteNote: () => void
     onUndo: () => void
     onRedo: () => void
     onGridClick: (event: MouseEvent) => void
@@ -68,6 +103,8 @@
     onNotePointerEnd: (event: PointerEvent) => void
     onShare: () => Promise<void>
     onDownloadWav: () => Promise<void>
+    onRetryRender: () => Promise<RenderedAudio | null>
+    onCancelRender: () => void
   }
 
   let {
@@ -90,11 +127,18 @@
     voicebankCoverage,
     voicebankCacheStatus,
     rendered,
+    selectedRendererId,
+    currentRendererName,
+    renderHistory,
+    renderProgress,
     notice,
     isRendering,
     isRecording,
     isMetronomeOn,
     isQuantizeOn,
+    isLoopOn,
+    loopStartTick,
+    loopEndTick,
     nextPerformanceLyric,
     canUndo,
     canRedo,
@@ -109,7 +153,11 @@
     onToggleRecording,
     onToggleMetronome,
     onToggleQuantize,
+    onToggleLoop,
+    onSetLoopToSelection,
     onQuantize,
+    onSplitNote,
+    onDeleteNote,
     onUndo,
     onRedo,
     onGridClick,
@@ -119,6 +167,8 @@
     onNotePointerEnd,
     onShare,
     onDownloadWav,
+    onRetryRender,
+    onCancelRender,
   }: Props = $props()
 
   let selectedNoteLabel = $derived(selectedNote ? `${selectedNote.lyric} · ${toneName(selectedNote.tone)}` : 'No note')
@@ -160,6 +210,9 @@
     flashPerformanceKey(note.id)
     onPerformNote(note)
   }
+  let historyRows = $derived(renderHistory.slice(0, 3))
+  let rendererModeLabel = $derived(selectedRendererId === 'local-neural' ? 'NEURAL' : voicebank ? 'UTAU ZIP' : 'DEMO')
+  let renderProgressWidth = $derived(isRendering ? renderProgress.percent : displayDuration > 0 ? Math.min(100, (playbackTime / displayDuration) * 100) : 0)
 </script>
 
 <section class="editor-area">
@@ -180,7 +233,7 @@
     <div><span>CH</span><strong>01 VOC</strong></div>
     <div><span>BPM</span><strong>{project.bpm}</strong></div>
     <div><span>ROWS</span><strong>{rows.length}</strong></div>
-    <div><span>BANK</span><strong>{voicebank ? 'UTAU ZIP' : 'DEMO'}</strong></div>
+    <div><span>BANK</span><strong>{rendererModeLabel}</strong></div>
     <div><span>MATCH</span><strong>{voicebank ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'DEMO'}</strong></div>
     <div><span>OUT</span><strong>{rendered ? 'WAV READY' : 'ARMED'}</strong></div>
   </div>
@@ -262,6 +315,26 @@
         <Scissors size={16} aria-hidden="true" />
         <span>FIX</span>
       </button>
+      <button
+        type="button"
+        class={`performance-action ${isLoopOn ? 'active' : ''}`}
+        aria-label={isLoopOn ? '루프 끄기' : '루프 켜기'}
+        onclick={onToggleLoop}
+      >
+        <Repeat2 size={16} aria-hidden="true" />
+        <span>LOOP</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="선택 노트 루프" onclick={onSetLoopToSelection}>
+        <Target size={16} aria-hidden="true" />
+        <span>SEL</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="선택 노트 분할" onclick={onSplitNote}>
+        <Scissors size={16} aria-hidden="true" />
+        <span>SPLIT</span>
+      </button>
+      <button type="button" class="performance-action danger" aria-label="선택 노트 삭제" onclick={onDeleteNote}>
+        <Trash2 size={16} aria-hidden="true" />
+      </button>
       <button type="button" class="performance-action" aria-label="되돌리기" onclick={onUndo} disabled={!canUndo}>
         <Undo2 size={16} aria-hidden="true" />
       </button>
@@ -310,7 +383,7 @@
     <div class="editor-chips">
       <span>{rows.length} rows</span>
       <span>CH 01</span>
-      <span>{voicebank ? 'UTAU vocal bank' : 'Korean guide voice'}</span>
+      <span>{currentRendererName}</span>
     </div>
   </div>
 
@@ -340,6 +413,16 @@
         {#each Array.from({ length: Math.ceil(songTicks / TICKS_PER_BEAT) + 1 }, (_, beat) => beat) as beat (beat)}
           <div class={`beat-line ${beat % project.beatPerBar === 0 ? 'bar' : ''}`} style={`left: ${beat * TICKS_PER_BEAT * TICK_WIDTH}px;`}></div>
         {/each}
+        {#each Array.from({ length: barCount }, (_, bar) => bar) as bar (bar)}
+          <span class="roll-bar-label" style={`left: ${bar * project.beatPerBar * TICKS_PER_BEAT * TICK_WIDTH}px;`}>{bar + 1}</span>
+        {/each}
+        {#if isLoopOn}
+          <div
+            class="loop-region"
+            aria-hidden="true"
+            style={`left: ${loopStartTick * TICK_WIDTH}px; width: ${Math.max(10, (loopEndTick - loopStartTick) * TICK_WIDTH)}px;`}
+          ></div>
+        {/if}
         <div class="playhead-line" style={`left: ${playheadLeft}px;`}></div>
         {#each project.notes as note (note.id)}
           {@const row = rangeMax - note.tone}
@@ -365,32 +448,68 @@
 
   <div class="bottom-dock">
     <div class="dock-status">
-      <span class={`status-dot ${rendered ? 'ready' : 'idle'}`}></span>
+      <span class={`status-dot ${isRendering ? 'planned' : rendered ? 'ready' : 'idle'}`}></span>
       <div>
-        <strong>{notice}</strong>
+        <strong>{isRendering ? renderProgress.label : notice}</strong>
         <span>
-          {voicebank
+          {isRendering
+            ? `${currentRendererName} · ${renderProgress.phase}`
+            : voicebank
             ? `${voicebankName} · ${formatVoicebankCoverage(voicebankCoverage)} · ${formatVoicebankCacheStatus(voicebankCacheStatus)}`
             : voicebankName}
         </span>
       </div>
     </div>
-    <div class="playhead-meter">
-      <div class="playhead-fill" style={`width: ${displayDuration > 0 ? Math.min(100, (playbackTime / displayDuration) * 100) : 0}%;`}></div>
+    <div class={`playhead-meter ${isRendering ? 'busy' : ''}`} aria-label={isRendering ? 'Render progress' : 'Playback progress'}>
+      <div class="playhead-fill" style={`width: ${renderProgressWidth}%;`}></div>
     </div>
     <div class="export-summary">
       <strong>{rendered ? rendered.fileName : 'WAV not rendered yet'}</strong>
       <span>{rendered ? formatWavSummary(rendered.wavInfo) : '44.1 kHz mono WAV'}</span>
     </div>
     <div class="dock-actions" aria-label="Export shortcuts">
-      <button type="button" class="dock-action primary" aria-label="WAV 공유" onclick={() => void onShare()} disabled={isRendering}>
-        <Share2 size={18} aria-hidden="true" />
-        <span>공유</span>
-      </button>
-      <button type="button" class="dock-action" aria-label="하단 WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
-        <Download size={18} aria-hidden="true" />
-        <span>WAV</span>
-      </button>
+      {#if isRendering}
+        <button type="button" class="dock-action danger" aria-label="렌더 취소" onclick={onCancelRender} disabled={!renderProgress.cancellable}>
+          <X size={18} aria-hidden="true" />
+          <span>취소</span>
+        </button>
+      {:else}
+        <button type="button" class="dock-action primary" aria-label="WAV 공유" onclick={() => void onShare()} disabled={isRendering}>
+          <Share2 size={18} aria-hidden="true" />
+          <span>공유</span>
+        </button>
+        <button type="button" class="dock-action" aria-label="하단 WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
+          <Download size={18} aria-hidden="true" />
+          <span>WAV</span>
+        </button>
+      {/if}
     </div>
   </div>
+
+  {#if renderHistory.length > 0}
+    <section class="render-history-panel" aria-label="Render history">
+      <div class="render-history-head">
+        <div>
+          <History size={17} aria-hidden="true" />
+          <strong>Render History</strong>
+        </div>
+        <button type="button" class="small-button retry-button" onclick={() => void onRetryRender()} disabled={isRendering}>
+          <RotateCcw size={15} aria-hidden="true" />
+          <span>Retry</span>
+        </button>
+      </div>
+      <div class="render-history-list">
+        {#each historyRows as item (item.id)}
+          <article class={`render-history-row ${item.status}`}>
+            <span class={`status-dot ${item.status === 'success' ? 'ready' : item.status === 'cancelled' ? 'planned' : 'blocked'}`}></span>
+            <div>
+              <strong>{item.fileName}</strong>
+              <span>{item.createdAt} · {item.rendererName} · {item.detail}</span>
+            </div>
+            <em>{item.durationSeconds === null ? 'failed' : `${item.durationSeconds.toFixed(2)}s`}</em>
+          </article>
+        {/each}
+      </div>
+    </section>
+  {/if}
 </section>

@@ -1,20 +1,25 @@
 <script lang="ts">
   import {
+    Copy,
     Download,
+    FileDown,
     FilePlus,
     FolderOpen,
     Info,
     Pause,
     Play,
     Redo2,
+    Repeat2,
+    RotateCcw,
     Save,
     Share2,
     SkipBack,
     Square,
     Undo2,
     Upload,
+    X,
   } from '@lucide/svelte'
-  import type { SongProject } from '../types'
+  import type { RenderProgress, SongProject } from '../types'
   import { formatTime, inputValue } from '../app/ui'
 
   type Props = {
@@ -22,20 +27,29 @@
     projectSourceLabel: string
     playbackTime: number
     displayDuration: number
+    renderProgress: RenderProgress
     isRendering: boolean
     isPlaying: boolean
     isLoadingVoicebank: boolean
+    isLoopOn: boolean
+    loopStartSeconds: number
+    loopEndSeconds: number
     canUndo: boolean
     canRedo: boolean
     onNewProject: () => void
+    onResetDemoProject: () => void
+    onDuplicateProject: () => void
     onProjectFile: (file: File) => Promise<void>
     onVoicebankFile: (file: File) => Promise<void>
     onSaveProject: () => void
+    onExportUstx: () => void
     onUndo: () => void
     onRedo: () => void
     onOpenLicenses: () => void
     onStop: () => void
     onPlayPause: () => Promise<void>
+    onToggleLoop: () => void
+    onCancelRender: () => void
     onShare: () => Promise<void>
     onDownloadWav: () => Promise<void>
     onProjectName: (name: string) => void
@@ -46,20 +60,29 @@
     projectSourceLabel,
     playbackTime,
     displayDuration,
+    renderProgress,
     isRendering,
     isPlaying,
     isLoadingVoicebank,
+    isLoopOn,
+    loopStartSeconds,
+    loopEndSeconds,
     canUndo,
     canRedo,
     onNewProject,
+    onResetDemoProject,
+    onDuplicateProject,
     onProjectFile,
     onVoicebankFile,
     onSaveProject,
+    onExportUstx,
     onUndo,
     onRedo,
     onOpenLicenses,
     onStop,
     onPlayPause,
+    onToggleLoop,
+    onCancelRender,
     onShare,
     onDownloadWav,
     onProjectName,
@@ -89,14 +112,23 @@
 
 <header class="topbar">
   <div class="nav-cluster" aria-label="Project navigation">
-    <button type="button" class="toolbar-button project-action" title="새 프로젝트" onclick={onNewProject}>
+    <button type="button" class="toolbar-button project-action new-project-action" title="새 프로젝트" onclick={onNewProject}>
       <FilePlus size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button project-action" title="USTX 열기" onclick={() => projectInput?.click()}>
+    <button type="button" class="toolbar-button project-action duplicate-project-action" title="프로젝트 복제" onclick={onDuplicateProject}>
+      <Copy size={19} aria-hidden="true" />
+    </button>
+    <button type="button" class="toolbar-button project-action reset-demo-action" title="데모로 리셋" onclick={onResetDemoProject}>
+      <RotateCcw size={19} aria-hidden="true" />
+    </button>
+    <button type="button" class="toolbar-button project-action open-project-action" title="프로젝트 열기" onclick={() => projectInput?.click()}>
       <FolderOpen size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="toolbar-button project-action" title="USTX 저장" onclick={onSaveProject}>
+    <button type="button" class="toolbar-button project-action save-project-action" title="WebUtau 프로젝트 저장" onclick={onSaveProject}>
       <Save size={20} aria-hidden="true" />
+    </button>
+    <button type="button" class="toolbar-button project-action export-ustx-action" title="USTX 내보내기" onclick={onExportUstx}>
+      <FileDown size={20} aria-hidden="true" />
     </button>
     <button type="button" class="toolbar-button edit-action" title="되돌리기" onclick={onUndo} disabled={!canUndo}>
       <Undo2 size={19} aria-hidden="true" />
@@ -118,7 +150,14 @@
     <button type="button" class="transport-button" title="처음으로" onclick={onStop}>
       <SkipBack size={20} aria-hidden="true" />
     </button>
-    <button type="button" class="play-button" onclick={() => void onPlayPause()} disabled={isRendering}>
+    <button
+      type="button"
+      class="play-button"
+      aria-label={isPlaying ? '일시정지' : '재생'}
+      title={isPlaying ? '일시정지' : '재생'}
+      onclick={() => void onPlayPause()}
+      disabled={isRendering}
+    >
       {#if isPlaying}
         <Pause size={24} aria-hidden="true" />
       {:else}
@@ -128,6 +167,20 @@
     <button type="button" class="transport-button" title="정지" onclick={onStop}>
       <Square size={17} aria-hidden="true" />
     </button>
+    <button
+      type="button"
+      class={`transport-button loop-toggle ${isLoopOn ? 'active' : ''}`}
+      aria-label={isLoopOn ? '루프 끄기' : '루프 켜기'}
+      title={isLoopOn ? `루프 ${formatTime(loopStartSeconds)} - ${formatTime(loopEndSeconds)}` : '루프 켜기'}
+      onclick={onToggleLoop}
+    >
+      <Repeat2 size={18} aria-hidden="true" />
+    </button>
+    {#if isRendering}
+      <button type="button" class="transport-button cancel-render-button" title="렌더 취소" onclick={onCancelRender} disabled={!renderProgress.cancellable}>
+        <X size={18} aria-hidden="true" />
+      </button>
+    {/if}
     <div class="lcd-panel" aria-label="Transport display">
       <div class="lcd-side">
         <span class="lcd-label">TIME</span>
@@ -169,7 +222,7 @@
     <input
       bind:this={projectInput}
       type="file"
-      accept=".ustx,.yaml,.yml,.json"
+      accept=".webutau.json,.ustx,.yaml,.yml,.json"
       class="hidden-input"
       onchange={(event) => void handleProjectFileChange(event)}
     />

@@ -1,7 +1,14 @@
 import { masterMonoMix } from '../audio/mastering'
 import { projectDurationSeconds, sortedNotes, ticksToSeconds } from '../music'
 import type { SongNote, SongProject } from '../types'
-import { findBestEntryForLyric, playbackRateForTone, type LoadedVoicebank, type OtoEntry } from '../voicebank'
+import {
+  findBestEntryForLyric,
+  findCodaTailEntryForLyric,
+  findSustainEntryForLyric,
+  playbackRateForTone,
+  type LoadedVoicebank,
+  type OtoEntry,
+} from '../voicebank'
 import type { VocalRenderer } from './types'
 
 const SAMPLE_RATE = 44100
@@ -9,6 +16,9 @@ const MIN_LOOP_MS = 180
 const MAX_LOOP_MS = 620
 const LOOP_CROSSFADE_MS = 110
 const LOOP_RELEASE_GUARD_MS = 180
+const CODA_RELEASE_TAIL_MS = 240
+const CODA_LOOP_BODY_MS = 420
+const CODA_LOOP_TAIL_GAP_MS = 70
 const CONSONANT_GUARD_FADE_MS = 2
 const VIBRATO_RATE_HZ = 5.4
 const VIBRATO_DEPTH_CENTS = 16
@@ -24,18 +34,40 @@ export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContex
       realtimePreview: true,
       notes: 'A first browser UTAU renderer that uses imported voicebank WAV samples and oto.ini aliases.',
     },
-    async render(project) {
+    async render(project, options = {}) {
+      throwIfAborted(options.signal)
       const durationSeconds = projectDurationSeconds(project) + 1.2
       const samples = new Float32Array(Math.ceil(durationSeconds * SAMPLE_RATE))
       const notes = sortedNotes(project.notes)
       for (const [index, note] of notes.entries()) {
-        const entry = findBestEntryForLyric(voicebank, note.lyric, note.tone)
+        throwIfAborted(options.signal)
+        const sustainEntry = findSustainEntryForLyric(voicebank, note.lyric, note.tone)
+        const entry = sustainEntry ?? findBestEntryForLyric(voicebank, note.lyric, note.tone)
+        const codaTailEntry = resolveCodaTailEntry(voicebank, note.lyric, note.tone, entry, Boolean(sustainEntry))
         const sample = await getSample(entry.path, async () => {
           const buffer = await voicebank.readSample(entry)
           return audioContext.decodeAudioData(buffer.slice(0))
         })
+        const codaTailSample = codaTailEntry
+          ? await getSample(codaTailEntry.path, async () => {
+              const buffer = await voicebank.readSample(codaTailEntry)
+              return audioContext.decodeAudioData(buffer.slice(0))
+            })
+          : undefined
+        throwIfAborted(options.signal)
         mixSample(samples, project, note, notes[index + 1], sample, playbackRateForTone(entry, note.tone), entry)
+        if (codaTailEntry && codaTailSample) {
+          mixCodaTailSample(
+            samples,
+            project,
+            note,
+            codaTailSample,
+            playbackRateForTone(codaTailEntry, note.tone),
+            codaTailEntry,
+          )
+        }
       }
+      throwIfAborted(options.signal)
       masterMonoMix(samples, { sampleRate: SAMPLE_RATE, maxGain: 2.4, targetPeak: 0.88 })
       return {
         samples,
@@ -56,6 +88,12 @@ export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContex
   }
 }
 
+function throwIfAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new DOMException('Render cancelled.', 'AbortError')
+  }
+}
+
 function mixSample(
   output: Float32Array,
   project: SongProject,
@@ -67,6 +105,39 @@ function mixSample(
 ) {
   const source = getMonoSampleData(sample)
   mixPreparedSample(output, project, note, nextNote, source, sample.sampleRate, playbackRate, entry)
+}
+
+function mixCodaTailSample(
+  output: Float32Array,
+  project: SongProject,
+  note: SongNote,
+  sample: AudioBuffer,
+  playbackRate: number,
+  entry: OtoEntry,
+) {
+  const source = getMonoSampleData(sample)
+  const sourceSampleRate = sample.sampleRate
+  const sourceRateRatio = sourceSampleRate / SAMPLE_RATE
+  const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
+  const tailSamples = Math.min(
+    source.length,
+    Math.max(
+      msToSamples(Math.max(120, Math.abs(entry.cutoffMs || 0)), sourceSampleRate),
+      msToSamples(CODA_RELEASE_TAIL_MS, sourceSampleRate),
+    ),
+  )
+  const sourceStart = Math.max(0, source.length - tailSamples)
+  const outputTailSamples = Math.ceil(tailSamples / Math.max(0.001, rate))
+  const noteEndSample = Math.floor((ticksToSeconds(note.start + note.duration, project.bpm) + 0.02) * SAMPLE_RATE)
+  const startSample = clampInt(noteEndSample - Math.floor(outputTailSamples * 0.55), 0, output.length - 1)
+  const fadeInSamples = Math.max(24, Math.floor(outputTailSamples * 0.18))
+  const fadeOutSamples = Math.max(48, Math.floor(outputTailSamples * 0.26))
+  for (let i = 0; i < outputTailSamples && startSample + i < output.length; i += 1) {
+    const sourcePosition = sourceStart + i * rate
+    const fadeIn = smoothstep(i / fadeInSamples)
+    const fadeOut = smoothstep((outputTailSamples - i) / fadeOutSamples)
+    output[startSample + i] += readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5
+  }
 }
 
 function getMonoSampleData(sample: AudioBuffer) {
@@ -109,7 +180,7 @@ function mixPreparedSample(
   const sourceRateRatio = sourceSampleRate / SAMPLE_RATE
   const rate = Math.max(0.25, Math.min(4, playbackRate)) * sourceRateRatio
   const sourceWindow = makeSourceWindow(source.length, sourceSampleRate, entry)
-  const loop = makeLoopWindow(sourceWindow, sourceSampleRate)
+  const loop = makeLoopWindow(sourceWindow, sourceSampleRate, hasHangulCoda(note.lyric))
   const fadeInSamples = Math.max(16, Math.floor(overlapSeconds * SAMPLE_RATE))
   const consonantGuardFadeSamples = Math.max(12, msToSamples(CONSONANT_GUARD_FADE_MS, SAMPLE_RATE))
   const fadeOutSamples = Math.max(128, Math.floor(releaseSeconds * SAMPLE_RATE))
@@ -122,9 +193,12 @@ function mixPreparedSample(
 
   for (let i = 0; i < length && startSample + i < output.length; i++) {
     const elapsedOutputSamples = i
-    const sampleValue = readLoopedLinear(source, sourcePosition, loop)
     const preutteranceSamples = Math.floor(preutteranceSeconds * SAMPLE_RATE)
     const noteProgress = elapsedOutputSamples - preutteranceSamples
+    const sampleValue =
+      noteProgress >= noteBodySamples
+        ? readLinearUntil(source, loop.tailStart + (noteProgress - noteBodySamples) * rate, sourceWindow.end)
+        : readLoopedLinear(source, sourcePosition, loop)
     const attack =
       elapsedOutputSamples <= consonantOutputSamples
         ? smoothstep(Math.min(1, elapsedOutputSamples / consonantGuardFadeSamples))
@@ -187,25 +261,75 @@ function makeSourceWindow(sourceLength: number, sampleRate: number, entry?: OtoE
   return { start, end, consonantEnd }
 }
 
-function makeLoopWindow(sourceWindow: { start: number; end: number; consonantEnd: number }, sampleRate: number) {
+function makeLoopWindow(sourceWindow: { start: number; end: number; consonantEnd: number }, sampleRate: number, hasCoda: boolean) {
   const maxLoop = msToSamples(MAX_LOOP_MS, sampleRate)
   const minLoop = msToSamples(MIN_LOOP_MS, sampleRate)
+  if (hasCoda) {
+    return makeCodaAwareLoopWindow(sourceWindow, sampleRate, minLoop, maxLoop)
+  }
   const guardedEnd = Math.max(sourceWindow.consonantEnd + minLoop, sourceWindow.end - msToSamples(LOOP_RELEASE_GUARD_MS, sampleRate))
   const available = guardedEnd - sourceWindow.consonantEnd
   if (available <= minLoop) {
     const start = Math.max(sourceWindow.start, guardedEnd - Math.max(minLoop, available))
-    return { start, end: guardedEnd, crossfade: Math.max(8, Math.floor((guardedEnd - start) / 4)) }
+    return {
+      start,
+      end: guardedEnd,
+      tailStart: guardedEnd,
+      crossfade: Math.max(8, Math.floor((guardedEnd - start) / 4)),
+    }
   }
   const loopLength = Math.min(maxLoop, available)
   const start = guardedEnd - loopLength
   return {
     start,
     end: guardedEnd,
+    tailStart: guardedEnd,
     crossfade: Math.min(msToSamples(LOOP_CROSSFADE_MS, sampleRate), Math.floor(loopLength / 2)),
   }
 }
 
-function readLoopedLinear(source: Float32Array, sourcePosition: number, loop: { start: number; end: number; crossfade: number }) {
+function makeCodaAwareLoopWindow(
+  sourceWindow: { start: number; end: number; consonantEnd: number },
+  sampleRate: number,
+  minLoop: number,
+  maxLoop: number,
+) {
+  const tailStart = clampInt(
+    sourceWindow.end - msToSamples(CODA_RELEASE_TAIL_MS, sampleRate),
+    sourceWindow.consonantEnd + 1,
+    sourceWindow.end,
+  )
+  const latestLoopEnd = Math.max(
+    sourceWindow.consonantEnd + 1,
+    tailStart - msToSamples(CODA_LOOP_TAIL_GAP_MS, sampleRate),
+  )
+  const preferredLoopEnd = Math.min(sourceWindow.consonantEnd + msToSamples(CODA_LOOP_BODY_MS, sampleRate), latestLoopEnd)
+  const loopEnd = clampInt(preferredLoopEnd, sourceWindow.consonantEnd + 1, latestLoopEnd)
+  const available = loopEnd - sourceWindow.consonantEnd
+  if (available <= minLoop) {
+    const start = Math.max(sourceWindow.start, loopEnd - Math.max(16, available))
+    return {
+      start,
+      end: loopEnd,
+      tailStart,
+      crossfade: Math.max(8, Math.floor((loopEnd - start) / 4)),
+    }
+  }
+  const loopLength = Math.min(maxLoop, available)
+  const start = Math.max(sourceWindow.consonantEnd, loopEnd - loopLength)
+  return {
+    start,
+    end: loopEnd,
+    tailStart,
+    crossfade: Math.min(msToSamples(LOOP_CROSSFADE_MS, sampleRate), Math.floor(loopLength / 2)),
+  }
+}
+
+function readLoopedLinear(
+  source: Float32Array,
+  sourcePosition: number,
+  loop: { start: number; end: number; crossfade: number },
+) {
   const loopLength = Math.max(1, loop.end - loop.start)
   let position = sourcePosition
   if (position >= loop.end) {
@@ -218,6 +342,13 @@ function readLoopedLinear(source: Float32Array, sourcePosition: number, loop: { 
     return loopTail * (1 - blend) + loopHead * blend
   }
   return linearSample(source, Math.min(position, loop.end - 1))
+}
+
+function readLinearUntil(source: Float32Array, sourcePosition: number, end: number) {
+  if (sourcePosition >= end - 1) {
+    return 0
+  }
+  return linearSample(source, sourcePosition)
 }
 
 function linearSample(source: Float32Array, position: number) {
@@ -246,4 +377,32 @@ function clampInt(value: number, min: number, max: number) {
     return min
   }
   return Math.min(max, Math.max(min, Math.round(value)))
+}
+
+function shouldOverlayCodaTail(entry: OtoEntry, lyric: string) {
+  return hasHangulCoda(lyric) && entry.alias.trim() !== lyric.trim()
+}
+
+function resolveCodaTailEntry(
+  voicebank: LoadedVoicebank,
+  lyric: string,
+  targetTone: number,
+  entry: OtoEntry,
+  hasSustainEntry: boolean,
+) {
+  if (!hasSustainEntry && !shouldOverlayCodaTail(entry, lyric)) {
+    return undefined
+  }
+  const codaTailEntry = findCodaTailEntryForLyric(voicebank, lyric, targetTone)
+  return codaTailEntry?.path === entry.path ? undefined : codaTailEntry
+}
+
+function hasHangulCoda(text: string) {
+  for (const char of text.trim()) {
+    const code = char.charCodeAt(0)
+    if (code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0) {
+      return true
+    }
+  }
+  return false
 }

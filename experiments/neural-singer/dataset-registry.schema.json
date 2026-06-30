@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://midagedev.github.io/webuta/schemas/neural-singer-dataset-registry.schema.json",
+  "title": "WebUtau Neural Singer Dataset Registry",
+  "type": "object",
+  "required": ["version", "datasets"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "notes": {
+      "type": "string"
+    },
+    "datasets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "localPath",
+          "licenseStatus",
+          "redistribution",
+          "modelPublishing",
+          "singerIdentity",
+          "language",
+          "annotationTypes",
+          "allowedActions",
+          "reviewNotes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceUrl": {
+            "type": ["string", "null"]
+          },
+          "localPath": {
+            "type": "string",
+            "minLength": 1
+          },
+          "licenseStatus": {
+            "type": "string",
+            "minLength": 1
+          },
+          "redistribution": {
+            "type": "string",
+            "minLength": 1
+          },
+          "modelPublishing": {
+            "type": "string",
+            "minLength": 1
+          },
+          "singerIdentity": {
+            "type": "string",
+            "minLength": 1
+          },
+          "language": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "audioHours": {
+            "type": ["number", "null"],
+            "minimum": 0
+          },
+          "annotationTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "consent": {
+            "type": "object",
+            "properties": {
+              "requiresSignedConsent": {
+                "type": "boolean"
+              },
+              "templatePath": {
+                "type": "string"
+              },
+              "signedConsentPath": {
+                "type": "string"
+              },
+              "localTrainingScope": {
+                "type": "string"
+              },
+              "publicReleaseScope": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "licenseReview": {
+            "type": "object",
+            "properties": {
+              "requiresReview": {
+                "type": "boolean"
+              },
+              "templatePath": {
+                "type": "string"
+              },
+              "reviewedPath": {
+                "type": "string"
+              },
+              "requiredFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "qualityGates": {
+            "type": "object",
+            "properties": {
+              "minAnnotatedRatio": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "minProviderArchiveCount": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minProviderArchiveBytes": {
+                "type": "number",
+                "minimum": 0
+              },
+              "minProviderArchiveTotalBytes": {
+                "type": "number",
+                "minimum": 0
+              },
+              "expectedProviderArchiveTotalBytes": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "allowedActions": {
+            "type": "object",
+            "required": ["localTraining", "publicModelRelease", "publicAudioExamples"],
+            "properties": {
+              "localTraining": {
+                "type": "boolean"
+              },
+              "publicModelRelease": {
+                "type": "boolean"
+              },
+              "publicAudioExamples": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "reviewNotes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

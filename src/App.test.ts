@@ -4,6 +4,7 @@ import JSZip from 'jszip'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.svelte'
 import { demoProject } from './demoProject'
+import { serializeWebutaProject } from './projectFile'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
@@ -51,7 +52,7 @@ describe('App editing workflow', () => {
     })
   })
 
-  it('starts a new Hangul demo project from a restored draft', async () => {
+  it('starts a fresh vocal sketch from a restored draft', async () => {
     saveProject({
       ...demoProject,
       name: 'Old Draft',
@@ -65,10 +66,89 @@ describe('App editing workflow', () => {
     fireEvent.click(screen.getByTitle('새 프로젝트'))
 
     await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Untitled Vocal Sketch')
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['라', '라', '라', '라'])
+    })
+    expect(screen.getAllByText('New vocal sketch').length).toBeGreaterThan(0)
+  })
+
+  it('restores the built-in Hangul demo from the top bar', async () => {
+    saveProject({
+      ...demoProject,
+      name: 'Old Draft',
+      notes: demoProject.notes.map((note) => ({ ...note, lyric: 'la' })),
+    })
+
+    render(App)
+
+    fireEvent.click(screen.getByTitle('데모로 리셋'))
+
+    await waitFor(() => {
       expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('First Vocal Sketch')
       expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
     })
     expect(screen.getAllByText('Built-in Hangul demo').length).toBeGreaterThan(0)
+  })
+
+  it('duplicates the current project without overwriting the original draft name', async () => {
+    saveProject({
+      ...demoProject,
+      name: 'Dohee Hook',
+      notes: demoProject.notes.map((note, index) => ({ ...note, lyric: index === 0 ? '연' : note.lyric })),
+    })
+
+    render(App)
+
+    fireEvent.click(screen.getByTitle('프로젝트 복제'))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Dohee Hook Copy')
+      expect(loadSavedProject()?.notes[0]?.lyric).toBe('연')
+    })
+    expect(screen.getAllByText('Duplicated from current project').length).toBeGreaterThan(0)
+  })
+
+  it('imports a saved WebUtau project file', async () => {
+    const imported = {
+      ...demoProject,
+      name: 'Imported WebUtau Hook',
+      notes: demoProject.notes.map((note, index) => ({ ...note, lyric: index === 0 ? '연' : note.lyric })),
+    }
+    const { container } = render(App)
+    const projectInput = container.querySelector('input[accept*=".webutau.json"]') as HTMLInputElement
+
+    fireEvent.change(projectInput, {
+      target: {
+        files: [
+          new File([serializeWebutaProject(imported, '2026-06-30T00:00:00.000Z')], 'imported-hook.webutau.json', {
+            type: 'application/json',
+          }),
+        ],
+      },
+    })
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Imported WebUtau Hook')
+      expect(loadSavedProject()?.notes[0]?.lyric).toBe('연')
+    })
+    expect(screen.getAllByText('imported-hook.webutau.json').length).toBeGreaterThan(0)
+  })
+
+  it('saves native WebUtau project JSON and keeps USTX export available', async () => {
+    render(App)
+
+    fireEvent.click(screen.getByTitle('WebUtau 프로젝트 저장'))
+
+    const createObjectURL = URL.createObjectURL as unknown as ReturnType<typeof vi.fn>
+    const webutaBlob = createObjectURL.mock.calls.at(-1)?.[0] as Blob
+    await expect(webutaBlob.text()).resolves.toContain('"format": "webuta-project"')
+    expect(screen.getAllByText('WebUtau project saved').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByTitle('USTX 내보내기'))
+
+    const ustxBlob = createObjectURL.mock.calls.at(-1)?.[0] as Blob
+    await expect(ustxBlob.text()).resolves.toContain('ustx_version')
+    expect(screen.getAllByText('USTX saved').length).toBeGreaterThan(0)
   })
 
   it('restores the last imported voicebank zip', async () => {
@@ -129,6 +209,7 @@ describe('App editing workflow', () => {
     expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
     expect(screen.getByText('현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
     expect(screen.getByText('도 -> ど (exact)')).toBeTruthy()
+    expect(screen.getByText('렌더 경고 없음')).toBeTruthy()
   })
 
   it('shows fallback lyric coverage when the imported voicebank cannot match the demo line', async () => {
@@ -139,6 +220,9 @@ describe('App editing workflow', () => {
     await screen.findByText('WebUtau // Test Teto')
     expect(screen.getByText('미매칭 8개: 도, 히, 다, 이, 스, 키')).toBeTruthy()
     expect(screen.getByText('도 -> ど alias 없음')).toBeTruthy()
+    expect(screen.getByText('렌더 경고 8개')).toBeTruthy()
+    expect(screen.getByText('8개 alias 오류 · 0개 주의')).toBeTruthy()
+    expect(screen.getAllByText('도 alias 없음').length).toBeGreaterThan(0)
   })
 
   it('updates the selected lyric from the quick lyric pads', () => {
@@ -478,6 +562,50 @@ describe('App editing workflow', () => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.duration).toBe(540)
     })
+  })
+
+  it('splits and deletes the selected note from the editor controls', async () => {
+    render(App)
+
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트 분할' }))
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.notes).toHaveLength(9)
+      expect(saved?.notes.slice(0, 2)).toEqual([
+        expect.objectContaining({ id: 'n1', lyric: '도', start: 0, duration: 240 }),
+        expect.objectContaining({ lyric: '도', start: 240, duration: 180 }),
+      ])
+    })
+    expect(screen.getAllByText('도 note split').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트 삭제' }))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes).toHaveLength(8)
+    })
+    expect(screen.getAllByText('도 note deleted').length).toBeGreaterThan(0)
+  })
+
+  it('sets a visible loop region around the selected note', () => {
+    const { container } = render(App)
+
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트 루프' }))
+
+    const loopRegion = container.querySelector('.loop-region') as HTMLDivElement
+    expect(loopRegion).toBeTruthy()
+    expect(loopRegion.getAttribute('style')).toContain('left: 0px')
+    expect(loopRegion.getAttribute('style')).toContain('width: 72px')
+    expect(screen.getAllByRole('button', { name: '루프 끄기' }).length).toBeGreaterThan(0)
+  })
+
+  it('renders piano key labels and bar labels inside the piano roll', () => {
+    const { container } = render(App)
+
+    expect(container.querySelectorAll('.keyboard .key-label').length).toBeGreaterThan(6)
+    expect([...container.querySelectorAll('.roll-bar-label')].map((item) => item.textContent)).toEqual(
+      expect.arrayContaining(['1', '2']),
+    )
   })
 
   it('edits a focused note with arrow keys', async () => {

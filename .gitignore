@@ -11,8 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.local/
 test-assets/
 test-output/
+experiments/neural-singer/checkpoints/
+experiments/neural-singer/datasets/
+experiments/neural-singer/outputs/
+experiments/neural-singer/runs/
+experiments/neural-singer/work/
+experiments/utau-v3/work/
 
 # Editor directories and files
 .vscode/*

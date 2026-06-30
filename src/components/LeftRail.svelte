@@ -6,6 +6,7 @@
     ArrowUp,
     Plus,
     Scissors,
+    ShieldCheck,
     Sparkles,
     Trash2,
     Upload,
@@ -13,8 +14,8 @@
   } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { GRID_SNAP_TICKS } from '../projectEditing'
-  import type { SongNote, SongProject } from '../types'
-  import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage } from '../voicebank'
+  import type { NeuralModelCard, RendererId, SongNote, SongProject } from '../types'
+  import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
   import { rendererCapabilities } from '../renderers/registry'
   import {
     formatCoverageMessage,
@@ -33,18 +34,24 @@
     voicebank: LoadedVoicebank | null
     voicebankName: string
     voicebankCoverage: VoicebankCoverage | null
+    voicebankWarnings: VoicebankRenderWarningReport | null
     voicebankCacheStatus: VoicebankCacheStatus
     isLoadingVoicebank: boolean
+    selectedRendererId: RendererId
+    selectedNeuralModelId: string
+    neuralModels: NeuralModelCard[]
     notice: string
     onVoicebankFile: (file: File) => Promise<void>
     onBpm: (bpm: number) => void
     onBeat: (beatPerBar: number, beatUnit: number) => void
-    onSelectDemoVoice: () => void
+    onRenderer: (renderer: RendererId) => void
+    onNeuralModel: (modelId: string) => void
     onLyric: (lyric: string) => void
     onTone: (tone: number) => void
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
     onAddNote: () => void
+    onSplitNote: () => void
     onDeleteNote: () => void
   }
 
@@ -55,18 +62,24 @@
     voicebank,
     voicebankName,
     voicebankCoverage,
+    voicebankWarnings,
     voicebankCacheStatus,
     isLoadingVoicebank,
+    selectedRendererId,
+    selectedNeuralModelId,
+    neuralModels,
     notice,
     onVoicebankFile,
     onBpm,
     onBeat,
-    onSelectDemoVoice,
+    onRenderer,
+    onNeuralModel,
     onLyric,
     onTone,
     onNudge,
     onDuration,
     onAddNote,
+    onSplitNote,
     onDeleteNote,
   }: Props = $props()
 
@@ -85,6 +98,40 @@
     const [beatPerBar, beatUnit] = inputValue(event).split('/').map(Number)
     onBeat(beatPerBar, beatUnit)
   }
+
+  function rendererStatusLabel(status: 'ready' | 'planned' | 'blocked') {
+    if (status === 'ready') {
+      return 'Ready'
+    }
+    if (status === 'blocked') {
+      return 'Setup required'
+    }
+    return 'Planned'
+  }
+
+  function releaseStatusLabel(status: NeuralModelCard['releaseStatus']) {
+    if (status === 'local-research') {
+      return 'Research'
+    }
+    if (status === 'private-family') {
+      return 'Private'
+    }
+    if (status === 'public-beta') {
+      return 'Beta'
+    }
+    if (status === 'user-provided') {
+      return 'User'
+    }
+    if (status === 'bundled') {
+      return 'Bundled'
+    }
+    return 'Planned'
+  }
+
+  let selectedRenderWarnings = $derived(
+    selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
+  )
+  let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
 </script>
 
 <aside class="left-rail">
@@ -127,8 +174,14 @@
     </label>
     <label class="field-label">
       보컬
-      <select value="browser-demo" onchange={onSelectDemoVoice}>
-        <option value="browser-demo">{voicebankName}</option>
+      <select value={selectedRendererId} onchange={(event) => onRenderer(inputValue(event) as RendererId)}>
+        <option value="utau-sample" disabled={!voicebank}>{voicebank ? `${voicebankName} UTAU` : 'UTAU ZIP 대기'}</option>
+        <option value="browser-demo">Korean Demo Voice</option>
+        {#each rendererCapabilities.filter((renderer) => renderer.id !== 'browser-demo') as renderer (renderer.id)}
+          <option value={renderer.id} disabled={renderer.status !== 'ready'}>
+            {renderer.status === 'ready' ? renderer.name : `${renderer.name} 준비 필요`}
+          </option>
+        {/each}
       </select>
     </label>
     <div class="voicebank-actions">
@@ -170,6 +223,26 @@
         <em>{formatVoicebankCacheStatus(voicebankCacheStatus)}</em>
       {/if}
     </div>
+    <div class={`render-warning-card ${voicebankWarnings?.warningCount ? 'warning' : voicebank ? 'ready' : 'idle'}`} aria-label="UTAU render warnings">
+      {#if !voicebank}
+        <strong>렌더 진단 대기</strong>
+        <span>UTAU ZIP이 로드되면 노트별 렌더 위험을 검사합니다.</span>
+      {:else if !voicebankWarnings}
+        <strong>렌더 진단 중</strong>
+        <span>alias fallback과 pitch shift를 확인하고 있습니다.</span>
+      {:else if voicebankWarnings.warningCount === 0}
+        <strong>렌더 경고 없음</strong>
+        <span>{voicebankWarnings.totalNotes}개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다.</span>
+      {:else}
+        <strong>렌더 경고 {voicebankWarnings.warningCount}개</strong>
+        <span>{voicebankWarnings.errorCount}개 alias 오류 · {voicebankWarnings.warningCount - voicebankWarnings.errorCount}개 주의</span>
+        <ul>
+          {#each renderWarningPreview as warning (warning.noteId + warning.kind)}
+            <li>{warning.message}</li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
   </section>
 
   <section class="tool-panel note-panel">
@@ -185,6 +258,9 @@
         </div>
         <div class={`lyric-match-chip ${selectedLyricMatch?.quality === 'fallback' ? 'warning' : 'ready'}`}>
           {formatLyricMatch(selectedLyricMatch)}
+        </div>
+        <div class={`render-note-chip ${selectedRenderWarnings.length ? 'warning' : 'ready'}`}>
+          {selectedRenderWarnings[0]?.message ?? '렌더 안전'}
         </div>
         <label class="field-label">
           가사
@@ -233,10 +309,41 @@
         <Plus size={18} aria-hidden="true" />
         <span>추가</span>
       </button>
+      <button type="button" class="icon-text-button" onclick={onSplitNote}>
+        <Scissors size={18} aria-hidden="true" />
+        <span>분할</span>
+      </button>
       <button type="button" class="icon-text-button danger" onclick={onDeleteNote}>
         <Trash2 size={18} aria-hidden="true" />
         <span>삭제</span>
       </button>
+    </div>
+  </section>
+
+  <section class="tool-panel model-panel">
+    <div class="panel-heading">
+      <ShieldCheck size={18} aria-hidden="true" />
+      <h2>모델</h2>
+    </div>
+    <div class="model-list">
+      {#each neuralModels as model (model.id)}
+        <button
+          type="button"
+          class={`model-card ${model.status} ${selectedNeuralModelId === model.id ? 'selected' : ''}`}
+          disabled={model.status !== 'ready'}
+          onclick={() => onNeuralModel(model.id)}
+        >
+          <div class="model-row">
+            <span class={`status-dot ${model.status}`}></span>
+            <div>
+              <strong>{model.name}</strong>
+              <span>{model.language.toUpperCase()} · {releaseStatusLabel(model.releaseStatus)}</span>
+            </div>
+          </div>
+          <p>{model.licenseSummary}</p>
+          <em>{model.usageNote}</em>
+        </button>
+      {/each}
     </div>
   </section>
 
@@ -251,7 +358,7 @@
           <span class={`status-dot ${renderer.status}`}></span>
           <div>
             <strong>{renderer.name}</strong>
-            <span>{renderer.status === 'ready' ? 'Ready' : 'Planned'}</span>
+            <span>{rendererStatusLabel(renderer.status)}</span>
           </div>
         </div>
       {/each}

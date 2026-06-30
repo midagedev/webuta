@@ -6,7 +6,9 @@ import {
   addNoteAtTick,
   addNoteFromGrid,
   applyLyricLineToProject,
+  deleteNoteFromProject,
   quantizeProjectNotes,
+  splitNoteInProject,
   tokenizeLyricLine,
   updateNoteInProject,
 } from './projectEditing'
@@ -110,6 +112,43 @@ describe('project editing helpers', () => {
 
     expect(result.note).toBeNull()
     expect(result.project).toBe(demoProject)
+  })
+
+  it('splits a selected note at a snapped midpoint', () => {
+    const { project, leftNote, rightNote } = splitNoteInProject(demoProject, 'n1')
+
+    expect(leftNote?.duration).toBe(240)
+    expect(rightNote).toMatchObject({
+      start: 240,
+      duration: 180,
+      tone: 60,
+      lyric: '도',
+    })
+    expect(project.notes).toHaveLength(demoProject.notes.length + 1)
+    expect(project.notes.map((note) => note.start)).toEqual([...project.notes.map((note) => note.start)].sort((a, b) => a - b))
+  })
+
+  it('does not split notes shorter than two grid cells', () => {
+    const shortProject: SongProject = {
+      ...demoProject,
+      notes: [{ ...demoProject.notes[0], duration: 120 }],
+    }
+    const { project, rightNote } = splitNoteInProject(shortProject, 'n1')
+
+    expect(project).toBe(shortProject)
+    expect(rightNote).toBeNull()
+  })
+
+  it('deletes a note while preserving at least one note in the project', () => {
+    const { project, deletedNote, nextSelectedNoteId } = deleteNoteFromProject(demoProject, 'n1')
+
+    expect(deletedNote?.id).toBe('n1')
+    expect(project.notes).toHaveLength(demoProject.notes.length - 1)
+    expect(project.notes.some((note) => note.id === 'n1')).toBe(false)
+    expect(nextSelectedNoteId).toBe('n2')
+
+    const singleNoteProject = { ...demoProject, notes: [demoProject.notes[0]] }
+    expect(deleteNoteFromProject(singleNoteProject, 'n1').project).toBe(singleNoteProject)
   })
 
   it('tokenizes compact Korean lyric lines by syllable', () => {

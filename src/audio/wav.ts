@@ -97,6 +97,48 @@ export function inspectWavBuffer(buffer: ArrayBuffer): WavInfo {
   }
 }
 
+export function decodeMonoPcmWav(buffer: ArrayBuffer) {
+  const view = new DataView(buffer)
+  const info = inspectWavBuffer(buffer)
+  if (info.audioFormat !== 1 || info.bitsPerSample !== 16) {
+    throw new Error('Only 16-bit PCM WAV decoding is supported')
+  }
+
+  let dataOffset = -1
+  let offset = 12
+  while (offset + 8 <= view.byteLength) {
+    const chunkId = readAscii(view, offset, 4)
+    const chunkSize = view.getUint32(offset + 4, true)
+    if (chunkId === 'data') {
+      dataOffset = offset + 8
+      break
+    }
+    offset += 8 + chunkSize + (chunkSize % 2)
+  }
+
+  if (dataOffset < 0) {
+    throw new Error('Missing WAV data chunk')
+  }
+
+  const frameCount = info.dataBytes / (info.channelCount * 2)
+  const samples = new Float32Array(frameCount)
+  for (let frame = 0; frame < frameCount; frame += 1) {
+    let sum = 0
+    for (let channel = 0; channel < info.channelCount; channel += 1) {
+      const sampleOffset = dataOffset + (frame * info.channelCount + channel) * 2
+      sum += view.getInt16(sampleOffset, true) / 0x8000
+    }
+    samples[frame] = sum / info.channelCount
+  }
+
+  return {
+    samples,
+    sampleRate: info.sampleRate,
+    durationSeconds: info.durationSeconds,
+    info,
+  }
+}
+
 export function isDawReadyWav(info: WavInfo) {
   return (
     info.container === 'RIFF/WAVE' &&

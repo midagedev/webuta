@@ -19,9 +19,10 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Scaffold Svelte/Vite/TypeScript app.
 - [x] Add USTX YAML/JSON parser for modern OpenUtau project shape.
 - [x] Add USTX export for round-tripping simple vocal projects.
-- [x] Add touch-friendly first-screen editor with project actions, note editor, and piano roll.
+- [x] Add native `.webutau.json` project save/import for browser-native work.
+- [x] Add touch-friendly first-screen editor with project actions, note editor, loop controls, and piano roll.
 - [x] Add browser-safe demo vocal renderer as fallback.
-- [x] Add bundled `WebUtau Korean Lite` UTAU-style Korean CV voicebank for the default path.
+- [x] Add bundled `WebUtau Korean V3 Synthetic` UTAU-style voicebank for the default path.
 - [x] Add Hangul CV alias fallback so final-consonant syllables can use their base CV sample.
 - [x] Add WAV encoder and download path.
 - [x] Add renderer registry for future OpenUtau server and WORLDLINE WASM engines.
@@ -37,14 +38,21 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] `npm run build` passes.
 - [x] `npm run test:teto` passes against local official `TETO-OUset240323.zip`.
 - [x] Official Teto zip covers the built-in Korean demo line with `8/8 matched` alias coverage.
-- [x] Bundled `WebUtau Korean Lite` contains 399 WAV samples and 814 oto.ini alias lines.
-- [x] Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean Lite voicebank.
+- [x] Bundled `WebUtau Korean V3 Synthetic` contains 615 WAV samples and 1437 oto.ini alias lines.
+- [x] Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
+- [x] Default V3 demo browser audit passes: V3 selected, aliases 8/8 matched,
+  render warnings clear, piano-roll key/ruler labels visible on desktop/mobile,
+  and WAV export DAW-ready.
+- [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
+  WAV phrases for human scoring.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
 - [x] App UI re-inspects rendered WAV headers and marks compatible output as DAW-ready.
 - [x] App UI shows whether the imported voicebank is saved locally, restored locally, or session-only.
+- [x] WebUtau project file tests verify native JSON export/import round-trips.
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.
+- [x] App tests cover selected-note split/delete controls and selected-note loop region display.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams

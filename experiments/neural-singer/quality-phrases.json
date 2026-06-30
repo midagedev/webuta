@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "id": "webuta-ko-quality-v1",
+  "description": "Fixed Korean phrase set for WebUtau neural singer quality comparisons.",
+  "sampleRate": 44100,
+  "language": "ko",
+  "renderer": "diffsinger",
+  "phrases": [
+    {
+      "id": "do-hi-do-hi-daisuki",
+      "title": "도히도히 다이스키",
+      "purpose": "Baseline phrase from the product demo, with short consonants and a mixed Korean/Japanese-style lyric.",
+      "bpm": 120,
+      "notes": [
+        { "lyric": "도", "midi": 60, "durationSeconds": 0.3 },
+        { "lyric": "히", "midi": 62, "durationSeconds": 0.3 },
+        { "lyric": "도", "midi": 60, "durationSeconds": 0.3 },
+        { "lyric": "히", "midi": 62, "durationSeconds": 0.3 },
+        { "lyric": "다", "midi": 64, "durationSeconds": 0.3 },
+        { "lyric": "이", "midi": 64, "durationSeconds": 0.3 },
+        { "lyric": "스", "midi": 65, "durationSeconds": 0.3 },
+        { "lyric": "키", "midi": 67, "durationSeconds": 0.4 }
+      ]
+    },
+    {
+      "id": "open-vowel-sustain",
+      "title": "아아아 오오오 우우우",
+      "purpose": "Open vowel sustain stability without consonant-heavy attacks.",
+      "bpm": 96,
+      "notes": [
+        { "lyric": "아", "midi": 60, "durationSeconds": 0.8 },
+        { "lyric": "아", "midi": 60, "durationSeconds": 0.8 },
+        { "lyric": "아", "midi": 60, "durationSeconds": 0.8 },
+        { "lyric": "오", "midi": 62, "durationSeconds": 0.8 },
+        { "lyric": "오", "midi": 62, "durationSeconds": 0.8 },
+        { "lyric": "오", "midi": 62, "durationSeconds": 0.8 },
+        { "lyric": "우", "midi": 64, "durationSeconds": 0.8 },
+        { "lyric": "우", "midi": 64, "durationSeconds": 0.8 },
+        { "lyric": "우", "midi": 64, "durationSeconds": 0.8 }
+      ]
+    },
+    {
+      "id": "batchim-heavy",
+      "title": "강남 밤하늘",
+      "purpose": "Batchim-heavy Korean phrase for coda preservation and consonant clarity checks.",
+      "bpm": 108,
+      "notes": [
+        { "lyric": "강", "midi": 57, "durationSeconds": 0.42 },
+        { "lyric": "남", "midi": 60, "durationSeconds": 0.42 },
+        { "lyric": "밤", "midi": 62, "durationSeconds": 0.48, "gapSeconds": 0.08 },
+        { "lyric": "하", "midi": 64, "durationSeconds": 0.42 },
+        { "lyric": "늘", "midi": 62, "durationSeconds": 0.72 }
+      ]
+    },
+    {
+      "id": "long-coda-sustain",
+      "title": "연 은 꿈",
+      "purpose": "Long Korean syllables with final consonants, tuned to catch repeated batchim/coda sustain artifacts.",
+      "bpm": 84,
+      "notes": [
+        { "lyric": "연", "midi": 60, "durationSeconds": 1.2 },
+        { "lyric": "은", "midi": 62, "durationSeconds": 0.9, "gapSeconds": 0.08 },
+        { "lyric": "꿈", "midi": 64, "durationSeconds": 1.1, "gapSeconds": 0.08 }
+      ]
+    },
+    {
+      "id": "fast-short-notes",
+      "title": "다다다다 스키",
+      "purpose": "Fast short-note phrase for onset timing and rhythmic smearing checks.",
+      "bpm": 150,
+      "notes": [
+        { "lyric": "다", "midi": 64, "durationSeconds": 0.18 },
+        { "lyric": "다", "midi": 66, "durationSeconds": 0.18 },
+        { "lyric": "다", "midi": 67, "durationSeconds": 0.18 },
+        { "lyric": "다", "midi": 69, "durationSeconds": 0.18 },
+        { "lyric": "스", "midi": 67, "durationSeconds": 0.22, "gapSeconds": 0.08 },
+        { "lyric": "키", "midi": 71, "durationSeconds": 0.36 }
+      ]
+    },
+    {
+      "id": "low-mid-high",
+      "title": "아 아 아",
+      "purpose": "Low, middle, and high pitch coverage with the same vowel.",
+      "bpm": 88,
+      "notes": [
+        { "lyric": "아", "midi": 48, "durationSeconds": 0.75 },
+        { "lyric": "아", "midi": 60, "durationSeconds": 0.75, "gapSeconds": 0.05 },
+        { "lyric": "아", "midi": 72, "durationSeconds": 0.75, "gapSeconds": 0.05 }
+      ]
+    }
+  ],
+  "betaThresholds": {
+    "durationToleranceSeconds": 0.35,
+    "maxClippingSamples": 0,
+    "minRms": 0.005,
+    "maxRms": 0.25,
+    "minVoicedFrameRatio": 0.35,
+    "maxMedianAbsCents": 180,
+    "maxMedianOnsetLagSeconds": 0.12,
+    "maxMissingOnsetRatio": 0.2,
+    "maxCodaSustainBurstCount": 1,
+    "minListeningKoreanClarityScore": 4,
+    "minListeningVowelStabilityScore": 4,
+    "minListeningArtifactScore": 4,
+    "scoreScale": "1=unusable, 3=prototype, 5=public-beta-ready"
+  }
+}

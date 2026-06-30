@@ -20,8 +20,8 @@ export const demoProject: SongProject = {
       id: trackId,
       name: 'Main Vocal',
       color: 'Coral',
-      singer: 'WebUtau Korean Lite',
-      phonemizer: 'hangul cv lite',
+      singer: 'WebUtau Korean V3 Synthetic',
+      phonemizer: 'hangul cv/vc synthetic',
     },
   ],
   parts: [
@@ -45,13 +45,69 @@ export const demoProject: SongProject = {
   ],
 }
 
+export const starterProject: SongProject = {
+  id: 'starter-vocal-project',
+  name: 'Untitled Vocal Sketch',
+  comment: 'A fresh WebUtau project for drawing a new vocal line.',
+  bpm: 112,
+  beatPerBar: 4,
+  beatUnit: 4,
+  source: {
+    fileName: 'new-project',
+    format: 'webuta',
+  },
+  tracks: [
+    {
+      id: trackId,
+      name: 'Main Vocal',
+      color: 'Coral',
+      singer: 'WebUtau Korean V3 Synthetic',
+      phonemizer: 'hangul cv/vc synthetic',
+    },
+  ],
+  parts: [
+    {
+      id: partId,
+      trackId,
+      name: 'Verse',
+      start: 0,
+      duration: TICKS_PER_BEAT * 4,
+    },
+  ],
+  notes: [
+    { id: 's1', trackId, partId, start: 0, duration: 480, tone: 60, lyric: '라' },
+    { id: 's2', trackId, partId, start: 480, duration: 480, tone: 62, lyric: '라' },
+    { id: 's3', trackId, partId, start: 960, duration: 480, tone: 64, lyric: '라' },
+    { id: 's4', trackId, partId, start: 1440, duration: 960, tone: 67, lyric: '라' },
+  ],
+}
+
 export function createDemoProject(): SongProject {
+  return cloneProject(demoProject)
+}
+
+export function createStarterProject(): SongProject {
+  return cloneProject(starterProject)
+}
+
+export function duplicateProject(project: SongProject): SongProject {
+  return cloneProject({
+    ...project,
+    name: `${project.name} Copy`,
+    source: {
+      fileName: 'duplicated-project',
+      format: 'webuta',
+    },
+  })
+}
+
+function cloneProject(project: SongProject): SongProject {
   return {
-    ...demoProject,
+    ...project,
     id: makeId('project'),
-    tracks: demoProject.tracks.map((track) => ({ ...track })),
-    parts: demoProject.parts.map((part) => ({ ...part })),
-    notes: demoProject.notes.map((note) => ({ ...note })),
-    source: demoProject.source ? { ...demoProject.source } : undefined,
+    tracks: project.tracks.map((track) => ({ ...track })),
+    parts: project.parts.map((part) => ({ ...part })),
+    notes: project.notes.map((note) => ({ ...note })),
+    source: project.source ? { ...project.source } : undefined,
   }
 }

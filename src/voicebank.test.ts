@@ -2,9 +2,12 @@ import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
 import {
   analyzeVoicebankCoverage,
+  analyzeVoicebankRenderWarnings,
   findBestEntryForLyric,
+  findCodaTailEntryForLyric,
   findEntryForLyric,
   findEntryMatchForLyric,
+  findSustainEntryForLyric,
   loadVoicebankZip,
 } from './voicebank'
 
@@ -92,6 +95,11 @@ describe('voicebank zip loader', () => {
       fallbackNotes: 1,
       fallbackLyrics: ['키'],
     })
+    expect(analyzeVoicebankRenderWarnings(voicebank, [{ id: 'n1', lyric: '키', tone: 60 }])).toMatchObject({
+      warningCount: 1,
+      errorCount: 1,
+      warnings: [expect.objectContaining({ kind: 'missing-alias', lyric: '키' })],
+    })
   })
 
   it('approximates Hangul coda syllables with matching CV aliases', async () => {
@@ -112,6 +120,90 @@ describe('voicebank zip loader', () => {
       totalNotes: 1,
       matchedNotes: 1,
       fallbackNotes: 0,
+    })
+  })
+
+  it('finds a VC coda tail alias for Hangul batchim lyrics', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
+    zip.file(
+      'WebUtau/oto.ini',
+      ['ga_C4.wav=가,0,150,-560,70,30', 'a_n_C4.wav=ㅏㄴ,0,90,-260,30,18'].join('\n'),
+    )
+    zip.file('WebUtau/ga_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('WebUtau/a_n_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-v3.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(findEntryForLyric(voicebank, '간').alias).toBe('가')
+    expect(findCodaTailEntryForLyric(voicebank, '간', 60)?.alias).toBe('ㅏㄴ')
+    expect(findCodaTailEntryForLyric(voicebank, '가', 60)).toBeUndefined()
+  })
+
+  it('can choose a CV sustain entry for Hangul coda lyrics even when exact CVC exists', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
+    zip.file(
+      'WebUtau/oto.ini',
+      [
+        'yeo_C4.wav=여,0,150,-560,70,30',
+        'yeon_C4.wav=연,0,150,-560,70,30',
+        'yeo_n_C4.wav=ㅕㄴ,0,90,-260,30,18',
+      ].join('\n'),
+    )
+    zip.file('WebUtau/yeo_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('WebUtau/yeon_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('WebUtau/yeo_n_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-v3.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(findBestEntryForLyric(voicebank, '연', 60).alias).toBe('연')
+    expect(findSustainEntryForLyric(voicebank, '연', 60)?.alias).toBe('여')
+    expect(findCodaTailEntryForLyric(voicebank, '연', 60)?.alias).toBe('ㅕㄴ')
+    expect(analyzeVoicebankRenderWarnings(voicebank, [{ id: 'n1', lyric: '연', tone: 60 }])).toMatchObject({
+      warningCount: 0,
+      errorCount: 0,
+    })
+  })
+
+  it('warns when a note needs an extreme sample pitch shift', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
+    zip.file('WebUtau/oto.ini', 'a_C4.wav=아,0,150,-560,70,30\n')
+    zip.file('WebUtau/a_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-v3.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const report = analyzeVoicebankRenderWarnings(voicebank, [{ id: 'high', lyric: '아', tone: 76 }])
+
+    expect(report).toMatchObject({
+      warningCount: 1,
+      errorCount: 0,
+      warnings: [expect.objectContaining({ kind: 'pitch-shift', noteId: 'high', semitoneShift: 16 })],
+    })
+  })
+
+  it('warns when a Hangul coda lyric has no VC tail sample', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
+    zip.file('WebUtau/oto.ini', ['ga_C4.wav=가,0,150,-560,70,30', 'gan_C4.wav=간,0,150,-560,70,30'].join('\n'))
+    zip.file('WebUtau/ga_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('WebUtau/gan_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-v3.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const report = analyzeVoicebankRenderWarnings(voicebank, [{ id: 'coda', lyric: '간', tone: 60 }])
+
+    expect(report).toMatchObject({
+      warningCount: 1,
+      errorCount: 0,
+      warnings: [expect.objectContaining({ kind: 'missing-coda-tail', noteId: 'coda' })],
     })
   })
 

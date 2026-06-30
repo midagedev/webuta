@@ -14,12 +14,15 @@ export const browserDemoRenderer: VocalRenderer = {
     realtimePreview: true,
     notes: 'A browser-safe Korean guide voice that shapes Hangul syllables for vocal sketching and WAV render tests.',
   },
-  async render(project) {
+  async render(project, options = {}) {
+    throwIfAborted(options.signal)
     const durationSeconds = projectDurationSeconds(project) + 0.6
     const samples = new Float32Array(Math.ceil(durationSeconds * SAMPLE_RATE))
     for (const note of sortedNotes(project.notes)) {
+      throwIfAborted(options.signal)
       mixNote(samples, project, note)
     }
+    throwIfAborted(options.signal)
     masterMonoMix(samples, { sampleRate: SAMPLE_RATE, maxGain: 1.8, targetPeak: 0.82 })
     return {
       samples,
@@ -27,6 +30,12 @@ export const browserDemoRenderer: VocalRenderer = {
       durationSeconds,
     }
   },
+}
+
+function throwIfAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new DOMException('Render cancelled.', 'AbortError')
+  }
 }
 
 function mixNote(output: Float32Array, project: SongProject, note: SongNote) {

@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "name": "WebUtau Korean Private Singer Prompt Book",
+  "language": "ko",
+  "notes": "Original recording prompts for a consent-based Korean singing dataset. These are not copied song lyrics.",
+  "defaults": {
+    "tempo": 96,
+    "estimatedSeconds": 7.5,
+    "keys": ["C4", "D4", "E4", "G4", "A4"]
+  },
+  "sets": [
+    {
+      "id": "smoke",
+      "name": "Pipeline smoke phrases",
+      "repeats": 2,
+      "prompts": [
+        {
+          "id": "do-hi-daisuki",
+          "lyric": "도히도히 다이스키",
+          "tags": ["fixed-eval", "mixed-ko-ja", "short-notes"],
+          "estimatedSeconds": 7
+        },
+        {
+          "id": "hello-bright-morning",
+          "lyric": "안녕하세요 좋은 아침이에요",
+          "tags": ["natural-ko", "phrase"]
+        },
+        {
+          "id": "shining-dream",
+          "lyric": "빛나는 꿈을 노래해",
+          "tags": ["open-vowel", "phrase"]
+        },
+        {
+          "id": "love-goodbye",
+          "lyric": "사랑해 안녕 다시 만나요",
+          "tags": ["fixed-eval", "natural-ko"]
+        }
+      ]
+    },
+    {
+      "id": "vowel-coverage",
+      "name": "Korean vowel coverage",
+      "repeats": 2,
+      "prompts": [
+        {
+          "id": "basic-vowels",
+          "lyric": "아 에 이 오 우 으 다시 아",
+          "tags": ["vowels", "sustain"]
+        },
+        {
+          "id": "y-vowels",
+          "lyric": "야 예 여 요 유 이어 불러요",
+          "tags": ["vowels", "glides"]
+        },
+        {
+          "id": "compound-vowels",
+          "lyric": "와 왜 외 워 위 의 노래",
+          "tags": ["vowels", "compound"]
+        },
+        {
+          "id": "open-vowel-sustain",
+          "lyric": "라 라 라 마 마 마 나 나 나",
+          "tags": ["open-vowel", "sustain"]
+        }
+      ]
+    },
+    {
+      "id": "consonant-coverage",
+      "name": "Korean onset and batchim coverage",
+      "repeats": 2,
+      "prompts": [
+        {
+          "id": "plain-onsets",
+          "lyric": "가 나 다 라 마 바 사 아 자 하",
+          "tags": ["onsets", "plain"]
+        },
+        {
+          "id": "strong-onsets",
+          "lyric": "까 따 빠 싸 짜 차 카 타 파 하",
+          "tags": ["onsets", "tense-aspirated"]
+        },
+        {
+          "id": "nasal-codas",
+          "lyric": "강 남 밤 눈 마음 향",
+          "tags": ["batchim", "nasal"]
+        },
+        {
+          "id": "stop-codas",
+          "lyric": "각 밖 닫 빛 꽃 끝 숲",
+          "tags": ["batchim", "stops"]
+        },
+        {
+          "id": "liquid-codas",
+          "lyric": "달 별 물 길 노을",
+          "tags": ["batchim", "liquid"]
+        },
+        {
+          "id": "cluster-codas",
+          "lyric": "맑은 값 넓은 삶 앉아",
+          "tags": ["batchim", "clusters"]
+        }
+      ]
+    },
+    {
+      "id": "melodic-phrases",
+      "name": "Short melodic Korean phrases",
+      "repeats": 3,
+      "prompts": [
+        {
+          "id": "blue-light",
+          "lyric": "푸른 빛이 천천히 온다",
+          "tags": ["phrase", "legato"]
+        },
+        {
+          "id": "small-voice",
+          "lyric": "작은 목소리 크게 피어나",
+          "tags": ["phrase", "dynamics"]
+        },
+        {
+          "id": "warm-heart",
+          "lyric": "따뜻한 마음으로 노래해",
+          "tags": ["phrase", "natural-ko"]
+        },
+        {
+          "id": "fast-slow-again",
+          "lyric": "빠르게 천천히 다시 불러",
+          "tags": ["tempo-contrast", "articulation"]
+        },
+        {
+          "id": "deep-night",
+          "lyric": "검은 밤 깊은 숨을 쉬어",
+          "tags": ["low-register", "batchim"]
+        },
+        {
+          "id": "wind-road",
+          "lyric": "찬 바람 길 위에서 웃어",
+          "tags": ["phrase", "mixed-codas"]
+        }
+      ]
+    },
+    {
+      "id": "sustain-and-range",
+      "name": "Sustain and range checks",
+      "repeats": 2,
+      "prompts": [
+        {
+          "id": "long-a",
+          "lyric": "아아아 라라라 하아아",
+          "tags": ["sustain", "open-vowel"],
+          "estimatedSeconds": 9
+        },
+        {
+          "id": "long-i",
+          "lyric": "이이이 희희희 빛이",
+          "tags": ["sustain", "front-vowel"],
+          "estimatedSeconds": 9
+        },
+        {
+          "id": "low-mid-high",
+          "lyric": "낮게 중간 높게 다시",
+          "tags": ["range", "fixed-eval"]
+        },
+        {
+          "id": "breath-reset",
+          "lyric": "숨 쉬고 다시 노래해요",
+          "tags": ["breath", "phrase"]
+        }
+      ]
+    },
+    {
+      "id": "rare-phoneme-coverage",
+      "name": "Rare Korean vowel and coda coverage",
+      "repeats": 2,
+      "prompts": [
+        {
+          "id": "rare-vowels-yae-we",
+          "lyric": "얘야 예쁜 웨이브를 외워",
+          "tags": ["vowels", "compound", "rare-vowels"]
+        },
+        {
+          "id": "plain-b-codas",
+          "lyric": "밥집 앞 입술 법칙",
+          "tags": ["batchim", "stops", "labial-coda"]
+        },
+        {
+          "id": "gs-coda-drill",
+          "lyric": "넋 값 몫 없이 읽자",
+          "tags": ["batchim", "clusters", "rare-codas"]
+        },
+        {
+          "id": "nh-k-coda-drill",
+          "lyric": "많고 않다 부엌 밖",
+          "tags": ["batchim", "clusters", "rare-codas"]
+        },
+        {
+          "id": "rs-rt-rp-coda-drill",
+          "lyric": "곬 따라 핥고 읊자",
+          "tags": ["batchim", "clusters", "rare-codas"]
+        },
+        {
+          "id": "rh-coda-drill",
+          "lyric": "싫다 앓고 닳은 별",
+          "tags": ["batchim", "clusters", "rare-codas"]
+        },
+        {
+          "id": "ss-coda-drill",
+          "lyric": "있던 빛 했던 꽃",
+          "tags": ["batchim", "stops", "rare-codas"]
+        },
+        {
+          "id": "cluster-review",
+          "lyric": "넓고 맑은 삶 값",
+          "tags": ["batchim", "clusters", "mixed-codas"]
+        }
+      ]
+    }
+  ]
+}

@@ -13,11 +13,11 @@ This keeps the child-friendly editor usable while the heavyweight synthesis work
 
 ## Renderer Strategy
 
-`WebUtau Korean Lite` is the bundled first-run singer. It is an original UTAU-style Korean CV voicebank, not a third-party singer. The browser demo renderer remains as a fallback and test utility, but the product default should exercise the sample voicebank path.
+`WebUtau Korean V3 Synthetic` is the bundled first-run singer. It is an original DSP-generated UTAU-style Korean voicebank, not a third-party singer. The browser demo renderer remains as a fallback and test utility, but the product default should exercise the sample voicebank path.
 
 Recommended sequence:
 
-1. Keep `WebUtau Korean Lite` as the default bundled sample voicebank.
+1. Keep `WebUtau Korean V3 Synthetic` as the default bundled sample voicebank.
 2. Improve Korean phonemization beyond CV approximation, starting with coda and liaison handling.
 3. Add an OpenUtau server renderer that runs trusted built-in engines only.
 4. Add voicebank upload and per-singer license display.

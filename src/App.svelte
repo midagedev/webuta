@@ -10,16 +10,18 @@
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
   import { BUNDLED_KOREAN_LITE_VOICEBANK_NAME, loadBundledKoreanLiteVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
-  import { createDemoProject } from './demoProject'
-  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicks, toneName } from './music'
+  import { createDemoProject, createStarterProject, duplicateProject as createProjectDuplicate } from './demoProject'
+  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicks, ticksToSeconds, toneName } from './music'
   import {
     addNoteAfter,
     addNoteAtTick,
     addNoteFromGrid,
     applyLyricLineToProject,
+    deleteNoteFromProject,
     GRID_SNAP_TICKS,
     quantizeProjectNotes,
     snapTickToGrid,
+    splitNoteInProject,
     tokenizeLyricLine,
     updateNoteInProject,
   } from './projectEditing'
@@ -32,13 +34,27 @@
     replaceProjectHistory,
     undoProjectChange,
   } from './projectHistory'
+  import { isWebutaProjectFileName, parseWebutaProject, serializeWebutaProject } from './projectFile'
   import { loadSavedProject, saveProject } from './projectStorage'
-  import { renderers } from './renderers/registry'
+  import { mergeLocalNeuralModelCard } from './neuralModels'
+  import { fetchLocalNeuralModelCard } from './renderers/localNeuralRenderer'
+  import { localNeuralEndpoint, neuralModelCards as initialNeuralModelCards, renderers, rendererCapabilities } from './renderers/registry'
   import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
   import { parseUstx, serializeUstx } from './ustx'
-  import { TICKS_PER_BEAT, type RenderedAudio, type SongNote, type SongProject, type WorkspaceMode } from './types'
+  import {
+    TICKS_PER_BEAT,
+    type RenderedAudio,
+    type RenderHistoryEntry,
+    type RenderProgress,
+    type RendererId,
+    type NeuralModelCard,
+    type SongNote,
+    type SongProject,
+    type WorkspaceMode,
+  } from './types'
   import {
     analyzeVoicebankCoverage,
+    analyzeVoicebankRenderWarnings,
     findEntryMatchForLyric,
     loadVoicebankZip,
     type LoadedVoicebank,
@@ -46,6 +62,7 @@
   import { loadSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
   import {
     formatLyricLine,
+    formatWavSummary,
     isButtonLikeTarget,
     isTextEditingTarget,
     NOTE_RESIZE_HANDLE_WIDTH,
@@ -92,6 +109,16 @@
   let isAboutOpen = $state(false)
   let voicebankCacheStatus = $state<VoicebankCacheStatus>('idle')
   let performanceKeys = $state<SongNote[]>(initialProject.notes.slice(0, 8))
+  let selectedRendererId = $state<RendererId>('utau-sample')
+  let neuralModels = $state<NeuralModelCard[]>(initialNeuralModelCards)
+  let selectedNeuralModelId = $state(initialNeuralModelCards.find((model) => model.status === 'ready')?.id ?? '')
+  let renderHistory = $state<RenderHistoryEntry[]>([])
+  let renderProgress = $state<RenderProgress>({
+    phase: 'idle',
+    label: 'Ready to render',
+    percent: 0,
+    cancellable: false,
+  })
   let hasMounted = false
   let audioRef = $state<HTMLAudioElement | null>(null)
   let notePointer: NotePointerState | null = null
@@ -101,22 +128,30 @@
   let isRecording = $state(false)
   let isMetronomeOn = $state(false)
   let isQuantizeOn = $state(true)
+  let isLoopOn = $state(false)
+  let loopStartTick = $state(0)
+  let loopEndTick = $state(TICKS_PER_BEAT * 4)
   let lyricCursor = $state(0)
   let recordingStartedAtMs = 0
   let recordingOriginProject: SongProject | null = null
   let recordingLyricTokens = $state<string[]>([])
   let metronomeTimer: ReturnType<typeof window.setInterval> | null = null
   let metronomeBeat = 0
+  let renderAbortController: AbortController | null = null
 
   const project = $derived(projectHistory.present)
   const canUndo = $derived(projectHistory.past.length > 0)
   const canRedo = $derived(projectHistory.future.length > 0)
   const selectedNote = $derived(project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0])
   const voicebankCoverage = $derived(voicebank ? analyzeVoicebankCoverage(voicebank, project.notes) : null)
+  const voicebankWarnings = $derived(voicebank ? analyzeVoicebankRenderWarnings(voicebank, project.notes) : null)
   const selectedLyricMatch = $derived(voicebank && selectedNote ? findEntryMatchForLyric(voicebank, selectedNote.lyric) : null)
   const range = $derived(pitchRange(project.notes))
   const rows = $derived(pitchRows(range.min, range.max))
   const songTicks = $derived(Math.max(projectDurationTicks(project), TICKS_PER_BEAT * 8))
+  const loopRange = $derived(normalizeLoopRange(loopStartTick, loopEndTick, songTicks))
+  const loopStartSeconds = $derived(ticksToSeconds(loopRange.start, project.bpm))
+  const loopEndSeconds = $derived(ticksToSeconds(loopRange.end, project.bpm))
   const gridWidth = $derived(Math.max(820, songTicks * TICK_WIDTH))
   const gridHeight = $derived(rows.length * ROW_HEIGHT)
   const displayDuration = $derived(rendered?.durationSeconds ?? 0)
@@ -141,6 +176,7 @@
     hasMounted = true
     saveProject(project)
     void restoreVoicebank()
+    void refreshLocalNeuralModel()
 
     function handleWindowKeyDown(event: KeyboardEvent) {
       if (isTextEditingTarget(event.target)) {
@@ -165,6 +201,11 @@
       if (commandPressed && key === 'y') {
         event.preventDefault()
         redoProject()
+        return
+      }
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault()
+        deleteSelectedNote()
         return
       }
       if (event.code === 'Space' && !isButtonLikeTarget(event.target)) {
@@ -213,6 +254,24 @@
     }
   }
 
+  async function refreshLocalNeuralModel() {
+    if (!localNeuralEndpoint) {
+      return
+    }
+    try {
+      const serviceModel = await fetchLocalNeuralModelCard(localNeuralEndpoint)
+      if (!serviceModel) {
+        return
+      }
+      neuralModels = mergeLocalNeuralModelCard(initialNeuralModelCards, serviceModel)
+      if (serviceModel.status === 'ready' && !selectedNeuralModelId) {
+        selectedNeuralModelId = serviceModel.id
+      }
+    } catch {
+      // The local companion is optional; keep the static model cards when health is unavailable.
+    }
+  }
+
   async function restoreBundledVoicebank() {
     const loadToken = ++voicebankLoadToken
     isLoadingVoicebank = true
@@ -245,14 +304,19 @@
 
   async function handleProjectFile(file: File) {
     const text = await file.text()
-    const nextProject = parseUstx(text, file.name)
-    projectHistory = replaceProjectHistory(nextProject)
-    selectedNoteId = nextProject.notes[0]?.id ?? ''
-    performanceKeys = nextProject.notes.slice(0, 8)
-    isLyricLinePinned = false
-    projectSourceLabel = file.name
-    clearRendered()
-    notice = `${file.name} loaded`
+    try {
+      const nextProject = parseProjectFile(text, file.name)
+      projectHistory = replaceProjectHistory(nextProject)
+      selectedNoteId = nextProject.notes[0]?.id ?? ''
+      performanceKeys = nextProject.notes.slice(0, 8)
+      isLyricLinePinned = false
+      projectSourceLabel = file.name
+      resetLoopRange(nextProject)
+      clearRendered()
+      notice = `${file.name} loaded`
+    } catch (error) {
+      notice = error instanceof Error ? error.message : 'Project import failed'
+    }
   }
 
   async function handleVoicebankFile(file: File) {
@@ -287,6 +351,19 @@
   }
 
   function newProject() {
+    const nextProject = createStarterProject()
+    projectHistory = replaceProjectHistory(nextProject)
+    selectedNoteId = nextProject.notes[0]?.id ?? ''
+    performanceKeys = nextProject.notes.slice(0, 8)
+    isLyricLinePinned = false
+    paintLyric = '라'
+    projectSourceLabel = 'New vocal sketch'
+    resetLoopRange(nextProject)
+    clearRendered()
+    notice = 'New vocal sketch'
+  }
+
+  function resetDemoProject() {
     const nextProject = createDemoProject()
     projectHistory = replaceProjectHistory(nextProject)
     selectedNoteId = nextProject.notes[0]?.id ?? ''
@@ -294,8 +371,22 @@
     isLyricLinePinned = false
     paintLyric = '도'
     projectSourceLabel = 'Built-in Hangul demo'
+    resetLoopRange(nextProject)
     clearRendered()
-    notice = 'New Hangul demo project'
+    notice = 'Demo project restored'
+  }
+
+  function duplicateCurrentProject() {
+    const nextProject = createProjectDuplicate(project)
+    projectHistory = replaceProjectHistory(nextProject)
+    selectedNoteId = nextProject.notes[0]?.id ?? ''
+    performanceKeys = nextProject.notes.slice(0, 8)
+    isLyricLinePinned = false
+    paintLyric = nextProject.notes[0]?.lyric ?? '라'
+    projectSourceLabel = 'Duplicated from current project'
+    resetLoopRange(nextProject)
+    clearRendered()
+    notice = 'Project duplicated'
   }
 
   function updateProject(patch: Partial<SongProject>) {
@@ -376,6 +467,7 @@
     lyricLine = formatLyricLine(nextProject.notes)
     projectSourceLabel = `Composer · ${formatChordLine(composerSuggestion.chords.slice(0, 4))}`
     activeMode = 'pattern'
+    resetLoopRange(nextProject)
     clearRendered()
     notice = `${composerSuggestion.notes.length} generated notes applied`
   }
@@ -412,13 +504,41 @@
   }
 
   function deleteSelectedNote() {
-    if (!selectedNote || project.notes.length <= 1) {
+    if (!selectedNote) {
       return
     }
-    const nextNotes = project.notes.filter((note) => note.id !== selectedNote.id)
-    commitProject((current) => ({ ...current, notes: nextNotes }))
-    selectedNoteId = nextNotes[0]?.id ?? ''
+    deleteNoteById(selectedNote.id)
+  }
+
+  function deleteNoteById(noteId: string) {
+    const result = deleteNoteFromProject(project, noteId)
+    if (!result.deletedNote) {
+      notice = 'Keep at least one note'
+      return
+    }
+    commitProject(result.project)
+    selectedNoteId = result.nextSelectedNoteId
     clearRendered()
+    notice = `${result.deletedNote.lyric} note deleted`
+  }
+
+  function splitSelectedNote() {
+    if (!selectedNote) {
+      return
+    }
+    splitNoteById(selectedNote.id)
+  }
+
+  function splitNoteById(noteId: string) {
+    const result = splitNoteInProject(project, noteId)
+    if (!result.rightNote) {
+      notice = 'Note is too short to split'
+      return
+    }
+    commitProject(result.project)
+    selectedNoteId = result.rightNote.id
+    clearRendered()
+    notice = `${result.leftNote?.lyric ?? 'Selected'} note split`
   }
 
   function handleGridClick(event: MouseEvent) {
@@ -505,6 +625,14 @@
     if (event.key === 'ArrowDown') {
       event.preventDefault()
       updateNote(note.id, { tone: note.tone - 1 })
+    }
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault()
+      deleteNoteById(note.id)
+    }
+    if (event.key.toLowerCase() === 's') {
+      event.preventDefault()
+      splitNoteById(note.id)
     }
   }
 
@@ -664,12 +792,61 @@
     notice = `${result.changedCount} notes quantized`
   }
 
+  function toggleLoop() {
+    isLoopOn = !isLoopOn
+    notice = isLoopOn ? 'Loop playback on' : 'Loop playback off'
+    if (isLoopOn && audioRef && audioRef.currentTime < loopStartSeconds) {
+      audioRef.currentTime = loopStartSeconds
+      playbackTime = loopStartSeconds
+    }
+  }
+
+  function setLoopToSelectedNote() {
+    if (!selectedNote) {
+      notice = 'Select a note to set loop'
+      return
+    }
+    loopStartTick = selectedNote.start
+    loopEndTick = selectedNote.start + selectedNote.duration
+    isLoopOn = true
+    if (audioRef) {
+      audioRef.currentTime = ticksToSeconds(selectedNote.start, project.bpm)
+      playbackTime = audioRef.currentTime
+    }
+    notice = `Loop set to ${selectedNote.lyric} · ${toneName(selectedNote.tone)}`
+  }
+
   async function renderProject() {
+    if (isRendering) {
+      return null
+    }
+    const controller = new AbortController()
+    renderAbortController = controller
     isRendering = true
-    notice = 'Rendering WAV'
+    const rendererName = currentRendererName()
+    notice = `Rendering ${rendererName}`
+    renderProgress = {
+      phase: 'preparing',
+      label: 'Preparing score',
+      percent: 12,
+      cancellable: true,
+    }
     try {
-      const renderer = voicebank ? createUtauSampleRenderer(voicebank, getAudioContext()) : renderers.browserDemo
-      const result = await renderer.render(project)
+      const renderer = resolveSelectedRenderer()
+      renderProgress = {
+        phase: 'rendering',
+        label: `Rendering ${rendererName}`,
+        percent: selectedRendererId === 'local-neural' ? 42 : 58,
+        cancellable: true,
+      }
+      const result = await renderer.render(project, { signal: controller.signal })
+      throwIfRenderAborted(controller.signal)
+      renderProgress = {
+        phase: 'encoding',
+        label: 'Encoding WAV',
+        percent: 84,
+        cancellable: true,
+      }
       const blob = encodeWav(result.samples, result.sampleRate)
       const wavInfo = await inspectWavBlob(blob)
       const url = URL.createObjectURL(blob)
@@ -684,13 +861,141 @@
         wavInfo,
       }
       rendered = audio
-      notice = isDawReadyWav(wavInfo) ? 'Vocal WAV ready' : 'WAV rendered'
+      const dawReady = isDawReadyWav(wavInfo)
+      notice = dawReady ? 'Vocal WAV ready' : 'WAV rendered'
+      renderProgress = {
+        phase: 'ready',
+        label: dawReady ? 'DAW-ready WAV complete' : 'WAV complete',
+        percent: 100,
+        cancellable: false,
+      }
+      recordRenderHistory({
+        status: 'success',
+        rendererName,
+        fileName: audio.fileName,
+        durationSeconds: audio.durationSeconds,
+        detail: dawReady ? 'Ready WAV · 44.1 kHz PCM mono' : formatWavSummary(wavInfo),
+      })
       return audio
     } catch (error) {
-      notice = `Render failed: ${formatErrorMessage(error)}`
+      if (isAbortError(error)) {
+        notice = 'Render cancelled'
+        renderProgress = {
+          phase: 'cancelled',
+          label: 'Render cancelled',
+          percent: 0,
+          cancellable: false,
+        }
+        recordRenderHistory({
+          status: 'cancelled',
+          rendererName,
+          fileName: `${sanitizeFileName(project.name)}.wav`,
+          durationSeconds: null,
+          detail: 'Cancelled before WAV export',
+        })
+        return null
+      }
+      const message = formatErrorMessage(error)
+      notice = `Render failed: ${message}`
+      renderProgress = {
+        phase: 'failed',
+        label: 'Render failed',
+        percent: 0,
+        cancellable: false,
+      }
+      recordRenderHistory({
+        status: 'failed',
+        rendererName,
+        fileName: `${sanitizeFileName(project.name)}.wav`,
+        durationSeconds: null,
+        detail: message,
+      })
       return null
     } finally {
       isRendering = false
+      if (renderAbortController === controller) {
+        renderAbortController = null
+      }
+    }
+  }
+
+  function cancelRender() {
+    if (!renderAbortController || renderAbortController.signal.aborted) {
+      return
+    }
+    renderProgress = {
+      phase: 'cancelling',
+      label: 'Cancelling render',
+      percent: renderProgress.percent,
+      cancellable: false,
+    }
+    notice = 'Cancelling render'
+    renderAbortController.abort()
+  }
+
+  function resolveSelectedRenderer() {
+    if (selectedRendererId === 'local-neural') {
+      if (!renderers.localNeural) {
+        throw new Error('Local neural renderer is not configured. Set VITE_WEBUTA_NEURAL_ENDPOINT.')
+      }
+      return renderers.localNeural
+    }
+    if (selectedRendererId === 'browser-demo') {
+      return renderers.browserDemo
+    }
+    if (voicebank) {
+      return createUtauSampleRenderer(voicebank, getAudioContext())
+    }
+    return renderers.browserDemo
+  }
+
+  function selectRenderer(rendererId: RendererId) {
+    selectedRendererId = rendererId
+    clearRendered()
+    if (rendererId === 'local-neural') {
+      notice = renderers.localNeural ? 'Local Neural DiffSinger selected' : 'Local neural endpoint not configured'
+    } else if (rendererId === 'browser-demo') {
+      notice = 'Browser demo voice selected'
+    } else {
+      notice = voicebank ? `${voicebankName} selected` : 'UTAU voicebank not loaded; using browser demo fallback'
+    }
+  }
+
+  function selectNeuralModel(modelId: string) {
+    const model = neuralModels.find((item) => item.id === modelId)
+    if (!model || model.status !== 'ready') {
+      notice = 'Neural model is not ready'
+      return
+    }
+    selectedNeuralModelId = model.id
+    selectedRendererId = model.rendererId
+    clearRendered()
+    notice = `${model.name} selected`
+  }
+
+  function currentRendererName() {
+    if (selectedRendererId === 'utau-sample') {
+      return voicebank ? `${voicebankName} UTAU` : 'Browser demo fallback'
+    }
+    return rendererCapabilities.find((renderer) => renderer.id === selectedRendererId)?.name ?? selectedRendererId
+  }
+
+  function recordRenderHistory(entry: Omit<RenderHistoryEntry, 'id' | 'createdAt' | 'projectName' | 'rendererId'>) {
+    renderHistory = [
+      {
+        ...entry,
+        id: `${Date.now()}-${renderHistory.length}`,
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        projectName: project.name,
+        rendererId: selectedRendererId,
+      },
+      ...renderHistory,
+    ].slice(0, 5)
+  }
+
+  function throwIfRenderAborted(signal: AbortSignal) {
+    if (signal.aborted) {
+      throw new DOMException('Render cancelled.', 'AbortError')
     }
   }
 
@@ -705,8 +1010,8 @@
       return
     }
     audioRef.src = current.url
-    audioRef.currentTime = 0
-    playbackTime = 0
+    audioRef.currentTime = isLoopOn ? loopStartSeconds : 0
+    playbackTime = audioRef.currentTime
     try {
       await audioRef.play()
       isPlaying = true
@@ -719,9 +1024,9 @@
   function stopPlayback() {
     if (audioRef) {
       audioRef.pause()
-      audioRef.currentTime = 0
+      audioRef.currentTime = isLoopOn ? loopStartSeconds : 0
     }
-    playbackTime = 0
+    playbackTime = isLoopOn ? loopStartSeconds : 0
     isPlaying = false
   }
 
@@ -769,11 +1074,57 @@
     notice = 'USTX saved'
   }
 
+  function downloadWebutaProject() {
+    const blob = new Blob([serializeWebutaProject(project)], { type: 'application/json;charset=utf-8' })
+    downloadBlob(blob, `${sanitizeFileName(project.name)}.webutau.json`)
+    notice = 'WebUtau project saved'
+  }
+
   function clearRendered() {
     if (rendered?.url) {
       URL.revokeObjectURL(rendered.url)
     }
     rendered = null
+  }
+
+  function handleAudioTimeUpdate(event: Event) {
+    const audio = event.currentTarget as HTMLAudioElement
+    const effectiveLoopEnd = Math.min(loopEndSeconds, audio.duration || loopEndSeconds)
+    if (isLoopOn && effectiveLoopEnd > loopStartSeconds && audio.currentTime >= effectiveLoopEnd - 0.015) {
+      audio.currentTime = loopStartSeconds
+      playbackTime = loopStartSeconds
+      return
+    }
+    playbackTime = audio.currentTime
+  }
+
+  async function handleAudioEnded() {
+    if (isLoopOn && audioRef) {
+      audioRef.currentTime = loopStartSeconds
+      playbackTime = loopStartSeconds
+      try {
+        await audioRef.play()
+        isPlaying = true
+      } catch {
+        isPlaying = false
+      }
+      return
+    }
+    isPlaying = false
+    playbackTime = 0
+  }
+
+  function resetLoopRange(targetProject: SongProject) {
+    loopStartTick = 0
+    loopEndTick = Math.min(projectDurationTicks(targetProject), TICKS_PER_BEAT * 4)
+    isLoopOn = false
+  }
+
+  function normalizeLoopRange(startTick: number, endTick: number, maxTicks: number) {
+    const endLimit = Math.max(GRID_SNAP_TICKS, maxTicks)
+    const start = Math.min(Math.max(0, snapTickToGrid(startTick, GRID_SNAP_TICKS)), Math.max(0, endLimit - GRID_SNAP_TICKS))
+    const end = Math.min(endLimit, Math.max(start + GRID_SNAP_TICKS, snapTickToGrid(endTick, GRID_SNAP_TICKS)))
+    return { start, end }
   }
 
   function snapDragTicks(deltaX: number) {
@@ -878,6 +1229,28 @@
     }
     return 'Unknown error'
   }
+
+  function parseProjectFile(text: string, fileName: string) {
+    if (isWebutaProjectFileName(fileName)) {
+      return parseWebutaProject(text, fileName)
+    }
+
+    try {
+      return parseWebutaProject(text, fileName)
+    } catch {
+      return parseUstx(text, fileName)
+    }
+  }
+
+  function isAbortError(error: unknown) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return true
+    }
+    if (error instanceof Error && error.name === 'AbortError') {
+      return true
+    }
+    return Boolean(error && typeof error === 'object' && 'code' in error && error.code === 'render-cancelled')
+  }
 </script>
 
 <main class="app-shell">
@@ -886,20 +1259,29 @@
     {projectSourceLabel}
     {playbackTime}
     {displayDuration}
+    {renderProgress}
     {isRendering}
     {isPlaying}
     {isLoadingVoicebank}
+    {isLoopOn}
+    {loopStartSeconds}
+    {loopEndSeconds}
     {canUndo}
     {canRedo}
     onNewProject={newProject}
+    onResetDemoProject={resetDemoProject}
+    onDuplicateProject={duplicateCurrentProject}
     onProjectFile={handleProjectFile}
     onVoicebankFile={handleVoicebankFile}
-    onSaveProject={downloadUstx}
+    onSaveProject={downloadWebutaProject}
+    onExportUstx={downloadUstx}
     onUndo={undoProject}
     onRedo={redoProject}
     onOpenLicenses={() => (isAboutOpen = true)}
     onStop={stopPlayback}
     onPlayPause={playOrPause}
+    onToggleLoop={toggleLoop}
+    onCancelRender={cancelRender}
     onShare={shareWav}
     onDownloadWav={downloadWav}
     onProjectName={(name) => updateProject({ name })}
@@ -916,13 +1298,18 @@
         {voicebank}
         {voicebankName}
         {voicebankCoverage}
+        {voicebankWarnings}
         {voicebankCacheStatus}
         {isLoadingVoicebank}
+        {selectedRendererId}
+        {selectedNeuralModelId}
+        {neuralModels}
         {notice}
         onVoicebankFile={handleVoicebankFile}
         onBpm={(bpm) => updateProject({ bpm })}
         onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
-        onSelectDemoVoice={() => (notice = `${voicebankName} selected`)}
+        onRenderer={selectRenderer}
+        onNeuralModel={selectNeuralModel}
         onLyric={(lyric) => {
           paintLyric = lyric
           updateSelectedNote({ lyric })
@@ -931,6 +1318,7 @@
         onNudge={updateSelectedNote}
         onDuration={(duration) => updateSelectedNote({ duration })}
         onAddNote={addNote}
+        onSplitNote={splitSelectedNote}
         onDeleteNote={deleteSelectedNote}
       />
     {/key}
@@ -968,17 +1356,24 @@
         {voicebankCoverage}
         {voicebankCacheStatus}
         {rendered}
+        {selectedRendererId}
+        currentRendererName={currentRendererName()}
+        {renderHistory}
+        {renderProgress}
         {notice}
         {isRendering}
         {isRecording}
         {isMetronomeOn}
         {isQuantizeOn}
+        {isLoopOn}
+        loopStartTick={loopRange.start}
+        loopEndTick={loopRange.end}
         {nextPerformanceLyric}
         canUndo={canUndo && !isRecording}
         {canRedo}
         {playbackTime}
         {displayDuration}
-        onSaveProject={downloadUstx}
+        onSaveProject={downloadWebutaProject}
         onSelectNote={selectNote}
         onPerformNote={performNote}
         onChooseLyric={chooseLyric}
@@ -992,7 +1387,11 @@
         onToggleRecording={toggleRecording}
         onToggleMetronome={toggleMetronome}
         onToggleQuantize={() => (isQuantizeOn = !isQuantizeOn)}
+        onToggleLoop={toggleLoop}
+        onSetLoopToSelection={setLoopToSelectedNote}
         onQuantize={quantizeCurrentProject}
+        onSplitNote={splitSelectedNote}
+        onDeleteNote={deleteSelectedNote}
         onUndo={undoProject}
         onRedo={redoProject}
         onGridClick={handleGridClick}
@@ -1002,6 +1401,8 @@
         onNotePointerEnd={endNotePointer}
         onShare={shareWav}
         onDownloadWav={downloadWav}
+        onRetryRender={renderProject}
+        onCancelRender={cancelRender}
       />
     </div>
   </section>
@@ -1010,11 +1411,8 @@
     class="hidden-audio"
     bind:this={audioRef}
     src={rendered?.url}
-    ontimeupdate={(event) => (playbackTime = (event.currentTarget as HTMLAudioElement).currentTime)}
-    onended={() => {
-      isPlaying = false
-      playbackTime = 0
-    }}
+    ontimeupdate={handleAudioTimeUpdate}
+    onended={() => void handleAudioEnded()}
     onpause={() => (isPlaying = false)}
     onplay={() => (isPlaying = true)}
   ></audio>

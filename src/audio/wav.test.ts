@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { encodeWav, inspectWavBlob, inspectWavBuffer, isDawReadyWav } from './wav'
+import { decodeMonoPcmWav, encodeWav, inspectWavBlob, inspectWavBuffer, isDawReadyWav } from './wav'
 
 describe('WAV encoder', () => {
   it('writes a mono PCM WAV header', async () => {
@@ -31,5 +31,17 @@ describe('WAV encoder', () => {
     const invalid = new TextEncoder().encode('not a wave').buffer
 
     expect(() => inspectWavBuffer(invalid)).toThrow('Invalid WAV container')
+  })
+
+  it('decodes mono PCM WAV samples for renderer responses', async () => {
+    const source = new Float32Array([0, 0.5, -0.5])
+    const blob = encodeWav(source, 44100)
+    const decoded = decodeMonoPcmWav(await blob.arrayBuffer())
+
+    expect(decoded.sampleRate).toBe(44100)
+    expect(decoded.durationSeconds).toBeCloseTo(3 / 44100)
+    expect(decoded.samples[0]).toBe(0)
+    expect(decoded.samples[1]).toBeCloseTo(0.5, 4)
+    expect(decoded.samples[2]).toBeCloseTo(-0.5, 4)
   })
 })

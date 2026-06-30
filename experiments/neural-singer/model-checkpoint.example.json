@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "notes": "Local checkpoint audit example. Copy this to an ignored run-specific manifest for real AIHub/private-singer checkpoints. The bundled example is a 1-step CSD smoke checkpoint and is not production voice-quality evidence.",
+  "model": {
+    "id": "webuta-ko-neural-dev",
+    "name": "WebUtau KO Neural Development Smoke",
+    "renderer": "diffsinger",
+    "releaseStatus": "local-research"
+  },
+  "datasetIds": ["csd-korean-research-baseline"],
+  "training": {
+    "framework": "openvpi-diffsinger",
+    "runId": "csd-smoke-1step-20260630",
+    "runDir": "experiments/neural-singer/work/csd-diffsinger-smoke/train-smoke",
+    "config": "experiments/neural-singer/work/csd-diffsinger-smoke/train-smoke/config.yaml",
+    "trainManifest": "experiments/neural-singer/work/csd-diffsinger-smoke/diffsinger-smoke.manifest.json",
+    "minCheckpointStep": 1,
+    "checkpoint": {
+      "step": 1,
+      "path": "experiments/neural-singer/work/csd-diffsinger-smoke/train-smoke/model_ckpt_steps_1.ckpt"
+    }
+  },
+  "runtime": {
+    "diffSingerRoot": ".local/neural-singer/openvpi/DiffSinger",
+    "python": ".local/neural-singer/mamba/envs/webuta-diffsinger/bin/python",
+    "exp": "experiments/neural-singer/work/csd-diffsinger-smoke/train-smoke",
+    "ckpt": 1,
+    "vocoder": "checkpoints/pc_nsf_hifigan_44.1k_hop512_128bin_2025.02/model.ckpt"
+  },
+  "evidence": {
+    "trainingReadiness": "experiments/neural-singer/work/csd-korean-research-ingest-slice/readiness.json",
+    "qualitySummary": "experiments/neural-singer/work/neural-quality/smoke-1step-20260630T091620-m7/quality-summary.json",
+    "browserSmoke": "experiments/neural-singer/work/browser-smoke/neural-latest.json"
+  },
+  "terms": {
+    "licenseSummary": "CSD-derived smoke data and local OpenVPI vocoder artifacts are research-only until exact data/model release terms are reviewed.",
+    "allowedUse": [
+      "Local research rendering",
+      "Pipeline diagnostics",
+      "Private development smoke tests"
+    ],
+    "disallowedUse": [
+      "Public model release",
+      "Commercial product demos",
+      "Public audio examples without a separate rights review"
+    ]
+  }
+}

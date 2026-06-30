@@ -1,4 +1,5 @@
-import type { SongNote, SongProject, Track, VoicePart } from './types'
+import { isSongProject } from './projectFile'
+import type { SongProject } from './types'
 
 const PROJECT_STORAGE_KEY = 'webuta.project.v1'
 
@@ -74,65 +75,6 @@ function isStoredProject(value: unknown): value is StoredProject {
   return value.version === 1 && typeof value.savedAt === 'string' && isSongProject(value.project)
 }
 
-function isSongProject(value: unknown): value is SongProject {
-  if (!isObject(value)) {
-    return false
-  }
-  return (
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.comment === 'string' &&
-    isFiniteNumber(value.bpm) &&
-    isFiniteNumber(value.beatPerBar) &&
-    isFiniteNumber(value.beatUnit) &&
-    Array.isArray(value.tracks) &&
-    value.tracks.every(isTrack) &&
-    Array.isArray(value.parts) &&
-    value.parts.every(isVoicePart) &&
-    Array.isArray(value.notes) &&
-    value.notes.every(isSongNote)
-  )
-}
-
-function isTrack(value: unknown): value is Track {
-  if (!isObject(value)) {
-    return false
-  }
-  return typeof value.id === 'string' && typeof value.name === 'string' && typeof value.color === 'string'
-}
-
-function isVoicePart(value: unknown): value is VoicePart {
-  if (!isObject(value)) {
-    return false
-  }
-  return (
-    typeof value.id === 'string' &&
-    typeof value.trackId === 'string' &&
-    typeof value.name === 'string' &&
-    isFiniteNumber(value.start) &&
-    isFiniteNumber(value.duration)
-  )
-}
-
-function isSongNote(value: unknown): value is SongNote {
-  if (!isObject(value)) {
-    return false
-  }
-  return (
-    typeof value.id === 'string' &&
-    typeof value.trackId === 'string' &&
-    typeof value.partId === 'string' &&
-    isFiniteNumber(value.start) &&
-    isFiniteNumber(value.duration) &&
-    isFiniteNumber(value.tone) &&
-    typeof value.lyric === 'string'
-  )
-}
-
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value)
 }

@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import * as yaml from 'js-yaml'
-import { midiToHz } from './music'
+import { midiToHz, toneName } from './music'
 
 export type OtoEntry = {
   fileName: string
@@ -40,6 +40,28 @@ export type VoicebankCoverage = {
   uniqueLyrics: number
   matchedLyrics: string[]
   fallbackLyrics: string[]
+}
+
+export type VoicebankRenderWarningKind = 'missing-alias' | 'pitch-shift' | 'missing-coda-tail'
+
+export type VoicebankRenderWarning = {
+  noteId: string
+  lyric: string
+  tone: number
+  kind: VoicebankRenderWarningKind
+  severity: 'warning' | 'error'
+  message: string
+  detail: string
+  entryAlias?: string
+  entryFileName?: string
+  semitoneShift?: number
+}
+
+export type VoicebankRenderWarningReport = {
+  totalNotes: number
+  warningCount: number
+  errorCount: number
+  warnings: VoicebankRenderWarning[]
 }
 
 type ZipFileMap = Record<string, JSZip.JSZipObject>
@@ -136,6 +158,31 @@ export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: s
   return findEntryMatchForLyric(voicebank, lyric).candidates
 }
 
+export function findCodaTailEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
+  const searchKeys = hangulCodaTailAliases(lyric)
+  if (searchKeys.length === 0) {
+    return undefined
+  }
+  const candidates = voicebank.entries.filter((entry) => {
+    const alias = normalizeLyric(entry.alias)
+    const core = normalizeAliasCore(entry.alias)
+    return searchKeys.some((key) => alias === key || core === key)
+  })
+  return bestEntryCandidate(candidates, lyric, targetTone)
+}
+
+export function findSustainEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
+  const sustainLyric = hangulSyllableWithoutCoda(normalizeLyric(lyric))
+  if (!sustainLyric) {
+    return undefined
+  }
+  const match = findEntryMatchForLyric(voicebank, sustainLyric)
+  if (match.quality === 'fallback') {
+    return undefined
+  }
+  return bestEntryCandidate(match.candidates, sustainLyric, targetTone)
+}
+
 export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string): LyricEntryMatch {
   const normalized = normalizeLyric(lyric)
   const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
@@ -216,6 +263,80 @@ export function analyzeVoicebankCoverage(
     uniqueLyrics: lyricMatches.size,
     matchedLyrics,
     fallbackLyrics,
+  }
+}
+
+export function analyzeVoicebankRenderWarnings(
+  voicebank: LoadedVoicebank,
+  notes: Array<{ id?: string; lyric: string; tone: number; start?: number }>,
+  options: { maxPitchShiftSemitones?: number } = {},
+): VoicebankRenderWarningReport {
+  const maxPitchShiftSemitones = options.maxPitchShiftSemitones ?? 9
+  const warnings: VoicebankRenderWarning[] = []
+
+  for (const [index, note] of notes.entries()) {
+    const noteId = note.id ?? `${index}`
+    const lyric = normalizeLyric(note.lyric)
+    const match = findEntryMatchForLyric(voicebank, lyric)
+    const sustainEntry = findSustainEntryForLyric(voicebank, lyric, note.tone)
+    const selectedEntry = sustainEntry ?? findBestEntryForLyric(voicebank, lyric, note.tone)
+    const codaTailEntry = findCodaTailEntryForLyric(voicebank, lyric, note.tone)
+
+    if (match.quality === 'fallback') {
+      warnings.push({
+        noteId,
+        lyric,
+        tone: note.tone,
+        kind: 'missing-alias',
+        severity: 'error',
+        message: `${lyric} alias 없음`,
+        detail: `${lyric} 노트가 oto.ini alias에 연결되지 않아 fallback 샘플로 렌더됩니다.`,
+      })
+      continue
+    }
+
+    if (hangulCodaTailAliases(lyric).length > 0 && !codaTailEntry) {
+      warnings.push({
+        noteId,
+        lyric,
+        tone: note.tone,
+        kind: 'missing-coda-tail',
+        severity: 'warning',
+        message: `${lyric} 받침 tail 없음`,
+        detail: `${lyric} 노트는 받침 전용 VC tail이 없어 긴 음에서 받침 처리가 불안정할 수 있습니다.`,
+        entryAlias: selectedEntry?.alias,
+        entryFileName: selectedEntry?.fileName,
+      })
+    }
+
+    if (selectedEntry) {
+      const baseTone = estimateEntryBaseTone(selectedEntry)
+      const semitoneShift = note.tone - baseTone
+      if (Math.abs(semitoneShift) > maxPitchShiftSemitones) {
+        warnings.push({
+          noteId,
+          lyric,
+          tone: note.tone,
+          kind: 'pitch-shift',
+          severity: 'warning',
+          message: `${lyric} ${Math.abs(semitoneShift)}반음 이동`,
+          detail: `${selectedEntry.alias} ${toneName(baseTone)} 샘플을 ${toneName(note.tone)}로 크게 피치시프트합니다.`,
+          entryAlias: selectedEntry.alias,
+          entryFileName: selectedEntry.fileName,
+          semitoneShift,
+        })
+      }
+    }
+  }
+
+  return {
+    totalNotes: notes.length,
+    warningCount: warnings.length,
+    errorCount: warnings.filter((warning) => warning.severity === 'error').length,
+    warnings: warnings.sort((a, b) => {
+      const severityScore = (warning: VoicebankRenderWarning) => (warning.severity === 'error' ? 0 : 1)
+      return severityScore(a) - severityScore(b)
+    }),
   }
 }
 
@@ -614,6 +735,86 @@ function hangulSyllableWithoutCoda(lyric: string) {
   }
   return String.fromCharCode(code - codaIndex)
 }
+
+function hangulCodaTailAliases(lyric: string) {
+  const [first] = lyric.trim()
+  if (!first) {
+    return []
+  }
+  const code = first.charCodeAt(0)
+  const hangulBase = 0xac00
+  const hangulEnd = 0xd7a3
+  if (code < hangulBase || code > hangulEnd) {
+    return []
+  }
+  const offset = code - hangulBase
+  const vowelIndex = Math.floor((offset % (21 * 28)) / 28)
+  const codaIndex = offset % 28
+  if (codaIndex === 0) {
+    return []
+  }
+  const vowel = HANGUL_VOWELS[vowelIndex]
+  const coda = HANGUL_CODAS[codaIndex]
+  if (!vowel || !coda) {
+    return []
+  }
+  return [`${vowel}${coda}`, `-${vowel}${coda}`]
+}
+
+const HANGUL_VOWELS = [
+  'ㅏ',
+  'ㅐ',
+  'ㅑ',
+  'ㅒ',
+  'ㅓ',
+  'ㅔ',
+  'ㅕ',
+  'ㅖ',
+  'ㅗ',
+  'ㅘ',
+  'ㅙ',
+  'ㅚ',
+  'ㅛ',
+  'ㅜ',
+  'ㅝ',
+  'ㅞ',
+  'ㅟ',
+  'ㅠ',
+  'ㅡ',
+  'ㅢ',
+  'ㅣ',
+]
+
+const HANGUL_CODAS = [
+  '',
+  'ㄱ',
+  'ㄲ',
+  'ㄳ',
+  'ㄴ',
+  'ㄵ',
+  'ㄶ',
+  'ㄷ',
+  'ㄹ',
+  'ㄺ',
+  'ㄻ',
+  'ㄼ',
+  'ㄽ',
+  'ㄾ',
+  'ㄿ',
+  'ㅀ',
+  'ㅁ',
+  'ㅂ',
+  'ㅄ',
+  'ㅅ',
+  'ㅆ',
+  'ㅇ',
+  'ㅈ',
+  'ㅊ',
+  'ㅋ',
+  'ㅌ',
+  'ㅍ',
+  'ㅎ',
+]
 
 function inferVoicebankName(fileName: string) {
   if (/teto/i.test(fileName)) {

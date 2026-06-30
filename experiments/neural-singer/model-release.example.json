@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "notes": "Copy this file to an ignored local path before auditing a real model release. Keep private singer names, signed consent, checkpoints, and generated audio outside git.",
+  "model": {
+    "id": "webuta-ko-neural-dev",
+    "name": "WebUtau KO Neural Development Smoke",
+    "releaseIntent": "local-research",
+    "releaseStatus": "local-research"
+  },
+  "datasetIds": ["csd-korean-research-baseline"],
+  "evidence": {
+    "modelCheckpoint": "experiments/neural-singer/work/model-checkpoint-smoke-audit.json",
+    "qualitySummary": "experiments/neural-singer/work/neural-quality/smoke-1step-20260630T091620-m7/quality-summary.json",
+    "qualityComparison": "experiments/neural-singer/work/neural-quality/smoke-1step-20260630T091620-m7/self-comparison.json",
+    "browserSmoke": "experiments/neural-singer/work/browser-smoke/neural-latest.json"
+  },
+  "terms": {
+    "licenseSummary": "CSD-derived smoke data and local OpenVPI vocoder artifacts are research-only until the exact data/model release terms are reviewed.",
+    "allowedUse": [
+      "Local research rendering",
+      "Pipeline diagnostics",
+      "Private development smoke tests"
+    ],
+    "disallowedUse": [
+      "Public model release",
+      "Commercial product demos",
+      "Public audio examples without a separate rights review"
+    ],
+    "publicReleaseNotes": ""
+  }
+}

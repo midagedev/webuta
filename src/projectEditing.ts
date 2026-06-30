@@ -81,6 +81,59 @@ export function updateNoteInProject(project: SongProject, noteId: string, patch:
   }
 }
 
+export function deleteNoteFromProject(project: SongProject, noteId: string) {
+  const deletedNote = project.notes.find((note) => note.id === noteId) ?? null
+  if (!deletedNote || project.notes.length <= 1) {
+    return { project, deletedNote: null, nextSelectedNoteId: project.notes[0]?.id ?? '' }
+  }
+  const notes = project.notes.filter((note) => note.id !== noteId)
+  const nextSelectedNote =
+    notes.find((note) => note.start >= deletedNote.start) ?? notes.at(-1) ?? notes[0]
+  return {
+    project: {
+      ...project,
+      notes,
+    },
+    deletedNote,
+    nextSelectedNoteId: nextSelectedNote?.id ?? '',
+  }
+}
+
+export function splitNoteInProject(project: SongProject, noteId: string, splitTick?: number) {
+  const currentNote = project.notes.find((note) => note.id === noteId)
+  if (!currentNote || currentNote.duration < GRID_SNAP_TICKS * 2) {
+    return { project, leftNote: currentNote ?? null, rightNote: null }
+  }
+
+  const noteEnd = currentNote.start + currentNote.duration
+  const preferredSplit = splitTick ?? currentNote.start + currentNote.duration / 2
+  const snappedSplit = snapTickToGrid(preferredSplit, GRID_SNAP_TICKS)
+  const boundedSplit = Math.min(noteEnd - GRID_SNAP_TICKS, Math.max(currentNote.start + GRID_SNAP_TICKS, snappedSplit))
+  const leftNote = sanitizeNote({
+    ...currentNote,
+    duration: boundedSplit - currentNote.start,
+  })
+  const rightNote = sanitizeNote({
+    ...currentNote,
+    id: makeId('note'),
+    start: boundedSplit,
+    duration: noteEnd - boundedSplit,
+  })
+  const notes = project.notes
+    .flatMap((note) => (note.id === currentNote.id ? [leftNote, rightNote] : [note]))
+    .sort((a, b) => a.start - b.start || a.tone - b.tone)
+
+  return {
+    project: {
+      ...project,
+      parts: notes.reduce((parts, note) => expandPartForNote(parts, note), project.parts),
+      notes,
+    },
+    leftNote,
+    rightNote,
+  }
+}
+
 export function quantizeProjectNotes(project: SongProject, gridTicks = GRID_SNAP_TICKS) {
   let changedCount = 0
   const notes = project.notes
