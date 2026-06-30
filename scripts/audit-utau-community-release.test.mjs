@@ -80,11 +80,13 @@ describe('UTAU community release audit', () => {
           hardFlagCount: 1,
           pitchWatchlistCount: 1,
           loopWatchlistCount: 1,
+          clarityWatchlistCount: 1,
           listeningPhraseCount: 4,
         },
         hardFlags: [{ fileName: 'samples/bad.wav', problems: ['pitch drift too large'] }],
         pitchWatchlist: [{}],
         loopWatchlist: [{}],
+        clarityWatchlist: [{}],
         listeningQueue: [{}, {}, {}, {}],
       },
     })
@@ -176,7 +178,7 @@ describe('UTAU community release audit', () => {
     })
 
     expect(report.ok).toBe(false)
-    expect(report.problems.join('\n')).toContain('does not match 20260630-v3-synthetic-web-1')
+    expect(report.problems.join('\n')).toContain('does not match 20260701-v3-synthetic-web-3')
   })
 
   it('blocks release when deployed V3 listening review WAVs are missing', async () => {
@@ -185,7 +187,7 @@ describe('UTAU community release audit', () => {
         ok: true,
         voicebank: {
           file: 'webuta-ko-v3.zip',
-          version: '20260630-v3-synthetic-web-1',
+          version: '20260701-v3-synthetic-web-3',
           bytes: 593,
         },
         reviewAudio: makePagesReviewAudio().map((item, index) =>
@@ -280,6 +282,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
   writeJson(join(work, 'v3-loop-audit.json'), passReport('v3-loop-audit-pass'))
+  writeJson(join(work, 'v3-clarity-audit.json'), passReport('v3-clarity-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
   writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
   writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
@@ -322,7 +325,7 @@ async function makeFixture(overrides = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260630-v3-synthetic-web-1'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-3'",
       '',
     ].join('\n'),
   )
@@ -334,7 +337,7 @@ async function makeFixture(overrides = {}) {
       ok: true,
       voicebank: {
         file: 'webuta-ko-v3.zip',
-        version: '20260630-v3-synthetic-web-1',
+        version: '20260701-v3-synthetic-web-3',
         bytes: readFileSync(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip')).byteLength,
       },
       checks: [
@@ -546,6 +549,7 @@ function makeSampleReviewReport() {
       hardFlagCount: 0,
       pitchWatchlistCount: 2,
       loopWatchlistCount: 2,
+      clarityWatchlistCount: 2,
       listeningPhraseCount: 4,
     },
     hardFlags: [],
@@ -556,6 +560,10 @@ function makeSampleReviewReport() {
     loopWatchlist: [
       { fileName: 'samples/i_A4.wav', alias: '이' },
       { fileName: 'samples/ki_A4.wav', alias: '키' },
+    ],
+    clarityWatchlist: [
+      { fileName: 'samples/v_i_F4.wav', alias: '-ㅣ', vowel: 'ㅣ' },
+      { fileName: 'samples/cv_0000_ga_F4.wav', alias: '가', onset: 'ㄱ' },
     ],
     listeningQueue: ['first-run-demo', 'coda-release-check', 'clear-cv-line', 'vowel-color-check'].map((id) => ({ id })),
   }

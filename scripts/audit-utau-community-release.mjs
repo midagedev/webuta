@@ -11,6 +11,7 @@ const DEFAULTS = {
   otoAudit: 'experiments/utau-v3/work/v3-oto-audit.json',
   pitchAudit: 'experiments/utau-v3/work/v3-pitch-audit.json',
   loopAudit: 'experiments/utau-v3/work/v3-loop-audit.json',
+  clarityAudit: 'experiments/utau-v3/work/v3-clarity-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
@@ -31,6 +32,7 @@ const EXPECTED_DECISIONS = {
   otoAudit: 'v3-oto-audit-pass',
   pitchAudit: 'v3-pitch-audit-pass',
   loopAudit: 'v3-loop-audit-pass',
+  clarityAudit: 'v3-clarity-audit-pass',
   demoAudit: 'default-demo-render-pass',
   reviewManifest: 'v3-listening-review-ready',
   sampleReview: 'v3-sample-review-report-ready',
@@ -63,6 +65,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('oto-timing', 'V3 oto timing audit', paths.otoAudit, EXPECTED_DECISIONS.otoAudit),
     reportGate('pitch-stability', 'V3 pitch audit', paths.pitchAudit, EXPECTED_DECISIONS.pitchAudit),
     reportGate('loop-stability', 'V3 sustain loop audit', paths.loopAudit, EXPECTED_DECISIONS.loopAudit),
+    reportGate('phoneme-clarity', 'V3 phoneme clarity audit', paths.clarityAudit, EXPECTED_DECISIONS.clarityAudit),
     demoGate(paths.demoAudit),
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
     reviewPackGate(paths.reviewManifest),
@@ -274,6 +277,9 @@ function sampleReviewGate(path) {
     if ((report.manualReview?.loopWatchlistCount ?? 0) < 1 || !Array.isArray(report.loopWatchlist)) {
       problems.push('V3 sample review must include a loop watchlist')
     }
+    if ((report.manualReview?.clarityWatchlistCount ?? 0) < 1 || !Array.isArray(report.clarityWatchlist)) {
+      problems.push('V3 sample review must include a clarity watchlist')
+    }
     if ((report.manualReview?.listeningPhraseCount ?? 0) < 4 || !Array.isArray(report.listeningQueue)) {
       problems.push('V3 sample review must include at least four listening phrases')
     }
@@ -283,6 +289,7 @@ function sampleReviewGate(path) {
     hardFlagCount: report.manualReview?.hardFlagCount ?? null,
     pitchWatchlistCount: report.manualReview?.pitchWatchlistCount ?? null,
     loopWatchlistCount: report.manualReview?.loopWatchlistCount ?? null,
+    clarityWatchlistCount: report.manualReview?.clarityWatchlistCount ?? null,
     listeningPhraseCount: report.manualReview?.listeningPhraseCount ?? null,
   } : null)
 }
@@ -804,6 +811,9 @@ function nextActionsForProblems(problems) {
   }
   if (problems.some((problem) => problem.includes('sample-review'))) {
     actions.push('Run npm run voicebank:sample-review-v3 after regenerating V3 package, oto, pitch, loop, and listening-review evidence.')
+  }
+  if (problems.some((problem) => problem.includes('phoneme-clarity'))) {
+    actions.push('Run npm run voicebank:clarity-v3 after regenerating the V3 zip so vowel color and consonant onset evidence is current.')
   }
   if (actions.length === 0) {
     actions.push('Regenerate the failing evidence report, then rerun npm run release:audit-utau.')

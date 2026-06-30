@@ -21,6 +21,18 @@ clone a human singer, use public/private recorded voice datasets as source
 audio, use TTS/model checkpoint output, or include Kasane Teto, Vocaloid, or
 any third-party singer asset.
 
+The current V3 synthesis profile is `deterministic-dsp-bright-formant-v3`.
+After regeneration, run the package, oto, pitch, loop, and clarity audits before
+publishing the zip:
+
+```sh
+npm run voicebank:audit-v3
+npm run voicebank:oto-v3
+npm run voicebank:pitch-v3
+npm run voicebank:loop-v3
+npm run voicebank:clarity-v3
+```
+
 ## Procedural Fallback
 
 ```sh

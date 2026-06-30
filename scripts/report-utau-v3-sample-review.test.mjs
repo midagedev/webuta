@@ -35,12 +35,14 @@ describe('UTAU V3 sample review report', () => {
       hardFlagCount: 0,
       pitchWatchlistCount: 2,
       loopWatchlistCount: 2,
+      clarityWatchlistCount: 2,
       listeningPhraseCount: 1,
     })
     expect(report.pitchWatchlist[0]).toMatchObject({ fileName: 'samples/do_C4.wav', alias: '도' })
     expect(report.loopWatchlist[0]).toMatchObject({ fileName: 'samples/i_A4.wav', alias: '이' })
     expect(markdown).toContain('does not ask anyone to record a voice')
     expect(markdown).toContain('Pitch Watchlist')
+    expect(markdown).toContain('Clarity Watchlist')
     expect(existsSync(join(fixture.root, 'sample-review.md'))).toBe(true)
     expect(JSON.parse(readFileSync(join(fixture.root, 'sample-review.json'), 'utf8')).ok).toBe(true)
   })
@@ -86,6 +88,7 @@ function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-oto-audit.json'), makeOtoAudit())
   writeJson(join(work, 'v3-pitch-audit.json'), makePitchAudit(overrides.pitchSamples))
   writeJson(join(work, 'v3-loop-audit.json'), makeLoopAudit())
+  writeJson(join(work, 'v3-clarity-audit.json'), makeClarityAudit())
   writeJson(join(review, 'review-manifest.json'), makeListeningManifest())
   return { root }
 }
@@ -191,6 +194,47 @@ function makeLoopAudit() {
         },
       ],
       samples: [],
+    },
+  }
+}
+
+function makeClarityAudit() {
+  return {
+    version: 1,
+    ok: true,
+    decision: 'v3-clarity-audit-pass',
+    clarity: {
+      vowels: {
+        summary: { minFormantEnergyRatio: 0.42, minVowelDistance: 0.031 },
+        worst: [
+          {
+            fileName: 'samples/v_i_F4.wav',
+            alias: '-ㅣ',
+            vowel: 'ㅣ',
+            pitch: 'F4',
+            ok: true,
+            problems: [],
+            metrics: { formantEnergyRatio: 0.42, bodyRms: 0.15 },
+          },
+        ],
+        samples: [],
+      },
+      consonants: {
+        weakRatio: 0.01,
+        summary: { minOnsetRatio: 0.09, minBrightRatio: 0.04 },
+        worst: [
+          {
+            fileName: 'samples/cv_0000_ga_F4.wav',
+            alias: '가',
+            onset: 'ㄱ',
+            vowel: 'ㅏ',
+            pitch: 'F4',
+            weak: false,
+            metrics: { onsetRatio: 0.09, brightRatio: 0.04 },
+          },
+        ],
+        samples: [],
+      },
     },
   }
 }

@@ -9,6 +9,7 @@ import JSZip from 'jszip'
 const SAMPLE_RATE = 44100
 const OUTPUT = join(process.cwd(), 'public/voicebanks/webuta-ko-v3.zip')
 const ZIP_FILE_DATE = '2026-01-01T00:00:00.000Z'
+const SYNTHESIS_PROFILE = 'deterministic-dsp-bright-formant-v3'
 
 const PITCHES = [
   { name: 'C4', midi: 60, hz: 261.625565 },
@@ -96,7 +97,7 @@ const VOWEL_FORMANTS = {
   'ㅟ': [320, 2100, 2750, 3600],
   'ㅠ': [340, 800, 2400, 3300],
   'ㅡ': [370, 1480, 2450, 3300],
-  'ㅢ': [380, 1760, 2600, 3500],
+  'ㅢ': [360, 2120, 3000, 3800],
   'ㅣ': [300, 2300, 3000, 3800],
 }
 
@@ -104,7 +105,8 @@ const VOWEL_WEIGHTS = {
   default: [1.0, 0.52, 0.2, 0.08],
   'ㅣ': [0.68, 0.82, 0.24, 0.08],
   'ㅟ': [0.66, 0.82, 0.24, 0.08],
-  'ㅡ': [0.72, 0.58, 0.18, 0.07],
+  'ㅡ': [0.48, 1.0, 0.22, 0.07],
+  'ㅢ': [0.42, 1.05, 0.34, 0.09],
 }
 
 const ALT_ROMAN_ALIASES = new Map([
@@ -147,6 +149,9 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
       type: unit.type,
       alias: unit.aliases[0],
       aliases: unit.aliases,
+      onset: unit.onset,
+      vowel: unit.vowel,
+      coda: unit.coda,
       pitch: unit.pitch.name,
       midi: unit.pitch.midi,
       baseHz: unit.pitch.hz,
@@ -171,6 +176,14 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
       noPublicOrPrivateRecordedDatasetSource: true,
       noThirdPartySingerOrCharacterSource: true,
       noTtsOrModelCheckpointOutput: true,
+    },
+    synthesis: {
+      profile: SYNTHESIS_PROFILE,
+      notes: [
+        'Broadened vowel formant bands to reduce whistle-like resonances.',
+        'Blended a low-passed glottal body layer behind the formants for a more vocal sustain.',
+        'Applied deterministic soft saturation before normalization to add stable harmonic color without using recordings.',
+      ],
     },
     qualityIntent:
       'License-clean stylized cyber singer with stable musical vowels. It does not imitate a real singer or third-party character.',
@@ -381,19 +394,29 @@ function renderUnit(unit) {
   const formants = VOWEL_FORMANTS[unit.vowel] ?? VOWEL_FORMANTS['ㅏ']
   const weights = VOWEL_WEIGHTS[unit.vowel] ?? VOWEL_WEIGHTS.default
   for (let band = 0; band < formants.length; band += 1) {
-    const filtered = bandPass(source, formants[band], band < 2 ? 7.5 : 11)
+    const filtered = bandPass(source, formants[band], band < 2 ? vowelFormantQ(unit.vowel) : 8.5)
     for (let i = 0; i < output.length; i += 1) {
       output[i] += filtered[i] * weights[band]
     }
   }
 
+  addGlottalBody(output, source, unit)
   addConsonant(output, unit, seed)
   addCoda(output, unit, seed)
   addMicroChorus(output, unit.pitch.hz)
   deEss(output)
+  softSaturate(output, unit.type === 'VC' ? 1.12 : 1.2)
   normalize(output, 0.86)
   fadeEdges(output, Math.floor(0.002 * SAMPLE_RATE), Math.floor(0.018 * SAMPLE_RATE))
   return output
+}
+
+function addGlottalBody(output, source, unit) {
+  const body = lowPass(source, vowelBodyCutoff(unit.vowel))
+  const blend = unit.type === 'VC' ? 0.1 : unit.type === 'V' ? 0.18 : 0.15
+  for (let i = 0; i < output.length; i += 1) {
+    output[i] = output[i] * (1 - blend * 0.35) + body[i] * blend
+  }
 }
 
 function addConsonant(output, unit, seed) {
@@ -483,10 +506,30 @@ function codaProfile(coda) {
 }
 
 function singerEnvelope(progress, type) {
-  const attack = type === 'V' ? 0.055 : 0.095
+  const attack = type === 'V' ? 0.052 : type === 'VC' ? 0.075 : 0.078
   const release = type === 'VC' ? 0.12 : 0.18
   const body = 0.9 + Math.sin(progress * Math.PI * 2.2) * 0.012
   return Math.min(smoothstep(progress / attack), smoothstep((1 - progress) / release)) * body
+}
+
+function vowelFormantQ(vowel) {
+  if (['ㅣ', 'ㅟ', 'ㅢ', 'ㅚ', 'ㅔ', 'ㅖ'].includes(vowel)) {
+    return 5.2
+  }
+  if (['ㅜ', 'ㅠ', 'ㅗ', 'ㅛ', 'ㅡ'].includes(vowel)) {
+    return 5.8
+  }
+  return 5.5
+}
+
+function vowelBodyCutoff(vowel) {
+  if (['ㅣ', 'ㅟ', 'ㅢ', 'ㅚ', 'ㅔ', 'ㅖ'].includes(vowel)) {
+    return 2100
+  }
+  if (['ㅜ', 'ㅠ', 'ㅗ', 'ㅛ'].includes(vowel)) {
+    return 1450
+  }
+  return 1750
 }
 
 function addMicroChorus(samples, hz) {
@@ -523,12 +566,32 @@ function bandPass(input, centerHz, q) {
   return output
 }
 
+function lowPass(input, cutoffHz) {
+  const output = new Float32Array(input.length)
+  const rc = 1 / (2 * Math.PI * cutoffHz)
+  const dt = 1 / SAMPLE_RATE
+  const alpha = dt / (rc + dt)
+  let previous = 0
+  for (let i = 0; i < input.length; i += 1) {
+    previous += alpha * (input[i] - previous)
+    output[i] = previous
+  }
+  return output
+}
+
 function deEss(samples) {
   let previous = 0
   for (let i = 0; i < samples.length; i += 1) {
     const current = samples[i]
     samples[i] = current * 0.9 + previous * 0.1
     previous = current
+  }
+}
+
+function softSaturate(samples, drive) {
+  const normalizer = Math.tanh(drive)
+  for (let i = 0; i < samples.length; i += 1) {
+    samples[i] = Math.tanh(samples[i] * drive) / normalizer
   }
 }
 

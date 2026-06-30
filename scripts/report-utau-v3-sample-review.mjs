@@ -9,6 +9,7 @@ export const DEFAULTS = {
   otoAudit: 'experiments/utau-v3/work/v3-oto-audit.json',
   pitchAudit: 'experiments/utau-v3/work/v3-pitch-audit.json',
   loopAudit: 'experiments/utau-v3/work/v3-loop-audit.json',
+  clarityAudit: 'experiments/utau-v3/work/v3-clarity-audit.json',
   listeningManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   out: 'experiments/utau-v3/work/v3-sample-review-report.md',
   json: 'experiments/utau-v3/work/v3-sample-review-report.json',
@@ -19,6 +20,7 @@ const EXPECTED_DECISIONS = {
   otoAudit: 'v3-oto-audit-pass',
   pitchAudit: 'v3-pitch-audit-pass',
   loopAudit: 'v3-loop-audit-pass',
+  clarityAudit: 'v3-clarity-audit-pass',
   listeningManifest: 'v3-listening-review-ready',
 }
 
@@ -33,6 +35,7 @@ export function prepareUtauV3SampleReviewReport(options = {}) {
   const hardFlags = collectHardFlags(inputs)
   const pitchWatchlist = collectPitchWatchlist(inputs.pitchAudit?.json?.pitch?.worst ?? [], Number(options.maxPitchItems ?? 8))
   const loopWatchlist = collectLoopWatchlist(inputs.loopAudit?.json?.loop?.worst ?? [], Number(options.maxLoopItems ?? 8))
+  const clarityWatchlist = collectClarityWatchlist(inputs.clarityAudit?.json?.clarity, Number(options.maxClarityItems ?? 10))
   const listeningQueue = collectListeningQueue(inputs.listeningManifest?.json)
   const problems = [
     ...inputProblems,
@@ -50,19 +53,22 @@ export function prepareUtauV3SampleReviewReport(options = {}) {
     automatedDiagnostics: {
       pitch: inputs.pitchAudit?.json?.pitch?.summary ?? null,
       loop: inputs.loopAudit?.json?.loop?.summary ?? null,
+      clarity: summarizeClarityDiagnostics(inputs.clarityAudit?.json?.clarity),
     },
     manualReview: {
       noRecordingRequired: true,
       hardFlagCount: hardFlags.length,
       pitchWatchlistCount: pitchWatchlist.length,
       loopWatchlistCount: loopWatchlist.length,
+      clarityWatchlistCount: clarityWatchlist.length,
       listeningPhraseCount: listeningQueue.length,
       instruction:
-        'Listen only to generated V3/V2 review WAVs and the listed watchlist samples; do not record a new singer voice for this review.',
+        'Listen only to generated V3/V2 review WAVs and the listed pitch, loop, and clarity watchlist samples; do not record a new singer voice for this review.',
     },
     hardFlags,
     pitchWatchlist,
     loopWatchlist,
+    clarityWatchlist,
     listeningQueue,
     problems,
     nextActions:
@@ -156,6 +162,7 @@ function collectHardFlags(inputs) {
     ...(inputs.loopAudit?.json?.loop?.worst ?? []),
     ...(inputs.loopAudit?.json?.loop?.samples ?? []),
   ], seen)
+  addWorstProblems(flags, 'clarity-vowel', inputs.clarityAudit?.json?.clarity?.vowels?.samples ?? [], seen)
   return flags
 }
 
@@ -205,6 +212,50 @@ function collectLoopWatchlist(items, maxItems) {
     loopDurationMs: round(item.metrics?.loopDurationMs),
     reason: `largest loop residual: ${round(item.metrics?.residualRatio, 4)} ratio, ${round(item.metrics?.seamJump, 4)} seam jump`,
   }))
+}
+
+function collectClarityWatchlist(clarity, maxItems) {
+  const vowels = (clarity?.vowels?.worst ?? []).map((item) => ({
+    source: 'clarity-vowel',
+    fileName: item.fileName,
+    alias: item.alias ?? null,
+    vowel: item.vowel ?? null,
+    pitch: item.pitch ?? null,
+    formantEnergyRatio: round(item.metrics?.formantEnergyRatio, 4),
+    reason: `lowest vowel formant energy ratio: ${round(item.metrics?.formantEnergyRatio, 4)}`,
+  }))
+  const consonants = (clarity?.consonants?.worst ?? []).map((item) => ({
+    source: 'clarity-consonant',
+    fileName: item.fileName,
+    alias: item.alias ?? null,
+    onset: item.onset ?? null,
+    vowel: item.vowel ?? null,
+    pitch: item.pitch ?? null,
+    onsetRatio: round(item.metrics?.onsetRatio, 4),
+    brightRatio: round(item.metrics?.brightRatio, 4),
+    reason: `weakest consonant onset ratio: ${round(item.metrics?.onsetRatio, 4)}`,
+  }))
+  return [...vowels, ...consonants].slice(0, maxItems)
+}
+
+function summarizeClarityDiagnostics(clarity) {
+  if (!clarity) {
+    return null
+  }
+  return {
+    vowels: {
+      auditedCount: clarity.vowels?.auditedCount ?? null,
+      summary: clarity.vowels?.summary ?? null,
+      worst: clarity.vowels?.worst ?? [],
+    },
+    consonants: {
+      auditedCount: clarity.consonants?.auditedCount ?? null,
+      weakCount: clarity.consonants?.weakCount ?? null,
+      weakRatio: clarity.consonants?.weakRatio ?? null,
+      summary: clarity.consonants?.summary ?? null,
+      worst: clarity.consonants?.worst ?? [],
+    },
+  }
 }
 
 function collectListeningQueue(manifest) {
@@ -259,12 +310,14 @@ export function renderMarkdown(report) {
     `- Pitch max drift: ${formatNumber(report.automatedDiagnostics.pitch?.maxDriftCents)} cents`,
     `- Loop max residual ratio: ${formatNumber(report.automatedDiagnostics.loop?.maxResidualRatio, 4)}`,
     `- Loop max seam jump: ${formatNumber(report.automatedDiagnostics.loop?.maxSeamJump, 4)}`,
+    `- Clarity min vowel distance: ${formatNumber(report.automatedDiagnostics.clarity?.vowels?.summary?.minVowelDistance, 4)}`,
+    `- Clarity weak consonant ratio: ${formatNumber(report.automatedDiagnostics.clarity?.consonants?.weakRatio, 4)}`,
     '',
     '## Hard Flags',
     '',
     report.hardFlags.length
       ? hardFlagsTable(report.hardFlags)
-      : 'No hard sample failures were reported by package, oto, pitch, or loop audits.',
+      : 'No hard sample failures were reported by package, oto, pitch, loop, or clarity audits.',
     '',
     '## Pitch Watchlist',
     '',
@@ -273,6 +326,10 @@ export function renderMarkdown(report) {
     '## Loop Watchlist',
     '',
     watchlistTable(report.loopWatchlist, ['fileName', 'alias', 'pitch', 'residualRatio', 'seamJump', 'loopDurationMs']),
+    '',
+    '## Clarity Watchlist',
+    '',
+    watchlistTable(report.clarityWatchlist, ['source', 'fileName', 'alias', 'vowel', 'onset', 'pitch', 'formantEnergyRatio', 'onsetRatio', 'brightRatio']),
     '',
     '## Listening Queue',
     '',
@@ -352,6 +409,8 @@ function parseArgs(argv) {
       options.pitchAudit = argv[++index]
     } else if (arg === '--loop-audit') {
       options.loopAudit = argv[++index]
+    } else if (arg === '--clarity-audit') {
+      options.clarityAudit = argv[++index]
     } else if (arg === '--listening-manifest') {
       options.listeningManifest = argv[++index]
     } else if (arg === '--help' || arg === '-h') {
@@ -366,6 +425,7 @@ function parseArgs(argv) {
           '  --oto-audit path           V3 oto audit JSON',
           '  --pitch-audit path         V3 pitch audit JSON',
           '  --loop-audit path          V3 loop audit JSON',
+          '  --clarity-audit path       V3 clarity audit JSON',
           '  --listening-manifest path  V3 listening review manifest JSON',
           '',
         ].join('\n'),

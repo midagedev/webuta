@@ -154,14 +154,16 @@ Recommended coverage shape:
 - [x] Generate exact demo-priority coda samples such as `연`.
 - [x] Include deterministic `oto.ini`, `character.yaml`, `readme.txt`,
   `license.txt`, and `webuta-ko-v3.manifest.json`.
-- [ ] Run listening review and tune consonant/noise/formant profiles.
+- [x] Tune consonant/noise/formant profiles in the no-recording generator
+  through the `deterministic-dsp-bright-formant-v3` synthesis profile.
 - [x] Add sample-quality audit for package files, aliases, silence, clipping,
   RMS, and WAV consistency.
 - [x] Add F0/pitch-stability audit for generated sample bodies.
 - [x] Generate the first web-profile `webuta-ko-v3.zip`: 615 samples, 1437 aliases,
   about 46 MB.
 - [x] Make `webuta-ko-v3.zip` the bundled voicebank selected on first launch.
-- [ ] Run browser smoke and listening review before calling V3 community-ready.
+- [ ] Run browser smoke and human listening review before calling V3
+  community-ready.
 
 ### M3. Sample Processing
 
@@ -170,8 +172,8 @@ Recommended coverage shape:
 - [x] Add generated oto validation from known attack/body/release regions.
 - [x] Add batch normalization to consistent peak targets inside the generator.
 - [x] Add per-sample diagnostic JSON.
-- [x] Add a no-recording sample review report for hard flags, pitch/loop
-  watchlists, and listening-review phrase priority.
+- [x] Add a no-recording sample review report for hard flags, pitch/loop/
+  clarity watchlists, and listening-review phrase priority.
 
 ### M4. UTAU Pack Builder
 
@@ -241,6 +243,7 @@ Recommended coverage shape:
 - [x] `npm run voicebank:audit-v3` passes on the default synthetic V3 zip.
 - [x] `npm run voicebank:oto-v3` passes on the default synthetic V3 zip.
 - [x] `npm run voicebank:pitch-v3` passes on the default synthetic V3 zip.
+- [x] `npm run voicebank:clarity-v3` passes on the default synthetic V3 zip.
 - [x] V3 zip passes generated voicebank integrity test.
 - [x] `npm test` passes.
 - [x] `npm run lint` passes.
@@ -248,6 +251,7 @@ Recommended coverage shape:
 - [x] Browser smoke passes on desktop and mobile widths.
 - [x] V3 processed samples pass package/WAV sample-quality audit.
 - [x] V3 sustained CV/V samples pass loop/crossfade audit.
+- [x] V3 generated vowels and consonant attacks pass phoneme clarity audit.
 - [x] V3 sample review preflight report passes with zero hard sample flags.
 - [x] README includes screenshots, license notes, and honest limitations.
 - [x] Published V3 listening scorecard is available as a GitHub Pages asset.
@@ -271,6 +275,7 @@ npm run voicebank:demo-v3:pages
 npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
+npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
 npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json
@@ -285,6 +290,7 @@ npm test -- scripts/audit-korean-v3-voicebank.test.mjs
 npm test -- scripts/audit-korean-v3-oto.test.mjs
 npm test -- scripts/analyze-korean-v3-loops.test.mjs
 npm test -- scripts/analyze-korean-v3-pitch.test.mjs
+npm test -- scripts/analyze-korean-v3-clarity.test.mjs
 npm test -- scripts/prepare-utau-v3-listening-review.test.mjs
 npm test -- scripts/accept-utau-v3-listening-scores.test.mjs
 npm test -- scripts/publish-utau-v3-listening-review.test.mjs
@@ -304,9 +310,13 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 615 WAV samples, 1437 oto aliases, 47944410 bytes.
+- Default web profile: 615 WAV samples, 1437 oto aliases, 48709111 bytes.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260701-v3-synthetic-web-2`.
+  version `20260701-v3-synthetic-web-3`.
+- The generator now uses synthesis profile
+  `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
+  glottal body layer, deterministic soft saturation, and clearer `ㅡ`/`ㅢ`
+  vowel separation without using recordings, datasets, TTS, or model output.
 - `npm run voicebank:audit-v3` passes on the default zip: all 615 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
@@ -352,13 +362,18 @@ Current verified V3 evidence:
   audited, maximum median pitch error about 4.5 cents, maximum body drift about
   10.3 cents, and minimum median F0 confidence about 0.984.
 - `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain
-  samples audited, maximum loop residual ratio about 0.059, maximum seam jump
-  about 0.093.
+  samples audited, maximum loop residual ratio about 0.032, maximum seam jump
+  about 0.077.
+- `npm run voicebank:clarity-v3` passes on the default zip: 21/21 generated
+  vowel-color samples and 378/378 main-pitch consonant onset samples audited,
+  minimum vowel spectral distance about 0.012, minimum formant energy ratio
+  about 0.376, and weak consonant onset count 0.
 - `npm run voicebank:sample-review-v3` passes and writes
   `experiments/utau-v3/work/v3-sample-review-report.{md,json}`: package, oto,
-  pitch, loop, and listening-review inputs all pass; hard sample flags are 0;
-  the report lists 8 pitch watchlist samples, 8 loop watchlist samples, and 4
-  V3/V2 listening-review phrases without asking anyone to record a voice.
+  pitch, loop, clarity, and listening-review inputs all pass; hard sample flags
+  are 0; the report lists 8 pitch watchlist samples, 8 loop watchlist samples,
+  10 clarity watchlist samples, and 4 V3/V2 listening-review phrases without
+  asking anyone to record a voice.
 - Browser renderer can resolve a Hangul coda lyric through CV plus VC tail
   overlay when an exact CVC sample is unavailable.
 - Browser renderer now prefers CV sustain plus VC tail for Hangul coda lyrics
@@ -408,6 +423,8 @@ Current verified V3 evidence:
   loading, desktop/mobile layout, and live WAV download before release.
 - Release audit now requires the V3 sample review preflight report to be ready,
   no-recording, and free of hard sample flags before community release.
+- Release audit now requires the V3 phoneme clarity audit, so vowel-color
+  separation and consonant attack evidence are current before community release.
 - Release audit now verifies README screenshots are readable PNG/JPEG files
   with desktop/mobile minimum dimensions and byte sizes, not just placeholder
   files.
@@ -417,10 +434,9 @@ Current verified V3 evidence:
   bundled V3 zip.
 - `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/community-release-audit-pages.json`:
   blocked only by missing human listening scores; live Pages loads
-  `voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-2` with HTTP 200 and
-  47944410 bytes, matching the local bundled zip byte-for-byte by
-  `content-length`; it also verifies all 8 deployed V3/V2 review WAVs and the
-  deployed first-run default V3 browser demo audit.
+  the previous deployed V3 zip until the `20260701-v3-synthetic-web-3` cache
+  version is deployed; after this change, rerun `npm run voicebank:demo-v3:pages`
+  and the Pages release audit to verify the live `48709111` byte zip.
 - GitHub Actions Pages workflow is verified after release-gate pushes; it must
   pass build, tests, artifact upload, and deploy before sharing the live URL.
 - `npm test`: 85 passed / 1 skipped files, 364 passed / 2 skipped tests.
