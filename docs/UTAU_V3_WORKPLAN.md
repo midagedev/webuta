@@ -222,7 +222,7 @@ Recommended coverage shape:
 - [x] README includes screenshots, license notes, and honest limitations.
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
-- [ ] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
+- [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
 - [ ] `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/`
   passes.
 
@@ -255,10 +255,10 @@ npm run build
 
 ## Current Status
 
-V3 is now the app's bundled default, but it is still an early synthetic web
-profile. The next concrete step is to run loader/render smoke, listen to the
-default phrase, tune the generator profiles, and add automated sample-quality
-diagnostics before treating it as community-ready.
+V3 is now the app's bundled default, live on GitHub Pages, and protected by a
+no-recording synthetic-origin release gate. It is still an early synthetic web
+profile, and human listening review remains required before treating it as
+community-ready.
 
 Current verified V3 evidence:
 
@@ -309,13 +309,21 @@ Current verified V3 evidence:
   matched notes and no fallback aliases.
 - App tests cover selected-note split/delete controls and selected-note loop
   region display.
+- Release audit now inspects `public/voicebanks/webuta-ko-v3.zip` directly and
+  requires manifest/readme/license evidence that the default V3 voicebank is
+  fully synthetic, DSP-generated, and not recorded, cloned, or rendered from a
+  third-party TTS/model output.
 - `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit.json`:
   blocked only by missing human listening scores and missing Pages deployment
-  evidence.
+  evidence before deploy; the local synthetic-origin gate passes on the real
+  bundled V3 zip.
 - `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/community-release-audit-pages.json`:
-  blocked by missing human listening scores and live Pages returning HTTP 404
-  for `voicebanks/webuta-ko-v3.zip?v=20260630-v3-synthetic-web-1`.
-- `npm test`: 80 passed / 1 skipped files, 345 passed / 2 skipped tests.
+  blocked only by missing human listening scores; live Pages loads
+  `voicebanks/webuta-ko-v3.zip?v=20260630-v3-synthetic-web-1` with HTTP 200 and
+  47944175 bytes.
+- GitHub Actions Pages run `28455792293` passed build, tests, artifact upload,
+  and deploy for commit `677a1f6`.
+- `npm test`: 80 passed / 1 skipped files, 346 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.
