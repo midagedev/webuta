@@ -69,6 +69,28 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('must include at least four phrase scores')
   })
 
+  it('blocks release when V3 is not clearly preferred over legacy V2', async () => {
+    const fixture = await makeFixture({
+      listeningScores: {
+        comparisonScores: [
+          {
+            id: 'first-run-demo',
+            v3PreferenceScore: 3,
+          },
+        ],
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('v3PreferenceScore 3 is below 4')
+    expect(report.problems.join('\n')).toContain('must include at least four V2/V3 comparison scores')
+  })
+
   it('blocks release when deployed Pages evidence does not match the cache-busted bundled V3 version', async () => {
     const fixture = await makeFixture({
       pagesReport: {
@@ -113,6 +135,7 @@ async function makeFixture(overrides = {}) {
   const docs = join(root, 'docs')
   mkdirSync(review, { recursive: true })
   mkdirSync(join(review, 'audio'), { recursive: true })
+  mkdirSync(join(review, 'audio', 'legacy-v2'), { recursive: true })
   mkdirSync(join(docs, 'screenshots'), { recursive: true })
   mkdirSync(join(root, 'src'), { recursive: true })
   mkdirSync(join(root, 'public', 'voicebanks'), { recursive: true })
@@ -125,6 +148,10 @@ async function makeFixture(overrides = {}) {
   writeFileSync(join(review, 'audio', '02-coda-release-check.wav'), 'wav')
   writeFileSync(join(review, 'audio', '03-clear-cv-line.wav'), 'wav')
   writeFileSync(join(review, 'audio', '04-vowel-color-check.wav'), 'wav')
+  writeFileSync(join(review, 'audio', 'legacy-v2', '01-first-run-demo-legacy-v2.wav'), 'wav')
+  writeFileSync(join(review, 'audio', 'legacy-v2', '02-coda-release-check-legacy-v2.wav'), 'wav')
+  writeFileSync(join(review, 'audio', 'legacy-v2', '03-clear-cv-line-legacy-v2.wav'), 'wav')
+  writeFileSync(join(review, 'audio', 'legacy-v2', '04-vowel-color-check-legacy-v2.wav'), 'wav')
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   if (!overrides.omitListeningScores) {
     writeJson(join(review, 'listening-scores.local.json'), deepMerge(makeListeningScores(), overrides.listeningScores ?? {}))
@@ -242,17 +269,24 @@ function makeDemoReport() {
 }
 
 function makeReviewManifest(review) {
+  const phrases = [
+    ['first-run-demo', '01-first-run-demo.wav'],
+    ['coda-release-check', '02-coda-release-check.wav'],
+    ['clear-cv-line', '03-clear-cv-line.wav'],
+    ['vowel-color-check', '04-vowel-color-check.wav'],
+  ]
   return {
     ...passReport('v3-listening-review-ready'),
     phraseCount: 4,
-    phrases: [
-      ['first-run-demo', '01-first-run-demo.wav'],
-      ['coda-release-check', '02-coda-release-check.wav'],
-      ['clear-cv-line', '03-clear-cv-line.wav'],
-      ['vowel-color-check', '04-vowel-color-check.wav'],
-    ].map(([id, fileName]) => ({
+    comparisonCount: 4,
+    phrases: phrases.map(([id, fileName]) => ({
       id,
       wavPath: join(review, 'audio', fileName),
+      gates: { passed: true },
+    })),
+    comparisons: phrases.map(([id, fileName]) => ({
+      id,
+      wavPath: join(review, 'audio', 'legacy-v2', fileName.replace('.wav', '-legacy-v2.wav')),
       gates: { passed: true },
     })),
   }
@@ -270,6 +304,7 @@ function makeListeningScores() {
       minConsonantClarityScore: 4,
       minMusicalityScore: 4,
       minArtifactScore: 4,
+      minV3PreferenceScore: 4,
     },
     phraseScores: ['first-run-demo', 'coda-release-check', 'clear-cv-line', 'vowel-color-check'].map((id) => ({
       id,
@@ -278,6 +313,10 @@ function makeListeningScores() {
       consonantClarityScore: 4,
       musicalityScore: 4,
       artifactScore: 4,
+    })),
+    comparisonScores: ['first-run-demo', 'coda-release-check', 'clear-cv-line', 'vowel-color-check'].map((id) => ({
+      id,
+      v3PreferenceScore: 4,
     })),
   }
 }

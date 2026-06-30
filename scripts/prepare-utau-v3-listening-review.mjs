@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 
 export const DEFAULT_OUT = 'experiments/utau-v3/work/v3-listening-review'
+export const DEFAULT_LEGACY_V2_VOICEBANK = 'public/voicebanks/webuta-ko-lite.zip'
 
 const DEFAULT_HOST = '127.0.0.1'
 const DEFAULT_TIMEOUT_MS = 45_000
@@ -58,6 +59,7 @@ const LISTENING_THRESHOLDS = {
   minConsonantClarityScore: 4,
   minMusicalityScore: 4,
   minArtifactScore: 4,
+  minV3PreferenceScore: 4,
 }
 
 export function fixedListeningReviewProjects() {
@@ -145,8 +147,14 @@ export async function prepareUtauV3ListeningReview(options = {}) {
   const cwd = resolve(options.cwd ?? process.cwd())
   const outDir = resolve(options.out ?? DEFAULT_OUT)
   const audioDir = join(outDir, 'audio')
+  const legacyV2Path = resolve(options.legacyV2 ?? DEFAULT_LEGACY_V2_VOICEBANK)
+  const compareLegacyV2 = options.compareLegacyV2 !== false && existsSync(legacyV2Path)
+  const legacyAudioDir = join(audioDir, 'legacy-v2')
   const projects = fixedListeningReviewProjects()
   mkdirSync(audioDir, { recursive: true })
+  if (compareLegacyV2) {
+    mkdirSync(legacyAudioDir, { recursive: true })
+  }
 
   const started = await startViteServer({ cwd, host: options.host ?? DEFAULT_HOST, port: options.port })
   let browser = null
@@ -183,12 +191,26 @@ export async function prepareUtauV3ListeningReview(options = {}) {
       })
     }
 
-    const problems = phrases.flatMap((phrase) => phrase.gates.problems.map((problem) => `${phrase.id}: ${problem}`))
+    const comparisons = compareLegacyV2
+      ? await renderLegacyV2Comparisons({
+          page,
+          legacyV2Path,
+          legacyAudioDir,
+          outDir,
+          projects,
+        })
+      : []
+
+    const problems = [
+      ...phrases.flatMap((phrase) => phrase.gates.problems.map((problem) => `${phrase.id}: ${problem}`)),
+      ...comparisons.flatMap((comparison) =>
+        comparison.gates.problems.map((problem) => `${comparison.id} legacy-v2: ${problem}`),
+      ),
+    ]
     const listeningTemplatePath = join(outDir, 'listening-scores.local.template.json')
     const indexHtmlPath = join(outDir, 'index.html')
     const readmePath = join(outDir, 'README.md')
     const manifestPath = join(outDir, 'review-manifest.json')
-    const listeningTemplate = makeListeningTemplate(phrases)
     const manifest = {
       version: 1,
       generatedAt: new Date().toISOString(),
@@ -200,19 +222,22 @@ export async function prepareUtauV3ListeningReview(options = {}) {
       readmePath,
       listeningTemplatePath,
       phraseCount: phrases.length,
+      comparisonCount: comparisons.length,
       thresholds: REVIEW_THRESHOLDS,
       phrases,
+      comparisons,
       problems,
       nextSteps: [
         `Open ${indexHtmlPath}`,
         `Use the HTML scorecard to download ${join(outDir, 'listening-scores.local.json')}`,
-        'Tune generator consonant/noise/formant profiles if any phrase scores below 4/5.',
+        'Tune generator consonant/noise/formant profiles if any phrase or V2 comparison scores below 4/5.',
       ],
     }
 
+    const listeningTemplate = makeListeningTemplate(phrases, comparisons)
     writeJson(listeningTemplatePath, listeningTemplate)
-    writeFileSync(indexHtmlPath, renderHtml({ phrases, listeningTemplatePath }))
-    writeFileSync(readmePath, renderReadme({ indexHtmlPath, listeningTemplatePath, phrases }))
+    writeFileSync(indexHtmlPath, renderHtml({ phrases, comparisons, listeningTemplatePath }))
+    writeFileSync(readmePath, renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, comparisons }))
     writeJson(manifestPath, manifest)
     if (options.report) {
       writeJson(resolve(options.report), manifest)
@@ -227,7 +252,8 @@ export async function prepareUtauV3ListeningReview(options = {}) {
   }
 }
 
-export function makeListeningTemplate(phrases) {
+export function makeListeningTemplate(phrases, comparisons = []) {
+  const phrasesById = new Map(phrases.map((phrase) => [phrase.id, phrase]))
   return {
     version: 1,
     reviewId: 'webuta-ko-v3-synthetic-listening-review',
@@ -238,6 +264,7 @@ export function makeListeningTemplate(phrases) {
     instructions: [
       'Listen to the generated WAV phrases on headphones or neutral speakers.',
       'Do not record new voice material for this review; score only the bundled synthetic V3 renders.',
+      'When legacy V2 comparison WAVs are present, score whether V3 is clearly more usable than V2.',
       'Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds.',
     ],
     reviewEnvironment: {
@@ -252,6 +279,14 @@ export function makeListeningTemplate(phrases) {
       title: phrase.title,
       wavPath: phrase.wavPath,
       ...Object.fromEntries(LISTENING_SCORE_FIELDS.map((field) => [field.key, null])),
+      notes: '',
+    })),
+    comparisonScores: comparisons.map((comparison) => ({
+      id: comparison.id,
+      title: comparison.title,
+      v3WavPath: phrasesById.get(comparison.id)?.wavPath ?? '',
+      legacyV2WavPath: comparison.wavPath,
+      v3PreferenceScore: null,
       notes: '',
     })),
   }
@@ -306,6 +341,51 @@ async function assertReviewProjectReady(page) {
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
 }
 
+async function renderLegacyV2Comparisons({ page, legacyV2Path, legacyAudioDir, outDir, projects }) {
+  await uploadVoicebankFile(page, legacyV2Path, 'WebUtau Korean V2')
+  const comparisons = []
+  for (const [index, item] of projects.entries()) {
+    await importProject(page, item.project, `${item.id}-legacy-v2.webutau.json`)
+    await waitForVoicebankCoverage(page)
+    const status = await readVoicebankStatus(page)
+    const fileName = `${String(index + 1).padStart(2, '0')}-${item.id}-legacy-v2.wav`
+    const wavPath = join(legacyAudioDir, fileName)
+    const wav = await renderAndSaveWav(page, wavPath)
+    comparisons.push({
+      id: item.id,
+      title: item.title,
+      description: `Legacy V2 baseline for ${item.title}.`,
+      voicebankName: 'WebUtau Korean V2 Legacy',
+      lyricLine: item.project.notes.map((itemNote) => itemNote.lyric).join(' '),
+      wavPath,
+      audioHref: toPosix(relative(outDir, wavPath)),
+      wav,
+      gates: evaluateWav(wav),
+      coverageText: status.coverageText,
+      warningText: status.warningText,
+    })
+  }
+  return comparisons
+}
+
+async function uploadVoicebankFile(page, filePath, expectedText) {
+  await page.locator('input[accept=".zip"]').first().setInputFiles(filePath)
+  if (expectedText) {
+    await page.getByText(expectedText).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  }
+}
+
+async function waitForVoicebankCoverage(page) {
+  await page.getByText(/matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+}
+
+async function readVoicebankStatus(page) {
+  return page.evaluate(() => ({
+    coverageText: document.querySelector('.coverage-card')?.textContent?.replace(/\s+/gu, ' ').trim() ?? '',
+    warningText: document.querySelector('.render-warning-card')?.textContent?.replace(/\s+/gu, ' ').trim() ?? '',
+  }))
+}
+
 async function renderAndSaveWav(page, wavPath) {
   const downloadPromise = page.waitForEvent('download', { timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '하단 WAV 다운로드' }).click()
@@ -354,8 +434,9 @@ function note(id, start, duration, tone, lyric) {
   return { id, start, duration, tone, lyric }
 }
 
-export function renderHtml({ phrases, listeningTemplatePath }) {
-  const template = makeListeningTemplate(phrases)
+export function renderHtml({ phrases, comparisons = [], listeningTemplatePath }) {
+  const template = makeListeningTemplate(phrases, comparisons)
+  const comparisonsById = new Map(comparisons.map((comparison, comparisonIndex) => [comparison.id, { ...comparison, comparisonIndex }]))
   const phrasePayload = phrases.map((phrase) => ({
     id: phrase.id,
     title: phrase.title,
@@ -364,6 +445,16 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
     wavPath: phrase.wavPath,
     audioHref: phrase.audioHref,
     gates: phrase.gates,
+  }))
+  const comparisonPayload = comparisons.map((comparison) => ({
+    id: comparison.id,
+    title: comparison.title,
+    voicebankName: comparison.voicebankName,
+    wavPath: comparison.wavPath,
+    audioHref: comparison.audioHref,
+    coverageText: comparison.coverageText,
+    warningText: comparison.warningText,
+    gates: comparison.gates,
   }))
   return `<!doctype html>
 <html lang="ko">
@@ -395,6 +486,10 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
     fieldset { margin: 0; padding: 12px; }
     legend { padding: 0 6px; color: var(--accent); font-weight: 800; }
     .scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .comparison-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .comparison-grid > div { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #10131b; }
+    .comparison-grid h3 { margin: 0 0 8px; font-size: 15px; }
+    .comparison-note { margin: 6px 0 0; font-size: 12px; }
     .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .output { display: grid; gap: 10px; padding: 16px; }
@@ -406,7 +501,7 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
     th, td { padding: 9px; border-bottom: 1px solid #303848; text-align: left; }
     .ok { color: var(--ok); font-weight: 800; }
     @media (max-width: 760px) {
-      .meta, .scores { grid-template-columns: 1fr; }
+      .meta, .scores, .comparison-grid { grid-template-columns: 1fr; }
       button { width: 100%; }
     }
   </style>
@@ -443,12 +538,48 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
       </label>
       ${phrases
         .map(
-          (phrase, phraseIndex) => `<article data-phrase-id="${escapeHtml(phrase.id)}">
+          (phrase, phraseIndex) => {
+            const comparison = comparisonsById.get(phrase.id)
+            return `<article data-phrase-id="${escapeHtml(phrase.id)}">
         <h2>${escapeHtml(phrase.title)}</h2>
         <p>${escapeHtml(phrase.description)}</p>
         <p><strong>Lyrics:</strong> ${escapeHtml(phrase.lyricLine)}</p>
         <audio controls src="${escapeHtml(phrase.audioHref)}"></audio>
         <p class="${phrase.gates.passed ? 'ok' : ''}">${phrase.gates.passed ? 'WAV gate passed' : escapeHtml(phrase.gates.problems.join('; '))}</p>
+        ${
+          comparison
+            ? `<section aria-label="V3 versus legacy V2 comparison">
+          <h3>V3 vs legacy V2</h3>
+          <div class="comparison-grid">
+            <div>
+              <h3>Current V3 synthetic</h3>
+              <audio controls src="${escapeHtml(phrase.audioHref)}"></audio>
+              <p class="comparison-note">${phrase.gates.passed ? 'V3 WAV gate passed' : escapeHtml(phrase.gates.problems.join('; '))}</p>
+            </div>
+            <div>
+              <h3>Legacy V2 baseline</h3>
+              <audio controls src="${escapeHtml(comparison.audioHref)}"></audio>
+              <p class="comparison-note">${comparison.gates.passed ? 'V2 WAV gate passed' : escapeHtml(comparison.gates.problems.join('; '))}</p>
+              <p class="comparison-note">${escapeHtml(comparison.coverageText || comparison.warningText || 'Legacy V2 status captured.')}</p>
+            </div>
+          </div>
+          <label>V3 preference over legacy V2
+            <select data-comparison-index="${comparison.comparisonIndex}" data-comparison-score required>
+              <option value="">-</option>
+              <option value="1">1 - V2 is better</option>
+              <option value="2">2 - V3 is worse or unclear</option>
+              <option value="3">3 - roughly tied</option>
+              <option value="4">4 - V3 is clearly better</option>
+              <option value="5">5 - V3 is dramatically better</option>
+            </select>
+            <span class="score-help">Community release expects V3 to be clearly better than the old bundled V2 baseline.</span>
+          </label>
+          <label>Comparison notes
+            <textarea data-comparison-index="${comparison.comparisonIndex}" data-comparison-notes placeholder="What improved or regressed compared with V2?"></textarea>
+          </label>
+        </section>`
+            : ''
+        }
         <fieldset>
           <legend>Scores</legend>
           <div class="scores">
@@ -470,7 +601,8 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
         <label>Phrase notes
           <textarea data-phrase-index="${phraseIndex}" data-notes placeholder="What sounded clear or broken?"></textarea>
         </label>
-      </article>`,
+      </article>`
+          },
         )
         .join('\n')}
       <section class="output">
@@ -497,6 +629,7 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
   <script>
     const template = ${jsonForHtml(template)};
     const phrases = ${jsonForHtml(phrasePayload)};
+    const comparisons = ${jsonForHtml(comparisonPayload)};
     const scoreFields = ${jsonForHtml(LISTENING_SCORE_FIELDS)};
     const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
     const reviewerInput = document.querySelector('#reviewer');
@@ -529,6 +662,18 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
           notes,
         };
       });
+      const comparisonScores = comparisons.map((comparison, comparisonIndex) => {
+        const select = document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-score]\`);
+        const notes = document.querySelector(\`[data-comparison-index="\${comparisonIndex}"][data-comparison-notes]\`)?.value ?? '';
+        return {
+          id: comparison.id,
+          title: comparison.title,
+          v3WavPath: phrases.find((phrase) => phrase.id === comparison.id)?.wavPath ?? '',
+          legacyV2WavPath: comparison.wavPath,
+          v3PreferenceScore: select?.value ? Number(select.value) : null,
+          notes,
+        };
+      });
       return {
         ...template,
         reviewer: reviewerInput.value.trim(),
@@ -540,6 +685,7 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
           noRecordingRequired: true,
         },
         phraseScores,
+        comparisonScores,
       };
     }
 
@@ -560,6 +706,15 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
           } else if (score < threshold) {
             problems.push(\`\${phrase.id}: \${field.label} \${score} is below \${threshold}.\`);
           }
+        }
+      }
+      for (const comparison of payload.comparisonScores ?? []) {
+        const score = comparison.v3PreferenceScore;
+        const threshold = payload.thresholds.minV3PreferenceScore ?? 4;
+        if (typeof score !== 'number') {
+          problems.push(\`\${comparison.id}: V3 preference over legacy V2 is not scored.\`);
+        } else if (score < threshold) {
+          problems.push(\`\${comparison.id}: V3 preference \${score} is below \${threshold}.\`);
         }
       }
       return problems;
@@ -595,7 +750,7 @@ export function renderHtml({ phrases, listeningTemplatePath }) {
 `
 }
 
-function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases }) {
+function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, comparisons = [] }) {
   return [
     '# WebUtau Korean V3 Listening Review',
     '',
@@ -607,12 +762,20 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases }) {
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
+    comparisons.length
+      ? 'This pack also includes legacy V2 baseline WAVs. Score whether V3 is clearly better than V2 before release.'
+      : 'Legacy V2 baseline WAVs were not generated for this pack.',
     '',
     '## Phrases',
     '',
     ...phrases.map((phrase) => `- ${phrase.id}: ${phrase.title} (${phrase.lyricLine})`),
+    comparisons.length ? '' : null,
+    comparisons.length ? '## Legacy V2 Comparisons' : null,
+    ...comparisons.map((comparison) => `- ${comparison.id}: ${comparison.audioHref}`),
     '',
-  ].join('\n')
+  ]
+    .filter((line) => line !== null)
+    .join('\n')
 }
 
 async function startViteServer({ cwd, host, port }) {
@@ -767,6 +930,10 @@ function parseArgs(argv) {
       options.out = argv[++index]
     } else if (arg === '--report') {
       options.report = argv[++index]
+    } else if (arg === '--legacy-v2') {
+      options.legacyV2 = argv[++index]
+    } else if (arg === '--no-legacy-v2') {
+      options.compareLegacyV2 = false
     } else if (arg === '--port') {
       options.port = Number(argv[++index])
     } else if (arg === '--headed') {
@@ -781,6 +948,8 @@ function parseArgs(argv) {
           'Options:',
           '  --out path      Listening review output directory',
           '  --report path   Also write manifest JSON to this path',
+          '  --legacy-v2 path Legacy V2 voicebank zip for A/B comparison',
+          '  --no-legacy-v2  Skip legacy V2 comparison audio',
           '  --port n        Port for the temporary Vite server',
           '  --headed        Run Chromium with a visible window',
           '  --clean         Remove output directory before rendering',

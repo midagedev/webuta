@@ -146,12 +146,23 @@ function reviewPackGate(path) {
     if ((report.phraseCount ?? 0) < 4) {
       problems.push('listening review pack must include at least four phrases')
     }
+    if ((report.comparisonCount ?? 0) < 4) {
+      problems.push('listening review pack must include at least four legacy V2 comparison phrases')
+    }
     for (const phrase of report.phrases ?? []) {
       if (phrase.gates?.passed !== true) {
         problems.push(`review phrase ${phrase.id ?? '(unknown)'} did not pass WAV gates`)
       }
       if (phrase.wavPath && !existsSync(phrase.wavPath)) {
         problems.push(`review phrase WAV is missing: ${phrase.wavPath}`)
+      }
+    }
+    for (const comparison of report.comparisons ?? []) {
+      if (comparison.gates?.passed !== true) {
+        problems.push(`legacy V2 comparison ${comparison.id ?? '(unknown)'} did not pass WAV gates`)
+      }
+      if (comparison.wavPath && !existsSync(comparison.wavPath)) {
+        problems.push(`legacy V2 comparison WAV is missing: ${comparison.wavPath}`)
       }
     }
   }
@@ -190,8 +201,20 @@ function listeningScoresGate(path) {
     if (!Array.isArray(scores.phraseScores) || scores.phraseScores.length < 4) {
       problems.push('human listening scores must include at least four phrase scores')
     }
+    for (const [index, comparison] of (scores.comparisonScores ?? []).entries()) {
+      const score = comparison.v3PreferenceScore
+      const threshold = thresholds.minV3PreferenceScore ?? 4
+      if (typeof score !== 'number') {
+        problems.push(`comparison ${comparison.id ?? index} v3PreferenceScore must be scored`)
+      } else if (score < threshold) {
+        problems.push(`comparison ${comparison.id ?? index} v3PreferenceScore ${score} is below ${threshold}`)
+      }
+    }
+    if (!Array.isArray(scores.comparisonScores) || scores.comparisonScores.length < 4) {
+      problems.push('human listening scores must include at least four V2/V3 comparison scores')
+    }
   }
-  return makeGate('human-listening', 'Human listening review scores', path, problems, scores ? { phraseCount: scores.phraseScores?.length ?? 0 } : null)
+  return makeGate('human-listening', 'Human listening review scores', path, problems, scores ? { phraseCount: scores.phraseScores?.length ?? 0, comparisonCount: scores.comparisonScores?.length ?? 0 } : null)
 }
 
 function readmeGate(paths) {
@@ -469,7 +492,7 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open experiments/utau-v3/work/v3-listening-review/index.html, score the generated WAVs in the local scorecard, and save listening-scores.local.json after a human listening pass.')
+    actions.push('Open experiments/utau-v3/work/v3-listening-review/index.html, score the generated V3 WAVs plus V2/V3 comparisons in the local scorecard, and save listening-scores.local.json after a human listening pass.')
   }
   if (problems.some((problem) => problem.includes('github-pages-v3'))) {
     actions.push('Deploy to GitHub Pages and rerun this audit with --pages-url https://midagedev.github.io/webuta/.')

@@ -203,10 +203,13 @@ Recommended coverage shape:
   still feels like a test phrase.
 - [x] Ensure the default phrase uses aliases that exist in V3.
 - [x] Render default demo to WAV and archive diagnostics.
-- [ ] Run listening review against V2 and require V3 to be clearly better.
+- [x] Generate browser-rendered V2/V3 comparison WAVs and require V3 to score
+  clearly better than legacy V2 in the release audit.
 - [x] Add an offline listening scorecard that plays generated V3 WAVs and
   exports the `listening-scores.local.json` expected by the release audit,
   without asking anyone to record a voice.
+- [ ] Collect human listening scores for the V3 phrases and V2/V3 comparison
+  fields; do not synthesize or fake these reviewer scores.
 - [ ] Add screenshots and README copy that match the final UI.
 
 ### M8. Community Release Gate
@@ -280,14 +283,17 @@ Current verified V3 evidence:
   visible, desktop/mobile overflow checks pass, and the exported WAV is 44.1 kHz
   mono 16-bit PCM, 6.56 seconds, 578384 bytes.
 - `npm run voicebank:review-v3` prepares a browser-rendered listening review
-  pack at `experiments/utau-v3/work/v3-listening-review/`: 4 WAV phrases
-  covering first-run demo, batchim release, common CV attacks, and vowel color;
-  all pass 44.1 kHz mono 16-bit WAV gates. The generated `index.html` is now an
-  offline scorecard that lets a reviewer enter 1-5 scores and download the
+  pack at `experiments/utau-v3/work/v3-listening-review/`: 4 V3 WAV phrases
+  covering first-run demo, batchim release, common CV attacks, and vowel color,
+  plus 4 legacy V2 baseline comparison WAVs when `webuta-ko-lite.zip` is
+  present. All 8 WAVs pass 44.1 kHz mono 16-bit WAV gates. The generated
+  `index.html` is now an offline scorecard that lets a reviewer enter 1-5 V3
+  phrase scores, V2/V3 preference scores, and download the
   `listening-scores.local.json` required by `npm run release:audit-utau`.
   Human listening scores are still required before community-ready release.
-- The offline scorecard has a Playwright regression test that fills all score
-  controls, generates JSON, and verifies the no-recording review metadata.
+- The offline scorecard has Playwright regression tests that fill all score
+  controls, generate JSON, verify the no-recording review metadata, and ensure
+  V2/V3 comparison scores are exported.
 - `npm run voicebank:pitch-v3` passes on the default zip: 615/615 samples
   audited, maximum median pitch error about 4.5 cents, maximum body drift about
   10.3 cents, and minimum median F0 confidence about 0.984.
@@ -327,6 +333,9 @@ Current verified V3 evidence:
   requires manifest/readme/license evidence that the default V3 voicebank is
   fully synthetic, DSP-generated, and not recorded, cloned, or rendered from a
   third-party TTS/model output.
+- Release audit now requires the listening review pack and human score file to
+  include four V2/V3 comparison entries, with V3 preference scores of at least
+  4/5 before community release.
 - `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit.json`:
   blocked only by missing human listening scores and missing Pages deployment
   evidence before deploy; the local synthetic-origin gate passes on the real
