@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Download, Music2, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
+  import { Check, Download, FilePlus, Music2, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatVoicebankCoverage } from '../app/ui'
@@ -11,6 +11,7 @@
     rendered: RenderedAudio | null
     isRendering: boolean
     isPlaying: boolean
+    onNewProject: () => void
     onResetDemoProject: () => void
     onApplyLyricLine: () => void
     onOpenCompose: () => void
@@ -25,6 +26,7 @@
     rendered,
     isRendering,
     isPlaying,
+    onNewProject,
     onResetDemoProject,
     onApplyLyricLine,
     onOpenCompose,
@@ -40,6 +42,28 @@
   const voiceStepLabel = $derived(isVoicebankReady ? '준비됨' : '로딩')
   const playStepLabel = $derived(isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
   const exportStepLabel = $derived(rendered ? '다운로드' : '자동 생성')
+  const nextActionTitle = $derived(isRendering ? '렌더 중' : isPlaying ? '멈추기' : rendered ? 'WAV 받기' : '먼저 들어보기')
+  const nextActionDetail = $derived(
+    isRendering
+      ? 'WAV를 만드는 중'
+      : isPlaying
+        ? '지금 재생 중'
+        : rendered
+          ? '파일 준비 완료'
+          : isVoicebankReady
+            ? '기본 보컬 준비 완료'
+            : '기본 보컬 로딩 중',
+  )
+  const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
+  const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 다운로드' : '스타터 재생')
+
+  async function handleNextAction() {
+    if (rendered && !isPlaying) {
+      await onDownloadWav()
+      return
+    }
+    await onPlayPause()
+  }
 </script>
 
 <section class="starter-guide" aria-label="First run guide">
@@ -53,6 +77,35 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{coverageLabel}</span>
       <span>{voicebankLabel}</span>
     </div>
+  </div>
+
+  <div class="starter-now" aria-label="Starter next action">
+    <div class="starter-now-copy">
+      <span>지금 할 일</span>
+      <strong>{nextActionTitle}</strong>
+      <em>{nextActionDetail}</em>
+    </div>
+    <div class="starter-lyric-line" aria-label="Default lyric preview">
+      <span>가사</span>
+      <strong>{lyricPreview}</strong>
+    </div>
+    <button
+      type="button"
+      class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
+      aria-label={nextActionAria}
+      onclick={() => void handleNextAction()}
+      disabled={isRendering}
+    >
+      {#if rendered && !isPlaying}
+        <Download size={18} aria-hidden="true" />
+      {:else if isPlaying}
+        <Music2 size={18} aria-hidden="true" />
+      {:else}
+        <Play size={18} aria-hidden="true" />
+      {/if}
+      <span>{nextActionTitle}</span>
+      <strong>{nextActionMeta}</strong>
+    </button>
   </div>
 
   <ol class="starter-path" aria-label="Starter path">
@@ -113,6 +166,11 @@
       <Wand2 size={17} aria-hidden="true" />
       <span>멜로디</span>
       <strong>compose</strong>
+    </button>
+    <button type="button" class="starter-step" aria-label="새 프로젝트" onclick={onNewProject}>
+      <FilePlus size={17} aria-hidden="true" />
+      <span>새 프로젝트</span>
+      <strong>blank</strong>
     </button>
     <button type="button" class="starter-step ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
       <RotateCcw size={17} aria-hidden="true" />

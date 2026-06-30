@@ -97,15 +97,18 @@ describe('App editing workflow', () => {
     const path = within(guide).getByLabelText('Starter path')
 
     expect(within(guide).getByText('첫 보컬 스케치')).toBeTruthy()
-    expect(within(guide).getByText('도 히 도 히 다 이 스 키')).toBeTruthy()
+    expect(within(guide).getByText('지금 할 일')).toBeTruthy()
+    expect(within(guide).getAllByText('먼저 들어보기').length).toBeGreaterThan(0)
+    expect(within(guide).getAllByText('도 히 도 히 다 이 스 키').length).toBeGreaterThan(0)
     expect(within(path).getByText('01')).toBeTruthy()
     expect(within(path).getByText('보이스')).toBeTruthy()
     expect(within(path).getByText('02')).toBeTruthy()
     expect(within(path).getByText('재생')).toBeTruthy()
     expect(within(path).getByText('03')).toBeTruthy()
     expect(within(path).getByText('WAV')).toBeTruthy()
-    expect(within(guide).getByRole('button', { name: '스타터 재생' })).toBeTruthy()
+    expect(within(guide).getAllByRole('button', { name: '스타터 재생' }).length).toBeGreaterThanOrEqual(1)
     expect(within(guide).getByRole('button', { name: '스타터 WAV 다운로드' })).toBeTruthy()
+    expect(within(guide).getByRole('button', { name: '새 프로젝트' })).toBeTruthy()
 
     fireEvent.click(within(guide).getByRole('button', { name: '가사 라인 적용' }))
 
@@ -543,7 +546,7 @@ describe('App editing workflow', () => {
   it('generates and applies a melody from compose mode lyrics', async () => {
     render(App)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Compose' }))
+    fireEvent.click(screen.getByRole('button', { name: '작곡' }))
 
     fireEvent.input(screen.getByLabelText('Compose mode').querySelector('textarea') as HTMLTextAreaElement, {
       target: { value: '사랑해' },

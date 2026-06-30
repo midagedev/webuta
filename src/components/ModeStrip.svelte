@@ -30,19 +30,19 @@
   <div class="mode-tabs">
     <button type="button" class={`mode-tab ${activeMode === 'compose' ? 'active' : ''}`} onclick={() => onMode('compose')}>
       <Wand2 size={17} aria-hidden="true" />
-      <span>Compose</span>
+      <span>작곡</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'pattern' ? 'active' : ''}`} onclick={() => onMode('pattern')}>
       <Mic size={17} aria-hidden="true" />
-      <span>Pattern</span>
+      <span>편집</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'rows' ? 'active' : ''}`} onclick={() => onMode('rows')}>
       <Scissors size={17} aria-hidden="true" />
-      <span>Rows</span>
+      <span>노트</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'mixer' ? 'active' : ''}`} onclick={() => onMode('mixer')}>
       <Gauge size={17} aria-hidden="true" />
-      <span>Mixer</span>
+      <span>믹서</span>
     </button>
   </div>
   <div class="session-chip">

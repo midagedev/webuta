@@ -1474,6 +1474,7 @@
         {rendered}
         {isRendering}
         {isPlaying}
+        onNewProject={newProject}
         onResetDemoProject={resetDemoProject}
         onApplyLyricLine={applyLyricLine}
         onOpenCompose={() => (activeMode = 'compose')}
