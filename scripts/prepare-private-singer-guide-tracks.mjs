@@ -216,7 +216,7 @@ function guideReadme(manifest) {
     '- Do not train on these guide WAVs.',
     '- Do not commit these generated guide WAVs.',
     '- Record dry vocal WAVs into `../wavs/` using the exact filenames from `../cue-sheet.csv`.',
-    '- Trim count-in silence before running `npm run neural:audit-recordings`.',
+    '- Trim count-in silence before running `npm run experimental:neural:audit-recordings`.',
     '- Keep mic, room, gain, and singer distance consistent across the whole session.',
     '',
     `Generated takes: ${manifest.totals.takeCount}`,

@@ -251,6 +251,27 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('synthetic-origin: V3 license.txt must include "TTS service output"')
   })
 
+  it('blocks release when an active V3 workflow script points to recording or TTS tooling', async () => {
+    const fixture = await makeFixture({
+      packageJson: {
+        scripts: {
+          'voicebank:v3': 'node scripts/generate-korean-v3-synthetic-voicebank.mjs',
+          'voicebank:supertonic': 'python3 scripts/generate-korean-supertonic-voicebank.py',
+          'release:audit-utau': 'node scripts/audit-utau-community-release.mjs',
+        },
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('no-recording-workflow: active script voicebank:supertonic must not require supertonic')
+    expect(report.nextActions.join('\n')).toContain('experimental: or legacy:')
+  })
+
   it('blocks release when README screenshots are placeholders instead of real captures', async () => {
     const fixture = await makeFixture()
     writeFileSync(join(fixture.root, 'docs', 'screenshots', 'webuta-mobile.jpg'), 'jpg')
@@ -278,6 +299,7 @@ async function makeFixture(overrides = {}) {
   mkdirSync(join(root, 'src'), { recursive: true })
   mkdirSync(join(root, 'public', 'voicebanks'), { recursive: true })
   mkdirSync(join(root, 'public', 'review', 'v3', 'audio', 'legacy-v2'), { recursive: true })
+  writeJson(join(root, 'package.json'), overrides.packageJson ?? makePackageJson())
   writeJson(join(work, 'v3-voicebank-audit.json'), passReport('v3-voicebank-audit-pass'))
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
@@ -568,6 +590,22 @@ function makeSampleReviewReport() {
       { fileName: 'samples/cv_0000_ga_F4.wav', alias: '가', onset: 'ㄱ' },
     ],
     listeningQueue: ['first-run-demo', 'coda-release-check', 'clear-cv-line', 'vowel-color-check'].map((id) => ({ id })),
+  }
+}
+
+function makePackageJson() {
+  return {
+    scripts: {
+      'voicebank:v3': 'node scripts/generate-korean-v3-synthetic-voicebank.mjs',
+      'voicebank:audit-v3': 'node scripts/audit-korean-v3-voicebank.mjs',
+      'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
+      'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
+      'release:audit-utau': 'node scripts/audit-utau-community-release.mjs',
+      'smoke:browser': 'node scripts/smoke-browser-render.mjs',
+      'experimental:smoke:recorder': 'node scripts/smoke-private-singer-recorder.mjs',
+      'experimental:neural:serve-recorder': 'node scripts/serve-private-singer-recorder.mjs',
+      'legacy:voicebank:supertonic': 'python3 scripts/generate-korean-supertonic-voicebank.py',
+    },
   }
 }
 

@@ -286,33 +286,33 @@ for the releasable default UTAU pack.
     when a consent-reviewed singer explicitly wants to participate.
   - Requires written consent and release terms.
   - Needs a recording script, quiet room, pitch guide, and consistent mic setup.
-  - `npm run neural:prepare-private-singer` now generates an ignored recording
+  - `npm run experimental:neural:prepare-private-singer` now generates an ignored recording
     capture kit with cue sheet, lyric sidecars, consent template, and a private
     registry template. It also writes per-take USTX JSON score guides and
     neural render request fixtures so recorded audio has a reproducible
     pitch/timing reference.
-  - `npm run neural:audit-prompt-coverage` checks the capture kit before
+  - `npm run experimental:neural:audit-prompt-coverage` checks the capture kit before
     recording. It verifies take count, estimated minutes, prompt/tag diversity,
     key balance, full Korean onset/vowel coverage, broad batchim coverage,
     score request coverage, and pitch range.
-  - `npm run neural:prepare-guides` renders ignored headphone guide WAVs from
+  - `npm run experimental:neural:prepare-guides` renders ignored headphone guide WAVs from
     those request fixtures so the singer has count-in clicks and target pitches
     while recording. These guide WAVs are never training data, and audit/ingest
     excludes `guides/`, `guide-tracks/`, and `*.guide.wav` artifacts. Full
     guide regeneration removes stale guide WAVs that are no longer in the
     current session manifest.
-  - `npm run neural:serve-recorder` starts a local browser recording companion
+  - `npm run experimental:neural:serve-recorder` starts a local browser recording companion
     for the pack. It shows each take, plays the matching headphone guide,
     records dry microphone audio, and saves the WAV to the exact expected
     `wavs/*.wav` path.
-  - `npm run neural:audit-recordings` compares recorded WAVs against each
+  - `npm run experimental:neural:audit-recordings` compares recorded WAVs against each
     take's neural request guide. It gates duration, clipping, RMS, silence, F0
     coverage, pitch error, onset timing, missing onsets, and headphone-guide
     lyric tick leakage so guide audio does not contaminate training data.
-  - `npm run smoke:recorder` creates a temporary capture pack, generates a
+  - `npm run experimental:smoke:recorder` creates a temporary capture pack, generates a
     guide, opens the recorder in Chromium, checks desktop/mobile layout, and
     saves a synthetic WAV through the browser upload path before a real session.
-  - `npm run smoke:training-pipeline` creates a temporary consent-reviewed
+  - `npm run experimental:smoke:training-pipeline` creates a temporary consent-reviewed
     smoke pack, writes synthetic score-following dry vocals, then verifies the
     recording audit, dataset audit, ingest, readiness, and OpenVPI seed steps.
     This is a pipeline-shape proof, not a production voice-quality proof.
@@ -935,7 +935,7 @@ Current status as of 2026-06-30:
   pitch range.
 - [x] Headphone guide WAVs generated; the current manifest has 220 takes and
   the guide folder has 220 matching `*.guide.wav` files.
-- [x] `npm run smoke:recorder` passed for desktop/mobile recorder layout,
+- [x] `npm run experimental:smoke:recorder` passed for desktop/mobile recorder layout,
   guide playback path, and WAV upload route.
 - [x] `npm run smoke:dataset-pipeline` passed for the dataset-first CSD
   research baseline path through audit, ingest, readiness, OpenVPI seed, Korean
@@ -960,7 +960,7 @@ Current status as of 2026-06-30:
   correctly reports `decision=release-blocked` until human listening scores are
   filled. GTSinger remains research/noncommercial evidence, not public model
   release evidence.
-- [x] `npm run smoke:training-pipeline` passed for the synthetic post-recording
+- [x] `npm run experimental:smoke:training-pipeline` passed for the synthetic post-recording
   audit, ingest, readiness, and OpenVPI seed path.
 - [x] `npm run neural:inspect-intake` now reports an explicit
   `acquisition.stage` so the AI Hub path cannot be mistaken for acquired data

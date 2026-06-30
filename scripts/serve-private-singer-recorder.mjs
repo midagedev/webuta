@@ -683,7 +683,7 @@ function recorderHtml() {
 
     async function playGuide() {
       if (!currentTake().guide.exists) {
-        setStatus('Guide WAV is missing. Run npm run neural:prepare-guides first.');
+        setStatus('Guide WAV is missing. Run npm run experimental:neural:prepare-guides first.');
         return;
       }
       guideAudio.currentTime = 0;

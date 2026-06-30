@@ -19,6 +19,7 @@ const DEFAULTS = {
   publicReviewManifest: 'public/review/v3/review-manifest.json',
   sampleReview: 'experiments/utau-v3/work/v3-sample-review-report.json',
   listeningScores: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
+  packageJson: 'package.json',
   readme: 'README.md',
   licenseBoundaries: 'docs/LICENSE_BOUNDARIES.md',
   bundledVoicebank: 'src/bundledVoicebank.ts',
@@ -72,6 +73,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     publicReviewGate(paths),
     sampleReviewGate(paths.sampleReview),
     listeningScoresGate(paths.listeningScores),
+    noRecordingWorkflowGate(paths.packageJson),
     readmeGate(paths),
     bundledVoicebankGate(bundled),
     await syntheticOriginGate(paths.voicebankZip, bundled),
@@ -301,6 +303,58 @@ function listeningScoresGate(path) {
     validateListeningScores(scores, problems)
   }
   return makeGate('human-listening', 'Human listening review scores', path, problems, scores ? { phraseCount: scores.phraseScores?.length ?? 0, comparisonCount: scores.comparisonScores?.length ?? 0 } : null)
+}
+
+function noRecordingWorkflowGate(path) {
+  const problems = []
+  const pkg = readOptionalJson(path, 'package.json', problems)
+  const inspectedScripts = []
+  const inactiveScripts = []
+  const forbidden = [
+    'record',
+    'recorder',
+    'recording',
+    'private-singer',
+    'supertonic',
+    'tts',
+  ]
+  if (pkg) {
+    const scripts = pkg.scripts
+    if (!scripts || typeof scripts !== 'object' || Array.isArray(scripts)) {
+      problems.push('package.json must include a scripts object')
+    } else {
+      if (!scripts['voicebank:v3']) {
+        problems.push('package.json must expose voicebank:v3 as the self-generated V3 builder')
+      }
+      if (!scripts['release:audit-utau']) {
+        problems.push('package.json must expose release:audit-utau')
+      }
+      for (const [name, command] of Object.entries(scripts)) {
+        const script = String(command)
+        if (/^(experimental|legacy):/u.test(name)) {
+          inactiveScripts.push(name)
+          continue
+        }
+        if (!/^(voicebank|release|smoke):/u.test(name)) {
+          continue
+        }
+        inspectedScripts.push(name)
+        const haystack = `${name} ${script}`.toLowerCase()
+        for (const token of forbidden) {
+          if (haystack.includes(token)) {
+            problems.push(`active script ${name} must not require ${token}; move it under experimental: or legacy:`)
+            break
+          }
+        }
+      }
+    }
+  }
+  return makeGate('no-recording-workflow', 'Active V3 npm workflow stays self-generated', path, problems, {
+    inspectedScriptCount: inspectedScripts.length,
+    inspectedScripts,
+    inactiveExperimentalOrLegacyCount: inactiveScripts.length,
+    inactiveExperimentalOrLegacyScripts: inactiveScripts,
+  })
 }
 
 function readmeGate(paths) {
@@ -811,6 +865,9 @@ function nextActionsForProblems(problems) {
   }
   if (problems.some((problem) => problem.includes('sample-review'))) {
     actions.push('Run npm run voicebank:sample-review-v3 after regenerating V3 package, oto, pitch, loop, and listening-review evidence.')
+  }
+  if (problems.some((problem) => problem.includes('no-recording-workflow'))) {
+    actions.push('Keep the active release commands on npm run voicebank:v3 and release:audit-utau; move recording, private-singer, TTS, or legacy generator commands under experimental: or legacy:.')
   }
   if (problems.some((problem) => problem.includes('phoneme-clarity'))) {
     actions.push('Run npm run voicebank:clarity-v3 after regenerating the V3 zip so vowel color and consonant onset evidence is current.')

@@ -47,7 +47,7 @@ This creates the older V1/V2 formant/procedural fallback pack with no external m
 python3 -m venv .tmp-supertonic
 . .tmp-supertonic/bin/activate
 pip install supertonic
-WEBUTA_SUPERTONIC_VOICE=F3 python scripts/generate-korean-supertonic-voicebank.py
+WEBUTA_SUPERTONIC_VOICE=F3 npm run legacy:voicebank:supertonic
 ```
 
 The script writes `public/voicebanks/webuta-ko-lite.zip` with:

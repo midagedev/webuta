@@ -40,7 +40,7 @@ export async function smokePrivateSingerRecorder(options = {}) {
       throw new Error('Recorder session has no takes.')
     }
     if (sessionBefore.totals.guideCount < 1) {
-      throw new Error('Recorder session has no guide WAVs. Run npm run neural:prepare-guides first.')
+      throw new Error('Recorder session has no guide WAVs. Run npm run experimental:neural:prepare-guides first.')
     }
 
     const desktop = await inspectRecorderPage(page)

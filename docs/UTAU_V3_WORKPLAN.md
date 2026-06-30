@@ -272,6 +272,9 @@ Recommended coverage shape:
 - [x] Published V3 listening scorecard is available as a GitHub Pages asset.
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
+- [x] Release audit checks active `voicebank:*`, `release:*`, and non-experimental
+  `smoke:*` npm scripts so the public V3 workflow cannot silently depend on
+  recording, private-singer, TTS, or legacy generator commands.
 - [x] UTAU zip import path rejects malformed or oversized voicebank packages
   before parsing samples in the browser.
 - [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
@@ -334,6 +337,9 @@ Current verified V3 evidence:
   `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
   glottal body layer, deterministic soft saturation, and clearer `ㅡ`/`ㅢ`
   vowel separation without using recordings, datasets, TTS, or model output.
+- Recording/private-singer prototype scripts are kept only under
+  `experimental:*`, and the old Supertonic path is kept only under
+  `legacy:voicebank:supertonic`; neither is part of the V3 release workflow.
 - `npm run voicebank:audit-v3` passes on the default zip: all 615 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
