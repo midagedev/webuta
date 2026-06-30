@@ -66,12 +66,44 @@ export type VoicebankRenderWarningReport = {
 
 type ZipFileMap = Record<string, JSZip.JSZipObject>
 
-export async function loadVoicebankZip(file: File): Promise<LoadedVoicebank> {
+export type VoicebankZipSafetyLimits = {
+  maxZipBytes: number
+  maxFiles: number
+  maxOtoFiles: number
+  maxWavFiles: number
+  maxSingleOtoBytes: number
+  maxSingleWavBytes: number
+  maxTotalWavBytes: number
+}
+
+export type LoadVoicebankZipOptions = {
+  safetyLimits?: Partial<VoicebankZipSafetyLimits>
+}
+
+export const DEFAULT_VOICEBANK_ZIP_SAFETY_LIMITS: VoicebankZipSafetyLimits = {
+  maxZipBytes: 768 * 1024 * 1024,
+  maxFiles: 12000,
+  maxOtoFiles: 128,
+  maxWavFiles: 6000,
+  maxSingleOtoBytes: 4 * 1024 * 1024,
+  maxSingleWavBytes: 32 * 1024 * 1024,
+  maxTotalWavBytes: 1536 * 1024 * 1024,
+}
+
+export async function loadVoicebankZip(file: File, options: LoadVoicebankZipOptions = {}): Promise<LoadedVoicebank> {
+  const safetyLimits = resolveVoicebankZipSafetyLimits(options.safetyLimits)
+  if (file.size > safetyLimits.maxZipBytes) {
+    throw new Error(
+      `Voicebank zip is too large (${formatBytes(file.size)}). Maximum supported import size is ${formatBytes(safetyLimits.maxZipBytes)}.`,
+    )
+  }
+
   const buffer = await file.arrayBuffer()
   const zip = await loadZipWithFallback(buffer)
   const files = zip.files
   const otoPaths = Object.keys(files).filter((path) => /(^|\/)oto\.ini$/i.test(path) && !files[path].dir)
   const wavPaths = Object.keys(files).filter((path) => /\.wav$/i.test(path) && !files[path].dir)
+  validateVoicebankZipSafety(file, files, otoPaths, wavPaths, safetyLimits)
   if (otoPaths.length === 0) {
     throw new Error('No oto.ini files were found in this voicebank zip.')
   }
@@ -106,9 +138,110 @@ export async function loadVoicebankZip(file: File): Promise<LoadedVoicebank> {
       if (!sample) {
         throw new Error(`Missing sample: ${entry.path}`)
       }
+      validateZipMemberSize(sample, safetyLimits.maxSingleWavBytes, `WAV sample ${entry.path}`)
       return sample.async('arraybuffer')
     },
   }
+}
+
+function resolveVoicebankZipSafetyLimits(overrides: Partial<VoicebankZipSafetyLimits> = {}) {
+  return {
+    ...DEFAULT_VOICEBANK_ZIP_SAFETY_LIMITS,
+    ...overrides,
+  }
+}
+
+function validateVoicebankZipSafety(
+  file: File,
+  files: ZipFileMap,
+  otoPaths: string[],
+  wavPaths: string[],
+  limits: VoicebankZipSafetyLimits,
+) {
+  const paths = Object.keys(files)
+  if (paths.length > limits.maxFiles) {
+    throw new Error(
+      `Voicebank zip has too many entries (${paths.length}). Maximum supported entry count is ${limits.maxFiles}.`,
+    )
+  }
+  const unsafePath = paths.find((path) => isUnsafeZipPath(path))
+  if (unsafePath) {
+    throw new Error(`Voicebank zip contains an unsafe path: ${unsafePath}`)
+  }
+  if (otoPaths.length > limits.maxOtoFiles) {
+    throw new Error(
+      `Voicebank zip has too many oto.ini files (${otoPaths.length}). Maximum supported oto.ini count is ${limits.maxOtoFiles}.`,
+    )
+  }
+  if (wavPaths.length > limits.maxWavFiles) {
+    throw new Error(
+      `Voicebank zip has too many WAV samples (${wavPaths.length}). Maximum supported WAV count is ${limits.maxWavFiles}.`,
+    )
+  }
+
+  for (const otoPath of otoPaths) {
+    validateZipMemberSize(files[otoPath], limits.maxSingleOtoBytes, `oto.ini ${otoPath}`)
+  }
+
+  let totalWavBytes = 0
+  for (const wavPath of wavPaths) {
+    const wavSize = zipMemberSize(files[wavPath])
+    if (wavSize === undefined) {
+      continue
+    }
+    if (wavSize > limits.maxSingleWavBytes) {
+      throw new Error(
+        `WAV sample ${wavPath} is too large (${formatBytes(wavSize)}). Maximum supported sample size is ${formatBytes(limits.maxSingleWavBytes)}.`,
+      )
+    }
+    totalWavBytes += wavSize
+  }
+  if (totalWavBytes > limits.maxTotalWavBytes) {
+    throw new Error(
+      `Voicebank zip expands to too much WAV audio (${formatBytes(totalWavBytes)}). Maximum supported WAV payload is ${formatBytes(limits.maxTotalWavBytes)}.`,
+    )
+  }
+
+  if (file.size > 0 && totalWavBytes > 0 && totalWavBytes / file.size > 20) {
+    throw new Error('Voicebank zip looks unusually compressed and was blocked for browser safety.')
+  }
+}
+
+function validateZipMemberSize(file: JSZip.JSZipObject, maxBytes: number, label: string) {
+  const size = zipMemberSize(file)
+  if (size !== undefined && size > maxBytes) {
+    throw new Error(`${label} is too large (${formatBytes(size)}). Maximum supported size is ${formatBytes(maxBytes)}.`)
+  }
+}
+
+function zipMemberSize(file: JSZip.JSZipObject) {
+  const metadata = (file as JSZip.JSZipObject & {
+    _data?: {
+      compressedSize?: number
+      uncompressedSize?: number
+    }
+  })._data
+  const size = metadata?.uncompressedSize ?? metadata?.compressedSize
+  return typeof size === 'number' && Number.isFinite(size) && size >= 0 ? size : undefined
+}
+
+function isUnsafeZipPath(path: string) {
+  const normalized = path.replaceAll('\\', '/')
+  return (
+    normalized.startsWith('/') ||
+    /^[A-Za-z]:/.test(normalized) ||
+    normalized.split('/').some((segment) => segment === '..')
+  )
+}
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  }
+  if (bytes >= 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`
+  }
+  return `${bytes} B`
 }
 
 async function loadZipWithFallback(buffer: ArrayBuffer) {

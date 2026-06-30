@@ -196,6 +196,9 @@ Recommended coverage shape:
 - [x] Add pitch-layer selection by target MIDI note and alias.
 - [x] Add per-note render warnings for fallback, missing alias, or extreme pitch shift.
 - [x] Verify imported Teto and bundled V3 both render without regressions.
+- [x] Add browser-safe voicebank zip import limits for zip size, entry count,
+  `oto.ini` count/size, WAV count/size, total WAV payload, suspicious
+  compression ratio, and unsafe paths.
 
 ### M6. Vocal-Synth DAW Workflow
 
@@ -257,6 +260,8 @@ Recommended coverage shape:
 - [x] Published V3 listening scorecard is available as a GitHub Pages asset.
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
+- [x] UTAU zip import path rejects malformed or oversized voicebank packages
+  before parsing samples in the browser.
 - [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
 - [x] GitHub Pages deployment loads all 8 public V3/V2 listening review WAVs
   and matches their deployed byte sizes against local assets.
@@ -387,6 +392,10 @@ Current verified V3 evidence:
   published `review/v3/index.html` scorecard.
 - Browser renderer selects the closest explicit pitch layer for the requested
   note tone; generated V3 tests verify `도` resolves to C4/F4/A4 layers.
+- Voicebank zip import now applies browser safety limits before parsing: the
+  loader accepts Teto-sized normal UTAU packages but rejects unsafe paths,
+  abnormal entry counts, oversized `oto.ini`/WAV members, excessive expanded WAV
+  payload, and suspicious compression ratios.
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while

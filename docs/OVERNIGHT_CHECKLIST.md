@@ -30,6 +30,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Add a Kasane Teto UTAU entry point that links to the official download page and accepts a user-selected zip.
 - [x] Add selected-note UTAU sample preview so a loaded singer can be auditioned
   without rendering the whole song.
+- [x] Add browser-side voicebank zip safety checks for oversized packages,
+  unsafe paths, abnormal file counts, and oversized WAV/oto members.
 - [x] Add a non-redistributed `test-assets/` workflow and `npm run asset:teto` downloader for the official test zip.
 - [x] Add explicit `npm run test:teto` verification for the official zip.
 - [x] Use the official Teto zip to render at least one WAV through the browser app.
@@ -55,6 +57,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
 - [x] App UI re-inspects rendered WAV headers and marks compatible output as DAW-ready.
 - [x] App UI shows whether the imported voicebank is saved locally, restored locally, or session-only.
+- [x] Unit tests verify unsafe or oversized UTAU zip imports are rejected before
+  sample parsing/playback.
 - [x] WebUtau project file tests verify native JSON export/import round-trips.
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.

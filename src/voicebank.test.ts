@@ -30,6 +30,52 @@ describe('voicebank zip loader', () => {
     expect(await voicebank.readSample(entry)).toBeInstanceOf(ArrayBuffer)
   })
 
+  it('rejects voicebank zips above the browser-safe import size', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')
+    zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'too-large.zip')
+
+    await expect(loadVoicebankZip(file, { safetyLimits: { maxZipBytes: file.size - 1 } })).rejects.toThrow(
+      /Voicebank zip is too large/,
+    )
+  })
+
+  it('rejects unsafe paths inside voicebank zips', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/oto.ini', '../evil.wav=あ,0,120,0,40,20\n')
+    zip.file('Teto/../evil.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'unsafe-path.zip')
+
+    await expect(loadVoicebankZip(file)).rejects.toThrow(/unsafe path/)
+  })
+
+  it('rejects voicebank zips with too many WAV samples', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/oto.ini', 'a.wav=あ,0,120,0,40,20\n')
+    zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('Teto/i.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('Teto/u.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'too-many-wavs.zip')
+
+    await expect(loadVoicebankZip(file, { safetyLimits: { maxWavFiles: 2 } })).rejects.toThrow(/too many WAV/)
+  })
+
+  it('rejects oversized WAV members before sample playback', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/oto.ini', 'big.wav=あ,0,120,0,40,20\n')
+    zip.file('Teto/big.wav', new Uint8Array(16))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'oversized-sample.zip')
+
+    await expect(loadVoicebankZip(file, { safetyLimits: { maxSingleWavBytes: 8 } })).rejects.toThrow(
+      /WAV sample .* too large/,
+    )
+  })
+
   it('maps Korean guide lyrics to Japanese CV aliases', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')
