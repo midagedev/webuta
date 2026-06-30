@@ -16,6 +16,7 @@ describe('default demo render audit report', () => {
         'voicebank license metadata visible',
         'selected-note vibrato controls visible',
         'selected-note duplicate controls visible',
+        'classic UST import/export controls visible',
         'community listening review scorecard linked',
         'selected-note UTAU sample preview available',
         'desktop WAV download',

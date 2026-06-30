@@ -222,6 +222,7 @@ Recommended coverage shape:
   warnings, so users can see whether the active UTAU zip includes license/readme
   material before rendering.
 - [x] Add project save/load/export/import.
+- [x] Add classic UST import/export beside USTX for UTAU community handoff.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
 ### M7. First-Run Musical Quality
@@ -414,7 +415,7 @@ Current verified V3 evidence:
 - Browser top bar now separates New Project, Duplicate Project, and Reset Demo
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while
-  USTX import/export remains available for OpenUtau handoff.
+  classic UST and USTX import/export remain available for UTAU/OpenUtau handoff.
 - Selected notes now expose DAW-style vibrato controls. The setting is saved in
   `.webutau.json`, mapped to/from USTX `vibrato` blocks, and rendered as actual
   pitch movement in both the UTAU sample renderer and browser fallback voice.

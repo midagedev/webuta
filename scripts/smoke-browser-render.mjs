@@ -368,6 +368,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Selected note vibrato').getByText('비브라토').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 복제' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByTitle('UST 내보내기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.locator('input[accept*=".ust"]').waitFor({ state: 'attached', timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
   await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -393,6 +395,7 @@ async function assertDefaultV3DemoReady(page) {
     'voicebank license metadata visible',
     'selected-note vibrato controls visible',
     'selected-note duplicate controls visible',
+    'classic UST import/export controls visible',
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]

@@ -148,7 +148,7 @@ function isProjectSource(value: unknown) {
   }
   return (
     typeof value.fileName === 'string' &&
-    (value.format === 'ustx-yaml' || value.format === 'ustx-json' || value.format === 'webuta')
+    (value.format === 'ust' || value.format === 'ustx-yaml' || value.format === 'ustx-json' || value.format === 'webuta')
   )
 }
 

@@ -4,6 +4,7 @@
     Download,
     FileDown,
     FilePlus,
+    FileText,
     FolderOpen,
     Info,
     Pause,
@@ -43,6 +44,7 @@
     onVoicebankFile: (file: File) => Promise<void>
     onSaveProject: () => void
     onExportUstx: () => void
+    onExportUst: () => void
     onUndo: () => void
     onRedo: () => void
     onOpenLicenses: () => void
@@ -76,6 +78,7 @@
     onVoicebankFile,
     onSaveProject,
     onExportUstx,
+    onExportUst,
     onUndo,
     onRedo,
     onOpenLicenses,
@@ -129,6 +132,9 @@
     </button>
     <button type="button" class="toolbar-button project-action export-ustx-action" title="USTX 내보내기" onclick={onExportUstx}>
       <FileDown size={20} aria-hidden="true" />
+    </button>
+    <button type="button" class="toolbar-button project-action export-ust-action" title="UST 내보내기" onclick={onExportUst}>
+      <FileText size={19} aria-hidden="true" />
     </button>
     <button type="button" class="toolbar-button edit-action" title="되돌리기" onclick={onUndo} disabled={!canUndo}>
       <Undo2 size={19} aria-hidden="true" />
@@ -222,7 +228,7 @@
     <input
       bind:this={projectInput}
       type="file"
-      accept=".webutau.json,.ustx,.yaml,.yml,.json"
+      accept=".webutau.json,.ust,.ustx,.yaml,.yml,.json"
       class="hidden-input"
       onchange={(event) => void handleProjectFileChange(event)}
     />

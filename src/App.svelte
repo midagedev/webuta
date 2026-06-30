@@ -41,6 +41,7 @@
   import { fetchLocalNeuralModelCard } from './renderers/localNeuralRenderer'
   import { localNeuralEndpoint, neuralModelCards as initialNeuralModelCards, renderers, rendererCapabilities } from './renderers/registry'
   import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
+  import { parseUst, serializeUst } from './ust'
   import { parseUstx, serializeUstx } from './ustx'
   import {
     TICKS_PER_BEAT,
@@ -1174,6 +1175,12 @@
     notice = 'USTX saved'
   }
 
+  function downloadUst() {
+    const blob = new Blob([serializeUst(project)], { type: 'text/plain;charset=utf-8' })
+    downloadBlob(blob, `${sanitizeFileName(project.name)}.ust`)
+    notice = 'UST saved'
+  }
+
   function downloadWebutaProject() {
     const blob = new Blob([serializeWebutaProject(project)], { type: 'application/json;charset=utf-8' })
     downloadBlob(blob, `${sanitizeFileName(project.name)}.webutau.json`)
@@ -1351,6 +1358,10 @@
   }
 
   function parseProjectFile(text: string, fileName: string) {
+    if (/\.ust$/iu.test(fileName)) {
+      return parseUst(text, fileName)
+    }
+
     if (isWebutaProjectFileName(fileName)) {
       return parseWebutaProject(text, fileName)
     }
@@ -1358,6 +1369,9 @@
     try {
       return parseWebutaProject(text, fileName)
     } catch {
+      if (/\[#SETTING\]|\[#\d+\]|\[#TRACKEND\]/iu.test(text)) {
+        return parseUst(text, fileName)
+      }
       return parseUstx(text, fileName)
     }
   }
@@ -1395,6 +1409,7 @@
     onVoicebankFile={handleVoicebankFile}
     onSaveProject={downloadWebutaProject}
     onExportUstx={downloadUstx}
+    onExportUst={downloadUst}
     onUndo={undoProject}
     onRedo={redoProject}
     onOpenLicenses={() => (isAboutOpen = true)}

@@ -48,7 +48,7 @@ export type SongProject = {
   notes: SongNote[]
   source?: {
     fileName: string
-    format: 'ustx-yaml' | 'ustx-json' | 'webuta'
+    format: 'ust' | 'ustx-yaml' | 'ustx-json' | 'webuta'
   }
 }
 

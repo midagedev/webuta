@@ -134,7 +134,47 @@ describe('App editing workflow', () => {
     expect(screen.getAllByText('imported-hook.webutau.json').length).toBeGreaterThan(0)
   })
 
-  it('saves native WebUtau project JSON and keeps USTX export available', async () => {
+  it('imports a classic UST project file', async () => {
+    const { container } = render(App)
+    const projectInput = container.querySelector('input[accept*=".ust"]') as HTMLInputElement
+
+    fireEvent.change(projectInput, {
+      target: {
+        files: [
+          new File(
+            [
+              [
+                '[#SETTING]',
+                'Tempo=132',
+                'ProjectName=Imported Classic UST',
+                '[#0000]',
+                'Length=240',
+                'Lyric=R',
+                'NoteNum=60',
+                '[#0001]',
+                'Length=480',
+                'Lyric=도',
+                'NoteNum=64',
+                '[#TRACKEND]',
+              ].join('\r\n'),
+            ],
+            'classic-hook.ust',
+            { type: 'text/plain' },
+          ),
+        ],
+      },
+    })
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Imported Classic UST')
+      expect(loadSavedProject()?.notes).toEqual([
+        expect.objectContaining({ lyric: '도', tone: 64, start: 240, duration: 480 }),
+      ])
+    })
+    expect(screen.getAllByText('classic-hook.ust').length).toBeGreaterThan(0)
+  })
+
+  it('saves native WebUtau project JSON and keeps USTX/UST export available', async () => {
     render(App)
 
     fireEvent.click(screen.getByTitle('WebUtau 프로젝트 저장'))
@@ -149,6 +189,13 @@ describe('App editing workflow', () => {
     const ustxBlob = createObjectURL.mock.calls.at(-1)?.[0] as Blob
     await expect(ustxBlob.text()).resolves.toContain('ustx_version')
     expect(screen.getAllByText('USTX saved').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByTitle('UST 내보내기'))
+
+    const ustBlob = createObjectURL.mock.calls.at(-1)?.[0] as Blob
+    await expect(ustBlob.text()).resolves.toContain('[#SETTING]')
+    await expect(ustBlob.text()).resolves.toContain('Lyric=도')
+    expect(screen.getAllByText('UST saved').length).toBeGreaterThan(0)
   })
 
   it('restores the last imported voicebank zip', async () => {

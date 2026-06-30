@@ -8,7 +8,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [ ] A project can be created without reading OpenUtau documentation.
 - [ ] Notes can be edited with lyric, pitch, duration, and tempo controls.
 - [ ] WAV render is 44.1 kHz PCM and suitable for common DAW import.
-- [ ] USTX import/export keeps a bridge to OpenUtau projects.
+- [ ] UST/USTX import/export keeps a bridge to UTAU/OpenUtau projects.
 - [ ] Rendering engine boundary can later swap the demo renderer for OpenUtau-compatible synthesis.
 - [ ] License boundaries are documented before bundling any singer, model, or external engine.
 - [ ] Kasane Teto UTAU works through a user-imported official OpenUTAU zip, not a bundled copy.
@@ -19,6 +19,7 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Scaffold Svelte/Vite/TypeScript app.
 - [x] Add USTX YAML/JSON parser for modern OpenUtau project shape.
 - [x] Add USTX export for round-tripping simple vocal projects.
+- [x] Add classic UST import/export for UTAU community project exchange.
 - [x] Add native `.webutau.json` project save/import for browser-native work.
 - [x] Add touch-friendly first-screen editor with project actions, note editor, loop controls, and piano roll.
 - [x] Add browser-safe demo vocal renderer as fallback.
@@ -68,8 +69,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
 - [x] Runtime npm dependency notices generated in `docs/THIRD_PARTY_NOTICES.md`.
 - [x] Manual WAV/DAW verification checklist added in `docs/WAV_DAW_QA.md`.
 - [x] App tests cover selected-note duplicate/split/delete controls and selected-note loop region display.
-- [x] App tests cover selected-note vibrato controls; project/USTX tests verify
-  vibrato round-trip, and renderer tests verify vibrato changes rendered audio.
+- [x] App tests cover selected-note vibrato controls; project/UST/USTX tests
+  verify vibrato round-trip, and renderer tests verify vibrato changes rendered audio.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 

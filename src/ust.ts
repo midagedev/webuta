@@ -1,0 +1,225 @@
+import { TICKS_PER_BEAT, type NoteVibrato, type SongNote, type SongProject, type Track, type VoicePart } from './types'
+import { makeId, sanitizeFileName } from './music'
+import { normalizeNoteVibrato, sanitizeOptionalNoteVibrato } from './vibrato'
+
+type UstSection = {
+  id: string
+  fields: Map<string, string>
+}
+
+export function parseUst(text: string, fileName = 'project.ust'): SongProject {
+  const sections = parseUstSections(text)
+  const settings = sections.find((section) => section.id.toUpperCase() === 'SETTING')
+  const noteSections = sections.filter((section) => /^\d+$/u.test(section.id)).sort((a, b) => Number(a.id) - Number(b.id))
+  const firstNoteTempo = noteSections.map((section) => numberField(section, 'Tempo', NaN)).find(Number.isFinite)
+  const bpm = numberField(settings, 'Tempo', firstNoteTempo ?? 120)
+  const projectName = stringField(settings, 'ProjectName', fileName.replace(/\.[^.]+$/u, '') || 'Imported UST')
+  const trackId = 'track-0'
+  const partId = 'part-0'
+  const singer = stringField(settings, 'VoiceDir', '')
+  let cursor = 0
+  const notes: SongNote[] = []
+
+  for (const [index, section] of noteSections.entries()) {
+    const duration = Math.max(1, Math.round(numberField(section, 'Length', TICKS_PER_BEAT)))
+    const lyric = stringField(section, 'Lyric', 'a')
+    const tone = Math.round(numberField(section, 'NoteNum', 60))
+    if (!isRestLyric(lyric)) {
+      const vibrato = parseUstVibrato(stringField(section, 'VBR', ''))
+      notes.push({
+        id: `note-${index}`,
+        trackId,
+        partId,
+        start: cursor,
+        duration,
+        tone,
+        lyric,
+        ...(vibrato ? { vibrato } : {}),
+      })
+    }
+    cursor += duration
+  }
+
+  const tracks: Track[] = [
+    {
+      id: trackId,
+      name: stringField(settings, 'TrackName', 'Main Vocal'),
+      color: 'Blue',
+      singer,
+      phonemizer: 'classic UTAU',
+    },
+  ]
+  const parts: VoicePart[] = [
+    {
+      id: partId,
+      trackId,
+      name: 'UST Part',
+      start: 0,
+      duration: Math.max(cursor, TICKS_PER_BEAT * 4),
+    },
+  ]
+
+  return {
+    id: makeId('project'),
+    name: projectName,
+    comment: stringField(settings, 'Comment', ''),
+    bpm,
+    beatPerBar: 4,
+    beatUnit: 4,
+    tracks,
+    parts,
+    notes,
+    source: {
+      fileName,
+      format: 'ust',
+    },
+  }
+}
+
+export function serializeUst(project: SongProject) {
+  const sections: string[] = [
+    '[#VERSION]',
+    'UST Version1.2',
+    '[#SETTING]',
+    `Tempo=${formatNumber(project.bpm, 2)}`,
+    'Tracks=1',
+    `ProjectName=${cleanUstValue(project.name)}`,
+    `VoiceDir=${cleanUstValue(project.tracks[0]?.singer ?? '')}`,
+    `OutFile=${sanitizeFileName(project.name)}.wav`,
+    'CacheDir=UCache',
+    'Tool1=',
+    'Tool2=',
+    'Mode2=True',
+  ]
+  const notes = [...project.notes].sort((a, b) => a.start - b.start || a.tone - b.tone)
+  let cursor = 0
+  let sectionIndex = 0
+
+  for (const note of notes) {
+    if (note.start > cursor) {
+      pushNoteSection(sections, sectionIndex, {
+        length: note.start - cursor,
+        lyric: 'R',
+        tone: 60,
+      })
+      sectionIndex += 1
+      cursor = note.start
+    }
+    pushNoteSection(sections, sectionIndex, {
+      length: note.duration,
+      lyric: note.lyric,
+      tone: note.tone,
+      vibrato: note.vibrato,
+    })
+    sectionIndex += 1
+    cursor = Math.max(cursor, note.start + note.duration)
+  }
+
+  sections.push('[#TRACKEND]')
+  return `${sections.join('\r\n')}\r\n`
+}
+
+function parseUstSections(text: string) {
+  const sections: UstSection[] = []
+  let current: UstSection | null = null
+  for (const rawLine of text.replace(/^\uFEFF/u, '').split(/\r?\n/u)) {
+    const line = rawLine.trimEnd()
+    if (!line) {
+      continue
+    }
+    const sectionMatch = line.match(/^\[#(.+)\]$/u)
+    if (sectionMatch) {
+      current = {
+        id: sectionMatch[1],
+        fields: new Map(),
+      }
+      sections.push(current)
+      continue
+    }
+    if (!current) {
+      continue
+    }
+    const equals = line.indexOf('=')
+    if (equals === -1) {
+      current.fields.set(line, '')
+    } else {
+      current.fields.set(line.slice(0, equals), line.slice(equals + 1))
+    }
+  }
+  return sections
+}
+
+function pushNoteSection(
+  sections: string[],
+  index: number,
+  note: {
+    length: number
+    lyric: string
+    tone: number
+    vibrato?: NoteVibrato
+  },
+) {
+  sections.push(`[#${String(index).padStart(4, '0')}]`)
+  sections.push(`Length=${Math.max(1, Math.round(note.length))}`)
+  sections.push(`Lyric=${cleanUstValue(note.lyric)}`)
+  sections.push(`NoteNum=${Math.round(note.tone)}`)
+  sections.push('Intensity=100')
+  sections.push('Modulation=0')
+  if (note.vibrato) {
+    sections.push(`VBR=${serializeUstVibrato(note.vibrato)}`)
+  }
+}
+
+function parseUstVibrato(value: string) {
+  if (!value.trim()) {
+    return undefined
+  }
+  const values = value.split(',').map((item) => Number(item.trim()))
+  const lengthPercent = values[0]
+  const periodMs = values[1]
+  const depthCents = values[2]
+  if (!Number.isFinite(lengthPercent) || !Number.isFinite(periodMs) || !Number.isFinite(depthCents)) {
+    return undefined
+  }
+  return sanitizeOptionalNoteVibrato({
+    enabled: depthCents > 0 && lengthPercent > 0,
+    depthCents,
+    rateHz: periodMs > 0 ? 1000 / periodMs : undefined,
+    startPercent: 100 - lengthPercent,
+  })
+}
+
+function serializeUstVibrato(vibrato: NoteVibrato) {
+  const normalized = normalizeNoteVibrato(vibrato)
+  const lengthPercent = Math.max(0, Math.min(100, Math.round(100 - normalized.startPercent)))
+  const periodMs = Math.round(1000 / normalized.rateHz)
+  const depthCents = normalized.enabled ? Math.round(normalized.depthCents) : 0
+  return [lengthPercent, periodMs, depthCents, 10, 10, 0, 0].join(',')
+}
+
+function stringField(section: UstSection | undefined, key: string, fallback = '') {
+  const value = section?.fields.get(key)
+  return value === undefined ? fallback : value
+}
+
+function numberField(section: UstSection | undefined, key: string, fallback: number) {
+  const value = section?.fields.get(key)
+  if (value === undefined || value.trim() === '') {
+    return fallback
+  }
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function isRestLyric(lyric: string) {
+  const trimmed = lyric.trim()
+  return !trimmed || trimmed === 'R' || trimmed.toLowerCase() === 'rest' || trimmed === '쉼'
+}
+
+function cleanUstValue(value: string) {
+  return value.replace(/[\r\n]/gu, ' ').trim()
+}
+
+function formatNumber(value: number, fractionDigits: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(fractionDigits)
+}
