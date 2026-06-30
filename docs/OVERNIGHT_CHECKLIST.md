@@ -46,6 +46,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
   and WAV export DAW-ready.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
+- [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and
+  match local byte sizes.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.
 - [x] App UI re-inspects rendered WAV headers and marks compatible output as DAW-ready.
 - [x] App UI shows whether the imported voicebank is saved locally, restored locally, or session-only.

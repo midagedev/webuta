@@ -252,6 +252,8 @@ Recommended coverage shape:
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
 - [x] GitHub Pages deployment loads the V3 default zip with a cache-busted URL.
+- [x] GitHub Pages deployment loads all 8 public V3/V2 listening review WAVs
+  and matches their deployed byte sizes against local assets.
 - [ ] `npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/`
   passes.
 
@@ -389,7 +391,9 @@ Current verified V3 evidence:
   include four V2/V3 comparison entries, with V3 preference scores of at least
   4/5 before community release.
 - Release audit now requires the published `public/review/v3/` scorecard,
-  sanitized public manifest, and all V3/V2 review WAVs before community release.
+  sanitized public manifest, and all V3/V2 review WAVs before community release;
+  with `--pages-url`, it HEAD-checks all 8 deployed WAV files and verifies their
+  byte sizes against local assets.
 - Release audit now requires the V3 sample review preflight report to be ready,
   no-recording, and free of hard sample flags before community release.
 - Release audit now verifies README screenshots are readable PNG/JPEG files

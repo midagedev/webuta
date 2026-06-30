@@ -142,6 +142,44 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('does not match 20260630-v3-synthetic-web-1')
   })
 
+  it('blocks release when deployed V3 listening review WAVs are missing', async () => {
+    const fixture = await makeFixture({
+      pagesReport: {
+        ok: true,
+        voicebank: {
+          file: 'webuta-ko-v3.zip',
+          version: '20260630-v3-synthetic-web-1',
+          bytes: 593,
+        },
+        reviewAudio: makePagesReviewAudio().map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                status: 404,
+                bytes: 0,
+              }
+            : item,
+        ),
+        checks: [
+          'pages app loaded',
+          'pages V3 zip cache-busted',
+          'pages V3 zip bytes match local bundle',
+          'pages V3 listening review scorecard loaded',
+          'pages V3 listening review audio loaded',
+        ],
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('github-pages-v3: GitHub Pages V3 audio audio/01-first-run-demo.wav returned HTTP 404')
+    expect(report.problems.join('\n')).toContain('audio/01-first-run-demo.wav is unexpectedly small')
+  })
+
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
     const fixture = await makeFixture({ badSyntheticOrigin: true })
 
@@ -248,7 +286,9 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip cache-busted',
         'pages V3 zip bytes match local bundle',
         'pages V3 listening review scorecard loaded',
+        'pages V3 listening review audio loaded',
       ],
+      reviewAudio: makePagesReviewAudio(),
     },
   )
   return { root, pagesReport }
@@ -403,6 +443,33 @@ function makePublicReviewManifest() {
       }
     }),
   }
+}
+
+function makePagesReviewAudio() {
+  const phraseFiles = ['01-first-run-demo.wav', '02-coda-release-check.wav', '03-clear-cv-line.wav', '04-vowel-color-check.wav']
+  return [
+    ...phraseFiles.map((fileName) => ({
+      role: 'V3',
+      id: fileName.replace(/\.wav$/u, ''),
+      href: `audio/${fileName}`,
+      url: `https://example.test/review/v3/audio/${fileName}`,
+      status: 200,
+      bytes: 200_000,
+      localBytes: 200_000,
+    })),
+    ...phraseFiles.map((fileName) => {
+      const legacyName = fileName.replace('.wav', '-legacy-v2.wav')
+      return {
+        role: 'legacy V2',
+        id: fileName.replace(/\.wav$/u, ''),
+        href: `audio/legacy-v2/${legacyName}`,
+        url: `https://example.test/review/v3/audio/legacy-v2/${legacyName}`,
+        status: 200,
+        bytes: 200_000,
+        localBytes: 200_000,
+      }
+    }),
+  ]
 }
 
 function makeSampleReviewReport() {

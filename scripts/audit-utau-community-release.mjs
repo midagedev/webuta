@@ -78,7 +78,13 @@ export async function auditUtauCommunityRelease(options = {}) {
     readmeGate(paths),
     bundledVoicebankGate(bundled),
     await syntheticOriginGate(paths.voicebankZip, bundled),
-    await pagesGate({ bundled, pagesUrl: options.pagesUrl, pagesReport: options.pagesReport, voicebankZipPath: paths.voicebankZip }),
+    await pagesGate({
+      bundled,
+      pagesUrl: options.pagesUrl,
+      pagesReport: options.pagesReport,
+      voicebankZipPath: paths.voicebankZip,
+      publicReviewManifestPath: paths.publicReviewManifest,
+    }),
   ]
   const problems = gates.flatMap((gate) => gate.problems.map((problem) => `${gate.id}: ${problem}`))
   const report = {
@@ -551,7 +557,7 @@ async function readZipText(zip, path, problems) {
   return file.async('string')
 }
 
-async function pagesGate({ bundled, pagesUrl, pagesReport, voicebankZipPath }) {
+async function pagesGate({ bundled, pagesUrl, pagesReport, voicebankZipPath, publicReviewManifestPath }) {
   const problems = []
   let evidence = null
   const localBytes = voicebankZipPath && existsSync(voicebankZipPath) ? readFileSync(voicebankZipPath).byteLength : null
@@ -561,11 +567,11 @@ async function pagesGate({ bundled, pagesUrl, pagesReport, voicebankZipPath }) {
       validatePagesEvidence(evidence, bundled, localBytes, problems)
     }
   } else if (pagesUrl) {
-    evidence = await fetchPagesEvidence(pagesUrl, bundled, localBytes, problems)
+    evidence = await fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewManifestPath, problems)
   } else {
     problems.push('missing GitHub Pages deployment evidence; pass --pages-url or --pages-report')
   }
-  return makeGate('github-pages-v3', 'GitHub Pages loads cache-busted bundled V3 zip', pagesReport ? resolve(pagesReport) : pagesUrl ?? null, problems, evidence)
+  return makeGate('github-pages-v3', 'GitHub Pages loads cache-busted bundled V3 zip and review WAVs', pagesReport ? resolve(pagesReport) : pagesUrl ?? null, problems, evidence)
 }
 
 function validatePagesEvidence(evidence, bundled, localBytes, problems) {
@@ -582,14 +588,21 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     problems.push(`GitHub Pages V3 zip bytes ${evidence.voicebank?.bytes ?? 'missing'} do not match local bundled zip ${localBytes}`)
   }
   const checks = new Set(evidence.checks ?? [])
-  for (const check of ['pages app loaded', 'pages V3 zip cache-busted', 'pages V3 zip bytes match local bundle', 'pages V3 listening review scorecard loaded']) {
+  for (const check of [
+    'pages app loaded',
+    'pages V3 zip cache-busted',
+    'pages V3 zip bytes match local bundle',
+    'pages V3 listening review scorecard loaded',
+    'pages V3 listening review audio loaded',
+  ]) {
     if (!checks.has(check)) {
       problems.push(`GitHub Pages evidence missing check: ${check}`)
     }
   }
+  validateReviewAudioEvidence(evidence.reviewAudio ?? [], problems)
 }
 
-async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
+async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewManifestPath, problems) {
   const base = new URL(pagesUrl)
   if (!base.pathname.endsWith('/')) {
     base.pathname += '/'
@@ -600,6 +613,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
   zipUrl.searchParams.set('v', bundled.version)
   const review = await fetchWithProblem(reviewUrl, 'GitHub Pages V3 listening review', problems)
   const zip = await fetchWithProblem(zipUrl, 'GitHub Pages V3 zip', problems, { method: 'HEAD' })
+  const reviewAudio = await fetchReviewAudioEvidence(reviewUrl, publicReviewManifestPath, problems)
   const evidence = {
     ok: problems.length === 0,
     url: base.href,
@@ -612,6 +626,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
       bytes: Number(zip?.headers.get('content-length') ?? 0),
       localBytes,
     },
+    reviewAudio,
     checks: [],
   }
   if (app?.ok) {
@@ -622,6 +637,9 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
   }
   if (review?.ok) {
     evidence.checks.push('pages V3 listening review scorecard loaded')
+  }
+  if (reviewAudio.length >= 8 && reviewAudio.every((item) => item.status === 200 && item.bytes >= 180_000 && item.bytes === item.localBytes)) {
+    evidence.checks.push('pages V3 listening review audio loaded')
   }
   if (zip?.ok && localBytes !== null && evidence.voicebank.bytes === localBytes) {
     evidence.checks.push('pages V3 zip bytes match local bundle')
@@ -634,6 +652,85 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, problems) {
   }
   evidence.ok = problems.length === 0
   return evidence
+}
+
+async function fetchReviewAudioEvidence(reviewUrl, publicReviewManifestPath, problems) {
+  const manifestProblems = []
+  const manifest = readOptionalJson(publicReviewManifestPath, 'public V3 listening review manifest', manifestProblems)
+  for (const problem of manifestProblems) {
+    problems.push(problem)
+  }
+  if (!manifest) {
+    return []
+  }
+  const items = publicReviewAudioItems(manifest, publicReviewManifestPath)
+  const evidence = []
+  for (const item of items) {
+    const url = new URL(item.href, reviewUrl)
+    const response = await fetchWithProblem(url, `GitHub Pages ${item.role} review audio ${item.id}`, problems, { method: 'HEAD' })
+    const bytes = Number(response?.headers.get('content-length') ?? 0)
+    evidence.push({
+      role: item.role,
+      id: item.id,
+      href: item.href,
+      url: url.href,
+      status: response?.status ?? null,
+      bytes,
+      localBytes: item.localBytes,
+    })
+    if (response?.ok && item.localBytes !== null && bytes !== item.localBytes) {
+      problems.push(`GitHub Pages ${item.role} review audio ${item.href} bytes ${bytes} do not match local file ${item.localBytes}`)
+    }
+    if (response?.ok && bytes < 180_000) {
+      problems.push(`GitHub Pages ${item.role} review audio ${item.href} is unexpectedly small: ${bytes} bytes`)
+    }
+  }
+  if (items.length < 8) {
+    problems.push(`GitHub Pages V3 listening review audio list has ${items.length} files; expected at least 8`)
+  }
+  return evidence
+}
+
+function validateReviewAudioEvidence(reviewAudio, problems) {
+  if (!Array.isArray(reviewAudio) || reviewAudio.length < 8) {
+    problems.push('GitHub Pages evidence must include at least eight V3/V2 review audio files')
+    return
+  }
+  for (const item of reviewAudio) {
+    if (item.status !== 200) {
+      problems.push(`GitHub Pages ${item.role ?? 'review'} audio ${item.href ?? item.url ?? 'missing'} returned HTTP ${item.status ?? 'missing'}`)
+    }
+    if (Number(item.bytes ?? 0) < 180_000) {
+      problems.push(`GitHub Pages ${item.role ?? 'review'} audio ${item.href ?? item.url ?? 'missing'} is unexpectedly small: ${item.bytes ?? 'missing'} bytes`)
+    }
+    if (item.localBytes !== undefined && item.localBytes !== null && item.bytes !== item.localBytes) {
+      problems.push(`GitHub Pages ${item.role ?? 'review'} audio ${item.href ?? item.url ?? 'missing'} bytes ${item.bytes ?? 'missing'} do not match local file ${item.localBytes}`)
+    }
+  }
+}
+
+function publicReviewAudioItems(manifest, publicReviewManifestPath) {
+  const reviewDir = dirname(publicReviewManifestPath)
+  return [
+    ...audioItemsFrom(manifest.phrases ?? [], 'V3'),
+    ...audioItemsFrom(manifest.comparisons ?? [], 'legacy V2'),
+  ].map((item) => {
+    const localPath = resolve(reviewDir, item.href)
+    return {
+      ...item,
+      localBytes: existsSync(localPath) ? readFileSync(localPath).byteLength : null,
+    }
+  })
+}
+
+function audioItemsFrom(items, role) {
+  return items
+    .map((item, index) => ({
+      role,
+      id: item.id ?? `${role}-${index + 1}`,
+      href: item.audioHref ?? item.wavPath,
+    }))
+    .filter((item) => typeof item.href === 'string' && item.href.trim().length > 0)
 }
 
 async function fetchWithProblem(url, label, problems, init = {}) {
