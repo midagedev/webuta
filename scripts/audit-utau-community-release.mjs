@@ -468,7 +468,7 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Fill experiments/utau-v3/work/v3-listening-review/listening-scores.local.json from the template after a human listening pass.')
+    actions.push('Open experiments/utau-v3/work/v3-listening-review/index.html, score the generated WAVs in the local scorecard, and save listening-scores.local.json after a human listening pass.')
   }
   if (problems.some((problem) => problem.includes('github-pages-v3'))) {
     actions.push('Deploy to GitHub Pages and rerun this audit with --pages-url https://midagedev.github.io/webuta/.')

@@ -204,6 +204,9 @@ Recommended coverage shape:
 - [x] Ensure the default phrase uses aliases that exist in V3.
 - [x] Render default demo to WAV and archive diagnostics.
 - [ ] Run listening review against V2 and require V3 to be clearly better.
+- [x] Add an offline listening scorecard that plays generated V3 WAVs and
+  exports the `listening-scores.local.json` expected by the release audit,
+  without asking anyone to record a voice.
 - [ ] Add screenshots and README copy that match the final UI.
 
 ### M8. Community Release Gate
@@ -279,8 +282,12 @@ Current verified V3 evidence:
 - `npm run voicebank:review-v3` prepares a browser-rendered listening review
   pack at `experiments/utau-v3/work/v3-listening-review/`: 4 WAV phrases
   covering first-run demo, batchim release, common CV attacks, and vowel color;
-  all pass 44.1 kHz mono 16-bit WAV gates. Human listening scores are still
-  required before community-ready release.
+  all pass 44.1 kHz mono 16-bit WAV gates. The generated `index.html` is now an
+  offline scorecard that lets a reviewer enter 1-5 scores and download the
+  `listening-scores.local.json` required by `npm run release:audit-utau`.
+  Human listening scores are still required before community-ready release.
+- The offline scorecard has a Playwright regression test that fills all score
+  controls, generates JSON, and verifies the no-recording review metadata.
 - `npm run voicebank:pitch-v3` passes on the default zip: 615/615 samples
   audited, maximum median pitch error about 4.5 cents, maximum body drift about
   10.3 cents, and minimum median F0 confidence about 0.984.
@@ -323,7 +330,7 @@ Current verified V3 evidence:
   47944175 bytes.
 - GitHub Actions Pages run `28455792293` passed build, tests, artifact upload,
   and deploy for commit `677a1f6`.
-- `npm test`: 80 passed / 1 skipped files, 346 passed / 2 skipped tests.
+- `npm test`: 80 passed / 1 skipped files, 348 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

@@ -22,6 +22,44 @@ const REVIEW_THRESHOLDS = {
   bitsPerSample: 16,
 }
 
+export const LISTENING_SCORE_FIELDS = [
+  {
+    key: 'koreanClarityScore',
+    label: 'Korean clarity',
+    prompt: 'Can a Korean listener recognize the intended lyric without reading along?',
+  },
+  {
+    key: 'vowelStabilityScore',
+    label: 'Vowel stability',
+    prompt: 'Do sustained vowels hold pitch and color without wobble or collapse?',
+  },
+  {
+    key: 'consonantClarityScore',
+    label: 'Consonant clarity',
+    prompt: 'Are attacks and final consonants clear without chopped starts or repeated codas?',
+  },
+  {
+    key: 'musicalityScore',
+    label: 'Musicality',
+    prompt: 'Does the phrase feel usable as a musical vocal sketch rather than a test beep?',
+  },
+  {
+    key: 'artifactScore',
+    label: 'Artifact control',
+    prompt: 'Are clicks, chatter, clipping, and loop seams controlled enough for sharing?',
+  },
+]
+
+const LISTENING_SCORE_SCALE = '1=unusable, 3=prototype, 5=community-release-ready'
+
+const LISTENING_THRESHOLDS = {
+  minKoreanClarityScore: 4,
+  minVowelStabilityScore: 4,
+  minConsonantClarityScore: 4,
+  minMusicalityScore: 4,
+  minArtifactScore: 4,
+}
+
 export function fixedListeningReviewProjects() {
   return [
     {
@@ -167,7 +205,7 @@ export async function prepareUtauV3ListeningReview(options = {}) {
       problems,
       nextSteps: [
         `Open ${indexHtmlPath}`,
-        `Fill ${join(outDir, 'listening-scores.local.json')} from ${listeningTemplatePath}`,
+        `Use the HTML scorecard to download ${join(outDir, 'listening-scores.local.json')}`,
         'Tune generator consonant/noise/formant profiles if any phrase scores below 4/5.',
       ],
     }
@@ -196,23 +234,24 @@ export function makeListeningTemplate(phrases) {
     reviewer: '',
     reviewedAt: '',
     decision: '',
-    scoreScale: '1=unusable, 3=prototype, 5=community-release-ready',
-    thresholds: {
-      minKoreanClarityScore: 4,
-      minVowelStabilityScore: 4,
-      minConsonantClarityScore: 4,
-      minMusicalityScore: 4,
-      minArtifactScore: 4,
+    scoreScale: LISTENING_SCORE_SCALE,
+    instructions: [
+      'Listen to the generated WAV phrases on headphones or neutral speakers.',
+      'Do not record new voice material for this review; score only the bundled synthetic V3 renders.',
+      'Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds.',
+    ],
+    reviewEnvironment: {
+      playback: '',
+      reviewerNotes: '',
+      noRecordingRequired: true,
     },
+    rubric: LISTENING_SCORE_FIELDS,
+    thresholds: LISTENING_THRESHOLDS,
     phraseScores: phrases.map((phrase) => ({
       id: phrase.id,
       title: phrase.title,
       wavPath: phrase.wavPath,
-      koreanClarityScore: null,
-      vowelStabilityScore: null,
-      consonantClarityScore: null,
-      musicalityScore: null,
-      artifactScore: null,
+      ...Object.fromEntries(LISTENING_SCORE_FIELDS.map((field) => [field.key, null])),
       notes: '',
     })),
   }
@@ -315,7 +354,17 @@ function note(id, start, duration, tone, lyric) {
   return { id, start, duration, tone, lyric }
 }
 
-function renderHtml({ phrases, listeningTemplatePath }) {
+export function renderHtml({ phrases, listeningTemplatePath }) {
+  const template = makeListeningTemplate(phrases)
+  const phrasePayload = phrases.map((phrase) => ({
+    id: phrase.id,
+    title: phrase.title,
+    description: phrase.description,
+    lyricLine: phrase.lyricLine,
+    wavPath: phrase.wavPath,
+    audioHref: phrase.audioHref,
+    gates: phrase.gates,
+  }))
   return `<!doctype html>
 <html lang="ko">
 <head>
@@ -323,33 +372,116 @@ function renderHtml({ phrases, listeningTemplatePath }) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WebUtau Korean V3 Listening Review</title>
   <style>
-    body { margin: 0; background: #11131a; color: #f4f7fb; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    main { width: min(960px, calc(100vw - 28px)); margin: 0 auto; padding: 28px 0 48px; }
-    h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 48px); }
-    p { color: #b8c2d1; line-height: 1.55; }
+    :root { color-scheme: dark; --bg: #11131a; --panel: #191d27; --line: #303848; --text: #f4f7fb; --muted: #b8c2d1; --ok: #9cff8a; --warn: #ffd166; --accent: #83f7ff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1100px, calc(100vw - 28px)); margin: 0 auto; padding: 28px 0 48px; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 48px); letter-spacing: 0; }
+    h2, h3 { letter-spacing: 0; }
+    p { color: var(--muted); line-height: 1.55; }
     code { color: #9cff8a; word-break: break-all; }
-    article { display: grid; gap: 10px; margin: 16px 0; padding: 16px; border: 1px solid #2d3544; border-radius: 8px; background: #191d27; }
+    form { display: grid; gap: 16px; }
+    .notice, article, fieldset, .output { border: 1px solid #2d3544; border-radius: 8px; background: var(--panel); }
+    .notice { padding: 14px 16px; }
+    .notice strong { color: var(--accent); }
+    .meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    input, select, textarea, button { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #10131b; color: var(--text); font: inherit; }
+    input, select, textarea { padding: 10px 11px; }
+    textarea { min-height: 82px; resize: vertical; }
+    button { width: auto; padding: 10px 14px; cursor: pointer; font-weight: 800; }
+    article { display: grid; gap: 12px; margin: 16px 0; padding: 16px; }
     audio { width: 100%; }
+    fieldset { margin: 0; padding: 12px; }
+    legend { padding: 0 6px; color: var(--accent); font-weight: 800; }
+    .scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .score-help { min-height: 44px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .output { display: grid; gap: 10px; padding: 16px; }
+    .status { font-weight: 800; }
+    .status.ok { color: var(--ok); }
+    .status.warn { color: var(--warn); }
+    #scoreJson { min-height: 320px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
     table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
     th, td { padding: 9px; border-bottom: 1px solid #303848; text-align: left; }
-    .ok { color: #9cff8a; font-weight: 800; }
+    .ok { color: var(--ok); font-weight: 800; }
+    @media (max-width: 760px) {
+      .meta, .scores { grid-template-columns: 1fr; }
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <main>
     <h1>WebUtau Korean V3 Listening Review</h1>
-    <p>Fill scores in <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
-    ${phrases
-      .map(
-        (phrase) => `<article>
-      <h2>${escapeHtml(phrase.title)}</h2>
-      <p>${escapeHtml(phrase.description)}</p>
-      <p><strong>Lyrics:</strong> ${escapeHtml(phrase.lyricLine)}</p>
-      <audio controls src="${escapeHtml(phrase.audioHref)}"></audio>
-      <p class="${phrase.gates.passed ? 'ok' : ''}">${phrase.gates.passed ? 'WAV gate passed' : escapeHtml(phrase.gates.problems.join('; '))}</p>
-    </article>`,
-      )
-      .join('\n')}
+    <p>Listen to the generated V3 WAVs and generate <code>listening-scores.local.json</code> for the release audit.</p>
+    <div class="notice">
+      <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
+    </div>
+    <p>Template path: <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
+    <form id="scorecardForm">
+      <section class="meta" aria-label="Review metadata">
+        <label>Reviewer
+          <input id="reviewer" autocomplete="name" placeholder="name or handle" required>
+        </label>
+        <label>Reviewed at
+          <input id="reviewedAt" type="datetime-local" required>
+        </label>
+        <label>Decision
+          <select id="decision" required>
+            <option value="">Choose after scoring</option>
+            <option value="community-ready">community-ready</option>
+            <option value="release-ready">release-ready</option>
+            <option value="pass">pass</option>
+            <option value="needs-tuning">needs-tuning</option>
+            <option value="fail">fail</option>
+          </select>
+        </label>
+      </section>
+      <label>Playback notes
+        <input id="playback" placeholder="headphones, speakers, phone speaker, etc.">
+      </label>
+      ${phrases
+        .map(
+          (phrase, phraseIndex) => `<article data-phrase-id="${escapeHtml(phrase.id)}">
+        <h2>${escapeHtml(phrase.title)}</h2>
+        <p>${escapeHtml(phrase.description)}</p>
+        <p><strong>Lyrics:</strong> ${escapeHtml(phrase.lyricLine)}</p>
+        <audio controls src="${escapeHtml(phrase.audioHref)}"></audio>
+        <p class="${phrase.gates.passed ? 'ok' : ''}">${phrase.gates.passed ? 'WAV gate passed' : escapeHtml(phrase.gates.problems.join('; '))}</p>
+        <fieldset>
+          <legend>Scores</legend>
+          <div class="scores">
+            ${LISTENING_SCORE_FIELDS.map(
+              (field) => `<label>${escapeHtml(field.label)}
+                <select data-phrase-index="${phraseIndex}" data-score-key="${escapeHtml(field.key)}" required>
+                  <option value="">-</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+                <span class="score-help">${escapeHtml(field.prompt)}</span>
+              </label>`,
+            ).join('\n')}
+          </div>
+        </fieldset>
+        <label>Phrase notes
+          <textarea data-phrase-index="${phraseIndex}" data-notes placeholder="What sounded clear or broken?"></textarea>
+        </label>
+      </article>`,
+        )
+        .join('\n')}
+      <section class="output">
+        <div class="actions">
+          <button type="button" id="buildJson">Build listening-scores.local.json</button>
+          <button type="button" id="downloadJson">Download JSON</button>
+          <span id="status" class="status warn">Scores not complete.</span>
+        </div>
+        <textarea id="scoreJson" readonly spellcheck="false"></textarea>
+      </section>
+    </form>
     <table>
       <thead><tr><th>Phrase</th><th>Focus</th><th>WAV</th></tr></thead>
       <tbody>
@@ -362,6 +494,102 @@ function renderHtml({ phrases, listeningTemplatePath }) {
       </tbody>
     </table>
   </main>
+  <script>
+    const template = ${jsonForHtml(template)};
+    const phrases = ${jsonForHtml(phrasePayload)};
+    const scoreFields = ${jsonForHtml(LISTENING_SCORE_FIELDS)};
+    const passingDecisions = new Set(['community-ready', 'release-ready', 'pass']);
+    const reviewerInput = document.querySelector('#reviewer');
+    const reviewedAtInput = document.querySelector('#reviewedAt');
+    const decisionInput = document.querySelector('#decision');
+    const playbackInput = document.querySelector('#playback');
+    const output = document.querySelector('#scoreJson');
+    const status = document.querySelector('#status');
+    const downloadButton = document.querySelector('#downloadJson');
+
+    reviewedAtInput.value = toLocalDateTime(new Date());
+    document.querySelector('#buildJson').addEventListener('click', updateOutput);
+    downloadButton.addEventListener('click', downloadJson);
+    document.querySelector('#scorecardForm').addEventListener('input', updateOutput);
+    updateOutput();
+
+    function buildPayload() {
+      const phraseScores = phrases.map((phrase, phraseIndex) => {
+        const scores = Object.fromEntries(scoreFields.map((field) => {
+          const select = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-score-key="\${field.key}"]\`);
+          const value = select?.value ? Number(select.value) : null;
+          return [field.key, value];
+        }));
+        const notes = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-notes]\`)?.value ?? '';
+        return {
+          id: phrase.id,
+          title: phrase.title,
+          wavPath: phrase.wavPath,
+          ...scores,
+          notes,
+        };
+      });
+      return {
+        ...template,
+        reviewer: reviewerInput.value.trim(),
+        reviewedAt: reviewedAtInput.value ? new Date(reviewedAtInput.value).toISOString() : '',
+        decision: decisionInput.value,
+        reviewEnvironment: {
+          playback: playbackInput.value.trim(),
+          reviewerNotes: '',
+          noRecordingRequired: true,
+        },
+        phraseScores,
+      };
+    }
+
+    function validatePayload(payload) {
+      const problems = [];
+      if (!payload.reviewer) problems.push('Reviewer is required.');
+      if (!payload.reviewedAt) problems.push('Reviewed-at time is required.');
+      if (!payload.decision) problems.push('Decision is required.');
+      if (payload.decision && !passingDecisions.has(payload.decision)) {
+        problems.push('Decision will intentionally block release.');
+      }
+      for (const phrase of payload.phraseScores) {
+        for (const field of scoreFields) {
+          const score = phrase[field.key];
+          const threshold = payload.thresholds[\`min\${field.key.charAt(0).toUpperCase()}\${field.key.slice(1)}\`] ?? 4;
+          if (typeof score !== 'number') {
+            problems.push(\`\${phrase.id}: \${field.label} is not scored.\`);
+          } else if (score < threshold) {
+            problems.push(\`\${phrase.id}: \${field.label} \${score} is below \${threshold}.\`);
+          }
+        }
+      }
+      return problems;
+    }
+
+    function updateOutput() {
+      const payload = buildPayload();
+      const problems = validatePayload(payload);
+      output.value = JSON.stringify(payload, null, 2);
+      status.textContent = problems.length === 0 ? 'Release listening scorecard passes.' : problems.slice(0, 3).join(' ');
+      if (problems.length > 3) status.textContent += \` +\${problems.length - 3} more.\`;
+      status.className = \`status \${problems.length === 0 ? 'ok' : 'warn'}\`;
+    }
+
+    function downloadJson() {
+      updateOutput();
+      const blob = new Blob([output.value + '\\n'], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'listening-scores.local.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function toLocalDateTime(date) {
+      const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+      return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+    }
+  </script>
 </body>
 </html>
 `
@@ -376,7 +604,9 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases }) {
     `Open: ${indexHtmlPath}`,
     `Score template: ${listeningTemplatePath}`,
     '',
-    'Review each phrase on headphones or neutral speakers. Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
+    'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
+    'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
+    'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
     '',
     '## Phrases',
     '',
@@ -503,6 +733,10 @@ function escapeHtml(value) {
     .replace(/</gu, '&lt;')
     .replace(/>/gu, '&gt;')
     .replace(/"/gu, '&quot;')
+}
+
+function jsonForHtml(value) {
+  return JSON.stringify(value).replace(/</gu, '\\u003c')
 }
 
 function delay(ms) {
