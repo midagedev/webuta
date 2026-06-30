@@ -559,6 +559,29 @@ describe('App editing workflow', () => {
     expect(screen.getByText(/9 notes/)).toBeTruthy()
   })
 
+  it('duplicates the selected note as one undoable edit', async () => {
+    render(App)
+
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트 복제' }))
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.notes).toHaveLength(9)
+      expect(saved?.notes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ lyric: '도', tone: 64, start: 420, duration: 420 }),
+        ]),
+      )
+    })
+    expect(screen.getAllByText('도 note duplicated').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByTitle('되돌리기'))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes).toHaveLength(8)
+    })
+  })
+
   it('nudges the selected note timing and pitch from the note panel', async () => {
     render(App)
 

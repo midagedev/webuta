@@ -209,7 +209,7 @@ Recommended coverage shape:
 - [x] Make project name, selected voicebank, renderer, BPM, and render status
   visible at all times.
 - [x] Add New Project / Duplicate / Reset Demo actions.
-- [x] Add note draw, drag, resize, split, delete, undo, redo, and lyric apply
+- [x] Add note draw, drag, resize, duplicate, split, delete, undo, redo, and lyric apply
   flows that work on mobile and desktop.
 - [x] Add piano keyboard and beat/bar ruler that remain readable on mobile.
 - [x] Add transport controls: play, stop, loop, metronome toggle, BPM edit,
@@ -418,7 +418,7 @@ Current verified V3 evidence:
 - Selected notes now expose DAW-style vibrato controls. The setting is saved in
   `.webutau.json`, mapped to/from USTX `vibrato` blocks, and rendered as actual
   pitch movement in both the UTAU sample renderer and browser fallback voice.
-- DAW editing controls now cover draw, drag, resize, split, delete, lyric line
+- DAW editing controls now cover draw, drag, resize, duplicate, split, delete, lyric line
   apply, undo, and redo. The transport includes play, stop, loop playback,
   metronome toggle, BPM edit, render, download, and share.
 - App code now names the bundled default as `BUNDLED_UTAU_VOICEBANK_*` instead

@@ -7,6 +7,7 @@ import {
   addNoteFromGrid,
   applyLyricLineToProject,
   deleteNoteFromProject,
+  duplicateNoteInProject,
   quantizeProjectNotes,
   splitNoteInProject,
   tokenizeLyricLine,
@@ -149,6 +150,31 @@ describe('project editing helpers', () => {
 
     const singleNoteProject = { ...demoProject, notes: [demoProject.notes[0]] }
     expect(deleteNoteFromProject(singleNoteProject, 'n1').project).toBe(singleNoteProject)
+  })
+
+  it('duplicates a note immediately after the source note', () => {
+    const { project, sourceNote, duplicatedNote } = duplicateNoteInProject(demoProject, 'n8')
+
+    expect(sourceNote?.id).toBe('n8')
+    expect(duplicatedNote).toMatchObject({
+      trackId: 'track-main',
+      partId: 'part-main',
+      start: 4680,
+      duration: 1080,
+      tone: 64,
+      lyric: '키',
+      vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
+    })
+    expect(duplicatedNote?.id).not.toBe('n8')
+    expect(project.notes).toHaveLength(demoProject.notes.length + 1)
+    expect(project.parts[0].duration).toBeGreaterThanOrEqual(5760)
+  })
+
+  it('keeps the project unchanged when duplicating a missing note', () => {
+    const result = duplicateNoteInProject(demoProject, 'missing-note')
+
+    expect(result.project).toBe(demoProject)
+    expect(result.duplicatedNote).toBeNull()
   })
 
   it('tokenizes compact Korean lyric lines by syllable', () => {

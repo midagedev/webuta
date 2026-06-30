@@ -135,6 +135,30 @@ export function splitNoteInProject(project: SongProject, noteId: string, splitTi
   }
 }
 
+export function duplicateNoteInProject(project: SongProject, noteId: string) {
+  const currentNote = project.notes.find((note) => note.id === noteId)
+  if (!currentNote) {
+    return { project, sourceNote: null, duplicatedNote: null }
+  }
+  const duplicatedNote = sanitizeNote({
+    ...currentNote,
+    id: makeId('note'),
+    start: currentNote.start + currentNote.duration,
+    vibrato: currentNote.vibrato ? { ...currentNote.vibrato } : undefined,
+  })
+  const notes = [...project.notes, duplicatedNote].sort((a, b) => a.start - b.start || a.tone - b.tone)
+
+  return {
+    project: {
+      ...project,
+      parts: expandPartForNote(project.parts, duplicatedNote),
+      notes,
+    },
+    sourceNote: currentNote,
+    duplicatedNote,
+  }
+}
+
 export function quantizeProjectNotes(project: SongProject, gridTicks = GRID_SNAP_TICKS) {
   let changedCount = 0
   const notes = project.notes

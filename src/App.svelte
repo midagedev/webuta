@@ -18,6 +18,7 @@
     addNoteFromGrid,
     applyLyricLineToProject,
     deleteNoteFromProject,
+    duplicateNoteInProject,
     GRID_SNAP_TICKS,
     quantizeProjectNotes,
     snapTickToGrid,
@@ -545,6 +546,25 @@
     notice = `${result.leftNote?.lyric ?? 'Selected'} note split`
   }
 
+  function duplicateSelectedNote() {
+    if (!selectedNote) {
+      return
+    }
+    duplicateNoteById(selectedNote.id)
+  }
+
+  function duplicateNoteById(noteId: string) {
+    const result = duplicateNoteInProject(project, noteId)
+    if (!result.duplicatedNote) {
+      notice = 'No note selected to duplicate'
+      return
+    }
+    commitProject(result.project)
+    selectedNoteId = result.duplicatedNote.id
+    clearRendered()
+    notice = `${result.duplicatedNote.lyric} note duplicated`
+  }
+
   function handleGridClick(event: MouseEvent) {
     const target = event.target instanceof HTMLElement ? event.target : null
     if (target?.closest('button')) {
@@ -637,6 +657,10 @@
     if (event.key.toLowerCase() === 's') {
       event.preventDefault()
       splitNoteById(note.id)
+    }
+    if (event.key.toLowerCase() === 'd') {
+      event.preventDefault()
+      duplicateNoteById(note.id)
     }
   }
 
@@ -1489,6 +1513,7 @@
         onToggleLoop={toggleLoop}
         onSetLoopToSelection={setLoopToSelectedNote}
         onQuantize={quantizeCurrentProject}
+        onDuplicateNote={duplicateSelectedNote}
         onSplitNote={splitSelectedNote}
         onDeleteNote={deleteSelectedNote}
         onUndo={undoProject}

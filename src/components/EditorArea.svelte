@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte'
   import {
     Circle,
+    Copy,
     Download,
     FileDown,
     History,
@@ -92,6 +93,7 @@
     onToggleLoop: () => void
     onSetLoopToSelection: () => void
     onQuantize: () => void
+    onDuplicateNote: () => void
     onSplitNote: () => void
     onDeleteNote: () => void
     onUndo: () => void
@@ -156,6 +158,7 @@
     onToggleLoop,
     onSetLoopToSelection,
     onQuantize,
+    onDuplicateNote,
     onSplitNote,
     onDeleteNote,
     onUndo,
@@ -327,6 +330,10 @@
       <button type="button" class="performance-action" aria-label="선택 노트 루프" onclick={onSetLoopToSelection}>
         <Target size={16} aria-hidden="true" />
         <span>SEL</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="선택 노트 복제" onclick={onDuplicateNote}>
+        <Copy size={16} aria-hidden="true" />
+        <span>COPY</span>
       </button>
       <button type="button" class="performance-action" aria-label="선택 노트 분할" onclick={onSplitNote}>
         <Scissors size={16} aria-hidden="true" />
