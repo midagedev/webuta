@@ -160,7 +160,8 @@ Recommended coverage shape:
 - [x] Add generated oto validation from known attack/body/release regions.
 - [x] Add batch normalization to consistent peak targets inside the generator.
 - [x] Add per-sample diagnostic JSON.
-- [ ] Add manual review report for flagged samples.
+- [x] Add a no-recording sample review report for hard flags, pitch/loop
+  watchlists, and listening-review phrase priority.
 
 ### M4. UTAU Pack Builder
 
@@ -225,6 +226,7 @@ Recommended coverage shape:
 - [x] Browser smoke passes on desktop and mobile widths.
 - [x] V3 processed samples pass package/WAV sample-quality audit.
 - [x] V3 sustained CV/V samples pass loop/crossfade audit.
+- [x] V3 sample review preflight report passes with zero hard sample flags.
 - [x] README includes screenshots, license notes, and honest limitations.
 - [x] Release audit checks the bundled V3 zip for no-recording synthetic-origin
   evidence.
@@ -243,6 +245,7 @@ npm run voicebank:oto-v3
 npm run voicebank:loop-v3
 npm run voicebank:pitch-v3
 npm run voicebank:review-v3
+npm run voicebank:sample-review-v3
 npm run release:audit-utau
 npm run release:audit-utau -- --pages-url https://midagedev.github.io/webuta/
 npm test -- scripts/audit-default-demo-render.test.mjs
@@ -300,6 +303,11 @@ Current verified V3 evidence:
 - `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain
   samples audited, maximum loop residual ratio about 0.059, maximum seam jump
   about 0.093.
+- `npm run voicebank:sample-review-v3` passes and writes
+  `experiments/utau-v3/work/v3-sample-review-report.{md,json}`: package, oto,
+  pitch, loop, and listening-review inputs all pass; hard sample flags are 0;
+  the report lists 8 pitch watchlist samples, 8 loop watchlist samples, and 4
+  V3/V2 listening-review phrases without asking anyone to record a voice.
 - Browser renderer can resolve a Hangul coda lyric through CV plus VC tail
   overlay when an exact CVC sample is unavailable.
 - Browser renderer now prefers CV sustain plus VC tail for Hangul coda lyrics
@@ -336,6 +344,8 @@ Current verified V3 evidence:
 - Release audit now requires the listening review pack and human score file to
   include four V2/V3 comparison entries, with V3 preference scores of at least
   4/5 before community release.
+- Release audit now requires the V3 sample review preflight report to be ready,
+  no-recording, and free of hard sample flags before community release.
 - `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit.json`:
   blocked only by missing human listening scores and missing Pages deployment
   evidence before deploy; the local synthetic-origin gate passes on the real
@@ -346,7 +356,7 @@ Current verified V3 evidence:
   47944175 bytes.
 - GitHub Actions Pages run `28455792293` passed build, tests, artifact upload,
   and deploy for commit `677a1f6`.
-- `npm test`: 80 passed / 1 skipped files, 348 passed / 2 skipped tests.
+- `npm test`: 81 passed / 1 skipped files, 353 passed / 2 skipped tests.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `npm run smoke:browser -- --out experiments/neural-singer/work/browser-smoke/project-files-v3.json`: passed.

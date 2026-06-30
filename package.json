@@ -75,6 +75,7 @@
     "voicebank:oto-v3": "node scripts/audit-korean-v3-oto.mjs",
     "voicebank:pitch-v3": "node scripts/analyze-korean-v3-pitch.mjs",
     "voicebank:review-v3": "node scripts/prepare-utau-v3-listening-review.mjs",
+    "voicebank:sample-review-v3": "node scripts/report-utau-v3-sample-review.mjs",
     "voicebank:v3": "node scripts/generate-korean-v3-synthetic-voicebank.mjs",
     "voicebank:v3-kit": "node scripts/prepare-utau-v3-recording-kit.mjs",
     "voicebank:supertonic": "python3 scripts/generate-korean-supertonic-voicebank.py",

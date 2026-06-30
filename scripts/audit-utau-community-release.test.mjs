@@ -69,6 +69,36 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('must include at least four phrase scores')
   })
 
+  it('blocks release when the V3 sample review preflight is flagged', async () => {
+    const fixture = await makeFixture({
+      sampleReview: {
+        ok: false,
+        decision: 'v3-sample-review-report-needs-fix',
+        noRecordingRequired: true,
+        manualReview: {
+          noRecordingRequired: true,
+          hardFlagCount: 1,
+          pitchWatchlistCount: 1,
+          loopWatchlistCount: 1,
+          listeningPhraseCount: 4,
+        },
+        hardFlags: [{ fileName: 'samples/bad.wav', problems: ['pitch drift too large'] }],
+        pitchWatchlist: [{}],
+        loopWatchlist: [{}],
+        listeningQueue: [{}, {}, {}, {}],
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('sample-review: V3 sample review report must be ready')
+    expect(report.problems.join('\n')).toContain('sample-review: V3 sample review must have zero hard sample flags')
+  })
+
   it('blocks release when V3 is not clearly preferred over legacy V2', async () => {
     const fixture = await makeFixture({
       listeningScores: {
@@ -144,6 +174,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
   writeJson(join(work, 'v3-loop-audit.json'), passReport('v3-loop-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
+  writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
   writeFileSync(join(review, 'audio', '01-first-run-demo.wav'), 'wav')
   writeFileSync(join(review, 'audio', '02-coda-release-check.wav'), 'wav')
   writeFileSync(join(review, 'audio', '03-clear-cv-line.wav'), 'wav')
@@ -289,6 +320,32 @@ function makeReviewManifest(review) {
       wavPath: join(review, 'audio', 'legacy-v2', fileName.replace('.wav', '-legacy-v2.wav')),
       gates: { passed: true },
     })),
+  }
+}
+
+function makeSampleReviewReport() {
+  return {
+    version: 1,
+    ok: true,
+    decision: 'v3-sample-review-report-ready',
+    noRecordingRequired: true,
+    manualReview: {
+      noRecordingRequired: true,
+      hardFlagCount: 0,
+      pitchWatchlistCount: 2,
+      loopWatchlistCount: 2,
+      listeningPhraseCount: 4,
+    },
+    hardFlags: [],
+    pitchWatchlist: [
+      { fileName: 'samples/do_C4.wav', alias: '도' },
+      { fileName: 'samples/hi_A4.wav', alias: '히' },
+    ],
+    loopWatchlist: [
+      { fileName: 'samples/i_A4.wav', alias: '이' },
+      { fileName: 'samples/ki_A4.wav', alias: '키' },
+    ],
+    listeningQueue: ['first-run-demo', 'coda-release-check', 'clear-cv-line', 'vowel-color-check'].map((id) => ({ id })),
   }
 }
 

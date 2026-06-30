@@ -12,6 +12,7 @@ const DEFAULTS = {
   loopAudit: 'experiments/utau-v3/work/v3-loop-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
+  sampleReview: 'experiments/utau-v3/work/v3-sample-review-report.json',
   listeningScores: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
   readme: 'README.md',
   licenseBoundaries: 'docs/LICENSE_BOUNDARIES.md',
@@ -28,6 +29,7 @@ const EXPECTED_DECISIONS = {
   loopAudit: 'v3-loop-audit-pass',
   demoAudit: 'default-demo-render-pass',
   reviewManifest: 'v3-listening-review-ready',
+  sampleReview: 'v3-sample-review-report-ready',
 }
 
 const DEMO_REQUIRED_CHECKS = [
@@ -66,6 +68,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('loop-stability', 'V3 sustain loop audit', paths.loopAudit, EXPECTED_DECISIONS.loopAudit),
     demoGate(paths.demoAudit),
     reviewPackGate(paths.reviewManifest),
+    sampleReviewGate(paths.sampleReview),
     listeningScoresGate(paths.listeningScores),
     readmeGate(paths),
     bundledVoicebankGate(bundled),
@@ -167,6 +170,38 @@ function reviewPackGate(path) {
     }
   }
   return makeGate('listening-pack', 'Browser-rendered V3 listening review pack', path, problems, summarizeReport(report))
+}
+
+function sampleReviewGate(path) {
+  const problems = []
+  const report = readOptionalJson(path, 'V3 sample review report', problems)
+  if (report) {
+    if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.sampleReview) {
+      problems.push('V3 sample review report must be ready')
+    }
+    if (report.noRecordingRequired !== true || report.manualReview?.noRecordingRequired !== true) {
+      problems.push('V3 sample review must not require new voice recordings')
+    }
+    if ((report.manualReview?.hardFlagCount ?? 0) !== 0 || (report.hardFlags?.length ?? 0) !== 0) {
+      problems.push('V3 sample review must have zero hard sample flags')
+    }
+    if ((report.manualReview?.pitchWatchlistCount ?? 0) < 1 || !Array.isArray(report.pitchWatchlist)) {
+      problems.push('V3 sample review must include a pitch watchlist')
+    }
+    if ((report.manualReview?.loopWatchlistCount ?? 0) < 1 || !Array.isArray(report.loopWatchlist)) {
+      problems.push('V3 sample review must include a loop watchlist')
+    }
+    if ((report.manualReview?.listeningPhraseCount ?? 0) < 4 || !Array.isArray(report.listeningQueue)) {
+      problems.push('V3 sample review must include at least four listening phrases')
+    }
+  }
+  return makeGate('sample-review', 'V3 sample-level review preflight', path, problems, report ? {
+    decision: report.decision ?? null,
+    hardFlagCount: report.manualReview?.hardFlagCount ?? null,
+    pitchWatchlistCount: report.manualReview?.pitchWatchlistCount ?? null,
+    loopWatchlistCount: report.manualReview?.loopWatchlistCount ?? null,
+    listeningPhraseCount: report.manualReview?.listeningPhraseCount ?? null,
+  } : null)
 }
 
 function listeningScoresGate(path) {
@@ -500,6 +535,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')
   }
+  if (problems.some((problem) => problem.includes('sample-review'))) {
+    actions.push('Run npm run voicebank:sample-review-v3 after regenerating V3 package, oto, pitch, loop, and listening-review evidence.')
+  }
   if (actions.length === 0) {
     actions.push('Regenerate the failing evidence report, then rerun npm run release:audit-utau.')
   }
@@ -527,6 +565,8 @@ function parseArgs(argv) {
       options.pagesReport = argv[++index]
     } else if (arg === '--listening-scores') {
       options.listeningScores = argv[++index]
+    } else if (arg === '--sample-review') {
+      options.sampleReview = argv[++index]
     } else if (arg === '--help' || arg === '-h') {
       process.stdout.write(
         [
@@ -537,6 +577,7 @@ function parseArgs(argv) {
           '  --pages-url url          Verify a live GitHub Pages deployment',
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
           '  --listening-scores path  Override human listening score JSON path',
+          '  --sample-review path     Override V3 sample review report JSON path',
           '',
         ].join('\n'),
       )
