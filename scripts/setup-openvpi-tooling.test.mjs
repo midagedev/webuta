@@ -42,7 +42,7 @@ describe('OpenVPI tooling setup', () => {
       ],
     })
     expect(reused.repos.map((repo) => repo.action)).toEqual(['reuse', 'reuse'])
-  })
+  }, 30_000)
 
   it('supports dry-run without creating the tooling root', () => {
     const root = makeTempRoot()

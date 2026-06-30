@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import JSZip from 'jszip'
 import { auditUtauCommunityRelease } from './audit-utau-community-release.mjs'
 
 const tempRoots = []
@@ -14,7 +15,7 @@ afterEach(() => {
 
 describe('UTAU community release audit', () => {
   it('passes when all package, UI, README, listening, and Pages evidence is present', async () => {
-    const fixture = makeFixture()
+    const fixture = await makeFixture()
 
     const report = await auditUtauCommunityRelease({
       cwd: fixture.root,
@@ -29,7 +30,7 @@ describe('UTAU community release audit', () => {
   })
 
   it('blocks release when human listening and Pages evidence are missing', async () => {
-    const fixture = makeFixture({ omitListeningScores: true })
+    const fixture = await makeFixture({ omitListeningScores: true })
 
     const report = await auditUtauCommunityRelease({
       cwd: fixture.root,
@@ -43,7 +44,7 @@ describe('UTAU community release audit', () => {
   })
 
   it('blocks release when listening scores are below threshold', async () => {
-    const fixture = makeFixture({
+    const fixture = await makeFixture({
       listeningScores: {
         phraseScores: [
           {
@@ -69,7 +70,7 @@ describe('UTAU community release audit', () => {
   })
 
   it('blocks release when deployed Pages evidence does not match the cache-busted bundled V3 version', async () => {
-    const fixture = makeFixture({
+    const fixture = await makeFixture({
       pagesReport: {
         ok: true,
         voicebank: {
@@ -88,9 +89,23 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('does not match 20260630-v3-synthetic-web-1')
   })
+
+  it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
+    const fixture = await makeFixture({ badSyntheticOrigin: true })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('synthetic-origin: V3 manifest type must declare generated-synthetic origin')
+    expect(report.problems.join('\n')).toContain('synthetic-origin: V3 readme.txt must include "not by cloning, recording"')
+    expect(report.problems.join('\n')).toContain('synthetic-origin: V3 license.txt must include "TTS service output"')
+  })
 })
 
-function makeFixture(overrides = {}) {
+async function makeFixture(overrides = {}) {
   const root = mkdtempSync(join(tmpdir(), 'webuta-utau-release-audit-'))
   tempRoots.push(root)
   const work = join(root, 'experiments', 'utau-v3', 'work')
@@ -100,6 +115,7 @@ function makeFixture(overrides = {}) {
   mkdirSync(join(review, 'audio'), { recursive: true })
   mkdirSync(join(docs, 'screenshots'), { recursive: true })
   mkdirSync(join(root, 'src'), { recursive: true })
+  mkdirSync(join(root, 'public', 'voicebanks'), { recursive: true })
   writeJson(join(work, 'v3-voicebank-audit.json'), passReport('v3-voicebank-audit-pass'))
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
   writeJson(join(work, 'v3-pitch-audit.json'), passReport('v3-pitch-audit-pass'))
@@ -126,6 +142,7 @@ function makeFixture(overrides = {}) {
       '',
     ].join('\n'),
   )
+  await writeV3Zip(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip'), overrides.badSyntheticOrigin)
   const pagesReport = join(root, 'pages-report.json')
   writeJson(
     pagesReport,
@@ -139,6 +156,53 @@ function makeFixture(overrides = {}) {
     },
   )
   return { root, pagesReport }
+}
+
+async function writeV3Zip(path, badSyntheticOrigin = false) {
+  const zip = new JSZip()
+  zip.file(
+    'webuta-ko-v3.manifest.json',
+    `${JSON.stringify(
+      badSyntheticOrigin
+        ? {
+            version: 1,
+            id: 'webuta-ko-v3-synthetic',
+            name: 'WebUtau Korean V3 Synthetic',
+            type: 'recorded-utau',
+            license: 'Fixture voicebank.',
+            qualityIntent: 'Fixture voice.',
+            samples: [],
+          }
+        : {
+            version: 1,
+            id: 'webuta-ko-v3-synthetic',
+            name: 'WebUtau Korean V3 Synthetic',
+            type: 'generated-synthetic-utau-cv-vc',
+            license: 'Original deterministic DSP-generated samples and metadata.',
+            qualityIntent: 'License-clean stylized cyber singer that does not imitate a real singer.',
+            samples: [{ fileName: 'samples/do_C4.wav' }],
+          },
+      null,
+      2,
+    )}\n`,
+  )
+  zip.file(
+    'readme.txt',
+    badSyntheticOrigin
+      ? 'Fixture voicebank.\n'
+      : 'The samples are produced by deterministic DSP synthesis, not by cloning, recording, or redistributing a human singer.\n',
+  )
+  zip.file(
+    'license.txt',
+    badSyntheticOrigin
+      ? 'Fixture license.\n'
+      : [
+          'No third-party voice, singer likeness, TTS service output, model checkpoint output, Kasane Teto asset, or Vocaloid asset is included.',
+          'Generated user audio may be used freely.',
+          '',
+        ].join('\n'),
+  )
+  writeFileSync(path, await zip.generateAsync({ type: 'nodebuffer' }))
 }
 
 function passReport(decision) {

@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import JSZip from 'jszip'
 
 const DEFAULTS = {
   voicebankAudit: 'experiments/utau-v3/work/v3-voicebank-audit.json',
@@ -15,6 +16,7 @@ const DEFAULTS = {
   readme: 'README.md',
   licenseBoundaries: 'docs/LICENSE_BOUNDARIES.md',
   bundledVoicebank: 'src/bundledVoicebank.ts',
+  voicebankZip: 'public/voicebanks/webuta-ko-v3.zip',
   desktopScreenshot: 'docs/screenshots/webuta-desktop.jpg',
   mobileScreenshot: 'docs/screenshots/webuta-mobile.jpg',
 }
@@ -67,6 +69,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     listeningScoresGate(paths.listeningScores),
     readmeGate(paths),
     bundledVoicebankGate(bundled),
+    await syntheticOriginGate(paths.voicebankZip, bundled),
     await pagesGate({ bundled, pagesUrl: options.pagesUrl, pagesReport: options.pagesReport }),
   ]
   const problems = gates.flatMap((gate) => gate.problems.map((problem) => `${gate.id}: ${problem}`))
@@ -242,6 +245,84 @@ function bundledVoicebankGate(bundled) {
     problems.push(`bundled voicebank version must be cache-busted V3 version, got ${bundled.version}`)
   }
   return makeGate('bundled-v3-selected', 'Bundled V3 voicebank selected by default', null, problems, bundled)
+}
+
+async function syntheticOriginGate(path, bundled) {
+  const problems = []
+  let summary = null
+  if (!existsSync(path)) {
+    problems.push(`missing bundled V3 zip: ${path}`)
+    return makeGate('synthetic-origin', 'No-recording synthetic voicebank origin evidence', path, problems, summary)
+  }
+
+  try {
+    const zip = await JSZip.loadAsync(readFileSync(path))
+    const manifestText = await readZipText(zip, 'webuta-ko-v3.manifest.json', problems)
+    const readme = await readZipText(zip, 'readme.txt', problems)
+    const license = await readZipText(zip, 'license.txt', problems)
+    let manifest = null
+    if (manifestText) {
+      try {
+        manifest = JSON.parse(manifestText)
+      } catch (error) {
+        problems.push(`invalid V3 manifest JSON: ${error instanceof Error ? error.message : String(error)}`)
+      }
+    }
+
+    if (manifest) {
+      summary = {
+        id: manifest.id ?? null,
+        name: manifest.name ?? null,
+        type: manifest.type ?? null,
+        sampleCount: Array.isArray(manifest.samples) ? manifest.samples.length : null,
+      }
+      if (manifest.name !== bundled.name) {
+        problems.push(`V3 manifest name ${manifest.name ?? 'missing'} does not match ${bundled.name}`)
+      }
+      if (!String(manifest.type ?? '').includes('generated-synthetic')) {
+        problems.push('V3 manifest type must declare generated-synthetic origin')
+      }
+      if (!String(manifest.license ?? '').includes('DSP-generated')) {
+        problems.push('V3 manifest license must describe DSP-generated sample origin')
+      }
+      if (!String(manifest.qualityIntent ?? '').includes('does not imitate a real singer')) {
+        problems.push('V3 manifest quality intent must reject real-singer imitation')
+      }
+    }
+
+    if (readme) {
+      for (const snippet of ['deterministic DSP synthesis', 'not by cloning, recording']) {
+        if (!readme.includes(snippet)) {
+          problems.push(`V3 readme.txt must include "${snippet}"`)
+        }
+      }
+    }
+    if (license) {
+      for (const snippet of [
+        'No third-party voice',
+        'TTS service output',
+        'model checkpoint output',
+        'Kasane Teto asset',
+        'Generated user audio may be used freely',
+      ]) {
+        if (!license.includes(snippet)) {
+          problems.push(`V3 license.txt must include "${snippet}"`)
+        }
+      }
+    }
+  } catch (error) {
+    problems.push(`unable to inspect bundled V3 zip: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  return makeGate('synthetic-origin', 'No-recording synthetic voicebank origin evidence', path, problems, summary)
+}
+
+async function readZipText(zip, path, problems) {
+  const file = zip.file(path)
+  if (!file) {
+    problems.push(`V3 zip is missing ${path}`)
+    return null
+  }
+  return file.async('string')
 }
 
 async function pagesGate({ bundled, pagesUrl, pagesReport }) {
