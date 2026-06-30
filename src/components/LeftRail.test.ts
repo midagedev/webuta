@@ -60,6 +60,59 @@ describe('LeftRail release readiness', () => {
       }),
     )
   })
+
+  it('edits selected-note pitch bend as a simple curve', async () => {
+    const onPitchBend = vi.fn()
+    render(LeftRail, makeProps({ onPitchBend }))
+
+    const pitchBendCard = screen.getByLabelText('Selected note pitch bend')
+    expect(pitchBendCard.textContent).toContain('피치 벤드')
+    expect(pitchBendCard.textContent).toContain('OFF')
+
+    const enabledToggle = pitchBendCard.querySelector('input[type="checkbox"]') as HTMLInputElement
+    await fireEvent.change(enabledToggle, { target: { checked: true } })
+
+    expect(onPitchBend).toHaveBeenLastCalledWith({
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 50, cents: 40 },
+        { timePercent: 100, cents: 0 },
+      ],
+      modes: ['s', 's'],
+    })
+  })
+
+  it('updates an imported pitch bend curve from the selected-note controls', async () => {
+    const onPitchBend = vi.fn()
+    const project = makeProject()
+    project.notes[0] = {
+      ...project.notes[0],
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 45, cents: -80 },
+          { timePercent: 100, cents: 0 },
+        ],
+        modes: ['s', 'r'],
+      },
+    }
+    render(LeftRail, makeProps({ project, selectedNote: project.notes[0], onPitchBend }))
+
+    const pitchBendCard = screen.getByLabelText('Selected note pitch bend')
+    expect(pitchBendCard.textContent).toContain('ON')
+    expect(pitchBendCard.textContent).toContain('-80c')
+
+    await fireEvent.input(screen.getByLabelText('Pitch bend amount'), { target: { value: '120' } })
+
+    expect(onPitchBend).toHaveBeenLastCalledWith({
+      points: [
+        { timePercent: 0, cents: 0 },
+        { timePercent: 45, cents: 120 },
+        { timePercent: 100, cents: 0 },
+      ],
+      modes: ['s', 's'],
+    })
+  })
 })
 
 function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
@@ -110,6 +163,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onNudge: vi.fn(),
     onDuration: vi.fn(),
     onVibrato: vi.fn(),
+    onPitchBend: vi.fn(),
     onAddNote: vi.fn(),
     onSplitNote: vi.fn(),
     onDeleteNote: vi.fn(),

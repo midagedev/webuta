@@ -1455,6 +1455,7 @@
         onNudge={updateSelectedNote}
         onDuration={(duration) => updateSelectedNote({ duration })}
         onVibrato={(vibrato) => updateSelectedNote({ vibrato })}
+        onPitchBend={(pitchBend) => updateSelectedNote({ pitchBend })}
         onAddNote={addNote}
         onSplitNote={splitSelectedNote}
         onDeleteNote={deleteSelectedNote}

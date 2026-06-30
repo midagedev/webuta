@@ -229,6 +229,8 @@ Recommended coverage shape:
   segment modes, save them in `.webutau.json`, export them back to UST, and
   render the pitch curves in both the UTAU sample renderer and browser fallback
   voice.
+- [x] Add selected-note pitch-bend controls for a simple editable 3-point curve
+  with desktop/mobile smoke coverage.
 - [x] Keep WAV export DAW-ready: RIFF/WAVE, PCM, 16-bit, mono, 44.1 kHz.
 
 ### M7. First-Run Musical Quality
@@ -436,6 +438,8 @@ Current verified V3 evidence:
   The curves survive native project save/load, duplicate-note workflows, and
   UST export, and they alter rendered pitch in both browser fallback and UTAU
   sample renderer paths.
+- The left rail now exposes a selected-note pitch-bend card with an ON/OFF
+  toggle, bend amount slider, bend position slider, and compact curve preview.
 - DAW editing controls now cover draw, drag, resize, duplicate, split, delete, lyric line
   apply, undo, and redo. The transport includes play, stop, loop playback,
   metronome toggle, BPM edit, render, download, and share.

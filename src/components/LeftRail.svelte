@@ -15,8 +15,9 @@
   } from '@lucide/svelte'
   import cyberVocalHero from '../assets/cyber-vocal-hero.webp'
   import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
+  import { normalizeNotePitchBend, sanitizeOptionalNotePitchBend } from '../pitchBend'
   import { GRID_SNAP_TICKS } from '../projectEditing'
-  import type { NeuralModelCard, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
+  import type { NeuralModelCard, NotePitchBend, NoteVibrato, RendererId, SongNote, SongProject } from '../types'
   import type { LoadedVoicebank, LyricEntryMatch, VoicebankCoverage, VoicebankRenderWarningReport } from '../voicebank'
   import { normalizeNoteVibrato } from '../vibrato'
   import { rendererCapabilities } from '../renderers/registry'
@@ -56,6 +57,7 @@
     onNudge: (patch: Partial<SongNote>) => void
     onDuration: (duration: number) => void
     onVibrato: (vibrato: NoteVibrato) => void
+    onPitchBend: (pitchBend: NotePitchBend | undefined) => void
     onAddNote: () => void
     onSplitNote: () => void
     onDeleteNote: () => void
@@ -87,6 +89,7 @@
     onNudge,
     onDuration,
     onVibrato,
+    onPitchBend,
     onAddNote,
     onSplitNote,
     onDeleteNote,
@@ -141,6 +144,10 @@
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
   let selectedVibrato = $derived(normalizeNoteVibrato(selectedNote?.vibrato))
+  let selectedPitchBend = $derived(normalizeNotePitchBend(selectedNote?.pitchBend))
+  let selectedPitchBendEnabled = $derived(Boolean(selectedNote?.pitchBend && selectedPitchBend.points.length > 0))
+  let selectedPitchBendPeak = $derived(pitchBendPeak(selectedPitchBend, selectedPitchBendEnabled))
+  let selectedPitchBendPath = $derived(pitchPreviewPath(selectedPitchBendPeak.timePercent, selectedPitchBendPeak.cents))
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
   let isBundledDefaultVoicebank = $derived(
     Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
@@ -210,6 +217,49 @@
 
   function updateVibrato(patch: Partial<NoteVibrato>) {
     onVibrato(normalizeNoteVibrato({ ...selectedVibrato, ...patch }))
+  }
+
+  function updatePitchBend(patch: { enabled?: boolean; cents?: number; timePercent?: number }) {
+    const enabled = patch.enabled ?? selectedPitchBendEnabled
+    if (!enabled) {
+      onPitchBend(undefined)
+      return
+    }
+    const cents = clampPitchBend(patch.cents ?? selectedPitchBendPeak.cents)
+    const timePercent = clampPitchBendPercent(patch.timePercent ?? selectedPitchBendPeak.timePercent)
+    onPitchBend(
+      sanitizeOptionalNotePitchBend({
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent, cents },
+          { timePercent: 100, cents: 0 },
+        ],
+        modes: ['s', 's'],
+      }),
+    )
+  }
+
+  function pitchBendPeak(pitchBend: NotePitchBend, enabled: boolean) {
+    if (!enabled || pitchBend.points.length === 0) {
+      return { timePercent: 50, cents: 40 }
+    }
+    const candidates = pitchBend.points.filter((point) => point.timePercent > 0 && point.timePercent < 100)
+    const points = candidates.length > 0 ? candidates : pitchBend.points
+    return points.reduce((peak, point) => (Math.abs(point.cents) > Math.abs(peak.cents) ? point : peak), points[0])
+  }
+
+  function pitchPreviewPath(timePercent: number, cents: number) {
+    const x = clampPitchBendPercent(timePercent)
+    const y = 20 - (clampPitchBend(cents) / 1200) * 16
+    return `M 2 20 L ${x.toFixed(2)} ${y.toFixed(2)} L 98 20`
+  }
+
+  function clampPitchBend(value: number) {
+    return Math.max(-1200, Math.min(1200, Number.isFinite(value) ? value : 0))
+  }
+
+  function clampPitchBendPercent(value: number) {
+    return Math.max(10, Math.min(90, Number.isFinite(value) ? value : 50))
   }
 </script>
 
@@ -465,6 +515,49 @@
               step="1"
               value={selectedVibrato.startPercent}
               oninput={(event) => updateVibrato({ startPercent: Number(inputValue(event)) })}
+            />
+          </label>
+        </div>
+        <div class="pitch-bend-card" aria-label="Selected note pitch bend">
+          <label class="toggle-line">
+            <input
+              type="checkbox"
+              checked={selectedPitchBendEnabled}
+              onchange={(event) => updatePitchBend({ enabled: (event.currentTarget as HTMLInputElement).checked })}
+            />
+            <span>피치 벤드</span>
+            <strong>{selectedPitchBendEnabled ? 'ON' : 'OFF'}</strong>
+          </label>
+          <div class="pitch-curve-preview" aria-hidden="true">
+            <svg viewBox="0 0 100 40" preserveAspectRatio="none">
+              <path class="curve-base" d="M 2 20 L 98 20"></path>
+              <path class="curve-line" d={selectedPitchBendPath}></path>
+            </svg>
+          </div>
+          <label class="slider-field">
+            <span>폭 <output>{Math.round(selectedPitchBendPeak.cents)}c</output></span>
+            <input
+              aria-label="Pitch bend amount"
+              type="range"
+              min="-1200"
+              max="1200"
+              step="5"
+              value={selectedPitchBendPeak.cents}
+              disabled={!selectedPitchBendEnabled}
+              oninput={(event) => updatePitchBend({ cents: Number(inputValue(event)) })}
+            />
+          </label>
+          <label class="slider-field">
+            <span>위치 <output>{Math.round(selectedPitchBendPeak.timePercent)}%</output></span>
+            <input
+              aria-label="Pitch bend position"
+              type="range"
+              min="10"
+              max="90"
+              step="1"
+              value={selectedPitchBendPeak.timePercent}
+              disabled={!selectedPitchBendEnabled}
+              oninput={(event) => updatePitchBend({ timePercent: Number(inputValue(event)) })}
             />
           </label>
         </div>

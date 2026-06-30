@@ -15,6 +15,7 @@ describe('default demo render audit report', () => {
         'community release readiness card visible',
         'voicebank license metadata visible',
         'selected-note vibrato controls visible',
+        'selected-note pitch bend controls visible',
         'selected-note duplicate controls visible',
         'classic UST import/export controls visible',
         'community listening review scorecard linked',

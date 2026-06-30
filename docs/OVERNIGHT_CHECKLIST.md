@@ -74,6 +74,8 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
   verify vibrato round-trip, and renderer tests verify vibrato changes rendered audio.
 - [x] Classic UST `PBS`/`PBW`/`PBY` pitch-bend curves survive import/export and
   affect both browser fallback and UTAU sample renderer output.
+- [x] App tests cover selected-note pitch-bend controls for a simple editable
+  3-point curve.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 

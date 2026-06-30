@@ -827,7 +827,8 @@ button:disabled {
   margin-bottom: 10px;
 }
 
-.vibrato-card {
+.vibrato-card,
+.pitch-bend-card {
   display: grid;
   gap: 8px;
   margin-top: 10px;
@@ -835,6 +836,42 @@ button:disabled {
   border: 1px solid #2a3441;
   border-radius: 8px;
   background: #111821;
+}
+
+.pitch-bend-card {
+  border-color: #3b2849;
+  background: #171322;
+}
+
+.pitch-curve-preview {
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid #2b3541;
+  border-radius: 8px;
+  background: #0e131a;
+}
+
+.pitch-curve-preview svg {
+  width: 100%;
+  height: 100%;
+}
+
+.pitch-curve-preview path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.pitch-curve-preview .curve-base {
+  stroke: #2a3441;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.pitch-curve-preview .curve-line {
+  stroke: #f55adf;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .toggle-line {
@@ -885,6 +922,10 @@ button:disabled {
 .slider-field input[type='range'] {
   width: 100%;
   accent-color: #f55adf;
+}
+
+.slider-field input[type='range']:disabled {
+  opacity: 0.45;
 }
 
 .selected-note-card {
