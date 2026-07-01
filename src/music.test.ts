@@ -11,8 +11,10 @@ import {
 
 describe('tempo map timing helpers', () => {
   it('keeps single-tempo projects compatible with the old BPM conversion', () => {
-    expect(ticksToSecondsInProject(960, demoProject)).toBeCloseTo((960 / 480) * (60 / 112), 6)
-    expect(secondsToTicksInProject((960 / 480) * (60 / 112), demoProject)).toBe(960)
+    const expectedSeconds = (960 / 480) * (60 / demoProject.bpm)
+
+    expect(ticksToSecondsInProject(960, demoProject)).toBeCloseTo(expectedSeconds, 6)
+    expect(secondsToTicksInProject(expectedSeconds, demoProject)).toBe(960)
   })
 
   it('integrates tempo changes across tick ranges', () => {

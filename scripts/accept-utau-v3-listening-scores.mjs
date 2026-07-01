@@ -94,6 +94,18 @@ export function validateScores(scores, problems = []) {
   if (scores.reviewEnvironment?.noRecordingRequired !== true) {
     problems.push('reviewEnvironment.noRecordingRequired must be true')
   }
+  if (typeof scores.reviewEnvironment?.playback !== 'string' || scores.reviewEnvironment.playback.trim().length === 0) {
+    problems.push('reviewEnvironment.playback must describe the real playback device')
+  }
+  if (scores.reviewEnvironment?.realPlaybackConfirmed !== true) {
+    problems.push('reviewEnvironment.realPlaybackConfirmed must be true')
+  }
+  if (scores.reviewEnvironment?.lyricBlindPassConfirmed !== true) {
+    problems.push('reviewEnvironment.lyricBlindPassConfirmed must be true')
+  }
+  if (scores.reviewEnvironment?.v2ComparisonConfirmed !== true) {
+    problems.push('reviewEnvironment.v2ComparisonConfirmed must be true')
+  }
   validateExpectedPhraseScores(scores.phraseScores, problems)
   validateExpectedComparisonScores(scores.comparisonScores, problems)
   const thresholds = scores.thresholds ?? {}

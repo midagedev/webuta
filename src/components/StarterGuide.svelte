@@ -15,11 +15,13 @@
   } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
+  import type { DemoSample, DemoSampleId } from '../demoProject'
   import { formatProjectSourceLabel, formatVoicebankCoverage, inputValue } from '../app/ui'
 
   type Props = {
     project: SongProject
     projectSourceLabel: string
+    demoSamples: DemoSample[]
     lyricLine: string
     voicebankName: string
     voicebankCoverage: VoicebankCoverage | null
@@ -29,6 +31,7 @@
     isPlaying: boolean
     onNewProject: () => void
     onResetDemoProject: () => void
+    onSelectDemoSample: (sampleId: DemoSampleId) => void
     onLyricLine: (line: string) => void
     onApplyLyricLine: () => void
     onOpenCompose: () => void
@@ -40,6 +43,7 @@
   let {
     project,
     projectSourceLabel,
+    demoSamples,
     lyricLine,
     voicebankName,
     voicebankCoverage,
@@ -49,6 +53,7 @@
     isPlaying,
     onNewProject,
     onResetDemoProject,
+    onSelectDemoSample,
     onLyricLine,
     onApplyLyricLine,
     onOpenCompose,
@@ -57,18 +62,19 @@
     onDownloadDawBundle,
   }: Props = $props()
 
-  const lyricPreview = $derived(project.notes.slice(0, 8).map((note) => note.lyric).join(' '))
+  const fullLyricPreview = $derived(project.notes.map((note) => note.lyric).join(' '))
   const voicebankLabel = $derived(voicebankName.replace(/^WebUtau\s*\/\/\s*/u, '') || voicebankName)
   const coverageLabel = $derived(voicebankCoverage ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'loading')
   const isVoicebankReady = $derived(Boolean(voicebankCoverage && voicebankCoverage.fallbackNotes === 0))
   const isStarterActionLocked = $derived(isLoadingVoicebank && !rendered)
   const voicebankStatusLabel = $derived(isLoadingVoicebank ? '보컬 로딩' : isVoicebankReady ? '발음 준비' : coverageLabel)
   const projectContextLabel = $derived(formatProjectSourceLabel(projectSourceLabel))
+  const activeSampleId = $derived(demoSamples.find((sample) => sample.project.source?.fileName === project.source?.fileName)?.id ?? demoSamples[0]?.id)
   const isDraftProject = $derived(projectSourceLabel === 'Saved browser draft')
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const guideSummary = $derived(rendered ? 'WAV 준비 완료' : '듣기 · 가사 · WAV')
   const chordGuide = $derived(project.chords?.slice(0, 4).map((chord) => chord.symbol).join(' -> ') || '멜로디 중심')
-  const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(lyricPreview) && compactLine(lyricLine).length > 0)
+  const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(fullLyricPreview) && compactLine(lyricLine).length > 0)
   const listenProgressClass = $derived(isStarterActionLocked || isPlaying || !rendered ? 'current' : 'done')
   const lyricProgressClass = $derived(hasPendingLyricLine ? 'current' : rendered ? 'done' : 'next')
   const exportProgressClass = $derived(rendered ? 'current' : 'next')
@@ -90,7 +96,7 @@
             : '보컬 로딩 중',
   )
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
-  const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
+  const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : `${fullLyricPreview}로 시작해요`)
   const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
   const koreanAliasLabel = $derived(voicebankCoverage ? `${voicebankCoverage.matchedNotes}/${voicebankCoverage.totalNotes} alias` : 'alias 대기')
   const koreanModeDetail = $derived(
@@ -113,7 +119,7 @@
   )
   const startPrimaryLabel = $derived(rendered && !isPlaying ? 'WAV 받기' : isPlaying ? '멈추기' : isStarterActionLocked ? '보컬 대기' : '샘플 듣기')
   const startSecondaryLabel = $derived(isDraftProject ? '기본 샘플' : '빈 프로젝트')
-  const startSecondaryMeta = $derived(isDraftProject ? '도히도히' : '새 노래')
+  const startSecondaryMeta = $derived(isDraftProject ? '샘플 선택' : '새 노래')
   const startSecondaryAria = $derived(isDraftProject ? '기본 샘플로 시작' : '새 프로젝트 만들기')
   const recommendedStepLabel = $derived(rendered && !isPlaying ? '03 WAV 저장' : hasPendingLyricLine ? '02 가사 적용' : '01 샘플 듣기')
   const starterOutputLabel = $derived(rendered ? rendered.fileName : 'First-Vocal-Sketch.wav')
@@ -239,7 +245,7 @@
           data-starter-quick-lyric="true"
           aria-label="빠른 가사 입력"
           value={lyricLine}
-          placeholder="도히도히 다이스키"
+          placeholder="네오빛이 메로디로 데려가"
           oninput={(event) => onLyricLine(inputValue(event))}
         />
         <button type="button" aria-label="빠른 가사 적용" onclick={onApplyLyricLine}>
@@ -247,7 +253,7 @@
           <span>적용</span>
         </button>
       </div>
-      <em>현재 {lyricPreview}</em>
+      <em>현재 {fullLyricPreview}</em>
     </div>
     <div class="starter-start-actions">
       <div class="starter-action-note" aria-label="Recommended starter action">
@@ -280,6 +286,30 @@
         <span>{startSecondaryLabel}</span>
         <strong>{startSecondaryMeta}</strong>
       </button>
+    </div>
+  </div>
+
+  <div class="starter-sample-gallery" aria-label="Starter sample gallery">
+    <div class="starter-sample-gallery-head">
+      <span>샘플 고르기</span>
+      <strong>보컬로이드풍 훅 {demoSamples.length}개</strong>
+      <em>마음에 드는 분위기를 먼저 고르고 바로 들어보세요.</em>
+    </div>
+    <div class="starter-sample-grid">
+      {#each demoSamples as sample}
+        <button
+          type="button"
+          class:active={sample.id === activeSampleId}
+          aria-label={`${sample.title} 샘플 열기`}
+          aria-pressed={sample.id === activeSampleId}
+          onclick={() => onSelectDemoSample(sample.id)}
+        >
+          <span>{sample.mood}</span>
+          <strong>{sample.title}</strong>
+          <em>{sample.lyricLine}</em>
+          <small>{sample.chordLine} · {sample.detail}</small>
+        </button>
+      {/each}
     </div>
   </div>
 
@@ -358,7 +388,7 @@
       </div>
       <div>
         <span>샘플 가사</span>
-        <strong>{lyricPreview}</strong>
+        <strong>{fullLyricPreview}</strong>
         <em>{coachState}</em>
       </div>
       <div class="hot">
@@ -385,14 +415,14 @@
         </div>
         <div class="starter-lyric-helper" aria-label="Lyric input helper">
           <span>한글 그대로 입력</span>
-          <strong>예: 도히도히 다이스키 · 사랑해 · 별빛</strong>
+          <strong>예: 네오빛이 메로디로 데려가 · 밤이 와 너와 나 노래해</strong>
           <em>{lyricInputStatus}</em>
         </div>
         <div class="starter-lyric-input-row">
           <input
             aria-label="스타터 가사 라인"
             value={lyricLine}
-            placeholder="도히도히 다이스키"
+            placeholder="네오빛이 메로디로 데려가"
             oninput={(event) => onLyricLine(inputValue(event))}
           />
           <button type="button" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
@@ -402,7 +432,7 @@
         </div>
         <div class="starter-sample-card" aria-label="Default lyric preview">
           <span>현재 가사</span>
-          <strong>{lyricPreview}</strong>
+          <strong>{fullLyricPreview}</strong>
           <em>{voicebankLabel} · {projectContextLabel}</em>
         </div>
       </div>
@@ -417,7 +447,7 @@
         </summary>
         <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
           <span>{projectStateTitle}</span>
-          <strong>{lyricPreview}</strong>
+          <strong>{fullLyricPreview}</strong>
           <em>{isDraftProject ? projectStateDetail : voicebankLabel}</em>
           {#if isDraftProject}
             <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
@@ -445,7 +475,7 @@
           <button type="button" class="starter-utility-button ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
             <RotateCcw size={17} aria-hidden="true" />
             <span>기본 샘플</span>
-            <strong>{lyricPreview}</strong>
+            <strong>{fullLyricPreview}</strong>
           </button>
         </div>
       </details>

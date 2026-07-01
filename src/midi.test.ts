@@ -11,10 +11,10 @@ describe('MIDI export', () => {
     expect(readU16(midi, 10)).toBe(2)
     expect(readU16(midi, 12)).toBe(480)
     expect(text(midi)).toContain('WebUtau Vocal Melody')
-    expect(text(midi)).toContain('도')
+    expect(text(midi)).toContain('네')
     expect([...midi]).toEqual(expect.arrayContaining([0xff, 0x51, 0x03]))
-    expect(hasEvent(midi, [0x90, 64, 96])).toBe(true)
-    expect(hasEvent(midi, [0x80, 64, 0])).toBe(true)
+    expect(hasEvent(midi, [0x90, 69, 96])).toBe(true)
+    expect(hasEvent(midi, [0x80, 69, 0])).toBe(true)
   })
 
   it('writes a chord MIDI with marker text and triad note events', () => {

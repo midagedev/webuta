@@ -35,12 +35,12 @@ describe('WebUtau project files', () => {
     const project = parseWebutaProject(text, 'saved-hook.webutau.json')
 
     expect(project.name).toBe('Saved Hook')
-    expect(project.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(project.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
     expect(project.notes.at(-1)?.vibrato).toMatchObject({
       enabled: true,
-      depthCents: 20,
-      rateHz: 5.6,
-      startPercent: 44,
+      depthCents: 18,
+      rateHz: 5.4,
+      startPercent: 46,
     })
     expect(project.notes[0].pitchBend?.points).toEqual([
       { timePercent: 0, cents: 0 },
@@ -54,7 +54,7 @@ describe('WebUtau project files', () => {
     expect(project.notes[0].flags).toBe('g-2BRE20')
     expect(project.notes[0].timing).toEqual({ sampleStartMs: 25, preutteranceMs: 72, voiceOverlapMs: 20 })
     expect(project.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 24, p3Ms: 140, v1: 0, v2: 100, v3: 60, v4: 12 })
-    expect(project.chords?.map((chord) => chord.symbol)).toEqual(['C', 'G', 'Am', 'F'])
+    expect(project.chords?.map((chord) => chord.symbol)).toEqual(['Am', 'F', 'C', 'G'])
     expect(project.source).toEqual({
       fileName: 'saved-hook.webutau.json',
       format: 'webuta',

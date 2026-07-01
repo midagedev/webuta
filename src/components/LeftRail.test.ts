@@ -313,7 +313,7 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     selectedRendererId: 'utau-sample',
     selectedNeuralModelId: '',
     neuralModels: [] as NeuralModelCard[],
-    notice: `${BUNDLED_UTAU_VOICEBANK_NAME}: 1437 aliases`,
+    notice: `${BUNDLED_UTAU_VOICEBANK_NAME}: 1578 aliases`,
     onVoicebankFile: vi.fn(),
     onPreviewVoicebankSample: vi.fn(),
     onBpm: vi.fn(),

@@ -86,6 +86,9 @@ export function formatVoicebankCacheStatus(status: VoicebankCacheStatus) {
 }
 
 export function formatProjectSourceLabel(sourceLabel: string) {
+  if (sourceLabel.startsWith('Built-in sample · ')) {
+    return `샘플 · ${sourceLabel.replace('Built-in sample · ', '')}`
+  }
   switch (sourceLabel) {
     case 'Built-in Hangul demo':
       return '기본 샘플'

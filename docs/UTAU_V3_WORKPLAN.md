@@ -122,7 +122,7 @@ Recommended coverage shape:
 ### M0. Product Baseline
 
 - [x] Reset the project goal to UTAU-first community release.
-- [x] Keep the first-run demo lyric as `도히도히 다이스키`.
+- [x] Keep the first-run demo lyric as `네오빛이 메로디로 데려가`.
 - [x] Rename V2 in UI/docs as legacy once V3 artifacts exist.
 - [x] Add an app-visible current project/title indicator and a real New Project
   flow if still missing from the browser UI.
@@ -161,7 +161,7 @@ Recommended coverage shape:
 - [x] Add sample-quality audit for package files, aliases, silence, clipping,
   RMS, and WAV consistency.
 - [x] Add F0/pitch-stability audit for generated sample bodies.
-- [x] Generate the first web-profile `webuta-ko-v3.zip`: 615 samples, 1437 aliases,
+- [x] Generate the first web-profile `webuta-ko-v3.zip`: 674 samples, 1578 aliases,
   about 46 MB.
 - [x] Make `webuta-ko-v3.zip` the bundled voicebank selected on first launch.
 - [ ] Run browser smoke and human listening review before calling V3
@@ -263,8 +263,9 @@ Recommended coverage shape:
 ### M7. First-Run Musical Quality
 
 - [x] Improve the default melody beyond a test scale: the built-in
-  `도히도히 다이스키` phrase now uses an E-G-E-A-G-A-F-E hook-shaped contour
-  that stays within safe imported-voicebank pitch-shift bounds.
+  `네오빛이 메로디로 데려가` phrase now uses an A-B-C-B-D-C-B-A-C-D-E hook-shaped
+  contour over `Am -> F -> C -> G`, and the first-run guide offers `Neon Lift`,
+  `Blue Hour`, and `Retro Run` sample hooks.
 - [x] Ensure the default phrase uses aliases that exist in V3.
 - [x] Render default demo to WAV and archive diagnostics.
 - [x] Generate browser-rendered V2/V3 comparison WAVs and require V3 to score
@@ -272,6 +273,9 @@ Recommended coverage shape:
 - [x] Add an offline listening scorecard that plays generated V3 WAVs and
   exports the `listening-scores.local.json` expected by the release audit,
   without asking anyone to record a voice.
+- [x] Add a `Real listening guard` to the scorecard and acceptance validators,
+  requiring playback-device, blind lyric pass, and V2 comparison confirmations
+  before the human listening JSON can pass release evidence checks.
 - [x] Add an app-visible community release readiness card that shows V3 bundled
   status, lyric coverage, render warnings, and the remaining human listening
   scorecard requirement.
@@ -367,9 +371,9 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 615 WAV samples, 1437 oto aliases, 48709111 bytes.
+- Default web profile: 674 WAV samples, 1578 oto aliases, 53323698 bytes.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260701-v3-synthetic-web-3`.
+  version `20260701-v3-synthetic-web-4`.
 - The generator now uses synthesis profile
   `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
   glottal body layer, deterministic soft saturation, and clearer `ㅡ`/`ㅢ`
@@ -377,14 +381,14 @@ Current verified V3 evidence:
 - Recording/private-singer prototype scripts are kept only under
   `experimental:*`, and the old Supertonic path is kept only under
   `legacy:voicebank:supertonic`; neither is part of the V3 release workflow.
-- `npm run voicebank:audit-v3` passes on the default zip: all 615 WAV files
+- `npm run voicebank:audit-v3` passes on the default zip: all 674 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
-- `npm run voicebank:oto-v3` passes on the default zip: 615/615 manifest
-  samples audited against `oto.ini`, 1437 oto entries checked, and zero timing
+- `npm run voicebank:oto-v3` passes on the default zip: 674/674 manifest
+  samples audited against `oto.ini`, 1578 oto entries checked, and zero timing
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
-  first-run aliases match 8/8, render warnings are clear, the lyric line is
+  first-run aliases match 11/11, render warnings are clear, the lyric line is
   visible, the first-run `처음 시작` / `듣기 · 가사 · WAV` header,
   `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`,
   visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`,
@@ -402,12 +406,12 @@ Current verified V3 evidence:
   and README files.
 - `npm run voicebank:demo-v3:pages` passes against
   `https://midagedev.github.io/webuta/`: the deployed app loads the bundled V3,
-  the first-run demo aliases match 8/8, desktop/mobile layout checks pass, the
+  the first-run demo aliases match 11/11, desktop/mobile layout checks pass, the
   live WAV download is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes,
   and the DAW ZIP/MIDI guide download is inspected.
-- The default `도히도히 다이스키` melody is now E-G-E-A-G-A-F-E rather than a
-  straight ascending test scale; regression tests pin this contour in the app
-  fixture and listening-review pack.
+- The default `네오빛이 메로디로 데려가` melody is now A-B-C-B-D-C-B-A-C-D-E rather
+  than a straight ascending test scale; regression tests pin this contour in the
+  app fixture and listening-review pack.
 - `npm run screenshots:readme` captures current desktop/mobile UI screenshots
   from the running app: `docs/screenshots/webuta-desktop.jpg` is 1280x800 and
   `docs/screenshots/webuta-mobile.jpg` is 390x844.
@@ -417,7 +421,8 @@ Current verified V3 evidence:
   plus 4 legacy V2 baseline comparison WAVs when `webuta-ko-lite.zip` is
   present. All 8 WAVs pass 44.1 kHz mono 16-bit WAV gates. The generated
   `index.html` is now an offline scorecard that lets a reviewer enter 1-5 V3
-  phrase scores, V2/V3 preference scores, and download the
+  phrase scores, V2/V3 preference scores, confirm real playback, blind lyric
+  pass, and V2 comparison completion, then download the
   `listening-scores.local.json` required by `npm run release:audit-utau`.
   Human listening scores are still required before community-ready release.
 - `npm run voicebank:publish-review-v3` publishes the scorecard, template,
@@ -433,7 +438,7 @@ Current verified V3 evidence:
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.
-- `npm run voicebank:pitch-v3` passes on the default zip: 615/615 samples
+- `npm run voicebank:pitch-v3` passes on the default zip: 674/674 samples
   audited, maximum median pitch error about 4.5 cents, maximum body drift about
   10.3 cents, and minimum median F0 confidence about 0.984.
 - `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain
@@ -544,7 +549,7 @@ Current verified V3 evidence:
   through the UTAU sample renderer with bounded non-silent output.
 - Browser demo audit verifies the piano keyboard and bar ruler are visible on
   both desktop and mobile widths, with no page-level horizontal overflow.
-- Generated-zip integrity test verifies the first-run demo phrase has 8/8
+- Generated-zip integrity test verifies the first-run demo phrase has 11/11
   matched notes and no fallback aliases.
 - App tests cover selected-note split/delete controls and selected-note loop
   region display.
@@ -554,7 +559,8 @@ Current verified V3 evidence:
   dataset source audio, cloned, or rendered from a third-party TTS/model output.
 - Release audit now requires the listening review pack and human score file to
   include four V2/V3 comparison entries, with V3 preference scores of at least
-  4/5 before community release.
+  4/5 before community release, plus real playback, blind lyric pass, and V2
+  comparison confirmations in `reviewEnvironment`.
 - Release audit now requires the published `public/review/v3/` scorecard,
   sanitized public manifest, and all V3/V2 review WAVs before community release;
   with `--pages-url`, it HEAD-checks all 8 deployed WAV files and verifies their

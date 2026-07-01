@@ -57,18 +57,18 @@ describe('DAW handoff bundle', () => {
       exportedAt: '2026-07-01T00:00:00.000Z',
       project: {
         name: 'First Vocal Sketch',
-        bpm: 112,
-        noteCount: 8,
+        bpm: 128,
+        noteCount: 11,
       },
       voicebank: 'WebUtau Korean V3 Synthetic',
       renderer: 'UTAU sample renderer',
       lyrics: {
         file: 'project/lyrics.txt',
-        line: '도 히 도 히 다 이 스 키',
+        line: '네 오 빛 이 메 로 디 로 데 려 가',
       },
       notes: {
         file: 'project/notes.csv',
-        count: 8,
+        count: 11,
       },
       midi: {
         melodyFile: 'guide/First-Vocal-Sketch-melody.mid',
@@ -79,7 +79,7 @@ describe('DAW handoff bundle', () => {
         file: 'project/arrangement.txt',
         chordFile: 'project/chords.csv',
         chordCount: 4,
-        chordLine: 'C  G  Am  F',
+        chordLine: 'Am  F  C  G',
       },
       wav: {
         file: 'audio/First-Vocal-Sketch.wav',
@@ -89,22 +89,22 @@ describe('DAW handoff bundle', () => {
       },
     })
 
-    const expectedLyrics = ['도', '히', '도', '히', '다', '이', '스', '키']
-    const expectedTones = [64, 67, 64, 69, 67, 69, 65, 64]
-    const expectedStarts = [0, 480, 960, 1440, 2160, 2640, 3120, 3600]
-    const expectedDurations = [420, 360, 420, 600, 420, 360, 420, 1080]
+    const expectedLyrics = ['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가']
+    const expectedTones = [69, 71, 72, 71, 74, 72, 71, 69, 72, 74, 76]
+    const expectedStarts = [0, 480, 960, 1440, 1680, 1920, 2400, 2880, 3360, 3840, 4320]
+    const expectedDurations = [360, 360, 480, 240, 240, 360, 360, 360, 360, 360, 960]
 
     await expect(zip.file('audio/First-Vocal-Sketch.wav')!.async('arraybuffer')).resolves.toBeInstanceOf(ArrayBuffer)
 
     const webutaText = await zip.file('project/First-Vocal-Sketch.webutau.json')!.async('string')
     const webutaProject = parseWebutaProject(webutaText, 'First-Vocal-Sketch.webutau.json')
     expect(webutaProject.name).toBe('First Vocal Sketch')
-    expect(webutaProject.bpm).toBe(112)
+    expect(webutaProject.bpm).toBe(128)
     expect(webutaProject.notes.map((note) => note.lyric)).toEqual(expectedLyrics)
     expect(webutaProject.notes.map((note) => note.tone)).toEqual(expectedTones)
     expect(webutaProject.notes.map((note) => note.start)).toEqual(expectedStarts)
     expect(webutaProject.notes.map((note) => note.duration)).toEqual(expectedDurations)
-    expect(webutaProject.chords?.map((chord) => chord.symbol)).toEqual(['C', 'G', 'Am', 'F'])
+    expect(webutaProject.chords?.map((chord) => chord.symbol)).toEqual(['Am', 'F', 'C', 'G'])
     expect(webutaProject.source).toEqual({
       fileName: 'First-Vocal-Sketch.webutau.json',
       format: 'webuta',
@@ -114,8 +114,8 @@ describe('DAW handoff bundle', () => {
     expect(ustxText).toContain('notes:')
     const ustxProject = parseUstx(ustxText, 'First-Vocal-Sketch.ustx')
     expect(ustxProject.name).toBe('First Vocal Sketch')
-    expect(ustxProject.bpm).toBe(112)
-    expect(ustxProject.tempoChanges).toEqual([{ position: 0, bpm: 112 }])
+    expect(ustxProject.bpm).toBe(128)
+    expect(ustxProject.tempoChanges).toEqual([{ position: 0, bpm: 128 }])
     expect(ustxProject.notes.map((note) => note.lyric)).toEqual(expectedLyrics)
     expect(ustxProject.notes.map((note) => note.tone)).toEqual(expectedTones)
     expect(ustxProject.notes.map((note) => note.start)).toEqual(expectedStarts)
@@ -125,8 +125,8 @@ describe('DAW handoff bundle', () => {
     expect(ustText).toContain('[#SETTING]')
     const ustProject = parseUst(ustText, 'First-Vocal-Sketch.ust')
     expect(ustProject.name).toBe('First Vocal Sketch')
-    expect(ustProject.bpm).toBe(112)
-    expect(ustProject.tempoChanges).toEqual([{ position: 0, bpm: 112 }])
+    expect(ustProject.bpm).toBe(128)
+    expect(ustProject.tempoChanges).toEqual([{ position: 0, bpm: 128 }])
     expect(ustProject.notes.map((note) => note.lyric)).toEqual(expectedLyrics)
     expect(ustProject.notes.map((note) => note.tone)).toEqual(expectedTones)
     expect(ustProject.notes.map((note) => note.start)).toEqual(expectedStarts)
@@ -134,21 +134,21 @@ describe('DAW handoff bundle', () => {
 
     expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-melody.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
     expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-chords.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
-    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
+    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('네 오 빛 이 메 로 디 로 데 려 가')
     const notesCsv = await zip.file('project/notes.csv')!.async('string')
-    expect(notesCsv.trim().split('\n')).toHaveLength(9)
+    expect(notesCsv.trim().split('\n')).toHaveLength(12)
     expect(notesCsv).toContain('index,lyric,tone,noteName,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
-    expect(notesCsv).toContain('1,도,64,E4,0,420,0.000,0.469,1:1')
+    expect(notesCsv).toContain('1,네,69,A4,0,360,0.000,0.352,1:1')
     const chordsCsv = await zip.file('project/chords.csv')!.async('string')
     expect(chordsCsv.trim().split('\n')).toHaveLength(5)
     expect(chordsCsv).toContain('index,symbol,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
-    expect(chordsCsv).toContain('1,C,0,960,0.000,1.071,1:1')
-    expect(chordsCsv).toContain('2,G,960,960,1.071,1.071,1:3')
-    expect(chordsCsv).toContain('3,Am,1920,960,2.143,1.071,2:1')
-    expect(chordsCsv).toContain('4,F,2880,1920,3.214,2.143,2:3')
+    expect(chordsCsv).toContain('1,Am,0,960,0.000,0.938,1:1')
+    expect(chordsCsv).toContain('2,F,960,960,0.938,0.938,1:3')
+    expect(chordsCsv).toContain('3,C,1920,960,1.875,0.938,2:1')
+    expect(chordsCsv).toContain('4,G,2880,1920,2.813,1.875,2:3')
     const arrangement = await zip.file('project/arrangement.txt')!.async('string')
     expect(arrangement).toContain('Chord guide:')
-    expect(arrangement).toContain('C  G  Am  F')
+    expect(arrangement).toContain('Am  F  C  G')
     const readme = await zip.file('README.txt')!.async('string')
     expect(readme).toContain('Import audio/First-Vocal-Sketch.wav into your DAW')
     expect(readme).toContain('guide/First-Vocal-Sketch-melody.mid')

@@ -12,7 +12,14 @@
   import { BUNDLED_UTAU_VOICEBANK_NAME, loadBundledUtauVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
   import { createDawHandoffBundle } from './dawBundle'
-  import { createDemoProject, createStarterProject, duplicateProject as createProjectDuplicate } from './demoProject'
+  import {
+    createDemoProject,
+    createStarterProject,
+    demoSamples,
+    duplicateProject as createProjectDuplicate,
+    findDemoSample,
+    type DemoSampleId,
+  } from './demoProject'
   import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicksInProject, ticksToSecondsInProject, toneName } from './music'
   import {
     addNoteAfter,
@@ -372,16 +379,24 @@
   }
 
   function resetDemoProject() {
-    const nextProject = createDemoProject()
+    loadDemoSample(demoSamples[0].id)
+  }
+
+  function loadDemoSample(sampleId: DemoSampleId) {
+    const sample = findDemoSample(sampleId)
+    const nextProject = createDemoProject(sample.id)
     projectHistory = replaceProjectHistory(nextProject)
     selectedNoteId = nextProject.notes[0]?.id ?? ''
     performanceKeys = nextProject.notes.slice(0, 8)
     isLyricLinePinned = false
-    paintLyric = '도'
-    projectSourceLabel = 'Built-in Hangul demo'
+    lyricLine = formatLyricLine(nextProject.notes)
+    lyricCursor = 0
+    recordingLyricTokens = []
+    paintLyric = nextProject.notes[0]?.lyric ?? '라'
+    projectSourceLabel = `Built-in sample · ${sample.title}`
     resetLoopRange(nextProject)
     clearRendered()
-    notice = 'Demo project restored'
+    notice = `${sample.title} sample loaded`
   }
 
   function duplicateCurrentProject() {
@@ -1529,6 +1544,7 @@
       <StarterGuide
         {project}
         {projectSourceLabel}
+        {demoSamples}
         {lyricLine}
         {voicebankName}
         {voicebankCoverage}
@@ -1538,6 +1554,7 @@
         {isPlaying}
         onNewProject={newProject}
         onResetDemoProject={resetDemoProject}
+        onSelectDemoSample={loadDemoSample}
         onLyricLine={(line) => {
           lyricLine = line
           isLyricLinePinned = true

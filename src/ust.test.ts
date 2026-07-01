@@ -110,16 +110,17 @@ describe('classic UST compatibility layer', () => {
             }
           : note,
       ),
+      bpm: 112,
       tempoChanges: [
         { position: 0, bpm: 112 },
-        { position: 2160, bpm: 96 },
+        { position: 2400, bpm: 96 },
       ],
     })
 
     expect(text).toContain('[#VERSION]\r\nUST Version1.2')
     expect(text).toContain('[#SETTING]')
     expect(text).toContain('ProjectName=First Vocal Sketch')
-    expect(text).toContain('Lyric=도')
+    expect(text).toContain('Lyric=네')
     expect(text).toContain('Lyric=R')
     expect(text).toContain('StartPoint=28')
     expect(text).toContain('PreUtterance=76')
@@ -130,14 +131,14 @@ describe('classic UST compatibility layer', () => {
     expect(text).toContain('Flags=g-2BRE20')
     expect(text).toContain('Envelope=0,22,120,0,100,58,10')
     expect(text).toContain('Tempo=96')
-    expect(text).toContain('VBR=56,179,20,10,10,0,0')
+    expect(text).toContain('VBR=54,185,18,10,10,0,0')
     expect(text).toContain('PBS=0,0')
-    expect(text).toContain('PBW=210,210')
+    expect(text).toContain('PBW=180,180')
     expect(text).toContain('PBY=0,40,0')
     expect(text).toContain('PBM=s,r')
 
     const reparsed = parseUst(text, 'roundtrip.ust')
-    expect(reparsed.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(reparsed.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
     expect(reparsed.notes[0].timing).toEqual({ sampleStartMs: 28, preutteranceMs: 76, voiceOverlapMs: 18 })
     expect(reparsed.notes[0].intensity).toBe(64)
     expect(reparsed.notes[0].velocity).toBe(145)
@@ -146,12 +147,12 @@ describe('classic UST compatibility layer', () => {
     expect(reparsed.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 22, p3Ms: 120, v1: 0, v2: 100, v3: 58, v4: 10 })
     expect(reparsed.tempoChanges).toEqual([
       { position: 0, bpm: 112 },
-      { position: 2160, bpm: 96 },
+      { position: 2400, bpm: 96 },
     ])
     expect(reparsed.notes.at(-1)?.vibrato).toMatchObject({
       enabled: true,
-      depthCents: 20,
-      startPercent: 44,
+      depthCents: 18,
+      startPercent: 46,
     })
     expect(reparsed.notes[0].pitchBend?.points).toEqual([
       { timePercent: 0, cents: 0 },

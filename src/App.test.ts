@@ -9,6 +9,8 @@ import { loadSavedProject, saveProject } from './projectStorage'
 import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
 
 describe('App editing workflow', () => {
+  const defaultLyrics = ['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가']
+
   beforeEach(async () => {
     vi.stubGlobal('indexedDB', new IDBFactory())
     Object.defineProperty(URL, 'createObjectURL', {
@@ -85,7 +87,7 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('First Vocal Sketch')
-      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(defaultLyrics)
     })
     expect(screen.getAllByText('기본 샘플').length).toBeGreaterThan(0)
   })
@@ -119,11 +121,18 @@ describe('App editing workflow', () => {
     const topLyricEditor = within(beginnerStart).getByLabelText('Top starter lyric editor')
     expect(topLyricEditor.textContent).toContain('가사 입력')
     expect(topLyricEditor.textContent).toContain('현재 멜로디와 같음')
-    expect(topLyricEditor.textContent).toContain('현재 도 히 도 히 다 이 스 키')
-    expect((within(topLyricEditor).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('도 히 도 히 다 이 스 키')
+    expect(topLyricEditor.textContent).toContain('현재 네 오 빛 이 메 로 디 로 데 려 가')
+    expect((within(topLyricEditor).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('네 오 빛 이 메 로 디 로 데 려 가')
     expect(within(topLyricEditor).getByRole('button', { name: '빠른 가사 적용' })).toBeTruthy()
     expect(within(beginnerStart).getByRole('button', { name: '초보자 첫 버튼' })).toBeTruthy()
     expect(within(beginnerStart).getByRole('button', { name: '새 프로젝트 만들기' })).toBeTruthy()
+    const sampleGallery = within(guide).getByLabelText('Starter sample gallery')
+    expect(sampleGallery.textContent).toContain('샘플 고르기')
+    expect(sampleGallery.textContent).toContain('보컬로이드풍 훅 3개')
+    expect(sampleGallery.textContent).toContain('Neon Lift')
+    expect(sampleGallery.textContent).toContain('Blue Hour')
+    expect(sampleGallery.textContent).toContain('Retro Run')
+    expect(within(sampleGallery).getByRole('button', { name: 'Neon Lift 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     const koreanModePath = within(guide).getByLabelText('Starter Korean mode path')
     expect(koreanModePath.textContent).toContain('한국어 UTAU 모드')
     expect(koreanModePath.textContent).toContain('한글을 쓰면 발음 alias로 바로 연결')
@@ -138,14 +147,14 @@ describe('App editing workflow', () => {
     expect(onboardingCoach.textContent).toContain('현재 열린 프로젝트')
     expect(onboardingCoach.textContent).toContain('First Vocal Sketch')
     expect(onboardingCoach.textContent).toContain('샘플 가사')
-    expect(onboardingCoach.textContent).toContain('도 히 도 히 다 이 스 키')
+    expect(onboardingCoach.textContent).toContain('네 오 빛 이 메 로 디 로 데 려 가')
     expect(onboardingCoach.textContent).toContain('다음 버튼')
     expect(onboardingCoach.textContent).toMatch(/샘플 듣기|보컬 대기/)
     const oneMinutePath = within(guide).getByLabelText('First run one-minute path')
     expect(oneMinutePath.textContent).toContain('처음 1분 가이드')
     expect(oneMinutePath.textContent).toContain('먼저 샘플을 들어봐요')
     expect(oneMinutePath.textContent).toContain('노란색 단계만 따라가면 첫 WAV까지 갈 수 있어요.')
-    expect(within(oneMinutePath).getByLabelText('Starter hook chord guide').textContent).toContain('C -> G -> Am -> F')
+    expect(within(oneMinutePath).getByLabelText('Starter hook chord guide').textContent).toContain('Am -> F -> C -> G')
     expect(within(oneMinutePath).getByLabelText('Starter readiness snapshot')).toBeTruthy()
     expect(launchPanel.textContent).toContain('샘플 듣기')
     const routeSummary = within(launchPanel).getByLabelText('Starter route summary')
@@ -168,22 +177,22 @@ describe('App editing workflow', () => {
     expect(routeSummary.textContent).toMatch(/지금|준비/)
     expect(routeSummary.textContent).toContain('다음')
     expect(within(routeSummary).getByText('가사 바꾸기')).toBeTruthy()
-    expect((within(launchPad).getByLabelText('스타터 가사 라인') as HTMLInputElement).value).toBe('도 히 도 히 다 이 스 키')
+    expect((within(launchPad).getByLabelText('스타터 가사 라인') as HTMLInputElement).value).toBe('네 오 빛 이 메 로 디 로 데 려 가')
     const lyricHelper = within(launchPad).getByLabelText('Lyric input helper')
     expect(lyricHelper.textContent).toContain('한글 그대로 입력')
-    expect(lyricHelper.textContent).toContain('예: 도히도히 다이스키')
+    expect(lyricHelper.textContent).toContain('예: 네오빛이 메로디로 데려가')
     expect(lyricHelper.textContent).toContain('현재 멜로디와 같음')
     expect(within(guide).getAllByText('현재 가사').length).toBeGreaterThanOrEqual(1)
     expect(within(guide).getAllByText('기본 샘플').length).toBeGreaterThanOrEqual(2)
     expect(within(guide).getAllByText('샘플 듣기').length).toBeGreaterThan(0)
-    expect(within(guide).getAllByText('도 히 도 히 다 이 스 키').length).toBeGreaterThan(0)
+    expect(within(guide).getAllByText('네 오 빛 이 메 로 디 로 데 려 가').length).toBeGreaterThan(0)
     expect(within(launchPanel).getByRole('button', { name: '첫 단계 샘플 듣기' })).toBeTruthy()
     const utilities = within(launchPad).getByLabelText('Starter project utilities')
     expect(utilities.textContent).toContain('추가 작업')
     expect(utilities.textContent).toContain('멜로디 · DAW · 프로젝트')
     fireEvent.click(within(utilities).getByText('추가 작업'))
     expect(within(utilities).getAllByText('기본 샘플').length).toBeGreaterThan(0)
-    expect(within(utilities).getAllByText('도 히 도 히 다 이 스 키').length).toBeGreaterThan(0)
+    expect(within(utilities).getAllByText('네 오 빛 이 메 로 디 로 데 려 가').length).toBeGreaterThan(0)
     expect(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '스타터 DAW 번들 다운로드' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '새 프로젝트' })).toBeTruthy()
@@ -212,12 +221,37 @@ describe('App editing workflow', () => {
     fireEvent.click(within(guide).getByRole('button', { name: '가사 라인 적용' }))
 
     await waitFor(() => {
-      expect(screen.getAllByText('8 lyrics applied').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('11 lyrics applied').length).toBeGreaterThan(0)
     })
 
     fireEvent.click(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' }))
 
     expect(screen.getByLabelText('Compose mode')).toBeTruthy()
+  })
+
+  it('lets first-time users switch between varied starter samples', async () => {
+    render(App)
+
+    const guide = screen.getByLabelText('First run guide')
+    const sampleGallery = within(guide).getByLabelText('Starter sample gallery')
+
+    fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Blue Hour 샘플 열기' }))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Blue Hour Vocal')
+    })
+    expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('밤 이 와 너 와 나 노 래 해')
+    expect(within(sampleGallery).getByRole('button', { name: 'Blue Hour 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('F -> C -> G -> Am')
+
+    fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Retro Run 샘플 열기' }))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Retro Run Vocal')
+    })
+    expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('레 트 로 비 트 로 뛰 어 가')
+    expect(within(sampleGallery).getByRole('button', { name: 'Retro Run 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Dm -> Bb -> F -> C')
   })
 
   it('exposes a first-run DAW bundle action that renders and downloads a handoff zip', async () => {
@@ -263,14 +297,14 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('First Vocal Sketch')
-      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(defaultLyrics)
     })
   })
 
   it('adds a tempo marker at the selected note for DAW-style tempo maps', async () => {
     render(App)
 
-    fireEvent.click(screen.getByRole('button', { name: '히 G4 note' }))
+    fireEvent.click(screen.getByRole('button', { name: '오 B4 note' }))
     fireEvent.input(screen.getByLabelText('New tempo marker BPM'), { target: { value: '132' } })
     fireEvent.click(screen.getByRole('button', { name: '선택 노트에 템포 마커 추가' }))
 
@@ -391,7 +425,7 @@ describe('App editing workflow', () => {
 
     const ustBlob = createObjectURL.mock.calls.at(-1)?.[0] as Blob
     await expect(ustBlob.text()).resolves.toContain('[#SETTING]')
-    await expect(ustBlob.text()).resolves.toContain('Lyric=도')
+    await expect(ustBlob.text()).resolves.toContain('Lyric=네')
     expect(screen.getAllByText('UST saved').length).toBeGreaterThan(0)
   })
 
@@ -450,10 +484,9 @@ describe('App editing workflow', () => {
     render(App)
 
     await waitForImportedTeto()
-    expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
-    expect(screen.getByText('현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
-    expect(screen.getByText('도 -> ど (exact)')).toBeTruthy()
-    expect(screen.getByText('렌더 경고 없음')).toBeTruthy()
+    expect(screen.getAllByText(/11\/11 matched/).length).toBeGreaterThan(0)
+    expect(screen.getByText('현재 10개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
+    expect(screen.getByText('네 -> 네 (exact)')).toBeTruthy()
     const licenseCard = screen.getByLabelText('Voicebank license metadata')
     expect(licenseCard.textContent).toContain('사용자 ZIP 라이선스 포함')
     expect(licenseCard.textContent).toContain('Test Teto matching license')
@@ -531,7 +564,7 @@ describe('App editing workflow', () => {
     expect(renderedBuffer.copyToChannel).toHaveBeenCalledWith(expect.any(Float32Array), 0)
     expect(source.connect).toHaveBeenCalledWith(gain)
     expect(gain.connect).toHaveBeenCalled()
-    expect(screen.getAllByText('UTAU sample 도 · E4').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('UTAU sample 네 · A4').length).toBeGreaterThan(0)
   })
 
   it('shows fallback lyric coverage when the imported voicebank cannot match the demo line', async () => {
@@ -540,11 +573,11 @@ describe('App editing workflow', () => {
     render(App)
 
     await waitForImportedTeto()
-    expect(screen.getByText('미매칭 8개: 도, 히, 다, 이, 스, 키')).toBeTruthy()
-    expect(screen.getByText('도 -> ど alias 없음')).toBeTruthy()
-    expect(screen.getByText('렌더 경고 8개')).toBeTruthy()
-    expect(screen.getByText('8개 alias 오류 · 0개 주의')).toBeTruthy()
-    expect(screen.getAllByText('도 alias 없음').length).toBeGreaterThan(0)
+    expect(screen.getByText('미매칭 11개: 네, 오, 빛, 이, 메, 로...')).toBeTruthy()
+    expect(screen.getByText('네 -> ね alias 없음')).toBeTruthy()
+    expect(screen.getByText('렌더 경고 11개')).toBeTruthy()
+    expect(screen.getByText('11개 alias 오류 · 0개 주의')).toBeTruthy()
+    expect(screen.getAllByText('네 alias 없음').length).toBeGreaterThan(0)
   })
 
   it('updates the selected lyric from the quick lyric pads', () => {
@@ -607,10 +640,10 @@ describe('App editing workflow', () => {
     expect(start).toHaveBeenCalledOnce()
     expect(previewButton.className).toContain('pressed')
     const previewFrequency = oscillator.frequency.setValueAtTime.mock.calls[0][0]
-    expect(previewFrequency).toBeCloseTo(392.0, 2)
+    expect(previewFrequency).toBeCloseTo(493.88, 2)
     expect(oscillator.frequency.setValueAtTime).toHaveBeenCalledWith(previewFrequency, 0)
-    expect(screen.getByText('히 · G4')).toBeTruthy()
-    expect(screen.getAllByText('Preview 도 · G4').length).toBeGreaterThan(0)
+    expect(screen.getByText('오 · B4')).toBeTruthy()
+    expect(screen.getAllByText('Preview 네 · B4').length).toBeGreaterThan(0)
   })
 
   it('records touch performance notes from the lyric queue as one undoable take', async () => {
@@ -631,8 +664,8 @@ describe('App editing workflow', () => {
       const saved = loadSavedProject()
       expect(saved?.notes).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ lyric: '가', tone: 64, start: 240, duration: 240 }),
-          expect.objectContaining({ lyric: '나', tone: 67, start: 480, duration: 240 }),
+          expect.objectContaining({ lyric: '가', tone: 69, start: 240, duration: 240 }),
+          expect.objectContaining({ lyric: '나', tone: 71, start: 480, duration: 240 }),
         ]),
       )
     })
@@ -641,7 +674,7 @@ describe('App editing workflow', () => {
     fireEvent.click(screen.getAllByRole('button', { name: '되돌리기' }).at(-1)!)
 
     await waitFor(() => {
-      expect(loadSavedProject()?.notes).toHaveLength(8)
+      expect(loadSavedProject()?.notes).toHaveLength(11)
     })
     now.mockRestore()
   })
@@ -654,7 +687,7 @@ describe('App editing workflow', () => {
     fireEvent.click(screen.getByTitle('되돌리기'))
 
     await waitFor(() => {
-      expect(loadSavedProject()?.notes[0].lyric).toBe('도')
+      expect(loadSavedProject()?.notes[0].lyric).toBe('네')
     })
 
     fireEvent.click(screen.getByTitle('다시 실행'))
@@ -667,7 +700,7 @@ describe('App editing workflow', () => {
   it('applies a compact Korean lyric line across the melody', async () => {
     render(App)
 
-    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: '나나나나 라라라라' } })
+    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: '나나나나 라라라라 하하하' } })
     fireEvent.click(screen.getByRole('button', { name: '적용' }))
 
     await waitFor(() => {
@@ -680,6 +713,9 @@ describe('App editing workflow', () => {
         '라',
         '라',
         '라',
+        '하',
+        '하',
+        '하',
       ])
     })
   })
@@ -687,7 +723,7 @@ describe('App editing workflow', () => {
   it('applies spaced romanized lyrics across the melody', async () => {
     render(App)
 
-    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: 'do hi do hi da i su ki' } })
+    fireEvent.input(screen.getByLabelText('가사 라인'), { target: { value: 'do hi do hi da i su ki la la la' } })
     fireEvent.click(screen.getByRole('button', { name: '적용' }))
 
     await waitFor(() => {
@@ -700,6 +736,9 @@ describe('App editing workflow', () => {
         'i',
         'su',
         'ki',
+        'la',
+        'la',
+        'la',
       ])
     })
   })
@@ -812,18 +851,18 @@ describe('App editing workflow', () => {
     const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'))
     expect(manifest).toMatchObject({
       format: 'webuta-daw-handoff-bundle',
-      project: { name: 'First Vocal Sketch', noteCount: 8 },
+      project: { name: 'First Vocal Sketch', noteCount: 11 },
       voicebank: 'WebUtau Korean V3 Synthetic',
-      lyrics: { file: 'project/lyrics.txt', line: '도 히 도 히 다 이 스 키' },
-      notes: { file: 'project/notes.csv', count: 8 },
+      lyrics: { file: 'project/lyrics.txt', line: '네 오 빛 이 메 로 디 로 데 려 가' },
+      notes: { file: 'project/notes.csv', count: 11 },
       midi: { melodyFile: 'guide/First-Vocal-Sketch-melody.mid', chordFile: 'guide/First-Vocal-Sketch-chords.mid', ppq: 480 },
-      arrangement: { file: 'project/arrangement.txt', chordFile: 'project/chords.csv', chordCount: 4, chordLine: 'C  G  Am  F' },
+      arrangement: { file: 'project/arrangement.txt', chordFile: 'project/chords.csv', chordCount: 4, chordLine: 'Am  F  C  G' },
     })
     expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-melody.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
     expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-chords.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
-    await expect(zip.file('project/arrangement.txt')!.async('string')).resolves.toContain('C  G  Am  F')
-    await expect(zip.file('project/chords.csv')!.async('string')).resolves.toContain('1,C,0,960')
-    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
+    await expect(zip.file('project/arrangement.txt')!.async('string')).resolves.toContain('Am  F  C  G')
+    await expect(zip.file('project/chords.csv')!.async('string')).resolves.toContain('1,Am,0,960')
+    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('네 오 빛 이 메 로 디 로 데 려 가')
     await expect(zip.file('project/notes.csv')!.async('string')).resolves.toContain('startSeconds')
   }, 15000)
 
@@ -845,7 +884,7 @@ describe('App editing workflow', () => {
 
     fireEvent.click(grid, { clientX: 167, clientY: 53 })
 
-    expect(screen.getAllByText(/9 notes/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/12 notes/).length).toBeGreaterThan(0)
   })
 
   it('duplicates the selected note as one undoable edit', async () => {
@@ -855,19 +894,19 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       const saved = loadSavedProject()
-      expect(saved?.notes).toHaveLength(9)
+      expect(saved?.notes).toHaveLength(12)
       expect(saved?.notes).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ lyric: '도', tone: 64, start: 420, duration: 420 }),
+          expect.objectContaining({ lyric: '네', tone: 69, start: 360, duration: 360 }),
         ]),
       )
     })
-    expect(screen.getAllByText('도 note duplicated').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('네 note duplicated').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByTitle('되돌리기'))
 
     await waitFor(() => {
-      expect(loadSavedProject()?.notes).toHaveLength(8)
+      expect(loadSavedProject()?.notes).toHaveLength(11)
     })
   })
 
@@ -880,7 +919,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(65)
+      expect(savedNote?.tone).toBe(70)
     })
   })
 
@@ -896,7 +935,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(65)
+      expect(savedNote?.tone).toBe(70)
     })
   })
 
@@ -929,7 +968,7 @@ describe('App editing workflow', () => {
     fireEvent.keyDown(window, { key: 'z', metaKey: true })
 
     await waitFor(() => {
-      expect(loadSavedProject()?.notes[0].lyric).toBe('도')
+      expect(loadSavedProject()?.notes[0].lyric).toBe('네')
     })
 
     fireEvent.keyDown(window, { key: 'z', metaKey: true, shiftKey: true })
@@ -950,7 +989,7 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
-      expect(savedNote?.duration).toBe(540)
+      expect(savedNote?.duration).toBe(480)
     })
   })
 
@@ -961,20 +1000,20 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       const saved = loadSavedProject()
-      expect(saved?.notes).toHaveLength(9)
+      expect(saved?.notes).toHaveLength(12)
       expect(saved?.notes.slice(0, 2)).toEqual([
-        expect.objectContaining({ id: 'n1', lyric: '도', start: 0, duration: 240 }),
-        expect.objectContaining({ lyric: '도', start: 240, duration: 180 }),
+        expect.objectContaining({ id: 'n1', lyric: '네', start: 0, duration: 240 }),
+        expect.objectContaining({ lyric: '네', start: 240, duration: 120 }),
       ])
     })
-    expect(screen.getAllByText('도 note split').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('네 note split').length).toBeGreaterThan(0)
 
     fireEvent.click(screen.getByRole('button', { name: '선택 노트 삭제' }))
 
     await waitFor(() => {
-      expect(loadSavedProject()?.notes).toHaveLength(8)
+      expect(loadSavedProject()?.notes).toHaveLength(11)
     })
-    expect(screen.getAllByText('도 note deleted').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('네 note deleted').length).toBeGreaterThan(0)
   })
 
   it('sets a visible loop region around the selected note', () => {
@@ -985,7 +1024,7 @@ describe('App editing workflow', () => {
     const loopRegion = container.querySelector('.loop-region') as HTMLDivElement
     expect(loopRegion).toBeTruthy()
     expect(loopRegion.getAttribute('style')).toContain('left: 0px')
-    expect(loopRegion.getAttribute('style')).toContain('width: 72px')
+    expect(loopRegion.getAttribute('style')).toContain('width: 54px')
     expect(screen.getAllByRole('button', { name: '루프 끄기' }).length).toBeGreaterThan(0)
   })
 
@@ -1008,7 +1047,7 @@ describe('App editing workflow', () => {
     await waitFor(() => {
       const savedNote = loadSavedProject()?.notes.find((note) => note.id === 'n1')
       expect(savedNote?.start).toBe(120)
-      expect(savedNote?.tone).toBe(65)
+      expect(savedNote?.tone).toBe(70)
     })
   })
 })
@@ -1038,15 +1077,19 @@ async function makeMatchingVoicebankZip() {
   zip.file(
     'Teto/oto.ini',
     [
-      'do.wav=ど,0,120,0,40,20',
-      'hi.wav=ひ,0,120,0,40,20',
-      'da.wav=だ,0,120,0,40,20',
-      'i.wav=い,0,120,0,40,20',
-      'su.wav=す,0,120,0,40,20',
-      'ki.wav=き,0,120,0,40,20',
+      'ne.wav=네,0,120,0,40,20',
+      'o.wav=오,0,120,0,40,20',
+      'bit.wav=빛,0,120,0,40,20',
+      'i.wav=이,0,120,0,40,20',
+      'me.wav=메,0,120,0,40,20',
+      'ro.wav=로,0,120,0,40,20',
+      'di.wav=디,0,120,0,40,20',
+      'de.wav=데,0,120,0,40,20',
+      'ryeo.wav=려,0,120,0,40,20',
+      'ga.wav=가,0,120,0,40,20',
     ].join('\n'),
   )
-  for (const fileName of ['do.wav', 'hi.wav', 'da.wav', 'i.wav', 'su.wav', 'ki.wav']) {
+  for (const fileName of ['ne.wav', 'o.wav', 'bit.wav', 'i.wav', 'me.wav', 'ro.wav', 'di.wav', 'de.wav', 'ryeo.wav', 'ga.wav']) {
     zip.file(`Teto/${fileName}`, new Uint8Array([1, 2, 3, 4]))
   }
   const blob = await zip.generateAsync({ type: 'blob' })

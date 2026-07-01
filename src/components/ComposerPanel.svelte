@@ -36,7 +36,7 @@
       <textarea
         rows="3"
         value={lyrics}
-        placeholder="도히도히 다이스키"
+        placeholder="네오빛이 메로디로 데려가"
         oninput={(event) => onLyrics(inputValue(event))}
       ></textarea>
     </label>

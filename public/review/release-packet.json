@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-01T10:33:35.209Z",
+  "generatedAt": "2026-07-01T13:45:10.345Z",
   "ok": true,
   "decision": "release-review-packet-ready",
   "pagesUrl": "https://midagedev.github.io/webuta/",
@@ -12,8 +12,8 @@
   "voicebank": {
     "name": "WebUtau Korean V3 Synthetic",
     "file": "webuta-ko-v3.zip",
-    "version": "20260701-v3-synthetic-web-3",
-    "url": "https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-3",
+    "version": "20260701-v3-synthetic-web-4",
+    "url": "https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-4",
     "bundledByDefault": true,
     "origin": "self-generated synthetic UTAU sample voicebank",
     "noRecordingRequired": true,
@@ -26,7 +26,7 @@
       "publicPage": "review/v3/index.html",
       "downloadFile": "listening-scores.local.json",
       "acceptedPath": "experiments/utau-v3/work/v3-listening-review/listening-scores.local.json",
-      "requirement": "Score every V3 render and V2 comparison honestly after real listening."
+      "requirement": "Score every V3 render and V2 comparison honestly after real listening, with playback device, blind lyric pass, and V2 comparison confirmations present."
     },
     {
       "id": "wav-daw-handoff",
@@ -42,10 +42,10 @@
       "role": "V3",
       "id": "first-run-demo",
       "title": "First-run hook",
-      "lyricLine": "도 히 도 히 다 이 스 키",
+      "lyricLine": "네 오 빛 이 메 로 디 로 데 려 가",
       "href": "audio/01-first-run-demo.wav",
-      "bytes": 578384,
-      "durationSeconds": 6.557142857142857,
+      "bytes": 560666,
+      "durationSeconds": 6.35625850340136,
       "sampleRate": 44100,
       "channels": 1,
       "bitsPerSample": 16
@@ -90,10 +90,10 @@
       "role": "legacy V2",
       "id": "first-run-demo",
       "title": "First-run hook",
-      "lyricLine": "도 히 도 히 다 이 스 키",
+      "lyricLine": "네 오 빛 이 메 로 디 로 데 려 가",
       "href": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
-      "bytes": 578384,
-      "durationSeconds": 6.557142857142857,
+      "bytes": 560666,
+      "durationSeconds": 6.35625850340136,
       "sampleRate": 44100,
       "channels": 1,
       "bitsPerSample": 16
@@ -143,7 +143,7 @@
   },
   "checklist": [
     "Open the release review hub.",
-    "Complete the V3 listening scorecard from real playback.",
+    "Complete the V3 listening scorecard from real playback, including the real playback, blind lyric pass, and V2 comparison confirmations.",
     "Complete the physical-device WAV/DAW handoff report.",
     "Keep both downloaded JSON files in Downloads.",
     "Use Evidence Preflight in the review hub to check both JSON files locally with no upload.",

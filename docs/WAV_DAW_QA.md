@@ -16,16 +16,16 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 
 ## Steps
 
-Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json` only after the imported region is visible and audible. The reference WAV is `44.1 kHz mono 16-bit` with the default lyric `도 히 도 히 다 이 스 키`.
+Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json` only after the imported region is visible and audible. The reference WAV is `44.1 kHz mono 16-bit` with the default lyric `네 오 빛 이 메 로 디 로 데 려 가`.
 
 1. Open WebUtau from the public GitHub Pages URL.
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `0/3`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, and the collapsed `가사 자세히`, `추가 작업`, and `고급 도구` areas.
+5. Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `0/3`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 3개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, and the collapsed `가사 자세히`, `추가 작업`, and `고급 도구` areas.
 6. Open `가사 자세히` and confirm `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, and `샘플 듣기` are reachable.
 7. Open `추가 작업` and confirm `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, and `기본 샘플` are reachable.
-8. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
+8. Confirm the app shows `11/11 matched` for the default `네 오 빛 이 메 로 디 로 데 려 가` project.
 9. Tap `들어보기` or the main play control and confirm audio preview works.
 10. Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.
 11. Send or save the WAV through the platform share/download flow.
@@ -35,7 +35,7 @@ Short route shown on `review/wav-daw/index.html`: the `60-second physical handof
 15. Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files and confirm it stays private to the browser storage.
 16. Turn network off, relaunch from the home-screen icon, and confirm the app shell opens after one prior online load.
 17. Open `review/wav-daw/index.html` from the public site, or copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path. Fill every field from this physical-device pass, download or save `handoff-report.local.json`, and keep it in Downloads beside `listening-scores.local.json`.
-18. Open the release hub `Evidence Preflight` checker and choose both downloaded JSON files. It validates them locally in the browser with no upload.
+18. Open the release hub `Evidence Preflight` checker and choose both downloaded JSON files. It validates them locally in the browser with no upload, including `realPlaybackConfirmed`, `lyricBlindPassConfirmed`, and `v2ComparisonConfirmed` in `listening-scores.local.json`.
 19. From the repo root, confirm both final release evidence files are present and valid. This read-only command auto-detects the newest matching files from Downloads and prints the same `0/2` -> `2/2` readiness state as the browser preflight:
 
 ```sh
@@ -54,11 +54,12 @@ If either file is outside Downloads, pass both paths explicitly with `npm run re
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide puts the `처음 시작` / `듣기 · 가사 · WAV` header, `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`, visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`, `한국어 UTAU 모드` alias/WAV path, collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`, `C -> G -> Am -> F` chord guide, and `01 샘플 듣기` / `02 가사 바꾸기` / `03 WAV 받기` route first, then keeps detailed `한글 그대로 입력` / `스타터 가사 라인` and current lyric preview behind `가사 자세히`, places `멜로디 추천`, `DAW 번들`, `새 프로젝트`, and `기본 샘플` behind collapsed `추가 작업`, and keeps release-review links behind collapsed `고급 도구`.
+- The first-run guide puts the `처음 시작` / `듣기 · 가사 · WAV` header, `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`, visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`, `샘플 고르기` with `Neon Lift`, `Blue Hour`, and `Retro Run`, `한국어 UTAU 모드` alias/WAV path, collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`, `Am -> F -> C -> G` chord guide, and `01 샘플 듣기` / `02 가사 바꾸기` / `03 WAV 받기` route first, then keeps detailed `한글 그대로 입력` / `스타터 가사 라인` and current lyric preview behind `가사 자세히`, places `멜로디 추천`, `DAW 번들`, `새 프로젝트`, and `기본 샘플` behind collapsed `추가 작업`, and keeps release-review links behind collapsed `고급 도구`.
 - The DAW bundle should include `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV and project exports.
+- The listening review scorecard should show `Real listening guard` and block `listening-scores.local.json` until real playback, blind lyric pass, and V2 comparison confirmations are checked.
 - Automated browser smoke must download the DAW bundle ZIP and inspect its `manifest.json`, rendered WAV, WebUtau project, USTX, classic UST, `melody.mid`, `chords.mid`, lyric, note, chord, arrangement, and README files before the physical-device handoff is accepted.
 - Unit coverage must re-import the DAW bundle's `.webutau.json`, USTX, and classic UST exports and verify the starter lyric, pitch, timing, BPM, and chord guide survive the handoff.
-- Default lyrics show `8/8 matched`.
+- Default lyrics show `11/11 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.
 - The imported vocal region plays audibly.

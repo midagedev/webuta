@@ -59,7 +59,8 @@ export function buildReleaseReviewPacket(options = {}) {
         publicPage: 'review/v3/index.html',
         downloadFile: 'listening-scores.local.json',
         acceptedPath: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
-        requirement: 'Score every V3 render and V2 comparison honestly after real listening.',
+        requirement:
+          'Score every V3 render and V2 comparison honestly after real listening, with playback device, blind lyric pass, and V2 comparison confirmations present.',
       },
       {
         id: 'wav-daw-handoff',
@@ -80,7 +81,7 @@ export function buildReleaseReviewPacket(options = {}) {
     },
     checklist: [
       'Open the release review hub.',
-      'Complete the V3 listening scorecard from real playback.',
+      'Complete the V3 listening scorecard from real playback, including the real playback, blind lyric pass, and V2 comparison confirmations.',
       'Complete the physical-device WAV/DAW handoff report.',
       'Keep both downloaded JSON files in Downloads.',
       'Use Evidence Preflight in the review hub to check both JSON files locally with no upload.',

@@ -392,9 +392,15 @@ async function assertDefaultV3DemoReady(page) {
   await topLyricEditor.getByText('가사 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await topLyricEditor.getByLabel('빠른 가사 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await topLyricEditor.getByRole('button', { name: '빠른 가사 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await topLyricEditor.getByText('현재 도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await topLyricEditor.getByText('현재 네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '초보자 첫 버튼' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '새 프로젝트 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterSampleGallery = page.getByLabel('Starter sample gallery')
+  await starterSampleGallery.getByText('샘플 고르기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByText('보컬로이드풍 훅 3개').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByRole('button', { name: 'Neon Lift 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByRole('button', { name: 'Blue Hour 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByRole('button', { name: 'Retro Run 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const koreanModePath = page.getByLabel('Starter Korean mode path')
   await koreanModePath.getByText('한국어 UTAU 모드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await koreanModePath.getByText('한글을 쓰면 발음 alias로 바로 연결').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -404,7 +410,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('First run one-minute path').getByText('처음 1분 가이드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('먼저 샘플을 들어봐요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('노란색 단계만 따라가면 첫 WAV까지 갈 수 있어요.').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter hook chord guide').getByText('C -> G -> Am -> F').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter hook chord guide').getByText('Am -> F -> C -> G').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const contextDrawer = page.getByLabel('Starter context drawer')
   await contextDrawer.getByText('현재 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await contextDrawer.locator('summary').click()
@@ -412,7 +418,7 @@ async function assertDefaultV3DemoReady(page) {
   await onboardingCoach.getByText('현재 열린 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await onboardingCoach.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await onboardingCoach.getByText('샘플 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await onboardingCoach.getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await onboardingCoach.getByText('네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await onboardingCoach.getByText('다음 버튼').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter readiness snapshot').getByText(/바로 시작 가능|보컬 로딩 중/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter launch panel').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -433,16 +439,16 @@ async function assertDefaultV3DemoReady(page) {
   await beginnerLaunchPad.getByLabel('Starter lyric editor').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const lyricHelper = beginnerLaunchPad.getByLabel('Lyric input helper')
   await lyricHelper.getByText('한글 그대로 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await lyricHelper.getByText('예: 도히도히 다이스키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await lyricHelper.getByText('예: 네오빛이 메로디로 데려가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await lyricHelper.getByText('현재 멜로디와 같음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterUtilities = beginnerLaunchPad.getByLabel('Starter project utilities')
   await starterUtilities.getByText('추가 작업').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByText('멜로디 · DAW · 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.locator('summary').click()
   await starterUtilities.getByLabel('Starter lyric preview').getByText('기본 샘플').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterUtilities.getByLabel('Starter lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterUtilities.getByLabel('Starter lyric preview').getByText('네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -484,7 +490,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByRole('button', { name: '노트', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '믹서', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByText(/11\/11 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Beginner start panel').getByText('샘플 듣기, 가사 바꾸기, WAV 저장 순서로 가면 돼요.').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -533,7 +539,7 @@ async function assertDefaultV3DemoReady(page) {
     () => {
       const input = document.querySelector('[aria-label="가사 라인"]')
       const value = input && 'value' in input ? String(input.value) : ''
-      return value.replace(/\s+/gu, '') === '도히도히다이스키'
+      return value.replace(/\s+/gu, '') === '네오빛이메로디로데려가'
     },
     undefined,
     { timeout: DEFAULT_TIMEOUT_MS },
@@ -552,6 +558,8 @@ async function assertDefaultV3DemoReady(page) {
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
     'first-run top lyric editor visible',
+    'first-run starter sample gallery visible',
+    'first-run starter sample choices visible',
     'first-run Korean UTAU path visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',

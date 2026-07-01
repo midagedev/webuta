@@ -21,6 +21,8 @@ describe('default demo render audit report', () => {
         'first-run three-step checklist visible',
         'first-run quick-start CTA visible',
         'first-run top lyric editor visible',
+        'first-run starter sample gallery visible',
+        'first-run starter sample choices visible',
         'first-run Korean UTAU path visible',
         'first-run starter launch panel visible',
         'first-run inline lyric input visible',

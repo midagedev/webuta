@@ -59,6 +59,29 @@ describe('accept UTAU V3 listening scores', () => {
     expect(report.problems).toContain('reviewEnvironment.noRecordingRequired must be true')
   })
 
+  it('requires real listening guard confirmations', () => {
+    const root = makeRoot()
+    const source = join(root, 'downloads', 'listening-scores.local.json')
+    writeJson(source, makeScores({
+      reviewEnvironment: {
+        playback: '',
+        reviewerNotes: '',
+        noRecordingRequired: true,
+        realPlaybackConfirmed: false,
+        lyricBlindPassConfirmed: false,
+        v2ComparisonConfirmed: false,
+      },
+    }))
+
+    const report = acceptUtauV3ListeningScores({ cwd: root, scores: source })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems).toContain('reviewEnvironment.playback must describe the real playback device')
+    expect(report.problems).toContain('reviewEnvironment.realPlaybackConfirmed must be true')
+    expect(report.problems).toContain('reviewEnvironment.lyricBlindPassConfirmed must be true')
+    expect(report.problems).toContain('reviewEnvironment.v2ComparisonConfirmed must be true')
+  })
+
   it('rejects scores that do not match the current V3 review pack identity', () => {
     const root = makeRoot()
     const source = join(root, 'downloads', 'listening-scores.local.json')
@@ -120,6 +143,9 @@ function makeScores(overrides = {}) {
       playback: 'headphones',
       reviewerNotes: '',
       noRecordingRequired: true,
+      realPlaybackConfirmed: true,
+      lyricBlindPassConfirmed: true,
+      v2ComparisonConfirmed: true,
     },
     thresholds: {
       minKoreanClarityScore: 4,

@@ -58,6 +58,9 @@ function makeListeningScores() {
     reviewEnvironment: {
       playback: 'headphones',
       noRecordingRequired: true,
+      realPlaybackConfirmed: true,
+      lyricBlindPassConfirmed: true,
+      v2ComparisonConfirmed: true,
     },
     thresholds: {
       minKoreanClarityScore: 4,

@@ -27,7 +27,7 @@ describe('Korean V3 voicebank audit', () => {
       zip,
       minWavs: 25,
       minAliases: 60,
-      maxBytes: 4 * 1024 * 1024,
+      maxBytes: 5 * 1024 * 1024,
     })
 
     expect(report.ok).toBe(true)

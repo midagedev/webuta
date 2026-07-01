@@ -280,7 +280,7 @@
   </div>
 
   <div class="lyric-line-editor" aria-label="Lyric line editor">
-    <input aria-label="가사 라인" value={lyricLine} placeholder="도히도히 다이스키" oninput={(event) => onLyricLine(inputValue(event))} />
+    <input aria-label="가사 라인" value={lyricLine} placeholder="네오빛이 메로디로 데려가" oninput={(event) => onLyricLine(inputValue(event))} />
     <button type="button" onclick={onApplyLyricLine}>적용</button>
   </div>
 

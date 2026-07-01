@@ -249,7 +249,7 @@ function makeListeningManifest() {
         id: 'first-run-demo',
         title: 'First-run hook',
         description: 'Default melody and lyric shown to a new visitor.',
-        lyricLine: '도 히 도 히 다 이 스 키',
+        lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
         wavPath: '/tmp/v3.wav',
         wav: { durationSeconds: 6.55 },
       },

@@ -71,17 +71,20 @@ export function fixedListeningReviewProjects() {
       project: makeProject({
         id: 'v3-review-first-run',
         name: 'V3 Review 01 First Run',
-        bpm: 112,
-        partDuration: TICKS_PER_BEAT * 10,
+        bpm: 128,
+        partDuration: TICKS_PER_BEAT * 11,
         notes: [
-          note('n1', 0, 420, 64, '도'),
-          note('n2', 480, 360, 67, '히'),
-          note('n3', 960, 420, 64, '도'),
-          note('n4', 1440, 600, 69, '히'),
-          note('n5', 2160, 420, 67, '다'),
-          note('n6', 2640, 360, 69, '이'),
-          note('n7', 3120, 420, 65, '스'),
-          note('n8', 3600, 1080, 64, '키'),
+          note('n1', 0, 360, 69, '네'),
+          note('n2', 480, 360, 71, '오'),
+          note('n3', 960, 480, 72, '빛'),
+          note('n4', 1440, 240, 71, '이'),
+          note('n5', 1680, 240, 74, '메'),
+          note('n6', 1920, 360, 72, '로'),
+          note('n7', 2400, 360, 71, '디'),
+          note('n8', 2880, 360, 69, '로'),
+          note('n9', 3360, 360, 72, '데'),
+          note('n10', 3840, 360, 74, '려'),
+          note('n11', 4320, 960, 76, '가'),
         ],
       }),
     },
@@ -264,6 +267,7 @@ export function makeListeningTemplate(phrases, comparisons = []) {
     scoreScale: LISTENING_SCORE_SCALE,
     instructions: [
       'Listen to the generated WAV phrases on headphones or neutral speakers.',
+      'Confirm real playback, score a first pass by ear before reading lyrics, and compare V3 against V2 before downloading evidence.',
       'Do not record new voice material for this review; score only the bundled synthetic V3 renders.',
       'When legacy V2 comparison WAVs are present, score whether V3 is clearly more usable than V2.',
       'Use release-ready/pass/community-ready only if every phrase score meets the configured thresholds.',
@@ -272,6 +276,9 @@ export function makeListeningTemplate(phrases, comparisons = []) {
       playback: '',
       reviewerNotes: '',
       noRecordingRequired: true,
+      realPlaybackConfirmed: false,
+      lyricBlindPassConfirmed: false,
+      v2ComparisonConfirmed: false,
     },
     rubric: LISTENING_SCORE_FIELDS,
     thresholds: LISTENING_THRESHOLDS,
@@ -497,6 +504,15 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .route-step strong, .route-step em { display: block; min-width: 0; }
     .route-step strong { color: var(--text); font-size: 15px; line-height: 1.15; }
     .route-step em { color: var(--muted); font-size: 12px; font-style: normal; line-height: 1.38; }
+    .real-listening-guard { display: grid; gap: 12px; margin: 16px 0; padding: 16px; border: 1px solid #604f27; border-radius: 8px; background: #18151a; }
+    .real-listening-guard h2 { margin: 0; font-size: 21px; }
+    .real-listening-guard p { margin: 0; }
+    .guard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .guard-grid label { min-width: 0; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; padding: 12px; border: 1px solid #3f4658; border-radius: 7px; background: #10131b; color: var(--text); }
+    .guard-grid input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #ffd166; }
+    .guard-grid strong, .guard-grid em { display: block; min-width: 0; }
+    .guard-grid strong { color: var(--text); font-size: 14px; line-height: 1.16; }
+    .guard-grid em { margin-top: 5px; color: var(--muted); font-size: 12px; font-style: normal; line-height: 1.35; }
     .review-reference { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
     .review-reference div { min-width: 0; padding: 10px; border: 1px solid #31384a; border-radius: 7px; background: #111722; }
     .review-reference span, .review-reference strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -535,7 +551,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .ok { color: var(--ok); font-weight: 800; }
     @media (max-width: 760px) {
       h1 { font-size: 30px; }
-      .meta, .scores, .comparison-grid, .route-grid, .review-reference { grid-template-columns: 1fr; }
+      .meta, .scores, .comparison-grid, .route-grid, .review-reference, .guard-grid { grid-template-columns: 1fr; }
       button { width: 100%; }
     }
   </style>
@@ -593,6 +609,33 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
           <span>output</span>
           <strong>listening-scores.local.json</strong>
         </div>
+      </div>
+    </section>
+    <section class="real-listening-guard" aria-label="Real listening guard">
+      <h2>Real listening guard</h2>
+      <p>Download is blocked until the reviewer confirms these checks. This keeps <code>listening-scores.local.json</code> as real manual evidence, not a formality.</p>
+      <div class="guard-grid">
+        <label>
+          <input id="realPlaybackConfirmed" type="checkbox">
+          <span>
+            <strong>Use real playback</strong>
+            <em>Listen on headphones or neutral speakers, not only by looking at the waveform or transcript.</em>
+          </span>
+        </label>
+        <label>
+          <input id="lyricBlindPassConfirmed" type="checkbox">
+          <span>
+            <strong>Blind lyric pass first</strong>
+            <em>Score the first pass by ear before relying on the intended lyric text.</em>
+          </span>
+        </label>
+        <label>
+          <input id="v2ComparisonConfirmed" type="checkbox">
+          <span>
+            <strong>Compare V3 against V2</strong>
+            <em>Only pass if V3 is clearly more usable than the legacy V2 baseline for all comparison clips.</em>
+          </span>
+        </label>
       </div>
     </section>
     <form id="scorecardForm">
@@ -722,6 +765,9 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     const reviewedAtInput = document.querySelector('#reviewedAt');
     const decisionInput = document.querySelector('#decision');
     const playbackInput = document.querySelector('#playback');
+    const realPlaybackInput = document.querySelector('#realPlaybackConfirmed');
+    const lyricBlindPassInput = document.querySelector('#lyricBlindPassConfirmed');
+    const v2ComparisonInput = document.querySelector('#v2ComparisonConfirmed');
     const output = document.querySelector('#scoreJson');
     const status = document.querySelector('#status');
     const progressSummary = document.querySelector('#progressSummary');
@@ -738,6 +784,12 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       updateOutput();
       saveDraft();
     });
+    for (const guardInput of [realPlaybackInput, lyricBlindPassInput, v2ComparisonInput]) {
+      guardInput.addEventListener('input', () => {
+        updateOutput();
+        saveDraft();
+      });
+    }
     updateOutput();
 
     function buildPayload() {
@@ -777,6 +829,9 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
           playback: playbackInput.value.trim(),
           reviewerNotes: '',
           noRecordingRequired: true,
+          realPlaybackConfirmed: realPlaybackInput.checked,
+          lyricBlindPassConfirmed: lyricBlindPassInput.checked,
+          v2ComparisonConfirmed: v2ComparisonInput.checked,
         },
         phraseScores,
         comparisonScores,
@@ -790,6 +845,18 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       if (!payload.decision) problems.push('Decision is required.');
       if (payload.decision && !passingDecisions.has(payload.decision)) {
         problems.push('Decision will intentionally block release.');
+      }
+      if (!payload.reviewEnvironment.playback) {
+        problems.push('Playback device is required.');
+      }
+      if (payload.reviewEnvironment.realPlaybackConfirmed !== true) {
+        problems.push('Confirm real playback before downloading.');
+      }
+      if (payload.reviewEnvironment.lyricBlindPassConfirmed !== true) {
+        problems.push('Confirm the blind lyric pass before downloading.');
+      }
+      if (payload.reviewEnvironment.v2ComparisonConfirmed !== true) {
+        problems.push('Confirm V2/V3 comparison before downloading.');
       }
       for (const phrase of payload.phraseScores) {
         for (const field of scoreFields) {
@@ -837,6 +904,12 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
         Boolean(payload.reviewedAt),
         passingDecisions.has(payload.decision),
       ].filter(Boolean).length;
+      const guardDone = [
+        Boolean(payload.reviewEnvironment.playback),
+        payload.reviewEnvironment.realPlaybackConfirmed === true,
+        payload.reviewEnvironment.lyricBlindPassConfirmed === true,
+        payload.reviewEnvironment.v2ComparisonConfirmed === true,
+      ].filter(Boolean).length;
       const phraseTotal = payload.phraseScores.length * scoreFields.length;
       let phraseDone = 0;
       let phrasePassing = 0;
@@ -867,6 +940,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       }
       return [
         \`Metadata \${metadataDone}/3\`,
+        \`Evidence guard \${guardDone}/4\`,
         \`Phrase scores \${phraseDone}/\${phraseTotal} complete, \${phrasePassing}/\${phraseTotal} passing\`,
         \`V2/V3 comparisons \${comparisonDone}/\${comparisonTotal} complete, \${comparisonPassing}/\${comparisonTotal} passing\`,
       ].join(' · ');
@@ -878,6 +952,9 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
         reviewedAt: reviewedAtInput.value,
         decision: decisionInput.value,
         playback: playbackInput.value,
+        realPlaybackConfirmed: realPlaybackInput.checked,
+        lyricBlindPassConfirmed: lyricBlindPassInput.checked,
+        v2ComparisonConfirmed: v2ComparisonInput.checked,
         phraseScores: phrases.map((phrase, phraseIndex) => ({
           id: phrase.id,
           scores: Object.fromEntries(scoreFields.map((field) => {
@@ -919,6 +996,9 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       reviewedAtInput.value = typeof draft.reviewedAt === 'string' && draft.reviewedAt ? draft.reviewedAt : reviewedAtInput.value;
       decisionInput.value = typeof draft.decision === 'string' ? draft.decision : decisionInput.value;
       playbackInput.value = typeof draft.playback === 'string' ? draft.playback : playbackInput.value;
+      realPlaybackInput.checked = draft.realPlaybackConfirmed === true;
+      lyricBlindPassInput.checked = draft.lyricBlindPassConfirmed === true;
+      v2ComparisonInput.checked = draft.v2ComparisonConfirmed === true;
       for (const [phraseIndex, phraseDraft] of (draft.phraseScores ?? []).entries()) {
         for (const field of scoreFields) {
           const select = document.querySelector(\`[data-phrase-index="\${phraseIndex}"][data-score-key="\${field.key}"]\`);

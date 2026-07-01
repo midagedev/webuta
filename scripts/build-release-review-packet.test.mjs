@@ -31,12 +31,12 @@ describe('release review packet', () => {
     expect(packet.voicebank).toMatchObject({
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
-      version: '20260701-v3-synthetic-web-3',
+      version: '20260701-v3-synthetic-web-4',
       bundledByDefault: true,
       noRecordingRequired: true,
       kasaneTetoBundled: false,
     })
-    expect(packet.voicebank.url).toBe('https://example.test/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-3')
+    expect(packet.voicebank.url).toBe('https://example.test/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-4')
     expect(packet.requiredEvidence.map((item) => item.downloadFile)).toEqual([
       'listening-scores.local.json',
       'handoff-report.local.json',
@@ -46,6 +46,9 @@ describe('release review packet', () => {
     expect(packet.commands.accept).toBe('npm run release:accept-evidence')
     expect(packet.checklist.join('\n')).toContain('Evidence Preflight')
     expect(packet.checklist.join('\n')).toContain('no upload')
+    expect(packet.checklist.join('\n')).toContain('blind lyric pass')
+    expect(packet.requiredEvidence[0].requirement).toContain('playback device')
+    expect(packet.requiredEvidence[0].requirement).toContain('V2 comparison confirmations')
     expect(packet.checklist.join('\n')).toContain('Run npm run release:evidence-status.')
     expect(existsSync(join(fixture.root, 'public', 'review', 'release-packet.json'))).toBe(true)
     const written = JSON.parse(readFileSync(join(fixture.root, 'public', 'review', 'release-packet.json'), 'utf8'))
@@ -90,7 +93,7 @@ function makeFixture(options = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-3'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-4'",
       '',
     ].join('\n'),
   )

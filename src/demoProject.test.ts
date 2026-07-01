@@ -1,18 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { demoProject } from './demoProject'
+import { demoProject, demoSamples } from './demoProject'
 
 describe('default demo project', () => {
-  it('keeps the first-run lyric on a hook-shaped melody', () => {
+  it('keeps the first-run lyric on a cyber-pop hook-shaped melody', () => {
     const lyrics = demoProject.notes.map((note) => note.lyric).join('')
     const tones = demoProject.notes.map((note) => note.tone)
     const intervals = tones.slice(1).map((tone, index) => tone - tones[index])
 
-    expect(lyrics).toBe('도히도히다이스키')
-    expect(tones).toEqual([64, 67, 64, 69, 67, 69, 65, 64])
+    expect(lyrics).toBe('네오빛이메로디로데려가')
+    expect(tones).toEqual([69, 71, 72, 71, 74, 72, 71, 69, 72, 74, 76])
     expect(new Set(tones).size).toBeGreaterThanOrEqual(4)
     expect(intervals.some((interval) => Math.abs(interval) >= 3)).toBe(true)
     expect(intervals.every((interval) => interval === 2 || interval === 1)).toBe(false)
-    expect(demoProject.chords?.map((chord) => chord.symbol)).toEqual(['C', 'G', 'Am', 'F'])
+    expect(demoProject.chords?.map((chord) => chord.symbol)).toEqual(['Am', 'F', 'C', 'G'])
     expect(demoProject.chords?.map((chord) => chord.start)).toEqual([0, 960, 1920, 2880])
+  })
+
+  it('ships varied starter samples for different first sketches', () => {
+    expect(demoSamples.map((sample) => sample.title)).toEqual(['Neon Lift', 'Blue Hour', 'Retro Run'])
+    expect(demoSamples.map((sample) => sample.mood)).toEqual(['Cyber Pop', 'Dream Pop', 'Retro Game'])
+    expect(new Set(demoSamples.map((sample) => sample.lyricLine)).size).toBe(3)
+    expect(demoSamples.every((sample) => sample.project.notes.length >= 9)).toBe(true)
   })
 })

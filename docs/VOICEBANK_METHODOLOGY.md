@@ -14,7 +14,7 @@ join those units without destroying consonants.
 ## Current Position
 
 WebUtau now ships a generated Korean V3 synthetic UTAU voicebank. The current
-web profile contains 615 generated WAV samples, 1437 aliases, `oto.ini`, and a
+web profile contains 674 generated WAV samples, 1578 aliases, `oto.ini`, and a
 browser sample renderer. This is useful because it exercises the same route as
 an imported UTAU/OpenUtau singer, but it still has structural weaknesses:
 
@@ -50,14 +50,17 @@ vowel body instead.
 
 ## Korean Voicebank Units
 
-The current 399-sample bank is:
+The current V3 web-profile bank starts from full Korean CV coverage and adds
+starter-priority multipitch samples plus vowel/final-consonant tails:
 
 ```txt
 19 Hangul onsets * 21 Hangul vowels = 399 CV samples
+starter hook multipitch CV support + VC tails + selected CVC demos = 674 WAV samples
 ```
 
 This is the minimal practical coverage for a Hangul starter voice. It can say
-lyrics such as `도히도히 다이스키`, but it is not enough for clear Korean singing.
+lyrics such as `네오빛이 메로디로 데려가`, but it is not enough for fully natural
+Korean singing.
 
 For Korean, the next levels are:
 
@@ -253,7 +256,7 @@ Current experiment status:
 - Preserve consonant onset, but pitch-correct the entire vowel body to C4.
 - Generate stable corrected sustain loops from the pitch-corrected body.
 - Store diagnostic JSON in the zip manifest or a sidecar during generation.
-- Add regression checks for `도히도히 다이스키` and a Korean coda phrase.
+- Add regression checks for `네오빛이 메로디로 데려가` and Korean coda phrases.
 - Keep batchim audio out of sustain loops. Long notes should loop the vowel
   body and play any final consonant tail once at release.
 

@@ -104,7 +104,7 @@ describe('project editing helpers', () => {
 
     const { project, changedCount } = quantizeProjectNotes(unquantizedProject, 120)
 
-    expect(changedCount).toBe(4)
+    expect(changedCount).toBe(1)
     expect(project.notes[0]).toMatchObject({ start: 120, duration: 480 })
   })
 
@@ -121,9 +121,9 @@ describe('project editing helpers', () => {
     expect(leftNote?.duration).toBe(240)
     expect(rightNote).toMatchObject({
       start: 240,
-      duration: 180,
-      tone: 64,
-      lyric: '도',
+      duration: 120,
+      tone: 69,
+      lyric: '네',
     })
     expect(project.notes).toHaveLength(demoProject.notes.length + 1)
     expect(project.notes.map((note) => note.start)).toEqual([...project.notes.map((note) => note.start)].sort((a, b) => a - b))
@@ -156,7 +156,7 @@ describe('project editing helpers', () => {
     const sourceProject = {
       ...demoProject,
       notes: demoProject.notes.map((note) =>
-        note.id === 'n8'
+        note.id === 'n11'
           ? {
               ...note,
               intensity: 74,
@@ -177,23 +177,23 @@ describe('project editing helpers', () => {
           : note,
       ),
     }
-    const { project, sourceNote, duplicatedNote } = duplicateNoteInProject(sourceProject, 'n8')
+    const { project, sourceNote, duplicatedNote } = duplicateNoteInProject(sourceProject, 'n11')
 
-    expect(sourceNote?.id).toBe('n8')
+    expect(sourceNote?.id).toBe('n11')
     expect(duplicatedNote).toMatchObject({
       trackId: 'track-main',
       partId: 'part-main',
-      start: 4680,
-      duration: 1080,
-      tone: 64,
-      lyric: '키',
+      start: 5280,
+      duration: 960,
+      tone: 76,
+      lyric: '가',
       intensity: 74,
       velocity: 138,
       modulation: 11,
       flags: 'g-3Y0',
       timing: { sampleStartMs: 18, preutteranceMs: 70, voiceOverlapMs: 16 },
       envelope: { p1Ms: 0, p2Ms: 28, p3Ms: 160, v1: 0, v2: 100, v3: 62, v4: 8 },
-      vibrato: { enabled: true, depthCents: 20, rateHz: 5.6, startPercent: 44 },
+      vibrato: { enabled: true, depthCents: 18, rateHz: 5.4, startPercent: 46 },
       pitchBend: {
         points: [
           { timePercent: 0, cents: 0 },
@@ -203,9 +203,9 @@ describe('project editing helpers', () => {
         modes: ['s', 'j'],
       },
     })
-    expect(duplicatedNote?.id).not.toBe('n8')
+    expect(duplicatedNote?.id).not.toBe('n11')
     expect(project.notes).toHaveLength(sourceProject.notes.length + 1)
-    expect(project.parts[0].duration).toBeGreaterThanOrEqual(5760)
+    expect(project.parts[0].duration).toBeGreaterThanOrEqual(6240)
   })
 
   it('keeps the project unchanged when duplicating a missing note', () => {
@@ -216,7 +216,7 @@ describe('project editing helpers', () => {
   })
 
   it('tokenizes compact Korean lyric lines by syllable', () => {
-    expect(tokenizeLyricLine('도히도히 다이스키')).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(tokenizeLyricLine('네오빛이 메로디로 데려가')).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
   })
 
   it('keeps spaced romanized lyrics as note tokens', () => {
@@ -224,10 +224,10 @@ describe('project editing helpers', () => {
   })
 
   it('applies a lyric line to notes in timeline order', () => {
-    const { project, appliedCount, tokens } = applyLyricLineToProject(demoProject, '도히도히 다이스키')
+    const { project, appliedCount, tokens } = applyLyricLineToProject(demoProject, '네오빛이 메로디로 데려가')
 
-    expect(tokens).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
-    expect(appliedCount).toBe(8)
-    expect(project.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(tokens).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
+    expect(appliedCount).toBe(11)
+    expect(project.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
   })
 })

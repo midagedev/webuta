@@ -16,7 +16,7 @@ This pack also includes legacy V2 baseline WAVs. Score whether V3 is clearly bet
 
 ## Phrases
 
-- first-run-demo: First-run hook (도 히 도 히 다 이 스 키)
+- first-run-demo: First-run hook (네 오 빛 이 메 로 디 로 데 려 가)
 - coda-release-check: Batchim release check (연 한 랑 밤 말)
 - clear-cv-line: Clear CV line (가 나 다 라 마 사)
 - vowel-color-check: Vowel color check (아 이 우 에 오)

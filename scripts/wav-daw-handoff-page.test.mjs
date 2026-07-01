@@ -23,7 +23,7 @@ describe('WAV DAW handoff report builder page', () => {
     expect(route?.textContent).toContain('Save the report')
     expect(starterReference?.textContent).toContain('First-Vocal-Sketch.wav')
     expect(starterReference?.textContent).toContain('44.1 kHz mono 16-bit')
-    expect(starterReference?.textContent).toContain('도 히 도 히 다 이 스 키')
+    expect(starterReference?.textContent).toContain('네 오 빛 이 메 로 디 로 데 려 가')
     expect(afterDownload?.textContent).toContain('After downloading this report')
     expect(afterDownload?.textContent).toContain('listening-scores.local.json')
     expect(afterDownload?.textContent).toContain('Evidence Preflight')

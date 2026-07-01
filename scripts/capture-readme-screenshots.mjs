@@ -80,7 +80,7 @@ async function waitForAppReady(page) {
   await beginnerLaunchPad.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerLaunchPad.getByLabel('Lyric input helper').getByText('한글 그대로 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterUtilities = page.locator('details[aria-label="Starter project utilities"]')
   await starterUtilities.getByText('추가 작업').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.evaluate((element) => {
@@ -88,7 +88,7 @@ async function waitForAppReady(page) {
   })
   await page.locator('details[aria-label="Starter project utilities"][open]').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByLabel('Starter lyric preview').getByText('기본 샘플').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterUtilities.getByLabel('Starter lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterUtilities.getByLabel('Starter lyric preview').getByText('네 오 빛 이 메 로 디 로 데 려 가').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })

@@ -62,6 +62,8 @@ const DEMO_REQUIRED_CHECKS = [
   'first-run three-step checklist visible',
   'first-run quick-start CTA visible',
   'first-run top lyric editor visible',
+  'first-run starter sample gallery visible',
+  'first-run starter sample choices visible',
   'first-run Korean UTAU path visible',
   'first-run starter launch panel visible',
   'first-run inline lyric input visible',
@@ -275,6 +277,9 @@ function publicReviewHubGate(path) {
       'href="../"',
       'v3/index.html',
       'listening-scores.local.json',
+      'realPlaybackConfirmed',
+      'lyricBlindPassConfirmed',
+      'v2ComparisonConfirmed',
       'wav-daw/index.html',
       'handoff-report.local.json',
       'Download review packet',
@@ -429,6 +434,10 @@ function publicReviewGate(paths) {
       'Finish every required score before downloading',
       '10-minute listening review path',
       'manual evidence only after real listening',
+      'Real listening guard',
+      'realPlaybackConfirmed',
+      'lyricBlindPassConfirmed',
+      'v2ComparisonConfirmed',
       'Listen phrase by phrase',
       'Compare V3 against V2',
       '4/5 or higher',
@@ -510,7 +519,7 @@ function publicWavDawHandoffGate(path) {
       '한국어 UTAU 모드',
       'First-Vocal-Sketch.wav',
       '44.1 kHz mono 16-bit',
-      '도 히 도 히 다 이 스 키',
+      '네 오 빛 이 메 로 디 로 데 려 가',
       'openedFromPublicUrl',
       'defaultVoicebankSelected',
       'firstRunGuideVisible',
@@ -699,7 +708,12 @@ function readmeGate(paths) {
       '한국어 UTAU 모드',
       '현재 프로젝트',
       '처음 1분 가이드',
-      'C -> G -> Am -> F',
+      '샘플 고르기',
+      '보컬로이드풍 훅 3개',
+      'Neon Lift',
+      'Blue Hour',
+      'Retro Run',
+      'Am -> F -> C -> G',
       '추가 작업',
       '고급 도구',
       'DAW 번들',
@@ -763,7 +777,9 @@ function readmeGate(paths) {
       '한국어 UTAU 모드',
       '현재 프로젝트',
       '처음 1분 가이드',
-      'C -> G -> Am -> F',
+      '샘플 고르기',
+      '보컬로이드풍 훅 3개',
+      'Am -> F -> C -> G',
       '01 샘플 듣기',
       '02 가사 바꾸기',
       '03 WAV 받기',
@@ -1044,11 +1060,13 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 zip cache-busted',
     'pages V3 zip bytes match local bundle',
     'pages release review hub loaded',
+    'pages release review hub listening guard validation loaded',
     'pages release review packet loaded',
     'pages release review bundle loaded',
     'pages V3 listening review scorecard loaded',
     'pages V3 listening review path loaded',
     'pages V3 listening review download gate loaded',
+    'pages V3 listening review real listening guard loaded',
     'pages V3 listening review audio loaded',
     'pages WAV DAW handoff builder loaded',
     'pages WAV DAW physical handoff path loaded',
@@ -1123,6 +1141,15 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     } else {
       problems.push('GitHub Pages release review hub is missing release evidence links')
     }
+    if (
+      html.includes('realPlaybackConfirmed') &&
+      html.includes('lyricBlindPassConfirmed') &&
+      html.includes('v2ComparisonConfirmed')
+    ) {
+      evidence.checks.push('pages release review hub listening guard validation loaded')
+    } else {
+      problems.push('GitHub Pages release review hub is missing real listening guard validation markers')
+    }
   }
   if (packet?.ok) {
     const data = await readResponseJson(packet, 'GitHub Pages release review packet', problems)
@@ -1179,6 +1206,16 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages V3 listening review path loaded')
     } else {
       problems.push('GitHub Pages V3 listening review is missing listening path markers')
+    }
+    if (
+      html.includes('Real listening guard') &&
+      html.includes('realPlaybackConfirmed') &&
+      html.includes('lyricBlindPassConfirmed') &&
+      html.includes('v2ComparisonConfirmed')
+    ) {
+      evidence.checks.push('pages V3 listening review real listening guard loaded')
+    } else {
+      problems.push('GitHub Pages V3 listening review is missing real listening guard markers')
     }
   }
   if (handoff?.ok) {

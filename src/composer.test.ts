@@ -4,15 +4,15 @@ import { applyMelodySuggestion, composeFromLyrics, formatChordLine, tokenizeComp
 
 describe('composer', () => {
   it('tokenizes Hangul lyrics by syllable', () => {
-    expect(tokenizeComposerLyrics('도히도히 다이스키')).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(tokenizeComposerLyrics('네오빛이 메로디로 데려가')).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
   })
 
   it('generates notes and prepared chords from lyrics', () => {
-    const suggestion = composeFromLyrics('도히도히 다이스키', 'bright')
+    const suggestion = composeFromLyrics('네오빛이 메로디로 데려가', 'bright')
 
     expect(suggestion.bpm).toBe(118)
-    expect(suggestion.notes).toHaveLength(8)
-    expect(suggestion.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    expect(suggestion.notes).toHaveLength(11)
+    expect(suggestion.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
     expect(formatChordLine(suggestion.chords.slice(0, 4))).toBe('C  G  Am  F')
     expect(suggestion.notes[0].start).toBe(0)
     expect(suggestion.notes.at(-1)?.duration).toBe(TICKS_PER_BEAT)

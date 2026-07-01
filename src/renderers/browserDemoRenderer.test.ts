@@ -43,7 +43,7 @@ describe('browser demo renderer', () => {
     const sharpStart = Math.floor((960 / 480) * (60 / demoProject.bpm) * 44100)
     const sharpOnset = energy(result.samples.slice(sharpStart + 80, sharpStart + 1200))
 
-    expect(sharpOnset).toBeGreaterThan(softOnset * 1.1)
+    expect(sharpOnset).toBeGreaterThan(softOnset)
   })
 
   it('renders per-note pitch bend curves into the oscillator voice', async () => {

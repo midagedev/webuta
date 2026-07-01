@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-01T07:56:54.316Z",
+  "generatedAt": "2026-07-01T13:44:19.209Z",
   "ok": true,
   "decision": "v3-listening-review-ready",
   "outDir": "public/review/v3",
@@ -23,17 +23,17 @@
       "id": "first-run-demo",
       "title": "First-run hook",
       "description": "Default melody and lyric shown to a new visitor.",
-      "lyricLine": "도 히 도 히 다 이 스 키",
+      "lyricLine": "네 오 빛 이 메 로 디 로 데 려 가",
       "projectName": "V3 Review 01 First Run",
       "wavPath": "audio/01-first-run-demo.wav",
       "audioHref": "audio/01-first-run-demo.wav",
       "wav": {
         "path": "audio/01-first-run-demo.wav",
-        "bytes": 578384,
+        "bytes": 560666,
         "sampleRate": 44100,
         "channels": 1,
         "bitsPerSample": 16,
-        "durationSeconds": 6.557142857142857
+        "durationSeconds": 6.35625850340136
       },
       "gates": {
         "passed": true,
@@ -110,23 +110,23 @@
       "title": "First-run hook",
       "description": "Legacy V2 baseline for First-run hook.",
       "voicebankName": "WebUtau Korean V2 Legacy",
-      "lyricLine": "도 히 도 히 다 이 스 키",
+      "lyricLine": "네 오 빛 이 메 로 디 로 데 려 가",
       "wavPath": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
       "audioHref": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
       "wav": {
         "path": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
-        "bytes": 578384,
+        "bytes": 560666,
         "sampleRate": 44100,
         "channels": 1,
         "bitsPerSample": 16,
-        "durationSeconds": 6.557142857142857
+        "durationSeconds": 6.35625850340136
       },
       "gates": {
         "passed": true,
         "problems": []
       },
-      "coverageText": "8/8 matched 현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
-      "warningText": "렌더 경고 없음 8개 노트가 현재 보이스뱅크로 안정적으로 연결됩니다."
+      "coverageText": "11/11 matched 현재 10개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.",
+      "warningText": "렌더 경고 10개 0개 alias 오류 · 10개 주의 오 11반음 이동빛 받침 tail 없음빛 12반음 이동"
     },
     {
       "id": "coda-release-check",

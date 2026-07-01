@@ -52,15 +52,15 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] `npm test` passes.
 - [x] `npm run build` passes.
 - [x] `npm run test:teto` passes against local official `TETO-OUset240323.zip`.
-- [x] Official Teto zip covers the built-in Korean demo line with `8/8 matched` alias coverage.
+- [x] Bundled V3 zip covers the built-in Korean starter line with `11/11 matched` alias coverage.
 - [x] Voicebank unit tests verify common Japanese romaji yoon lyrics such as
   `kya`, `shu`, `ja`, `cho`, and `ryo`, plus extended CV aliases such as
   `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and `gwa`,
   match hiragana/katakana UTAU aliases without falling back to the first sample.
-- [x] Bundled `WebUtau Korean V3 Synthetic` contains 615 WAV samples and 1437 oto.ini alias lines.
-- [x] Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
+- [x] Bundled `WebUtau Korean V3 Synthetic` contains 674 WAV samples and 1578 oto.ini alias lines.
+- [x] Built-in `네오빛이 메로디로 데려가` demo aliases are present in the bundled Korean V3 voicebank.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
-- [x] Default V3 demo browser audit passes: V3 selected, aliases 8/8 matched,
+- [x] Default V3 demo browser audit passes: V3 selected, aliases 11/11 matched,
   render warnings clear, piano-roll key/ruler labels visible on desktop/mobile,
   and WAV export DAW-ready.
 - [x] Deployed GitHub Pages app passes the same first-run V3 browser audit and
@@ -69,6 +69,7 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   header, `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`,
   visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`,
   `첫 사용 순서`, `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`,
+  `샘플 고르기`, `보컬로이드풍 훅 3개`, `Neon Lift`, `Blue Hour`, `Retro Run`,
   collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`, `01 샘플 듣기` / `02 가사 바꾸기` /
   `03 WAV 받기` route, detailed starter lyric input with `한글 그대로 입력` behind `가사 자세히`,
   current lyric card, collapsed `추가 작업` utilities for `멜로디 추천`, `DAW 번들`,
@@ -83,6 +84,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   exports and verify starter lyric, pitch, timing, BPM, and chord guide data.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
+- [x] V3 listening review scorecard includes a `Real listening guard` and the
+  accepted JSON must include playback-device, blind lyric pass, and V2
+  comparison confirmations.
 - [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and
   match local byte sizes.
 - [x] Generated WAV inspected as RIFF/WAVE PCM, 16-bit, mono, 44100 Hz.

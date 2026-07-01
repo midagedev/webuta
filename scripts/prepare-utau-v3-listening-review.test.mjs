@@ -20,8 +20,8 @@ describe('UTAU V3 listening review pack', () => {
       'clear-cv-line',
       'vowel-color-check',
     ])
-    expect(projects[0].project.notes.map((note) => note.lyric).join('')).toBe('도히도히다이스키')
-    expect(projects[0].project.notes.map((note) => note.tone)).toEqual([64, 67, 64, 69, 67, 69, 65, 64])
+    expect(projects[0].project.notes.map((note) => note.lyric).join('')).toBe('네오빛이메로디로데려가')
+    expect(projects[0].project.notes.map((note) => note.tone)).toEqual([69, 71, 72, 71, 74, 72, 71, 69, 72, 74, 76])
     expect(projects[1].project.notes.map((note) => note.lyric)).toContain('연')
     expect(projects[2].project.notes.map((note) => note.lyric)).toEqual(['가', '나', '다', '라', '마', '사'])
   })
@@ -41,6 +41,9 @@ describe('UTAU V3 listening review pack', () => {
     expect(template.thresholds.minV3PreferenceScore).toBe(4)
     expect(template.instructions.join('\n')).toContain('Do not record new voice material')
     expect(template.reviewEnvironment.noRecordingRequired).toBe(true)
+    expect(template.reviewEnvironment.realPlaybackConfirmed).toBe(false)
+    expect(template.reviewEnvironment.lyricBlindPassConfirmed).toBe(false)
+    expect(template.reviewEnvironment.v2ComparisonConfirmed).toBe(false)
     expect(template.rubric.map((field) => field.key)).toEqual(LISTENING_SCORE_FIELDS.map((field) => field.key))
     expect(template.phraseScores[0]).toMatchObject({
       id: 'first-run-demo',
@@ -64,7 +67,7 @@ describe('UTAU V3 listening review pack', () => {
       id: 'first-run-demo',
       title: 'First Run',
       description: 'Default hook.',
-      lyricLine: '도 히 도 히 다 이 스 키',
+      lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
       wavPath: '/tmp/first.wav',
       audioHref: 'audio/01-first-run-demo.wav',
       gates: { passed: true, problems: [] },
@@ -83,6 +86,10 @@ describe('UTAU V3 listening review pack', () => {
     expect(html).toContain('Finish every required score before downloading')
     expect(html).toContain('10-minute listening review path')
     expect(html).toContain('manual evidence only after real listening')
+    expect(html).toContain('Real listening guard')
+    expect(html).toContain('Use real playback')
+    expect(html).toContain('Blind lyric pass first')
+    expect(html).toContain('Compare V3 against V2')
     expect(html).toContain('Listen phrase by phrase')
     expect(html).toContain('Compare V3 against V2')
     expect(html).toContain('4/5 or higher')
@@ -106,7 +113,7 @@ describe('UTAU V3 listening review pack', () => {
           id: 'first-run-demo',
           title: 'First Run',
           description: 'Default hook.',
-          lyricLine: '도 히 도 히 다 이 스 키',
+          lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
           wavPath: '/tmp/first.wav',
           audioHref: 'audio/01-first-run-demo.wav',
           gates: { passed: true, problems: [] },
@@ -120,7 +127,7 @@ describe('UTAU V3 listening review pack', () => {
       await page.goto(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
       await page.fill('#reviewer', 'fixture reviewer')
       await page.selectOption('#decision', 'community-ready')
-      await page.fill('#playback', 'fixture headphones')
+      await confirmRealListeningGuard(page)
       for (const field of LISTENING_SCORE_FIELDS) {
         await page.selectOption(`[data-score-key="${field.key}"]`, '5')
       }
@@ -132,11 +139,16 @@ describe('UTAU V3 listening review pack', () => {
 
       expect(status).toContain('passes')
       expect(progress).toContain('Metadata 3/3')
+      expect(progress).toContain('Evidence guard 4/4')
       expect(progress).toContain('Phrase scores 5/5 complete, 5/5 passing')
       expect(progress).toContain('V2/V3 comparisons 0/0 complete, 0/0 passing')
       expect(await page.locator('#downloadJson').isEnabled()).toBe(true)
       expect(problemList).toContain('Ready')
       expect(payload.reviewEnvironment.noRecordingRequired).toBe(true)
+      expect(payload.reviewEnvironment.realPlaybackConfirmed).toBe(true)
+      expect(payload.reviewEnvironment.lyricBlindPassConfirmed).toBe(true)
+      expect(payload.reviewEnvironment.v2ComparisonConfirmed).toBe(true)
+      expect(payload.reviewEnvironment.playback).toBe('fixture headphones')
       expect(payload.reviewer).toBe('fixture reviewer')
       expect(payload.decision).toBe('community-ready')
       expect(payload.phraseScores[0].koreanClarityScore).toBe(5)
@@ -150,7 +162,7 @@ describe('UTAU V3 listening review pack', () => {
       id: 'first-run-demo',
       title: 'First Run',
       description: 'Default hook.',
-      lyricLine: '도 히 도 히 다 이 스 키',
+      lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
       wavPath: '/tmp/first-v3.wav',
       audioHref: 'audio/01-first-run-demo.wav',
       gates: { passed: true, problems: [] },
@@ -180,6 +192,7 @@ describe('UTAU V3 listening review pack', () => {
       await page.goto(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
       await page.fill('#reviewer', 'fixture reviewer')
       await page.selectOption('#decision', 'community-ready')
+      await confirmRealListeningGuard(page)
       for (const field of LISTENING_SCORE_FIELDS) {
         await page.selectOption(`[data-score-key="${field.key}"]`, '5')
       }
@@ -210,7 +223,7 @@ describe('UTAU V3 listening review pack', () => {
           id: 'first-run-demo',
           title: 'First Run',
           description: 'Default hook.',
-          lyricLine: '도 히 도 히 다 이 스 키',
+          lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
           wavPath: '/tmp/first.wav',
           audioHref: 'audio/01-first-run-demo.wav',
           gates: { passed: true, problems: [] },
@@ -228,6 +241,7 @@ describe('UTAU V3 listening review pack', () => {
 
       await page.fill('#reviewer', 'fixture reviewer')
       await page.selectOption('#decision', 'community-ready')
+      await confirmRealListeningGuard(page)
       for (const field of LISTENING_SCORE_FIELDS) {
         await page.selectOption(`[data-score-key="${field.key}"]`, field.key === 'artifactScore' ? '3' : '5')
       }
@@ -251,7 +265,7 @@ describe('UTAU V3 listening review pack', () => {
           id: 'first-run-demo',
           title: 'First Run',
           description: 'Default hook.',
-          lyricLine: '도 히 도 히 다 이 스 키',
+          lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
           wavPath: '/tmp/first.wav',
           audioHref: 'audio/01-first-run-demo.wav',
           gates: { passed: true, problems: [] },
@@ -266,6 +280,9 @@ describe('UTAU V3 listening review pack', () => {
       await page.goto(server.url)
       await page.fill('#reviewer', 'draft reviewer')
       await page.fill('#playback', 'phone speaker')
+      await page.check('#realPlaybackConfirmed')
+      await page.check('#lyricBlindPassConfirmed')
+      await page.check('#v2ComparisonConfirmed')
       await page.selectOption('[data-score-key="koreanClarityScore"]', '4')
       await page.fill('[data-notes]', 'ㄷ attack is understandable')
       await expectDraftStatus(page, 'Draft saved')
@@ -275,6 +292,9 @@ describe('UTAU V3 listening review pack', () => {
       await page.waitForSelector('#reviewer')
       expect(await page.locator('#reviewer').inputValue()).toBe('draft reviewer')
       expect(await page.locator('#playback').inputValue()).toBe('phone speaker')
+      expect(await page.locator('#realPlaybackConfirmed').isChecked()).toBe(true)
+      expect(await page.locator('#lyricBlindPassConfirmed').isChecked()).toBe(true)
+      expect(await page.locator('#v2ComparisonConfirmed').isChecked()).toBe(true)
       expect(await page.locator('[data-score-key="koreanClarityScore"]').inputValue()).toBe('4')
       expect(await page.locator('[data-notes]').inputValue()).toBe('ㄷ attack is understandable')
       await expectDraftStatus(page, 'Saved draft restored')
@@ -308,6 +328,13 @@ describe('UTAU V3 listening review pack', () => {
     expect(failed.problems.join('\n')).toContain('duration 0.500s')
   })
 })
+
+async function confirmRealListeningGuard(page) {
+  await page.fill('#playback', 'fixture headphones')
+  await page.check('#realPlaybackConfirmed')
+  await page.check('#lyricBlindPassConfirmed')
+  await page.check('#v2ComparisonConfirmed')
+}
 
 async function serveHtml(html) {
   const server = createServer((req, res) => {

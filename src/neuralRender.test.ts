@@ -10,11 +10,11 @@ describe('neural render contract export', () => {
     expect(request).toMatchObject({
       version: 1,
       project: {
-        id: 'demo-vocal-synth',
+        id: 'demo-neon-lift',
         title: 'First Vocal Sketch',
-        bpm: 112,
+        bpm: 128,
         timebase: 480,
-        tempos: [{ position: 0, bpm: 112 }],
+        tempos: [{ position: 0, bpm: 128 }],
       },
       voice: {
         id: 'webuta-ko-neural-dev',
@@ -27,22 +27,22 @@ describe('neural render contract export', () => {
         includeDiagnostics: true,
       },
     })
-    expect(request.notes).toHaveLength(8)
-    expect(request.notes.map((note) => note.lyric).join('')).toBe('도히도히다이스키')
+    expect(request.notes).toHaveLength(11)
+    expect(request.notes.map((note) => note.lyric).join('')).toBe('네오빛이메로디로데려가')
     expect(request.notes[0]).toMatchObject({
       kind: 'note',
       id: 'n1',
       startTick: 0,
-      durationTick: 420,
-      midi: 64,
-      lyric: '도',
+      durationTick: 360,
+      midi: 69,
+      lyric: '네',
       intensity: 100,
       phonemes: [
-        { symbol: 'd', role: 'onset', source: '도' },
-        { symbol: 'o', role: 'vowel', source: '도' },
+        { symbol: 'n', role: 'onset', source: '네' },
+        { symbol: 'e', role: 'vowel', source: '네' },
       ],
     })
-    expect(request.notes[0].targetHz).toBeCloseTo(329.627557, 5)
+    expect(request.notes[0].targetHz).toBeCloseTo(440, 5)
   })
 
   it('preserves Korean coda phonemes instead of reducing to CV', () => {
@@ -106,12 +106,12 @@ describe('neural render contract export', () => {
   it('can export explicit rests between notes', () => {
     const request = createNeuralRenderRequest(demoProject, { includeRests: true })
 
-    expect(request.notes[0]).toMatchObject({ kind: 'note', lyric: '도', startTick: 0, durationTick: 420 })
+    expect(request.notes[0]).toMatchObject({ kind: 'note', lyric: '네', startTick: 0, durationTick: 360 })
     expect(request.notes[1]).toMatchObject({
       kind: 'rest',
       lyric: 'R',
-      startTick: 420,
-      durationTick: 60,
+      startTick: 360,
+      durationTick: 120,
       midi: null,
       targetHz: null,
       phonemes: [{ symbol: 'sil', role: 'silence' }],
@@ -176,7 +176,7 @@ describe('neural render contract export', () => {
 
     expect(request.notes[0]).toMatchObject({
       kind: 'note',
-      lyric: '도',
+      lyric: '네',
       intensity: 137,
     })
   })

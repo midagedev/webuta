@@ -639,6 +639,18 @@
         if (payload.reviewEnvironment?.noRecordingRequired !== true) {
           problems.push('noRecordingRequired must be true')
         }
+        if (!String(payload.reviewEnvironment?.playback ?? '').trim()) {
+          problems.push('playback device is required')
+        }
+        if (payload.reviewEnvironment?.realPlaybackConfirmed !== true) {
+          problems.push('realPlaybackConfirmed must be true')
+        }
+        if (payload.reviewEnvironment?.lyricBlindPassConfirmed !== true) {
+          problems.push('lyricBlindPassConfirmed must be true')
+        }
+        if (payload.reviewEnvironment?.v2ComparisonConfirmed !== true) {
+          problems.push('v2ComparisonConfirmed must be true')
+        }
         if (!idsMatch(payload.phraseScores, EXPECTED_PHRASES)) {
           problems.push('four expected phrase IDs are required')
         }

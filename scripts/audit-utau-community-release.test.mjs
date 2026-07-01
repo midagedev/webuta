@@ -229,7 +229,7 @@ describe('UTAU community release audit', () => {
     })
 
     expect(report.ok).toBe(false)
-    expect(report.problems.join('\n')).toContain('does not match 20260701-v3-synthetic-web-3')
+    expect(report.problems.join('\n')).toContain('does not match 20260701-v3-synthetic-web-4')
   })
 
   it('blocks release when deployed V3 listening review WAVs are missing', async () => {
@@ -238,7 +238,7 @@ describe('UTAU community release audit', () => {
         ok: true,
         voicebank: {
           file: 'webuta-ko-v3.zip',
-          version: '20260701-v3-synthetic-web-3',
+          version: '20260701-v3-synthetic-web-4',
           bytes: 593,
         },
         reviewAudio: makePagesReviewAudio().map((item, index) =>
@@ -254,9 +254,18 @@ describe('UTAU community release audit', () => {
           'pages app loaded',
           'pages V3 zip cache-busted',
           'pages V3 zip bytes match local bundle',
+          'pages release review hub loaded',
+          'pages release review hub listening guard validation loaded',
+          'pages release review packet loaded',
+          'pages release review bundle loaded',
           'pages V3 listening review scorecard loaded',
+          'pages V3 listening review path loaded',
           'pages V3 listening review download gate loaded',
+          'pages V3 listening review real listening guard loaded',
           'pages V3 listening review audio loaded',
+          'pages WAV DAW handoff builder loaded',
+          'pages WAV DAW physical handoff path loaded',
+          'pages WAV DAW starter lyric input handoff gate loaded',
         ],
       },
     })
@@ -297,6 +306,8 @@ describe('UTAU community release audit', () => {
           'first-run route map visible',
           'first-run route state badges visible',
           'first-run lyric helper visible',
+          'first-run starter sample gallery visible',
+          'first-run starter sample choices visible',
           'first-run Korean UTAU path visible',
           'first-run DAW handoff checklist visible',
           'first-run release evidence links visible',
@@ -315,6 +326,7 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run route map visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run lyric helper visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run starter sample gallery visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run Korean UTAU path visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
@@ -465,7 +477,7 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must be ready')
-    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260701-v3-synthetic-web-3')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260701-v3-synthetic-web-4')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must require listening-scores.local.json')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must list at least eight V3/V2 review audio files')
   })
@@ -522,7 +534,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><section aria-label="10-minute listening review path"><p>manual evidence only after real listening</p><p>Listen phrase by phrase</p><p>Compare V3 against V2</p><p>4/5 or higher</p></section><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Evidence Preflight</p><p>no upload</p><p>Downloads</p><code>npm run release:evidence-status</code><code>npm run release:accept-evidence</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><section aria-label="10-minute listening review path"><p>manual evidence only after real listening</p><p>Listen phrase by phrase</p><p>Compare V3 against V2</p><p>4/5 or higher</p></section><section aria-label="Real listening guard"><p>Real listening guard</p><code>realPlaybackConfirmed</code><code>lyricBlindPassConfirmed</code><code>v2ComparisonConfirmed</code></section><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Evidence Preflight</p><p>no upload</p><p>Downloads</p><code>npm run release:evidence-status</code><code>npm run release:accept-evidence</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
@@ -562,7 +574,7 @@ async function makeFixture(overrides = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-3'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-4'",
       '',
     ].join('\n'),
   )
@@ -574,7 +586,7 @@ async function makeFixture(overrides = {}) {
       ok: true,
       voicebank: {
         file: 'webuta-ko-v3.zip',
-        version: '20260701-v3-synthetic-web-3',
+        version: '20260701-v3-synthetic-web-4',
         bytes: readFileSync(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip')).byteLength,
       },
       checks: [
@@ -582,11 +594,13 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip cache-busted',
         'pages V3 zip bytes match local bundle',
         'pages release review hub loaded',
+        'pages release review hub listening guard validation loaded',
         'pages release review packet loaded',
         'pages release review bundle loaded',
         'pages V3 listening review scorecard loaded',
         'pages V3 listening review path loaded',
         'pages V3 listening review download gate loaded',
+        'pages V3 listening review real listening guard loaded',
         'pages V3 listening review audio loaded',
         'pages WAV DAW handoff builder loaded',
         'pages WAV DAW physical handoff path loaded',
@@ -711,6 +725,8 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run three-step checklist visible',
       'first-run quick-start CTA visible',
       'first-run top lyric editor visible',
+      'first-run starter sample gallery visible',
+      'first-run starter sample choices visible',
       'first-run Korean UTAU path visible',
       'first-run starter launch panel visible',
       'first-run inline lyric input visible',
@@ -915,6 +931,9 @@ function makeListeningScores() {
       playback: 'headphones',
       reviewerNotes: '',
       noRecordingRequired: true,
+      realPlaybackConfirmed: true,
+      lyricBlindPassConfirmed: true,
+      v2ComparisonConfirmed: true,
     },
     thresholds: {
       minKoreanClarityScore: 4,
@@ -1007,7 +1026,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
-    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `C -> G -> Am -> F`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
+    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 3개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `Am -> F -> C -> G`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
     'The DAW handoff bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` sidecars.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
@@ -1046,7 +1065,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
+    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 3개`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
     'The DAW bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',
@@ -1075,6 +1094,9 @@ function makeReviewHubPage() {
     '<a href="release-review-bundle.zip">Download review bundle</a>',
     '<code>release-review-bundle.zip</code>',
     '<code>listening-scores.local.json</code>',
+    '<code>realPlaybackConfirmed</code>',
+    '<code>lyricBlindPassConfirmed</code>',
+    '<code>v2ComparisonConfirmed</code>',
     '<a href="wav-daw/index.html">Open DAW handoff</a>',
     '<code>handoff-report.local.json</code>',
     '<h2>Fast Acceptance Path</h2>',
@@ -1115,8 +1137,8 @@ function makeReleasePacket() {
     voicebank: {
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
-      version: '20260701-v3-synthetic-web-3',
-      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-3',
+      version: '20260701-v3-synthetic-web-4',
+      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-4',
       bundledByDefault: true,
       origin: 'self-generated synthetic UTAU sample voicebank',
       noRecordingRequired: true,
@@ -1177,7 +1199,7 @@ function makeWavDawHandoffPage() {
     '<p>처음 시작, 듣기 · 가사 · WAV, and 한국어 UTAU 모드 are visible.</p>',
     '<p>First-Vocal-Sketch.wav</p>',
     '<p>44.1 kHz mono 16-bit</p>',
-    '<p>도 히 도 히 다 이 스 키</p>',
+    '<p>네 오 빛 이 메 로 디 로 데 려 가</p>',
     '<script>',
     'const checks = ["openedFromPublicUrl","defaultVoicebankSelected","firstRunGuideVisible","starterLyricInputVisible","defaultLyricsMatched","audioPreviewWorked","wavExportWorked","targetDawImportWorked","targetDawPlaybackAudible","browserDraftRestored","noHorizontalOverflowPortrait","userVoicebankPrivacyConfirmed"];',
     'localStorage.setItem("fixture", JSON.stringify(checks));',
