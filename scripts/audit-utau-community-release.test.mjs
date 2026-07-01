@@ -840,7 +840,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `QUICK START`, `처음이면`, `첫 샘플 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.',
+    'Confirm the first-run guide shows `QUICK START`, `처음이면`, `첫 샘플 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `샘플 듣기`, `가사 적용`, `멜로디 만들기`, `WAV 받기`, `현재 가사`, and `가사·음정`.',
     'Tap `공유` or `스타터 WAV 다운로드`.',
     'Open `review/wav-daw/index.html` to generate `handoff-report.local.json`.',
     'Fill `docs/wav-daw-handoff.local.template.json` and run `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json`.',

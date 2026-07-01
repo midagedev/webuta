@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Download, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
+  import { Check, Download, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatVoicebankCoverage, inputValue } from '../app/ui'
@@ -45,9 +45,7 @@
   const coverageLabel = $derived(voicebankCoverage ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'loading')
   const isVoicebankReady = $derived(Boolean(voicebankCoverage && voicebankCoverage.fallbackNotes === 0))
   const wavLabel = $derived(isRendering ? '렌더 중' : rendered ? 'WAV 준비' : 'WAV')
-  const voiceStepLabel = $derived(isVoicebankReady ? '준비됨' : '로딩')
   const playStepLabel = $derived(isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
-  const exportStepLabel = $derived(rendered ? '다운로드' : '자동 생성')
   const projectContextLabel = $derived(projectSourceLabel === 'Built-in Hangul demo' ? '기본 데모' : projectSourceLabel)
   const nextActionTitle = $derived(isRendering ? '렌더 중' : isPlaying ? '멈추기' : rendered ? 'WAV 받기' : '먼저 들어보기')
   const nextActionDetail = $derived(
@@ -63,7 +61,7 @@
   )
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 다운로드' : '스타터 재생')
-  const guideSummary = $derived(rendered ? '이제 WAV를 저장할 수 있어요' : '듣고, 가사를 바꾸고, WAV로 저장')
+  const guideSummary = $derived(rendered ? 'WAV 저장 준비 완료' : '듣기 → 가사 → 멜로디 → WAV')
   const missionStatus = $derived(isRendering ? '렌더 중' : rendered ? 'WAV 준비됨' : isVoicebankReady ? '보컬 준비됨' : '보컬 로딩')
   const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
   const focusStep = $derived(isRendering ? '02' : rendered ? '03' : isVoicebankReady ? '01' : '00')
@@ -73,6 +71,9 @@
   const focusMeta = $derived(
     isRendering ? '곧 재생·저장이 가능해져요' : rendered ? rendered.fileName : isVoicebankReady ? '기본 가사와 멜로디가 이미 들어있어요' : coverageLabel,
   )
+  const lyricRouteStatus = $derived(`${project.notes.length} notes`)
+  const composeRouteStatus = $derived('추천 멜로디')
+  const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -102,7 +103,7 @@
       <div class="starter-focus-copy">
         <span>처음이면</span>
         <strong>{focusTitle}</strong>
-        <em>{focusMeta}</em>
+        <em>{nextActionDetail} · {focusMeta}</em>
       </div>
       <button
         type="button"
@@ -152,67 +153,58 @@
     </div>
   </div>
 
-  <div class="starter-hero" aria-label="Starter overview">
-    <ol class="starter-checklist starter-path" aria-label="Starter path">
-      <li class={`starter-path-step ${isVoicebankReady ? 'done' : 'active'}`}>
-        <span>01</span>
-        <strong>보이스 확인</strong>
-        <em>{isVoicebankReady ? voicebankLabel : voiceStepLabel}</em>
-      </li>
-      <li class={`starter-path-step ${rendered ? 'done' : 'active'}`}>
-        <span>02</span>
-        <strong>먼저 들어보기</strong>
-        <em>{playStepLabel}</em>
-      </li>
-      <li class={`starter-path-step ${rendered ? 'active' : 'todo'}`}>
-        <span>03</span>
-        <strong>WAV 저장</strong>
-        <em>{exportStepLabel}</em>
-      </li>
-    </ol>
-
-    <div class="starter-mission" aria-label="Beginner mission">
-      <div class="starter-mission-copy">
+  <div class="starter-path-card" aria-label="Starter path">
+    <div class="starter-path-head">
+      <div>
         <span>처음 1분</span>
-        <strong>샘플 듣기 / 가사·멜로디 / WAV 받기</strong>
-        <em>{missionStatus}</em>
+        <strong>샘플 듣기 → 가사 적용 → 멜로디 만들기 → WAV 받기</strong>
       </div>
-      <div class="starter-mission-actions" aria-label="Beginner mission actions">
-        <button
-          type="button"
-          class={`starter-mission-action primary ${isPlaying ? 'active' : ''}`}
-          aria-label={isPlaying ? '초보자 샘플 일시정지' : '초보자 샘플 듣기'}
-          onclick={() => void onPlayPause()}
-          disabled={isRendering}
-        >
-          <Headphones size={18} aria-hidden="true" />
-          <span>1 샘플 듣기</span>
-          <strong>{playStepLabel}</strong>
-        </button>
-        <button type="button" class="starter-mission-action" aria-label="초보자 가사 멜로디 열기" onclick={onOpenCompose}>
-          <PencilLine size={18} aria-hidden="true" />
-          <span>2 가사·멜로디</span>
-          <strong>{project.notes.length} notes</strong>
-        </button>
-        <button
-          type="button"
-          class={`starter-mission-action export ${rendered ? 'ready' : ''}`}
-          aria-label="초보자 WAV 받기"
-          onclick={() => void onDownloadWav()}
-          disabled={isRendering}
-        >
-          <Download size={18} aria-hidden="true" />
-          <span>3 WAV 받기</span>
-          <strong>{missionWavMeta}</strong>
-        </button>
-      </div>
+      <em>{missionStatus}</em>
+    </div>
+    <div class="starter-route-grid" aria-label="Starter action route">
+      <button
+        type="button"
+        class={`starter-route-step primary ${isPlaying ? 'active' : ''}`}
+        aria-label={isPlaying ? '초보자 샘플 일시정지' : '초보자 샘플 듣기'}
+        onclick={() => void onPlayPause()}
+        disabled={isRendering}
+      >
+        <span class="route-index">1</span>
+        <Headphones size={18} aria-hidden="true" />
+        <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
+        <em>{playStepLabel}</em>
+      </button>
+      <button type="button" class="starter-route-step" aria-label="초보자 가사 적용" onclick={onApplyLyricLine}>
+        <span class="route-index">2</span>
+        <PencilLine size={18} aria-hidden="true" />
+        <strong>가사 적용</strong>
+        <em>{lyricRouteStatus}</em>
+      </button>
+      <button type="button" class="starter-route-step" aria-label="초보자 멜로디 만들기" onclick={onOpenCompose}>
+        <span class="route-index">3</span>
+        <Wand2 size={18} aria-hidden="true" />
+        <strong>멜로디 만들기</strong>
+        <em>{composeRouteStatus}</em>
+      </button>
+      <button
+        type="button"
+        class={`starter-route-step export ${rendered ? 'ready' : ''}`}
+        aria-label="초보자 WAV 받기"
+        onclick={() => void onDownloadWav()}
+        disabled={isRendering}
+      >
+        <span class="route-index">4</span>
+        <Download size={18} aria-hidden="true" />
+        <strong>WAV 받기</strong>
+        <em>{exportRouteStatus}</em>
+      </button>
     </div>
   </div>
 
-  <div class="starter-flow" aria-label="Starter actions">
+  <div class="starter-utility-row" aria-label="Starter project utilities">
     <button
       type="button"
-      class={`starter-step listen ${isPlaying ? 'active' : ''}`}
+      class={`starter-utility-button listen ${isPlaying ? 'active' : ''}`}
       aria-label={isPlaying ? '스타터 재생 일시정지' : '스타터 재생'}
       onclick={() => void onPlayPause()}
       disabled={isRendering}
@@ -227,30 +219,21 @@
     </button>
     <button
       type="button"
-      class={`starter-step primary ${rendered ? 'ready' : ''}`}
+      class={`starter-utility-button primary ${rendered ? 'ready' : ''}`}
       aria-label="스타터 WAV 다운로드"
       onclick={() => void onDownloadWav()}
       disabled={isRendering}
     >
-      {#if rendered}
-        <Sparkles size={17} aria-hidden="true" />
-      {:else}
-        <Download size={17} aria-hidden="true" />
-      {/if}
+      <Download size={17} aria-hidden="true" />
       <span>2 {wavLabel}</span>
       <strong>{rendered ? 'download' : '44.1k mono'}</strong>
     </button>
-    <button type="button" class="starter-step" aria-label="컴포즈 모드 열기" onclick={onOpenCompose}>
-      <Wand2 size={17} aria-hidden="true" />
-      <span>멜로디 만들기</span>
-      <strong>compose</strong>
-    </button>
-    <button type="button" class="starter-step" aria-label="새 프로젝트" onclick={onNewProject}>
+    <button type="button" class="starter-utility-button" aria-label="새 프로젝트" onclick={onNewProject}>
       <FilePlus size={17} aria-hidden="true" />
       <span>새로 시작</span>
       <strong>blank</strong>
     </button>
-    <button type="button" class="starter-step ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
+    <button type="button" class="starter-utility-button ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
       <RotateCcw size={17} aria-hidden="true" />
       <span>데모 복구</span>
       <strong>{lyricPreview}</strong>
