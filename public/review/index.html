@@ -86,6 +86,13 @@
         font-weight: 800;
       }
 
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
       .steps {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -157,6 +164,12 @@
         color: #061216;
       }
 
+      a.app-link {
+        background: var(--lime);
+        border-color: var(--lime);
+        color: #101307;
+      }
+
       .commands {
         margin-top: 14px;
         border: 1px solid var(--line);
@@ -207,6 +220,11 @@
           <span class="pill">voicebank: WebUtau Korean V3 Synthetic</span>
           <span class="pill">No recording needed</span>
           <span class="pill">public app: midagedev.github.io/webuta</span>
+        </div>
+        <div class="hero-actions" aria-label="Release review shortcuts">
+          <a class="app-link" href="../">Open WebUtau app</a>
+          <a href="v3/index.html">Open listening review</a>
+          <a href="wav-daw/index.html">Open DAW handoff</a>
         </div>
       </header>
 

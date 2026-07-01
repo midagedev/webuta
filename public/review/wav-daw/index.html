@@ -54,7 +54,7 @@
       }
 
       h1 {
-        font-size: clamp(28px, 7vw, 54px);
+        font-size: 46px;
         line-height: 0.98;
       }
 
@@ -78,6 +78,27 @@
         color: #58f4ff;
       }
 
+      .quick-link {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(88, 244, 255, 0.34);
+        border-radius: 4px;
+        padding: 0 12px;
+        color: #f8f4ff;
+        background: #15182a;
+        font-size: 12px;
+        font-weight: 950;
+        text-decoration: none;
+      }
+
+      .quick-link.primary {
+        border-color: rgba(157, 255, 106, 0.68);
+        color: #101307;
+        background: #9dff6a;
+      }
+
       .eyebrow,
       .status {
         color: #9dff6a;
@@ -97,6 +118,13 @@
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 4px;
+      }
+
+      .quick-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
       }
 
       .pill {
@@ -289,6 +317,10 @@
           padding: 11px;
         }
 
+        h1 {
+          font-size: 31px;
+        }
+
         .grid,
         .field-grid {
           grid-template-columns: 1fr;
@@ -318,6 +350,10 @@
           <span class="pill">voicebank: WebUtau Korean V3 Synthetic</span>
           <span class="pill">public app: midagedev.github.io/webuta</span>
           <span class="pill">No recording needed</span>
+        </div>
+        <div class="quick-links" aria-label="Physical handoff shortcuts">
+          <a class="quick-link primary" href="../../">Open WebUtau app</a>
+          <a class="quick-link" href="../index.html">Open release hub</a>
         </div>
       </header>
 

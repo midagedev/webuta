@@ -244,6 +244,8 @@ function publicReviewHubGate(path) {
       'Release Review Hub',
       'WebUtau Korean V3 Synthetic',
       'No recording needed',
+      'Open WebUtau app',
+      'href="../"',
       'v3/index.html',
       'listening-scores.local.json',
       'wav-daw/index.html',
@@ -331,6 +333,10 @@ function publicWavDawHandoffGate(path) {
       'release:accept-daw-handoff',
       'WebUtau Korean V3 Synthetic',
       'https://midagedev.github.io/webuta/',
+      'Open WebUtau app',
+      'Open release hub',
+      'href="../../"',
+      'href="../index.html"',
       'openedFromPublicUrl',
       'defaultVoicebankSelected',
       'firstRunGuideVisible',
@@ -834,6 +840,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     const html = await hub.text()
     if (
       html.includes('WebUtau Release Review Hub') &&
+      html.includes('Open WebUtau app') &&
       html.includes('v3/index.html') &&
       html.includes('wav-daw/index.html') &&
       html.includes('listening-scores.local.json') &&
@@ -855,7 +862,12 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   }
   if (handoff?.ok) {
     const html = await handoff.text()
-    if (html.includes('webuta-wav-daw-handoff-v1') && html.includes('handoff-report.local.json')) {
+    if (
+      html.includes('webuta-wav-daw-handoff-v1') &&
+      html.includes('handoff-report.local.json') &&
+      html.includes('Open WebUtau app') &&
+      html.includes('Open release hub')
+    ) {
       evidence.checks.push('pages WAV DAW handoff builder loaded')
     } else {
       problems.push('GitHub Pages WAV DAW handoff builder is missing release report markers')

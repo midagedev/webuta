@@ -478,7 +478,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     main { width: min(1100px, calc(100vw - 28px)); margin: 0 auto; padding: 28px 0 48px; }
-    h1 { margin: 0 0 8px; font-size: clamp(28px, 5vw, 48px); letter-spacing: 0; }
+    h1 { margin: 0 0 8px; font-size: 44px; letter-spacing: 0; }
     h2, h3 { letter-spacing: 0; }
     p { color: var(--muted); line-height: 1.55; }
     code { color: #9cff8a; word-break: break-all; }
@@ -518,6 +518,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     th, td { padding: 9px; border-bottom: 1px solid #303848; text-align: left; }
     .ok { color: var(--ok); font-weight: 800; }
     @media (max-width: 760px) {
+      h1 { font-size: 30px; }
       .meta, .scores, .comparison-grid { grid-template-columns: 1fr; }
       button { width: 100%; }
     }
