@@ -12,6 +12,17 @@ describe('release review hub page', () => {
     })
     const { document } = dom.window
 
+    const runway = document.querySelector('[aria-label="Reviewer Runway"]')
+    expect(runway?.textContent).toContain('Finish the last two files in this order')
+    expect(runway?.textContent).toContain('01 Listen')
+    expect(runway?.textContent).toContain('02 Handoff')
+    expect(runway?.textContent).toContain('03 Preflight')
+    expect(runway?.textContent).toContain('04 Status')
+    expect(runway?.textContent).toContain('05 Accept')
+    expect(runway?.textContent).toContain('listening-scores.local.json')
+    expect(runway?.textContent).toContain('handoff-report.local.json')
+    expect(runway?.querySelector('a[href="#evidence-preflight"]')).toBeTruthy()
+    expect(runway?.querySelector('a[href="#acceptance-commands"]')).toBeTruthy()
     expect(document.querySelector('[aria-label="Evidence preflight progress"]')?.textContent).toContain('0/2 ready')
     expect(document.querySelector('#evidenceNextAction')?.textContent).toBe('Choose listening JSON')
 

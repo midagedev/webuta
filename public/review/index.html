@@ -152,6 +152,87 @@
         padding: 18px;
       }
 
+      .reviewer-runway {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        background: #100f20;
+        padding: 18px;
+      }
+
+      .runway-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: end;
+        justify-content: space-between;
+      }
+
+      .runway-head span {
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .runway-head h2 {
+        margin-top: 4px;
+      }
+
+      .runway-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      a.runway-step {
+        min-width: 0;
+        min-height: 136px;
+        display: grid;
+        align-content: start;
+        justify-content: stretch;
+        gap: 8px;
+        margin-top: 0;
+        border-color: #34304f;
+        background: #0b0b18;
+        padding: 12px;
+        text-align: left;
+      }
+
+      a.runway-step span,
+      a.runway-step strong,
+      a.runway-step em {
+        display: block;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      a.runway-step span {
+        width: fit-content;
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        background: var(--cyan);
+        color: #071316;
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      a.runway-step strong {
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.18;
+      }
+
+      a.runway-step em {
+        color: var(--muted);
+        font-size: 12px;
+        font-style: normal;
+        line-height: 1.36;
+      }
+
       .preflight {
         margin-top: 14px;
         border: 1px solid var(--line);
@@ -414,6 +495,7 @@
         }
 
         .steps,
+        .runway-grid,
         .preflight-grid,
         .preflight-status-strip {
           grid-template-columns: 1fr;
@@ -421,6 +503,10 @@
 
         .completion-strip {
           grid-template-columns: 1fr;
+        }
+
+        .runway-head {
+          align-items: start;
         }
 
         h1 {
@@ -472,6 +558,43 @@
           <span>완료 명령</span>
           <strong>accept evidence</strong>
           <p><code>npm run release:accept-evidence</code></p>
+        </div>
+      </section>
+
+      <section class="reviewer-runway" aria-label="Reviewer Runway">
+        <div class="runway-head">
+          <div>
+            <span>Reviewer Runway</span>
+            <h2>Finish the last two files in this order</h2>
+          </div>
+          <code>2 files -> preflight -> accept</code>
+        </div>
+        <div class="runway-grid">
+          <a class="runway-step" href="v3/index.html">
+            <span>01 Listen</span>
+            <strong>Download listening-scores.local.json</strong>
+            <em>Score real playback, blind lyric pass, and V2 comparison before downloading.</em>
+          </a>
+          <a class="runway-step" href="wav-daw/index.html">
+            <span>02 Handoff</span>
+            <strong>Download handoff-report.local.json</strong>
+            <em>Export the public app WAV and confirm a real DAW import on a physical device.</em>
+          </a>
+          <a class="runway-step" href="#evidence-preflight">
+            <span>03 Preflight</span>
+            <strong>Check both JSON files locally</strong>
+            <em>No upload. Choose both files here before touching the repo evidence paths.</em>
+          </a>
+          <a class="runway-step" href="#acceptance-commands">
+            <span>04 Status</span>
+            <strong>Run release:evidence-status</strong>
+            <em>Keep both JSON files in Downloads so the command can auto-detect them.</em>
+          </a>
+          <a class="runway-step" href="#acceptance-commands">
+            <span>05 Accept</span>
+            <strong>Run release:accept-evidence</strong>
+            <em>Only after status says 2/2 ready; this installs both final evidence files.</em>
+          </a>
         </div>
       </section>
 
@@ -562,7 +685,7 @@
         <code>webuta-evidence-preflight-v1</code>
       </section>
 
-      <section class="commands" aria-label="Acceptance commands">
+      <section id="acceptance-commands" class="commands" aria-label="Acceptance commands">
         <p><code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code></p>
         <p><code>npm run release:audit-utau</code></p>
         <details>

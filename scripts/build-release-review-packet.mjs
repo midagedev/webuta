@@ -81,8 +81,9 @@ export function buildReleaseReviewPacket(options = {}) {
     },
     checklist: [
       'Open the release review hub.',
-      'Complete the V3 listening scorecard from real playback, including the real playback, blind lyric pass, and V2 comparison confirmations.',
-      'Complete the physical-device WAV/DAW handoff report.',
+      'Follow the Reviewer Runway in order: 01 Listen, 02 Handoff, 03 Preflight, 04 Status, 05 Accept.',
+      'Complete the V3 listening scorecard from real playback, including the real playback, blind lyric pass, and V2 comparison confirmations, then download listening-scores.local.json.',
+      'Complete the physical-device WAV/DAW handoff report, then download handoff-report.local.json.',
       'Keep both downloaded JSON files in Downloads.',
       'Use Evidence Preflight in the review hub to check both JSON files locally with no upload.',
       'Run npm run release:evidence-status.',
