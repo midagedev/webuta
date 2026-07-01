@@ -386,7 +386,8 @@ Current verified V3 evidence:
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
   visible, the first-run `처음 시작` / `듣기 · 가사 · WAV` header,
-  `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`,
+  `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`,
+  visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`,
   `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`,
   collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`,
   `01 샘플 듣기` / `02 가사 바꾸기` /

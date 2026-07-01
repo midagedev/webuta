@@ -10,6 +10,7 @@ describe('default demo render audit report', () => {
       checks: [
         'default V3 voicebank loaded',
         'first-run starter guide visible',
+        'first-run success mission visible',
         'first-run beginner start panel visible',
         'first-run context drawer visible',
         'first-run onboarding coach visible',

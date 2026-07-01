@@ -376,6 +376,13 @@ async function assertDefaultV3DemoReady(page) {
   await starterGuide.getByText('처음 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('First Vocal Sketch').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('듣기 · 가사 · WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const successMission = page.getByLabel('Beginner success mission')
+  await successMission.getByText('1분 미션').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await successMission.getByText('한글 한 줄을 보컬 WAV로 만들기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await successMission.getByText('First-Vocal-Sketch.wav').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await successMission.getByRole('button', { name: '미션 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await successMission.getByRole('button', { name: '미션 가사 바꾸기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await successMission.getByRole('button', { name: '미션 WAV 받기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const beginnerStartPanel = page.getByLabel('Beginner start panel')
   await beginnerStartPanel.getByText('처음이면 여기부터').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByText('기본 샘플 준비 완료').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -534,6 +541,7 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run success mission visible',
     'first-run beginner start panel visible',
     'first-run context drawer visible',
     'first-run onboarding coach visible',

@@ -116,6 +116,14 @@
   const startSecondaryMeta = $derived(isDraftProject ? '도히도히' : '새 노래')
   const startSecondaryAria = $derived(isDraftProject ? '기본 샘플로 시작' : '새 프로젝트 만들기')
   const recommendedStepLabel = $derived(rendered && !isPlaying ? '03 WAV 저장' : hasPendingLyricLine ? '02 가사 적용' : '01 샘플 듣기')
+  const starterOutputLabel = $derived(rendered ? rendered.fileName : 'First-Vocal-Sketch.wav')
+  const missionDetail = $derived(
+    rendered
+      ? `${starterOutputLabel} 파일이 준비됐어요. 저장하거나 DAW 번들로 이어가면 됩니다.`
+      : hasPendingLyricLine
+        ? '새 가사를 멜로디에 적용하면 바로 다시 들을 수 있어요.'
+        : `샘플을 듣고, 한 줄 가사를 바꾼 뒤 ${starterOutputLabel}로 받으면 첫 곡이 완성돼요.`,
+  )
   const routeCoachTitle = $derived(rendered ? '이제 저장하면 돼요' : hasPendingLyricLine ? '가사를 적용해볼 차례' : '먼저 샘플을 들어봐요')
   const routeCoachDetail = $derived(
     rendered
@@ -153,7 +161,7 @@
   }
 </script>
 
-<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8 onboarding-v9" aria-label="First run guide">
+<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8 onboarding-v9 onboarding-v10" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>처음 시작</span>
@@ -165,6 +173,48 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
       <span class="starter-progress-pill">{starterProgressLabel}</span>
+    </div>
+  </div>
+
+  <div class="starter-mission starter-success-mission" aria-label="Beginner success mission">
+    <div class="starter-mission-copy">
+      <span>1분 미션</span>
+      <strong>한글 한 줄을 보컬 WAV로 만들기</strong>
+      <em>{missionDetail}</em>
+    </div>
+    <div class="starter-mission-actions" aria-label="Beginner success checkpoints">
+      <button
+        type="button"
+        class={`starter-mission-action ${listenProgressClass === 'current' ? 'primary' : listenProgressClass}`}
+        aria-label={isPlaying ? '미션 샘플 멈추기' : '미션 샘플 듣기'}
+        onclick={() => void onPlayPause()}
+        disabled={isRendering || isStarterActionLocked}
+      >
+        <Headphones size={17} aria-hidden="true" />
+        <span>{isPlaying ? '멈추기' : '샘플 듣기'}</span>
+        <strong>{listenStateLabel}</strong>
+      </button>
+      <button
+        type="button"
+        class={`starter-mission-action ${lyricProgressClass === 'current' ? 'primary' : lyricProgressClass}`}
+        aria-label={hasPendingLyricLine ? '미션 가사 적용' : '미션 가사 바꾸기'}
+        onclick={hasPendingLyricLine ? onApplyLyricLine : focusQuickLyricInput}
+      >
+        <PencilLine size={17} aria-hidden="true" />
+        <span>{hasPendingLyricLine ? '가사 적용' : '가사 바꾸기'}</span>
+        <strong>{lyricStateLabel}</strong>
+      </button>
+      <button
+        type="button"
+        class={`starter-mission-action export ${rendered ? 'ready' : exportProgressClass}`}
+        aria-label="미션 WAV 받기"
+        onclick={() => void onDownloadWav()}
+        disabled={isRendering || isStarterActionLocked}
+      >
+        <Download size={17} aria-hidden="true" />
+        <span>WAV 받기</span>
+        <strong>{exportStateLabel}</strong>
+      </button>
     </div>
   </div>
 
