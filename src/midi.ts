@@ -34,6 +34,13 @@ type ParsedMidiTimeSignature = {
   beatUnit: number
 }
 
+type ParsedMidiTrack = {
+  index: number
+  name: string
+  notes: ParsedMidiNote[]
+  lyrics: ParsedMidiLyric[]
+}
+
 export function createMelodyMidi(project: SongProject): Uint8Array {
   return createTypeOneMidi([
     createConductorTrack(project),
@@ -68,8 +75,7 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
     throw new Error('MIDI file has no PPQ tracks to import.')
   }
 
-  const notes: ParsedMidiNote[] = []
-  const lyrics: ParsedMidiLyric[] = []
+  const importedTracks: ParsedMidiTrack[] = []
   const tempos: ParsedMidiTempo[] = []
   const signatures: ParsedMidiTimeSignature[] = []
   for (let trackIndex = 0; trackIndex < trackCount && !reader.done; trackIndex += 1) {
@@ -77,15 +83,29 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
     if (chunk.id !== 'MTrk') {
       continue
     }
-    parseMidiTrack(chunk.data, division, notes, lyrics, tempos, signatures)
+    const track: ParsedMidiTrack = {
+      index: trackIndex,
+      name: `Track ${trackIndex + 1}`,
+      notes: [],
+      lyrics: [],
+    }
+    parseMidiTrack(chunk.data, division, track, tempos, signatures)
+    if (track.notes.length > 0) {
+      importedTracks.push(track)
+    }
   }
 
-  if (notes.length === 0) {
+  if (importedTracks.length === 0) {
     throw new Error('No playable MIDI notes were found.')
   }
 
-  const sortedLyrics = lyrics.sort((a, b) => a.tick - b.tick)
-  const projectNotes = notes
+  const selectedTrack = chooseMelodyTrack(importedTracks)
+  if (!selectedTrack) {
+    throw new Error('No melody-like MIDI track was found. Import a vocal melody MIDI, not a chord guide MIDI.')
+  }
+
+  const sortedLyrics = selectedTrack.lyrics.sort((a, b) => a.tick - b.tick)
+  const projectNotes = selectedTrack.notes
     .sort((a, b) => a.start - b.start || a.tone - b.tone)
     .map((note, index) => ({
       id: `midi-note-${index + 1}`,
@@ -104,7 +124,7 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
   return {
     id: `midi-${projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'import'}`,
     name: projectName,
-    comment: `Imported from ${fileName}`,
+    comment: `Imported from ${fileName} · ${selectedTrack.name}`,
     bpm: firstTempo,
     tempoChanges: sortedTempos,
     beatPerBar: timeSignature.beatPerBar,
@@ -283,8 +303,7 @@ function concatBytes(parts: Uint8Array[]) {
 function parseMidiTrack(
   data: Uint8Array,
   division: number,
-  notes: ParsedMidiNote[],
-  lyrics: ParsedMidiLyric[],
+  track: ParsedMidiTrack,
   tempos: ParsedMidiTempo[],
   signatures: ParsedMidiTimeSignature[],
 ) {
@@ -322,10 +341,12 @@ function parseMidiTrack(
           beatPerBar: Math.max(1, payload[0]),
           beatUnit: Math.max(1, 2 ** payload[1]),
         })
+      } else if (type === 0x03) {
+        track.name = decodeMidiText(payload).trim() || track.name
       } else if (type === 0x05 || type === 0x01) {
         const text = decodeMidiText(payload).trim()
         if (text) {
-          lyrics.push({ tick: scaledTick, text })
+          track.lyrics.push({ tick: scaledTick, text })
           pendingLyric = text
         }
       }
@@ -357,7 +378,7 @@ function parseMidiTrack(
         const stack = active.get(key)
         const start = stack?.shift()
         if (start) {
-          notes.push({
+          track.notes.push({
             start: start.tick,
             duration: Math.max(1, scaledTick - start.tick),
             tone: sanitizeMidiNote(tone),
@@ -377,6 +398,39 @@ function parseMidiTrack(
     }
     reader.readBytes(byteCount)
   }
+}
+
+function chooseMelodyTrack(tracks: ParsedMidiTrack[]) {
+  const lyricTracks = tracks.filter((track) => track.lyrics.length > 0)
+  if (lyricTracks.length > 0) {
+    return lyricTracks.sort((a, b) => melodyTrackScore(b, true) - melodyTrackScore(a, true))[0]
+  }
+  const melodyCandidates = tracks
+    .map((track) => ({ track, score: melodyTrackScore(track, false) }))
+    .filter((candidate) => candidate.score >= 0)
+    .sort((a, b) => b.score - a.score)
+  return melodyCandidates[0]?.track ?? null
+}
+
+function melodyTrackScore(track: ParsedMidiTrack, hasLyrics: boolean) {
+  const noteCount = track.notes.length
+  if (noteCount === 0) {
+    return -1
+  }
+  const starts = new Map<number, number>()
+  for (const note of track.notes) {
+    starts.set(note.start, (starts.get(note.start) ?? 0) + 1)
+  }
+  const startCounts = [...starts.values()]
+  const polyphonicStartCount = startCounts.filter((count) => count > 1).length
+  const polyphonicStartRatio = polyphonicStartCount / Math.max(1, startCounts.length)
+  const maxStartStack = Math.max(1, ...startCounts)
+  const uniqueToneCount = new Set(track.notes.map((note) => note.tone)).size
+  const namePenalty = /chord|guide|harmony|accomp|backing|pad|bass|코드|화음/iu.test(track.name) ? 20 : 0
+  if (!hasLyrics && maxStartStack >= 3 && polyphonicStartRatio >= 0.35) {
+    return -1
+  }
+  return noteCount + uniqueToneCount * 0.25 + (hasLyrics ? track.lyrics.length * 2 : 0) - polyphonicStartRatio * 12 - (maxStartStack - 1) * 3 - namePenalty
 }
 
 function lyricForMidiNote(note: ParsedMidiNote, lyrics: ParsedMidiLyric[], index: number) {
