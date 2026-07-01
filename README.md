@@ -151,8 +151,6 @@ npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
 npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json
-npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json
-npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
 npm run screenshots:readme
 npm run lint
 npm test
@@ -189,8 +187,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run release:accept-evidence` validates both downloaded release JSON files, auto-detects them from Downloads when possible, installs them atomically, and then reruns the final release audit.
-- `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` validates and installs a human scorecard into the release-audit path.
-- `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json` validates and installs a physical-device WAV/DAW import report into the release-audit path.
+- `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` and `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json` remain compatibility helpers for single-file acceptance; the release path should use `release:accept-evidence`.
 - `npm run release:audit-utau` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
 - `npm run release:audit-utau` also verifies the WAV/DAW QA checklist follows the bundled V3 first-run path and requires accepted physical-device DAW handoff evidence before release.
 - `npm run screenshots:readme` refreshes the desktop/mobile README screenshots from the live app UI.

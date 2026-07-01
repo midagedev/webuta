@@ -63,7 +63,7 @@
       <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
     </div>
     <p>Template path: <code>listening-scores.local.template.json</code>. A phrase should score 4/5 or higher before community release.</p>
-    <p>After downloading the JSON, accept it into the release audit with <code>npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json</code>.</p>
+    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, then accept both with <code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code>.</p>
     <form id="scorecardForm">
       <section class="meta" aria-label="Review metadata">
         <label>Reviewer
@@ -625,7 +625,7 @@
       downloadButton.title = problems.length === 0 ? 'Download release-audit-ready listening score JSON' : 'Finish every required score before downloading';
       problemList.className = `problem-list ${problems.length === 0 ? 'ok' : ''}`;
       problemList.innerHTML = problems.length === 0
-        ? '<li>Ready: this JSON can be accepted by npm run voicebank:accept-review-v3.</li>'
+        ? '<li>Ready: download this JSON, then accept it with the DAW handoff JSON using npm run release:accept-evidence.</li>'
         : problems.slice(0, 8).map((problem) => `<li>${escapeText(problem)}</li>`).join('');
     }
 

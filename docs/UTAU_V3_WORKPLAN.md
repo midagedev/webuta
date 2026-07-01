@@ -333,8 +333,7 @@ npm run voicebank:pitch-v3
 npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
-npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json
-npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
+npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json
 npm run voicebank:sample-review-v3
 npm run screenshots:readme
 npm run release:audit-utau
@@ -413,10 +412,10 @@ Current verified V3 evidence:
   sanitized manifest, 4 V3 WAVs, and 4 legacy V2 comparison WAVs under
   `public/review/v3/`; no local absolute paths remain in the public manifest or
   scorecard files.
-- `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json`
-  validates a downloaded human scorecard and copies it to the release-audit
-  path only if all required scores meet the thresholds and the review metadata
-  confirms that no new recording was required.
+- `npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json`
+  validates both downloaded human review files, installs them atomically, and
+  reruns the final release audit. The older single-file accept commands remain
+  compatibility helpers, but the release flow should use the unified command.
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.

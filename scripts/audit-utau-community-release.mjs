@@ -278,6 +278,7 @@ function publicReviewGate(paths) {
       'progressSummary',
       'problemList',
       'Finish every required score before downloading',
+      'release:accept-evidence',
     ]) {
       if (!html.includes(snippet)) {
         problems.push(`public review scorecard must include "${snippet}"`)
@@ -331,7 +332,7 @@ function publicWavDawHandoffGate(path) {
       'WebUtau WAV DAW Handoff',
       'webuta-wav-daw-handoff-v1',
       'handoff-report.local.json',
-      'release:accept-daw-handoff',
+      'release:accept-evidence',
       'WebUtau Korean V3 Synthetic',
       'https://midagedev.github.io/webuta/',
       'Open WebUtau app',
@@ -859,7 +860,11 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   if (review?.ok) {
     const html = await review.text()
     evidence.checks.push('pages V3 listening review scorecard loaded')
-    if (html.includes('problemList') && html.includes('Finish every required score before downloading')) {
+    if (
+      html.includes('problemList') &&
+      html.includes('Finish every required score before downloading') &&
+      html.includes('release:accept-evidence')
+    ) {
       evidence.checks.push('pages V3 listening review download gate loaded')
     } else {
       problems.push('GitHub Pages V3 listening review is missing scorecard download gate markers')
@@ -870,6 +875,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     if (
       html.includes('webuta-wav-daw-handoff-v1') &&
       html.includes('handoff-report.local.json') &&
+      html.includes('release:accept-evidence') &&
       html.includes('Open WebUtau app') &&
       html.includes('Open release hub')
     ) {

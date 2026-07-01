@@ -414,7 +414,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
@@ -899,7 +899,7 @@ function makeWavDawHandoffPage() {
     '<p>No recording needed</p>',
     '<code>webuta-wav-daw-handoff-v1</code>',
     '<code>handoff-report.local.json</code>',
-    '<code>npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json</code>',
+    '<code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code>',
     '<p>WebUtau Korean V3 Synthetic</p>',
     '<p>https://midagedev.github.io/webuta/</p>',
     '<p>GarageBand iPad</p>',

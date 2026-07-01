@@ -532,7 +532,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
     </div>
     <p>Template path: <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
-    <p>After downloading the JSON, accept it into the release audit with <code>npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json</code>.</p>
+    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, then accept both with <code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code>.</p>
     <form id="scorecardForm">
       <section class="meta" aria-label="Review metadata">
         <label>Reviewer
@@ -765,7 +765,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       downloadButton.title = problems.length === 0 ? 'Download release-audit-ready listening score JSON' : 'Finish every required score before downloading';
       problemList.className = \`problem-list \${problems.length === 0 ? 'ok' : ''}\`;
       problemList.innerHTML = problems.length === 0
-        ? '<li>Ready: this JSON can be accepted by npm run voicebank:accept-review-v3.</li>'
+        ? '<li>Ready: download this JSON, then accept it with the DAW handoff JSON using npm run release:accept-evidence.</li>'
         : problems.slice(0, 8).map((problem) => \`<li>\${escapeText(problem)}</li>\`).join('');
     }
 
@@ -944,7 +944,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json` after the scorecard says it passes.',
     'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
     'The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.',
-    'Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.',
+    'After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, then accept both with `npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json` before running the final release audit.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
     comparisons.length

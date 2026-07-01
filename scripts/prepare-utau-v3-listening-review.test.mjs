@@ -87,7 +87,7 @@ describe('UTAU V3 listening review pack', () => {
     expect(html).toContain('noRecordingRequired')
     expect(html).toContain('data-score-key="koreanClarityScore"')
     expect(html).toContain('listening-scores.local.json')
-    expect(html).toContain('voicebank:accept-review-v3')
+    expect(html).toContain('release:accept-evidence')
   })
 
   it('builds a passing score JSON from the offline scorecard controls', async () => {
