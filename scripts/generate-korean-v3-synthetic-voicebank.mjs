@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import JSZip from 'jszip'
 
-const SAMPLE_RATE = 44100
+const SAMPLE_RATE = 40000
 const OUTPUT = join(process.cwd(), 'public/voicebanks/webuta-ko-v3.zip')
 const ZIP_FILE_DATE = '2026-01-01T00:00:00.000Z'
 const SYNTHESIS_PROFILE = 'deterministic-dsp-bright-formant-v3'
@@ -210,6 +210,7 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
         'Broadened vowel formant bands to reduce whistle-like resonances.',
         'Blended a low-passed glottal body layer behind the formants for a more vocal sustain.',
         'Applied deterministic soft saturation before normalization to add stable harmonic color without using recordings.',
+        'Uses 40 kHz source WAVs to keep the web bundle below the GitHub large-file warning while WebUtau exports DAW-ready 44.1 kHz renders.',
       ],
     },
     qualityIntent:
@@ -240,6 +241,7 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
       'The samples are produced by deterministic DSP synthesis, not by cloning, recording, or redistributing a human singer.',
       'No public or private recorded voice dataset is used as source audio for the bundled samples.',
       'The voice is designed as a stylized cyber vocal: stable pitch, clear demo syllables, and DAW-ready browser rendering.',
+      'Source samples are 40 kHz mono 16-bit PCM; WebUtau renders exported song WAVs at 44.1 kHz mono 16-bit PCM.',
       '',
     ].join('\r\n'),
     zipFileOptions(),

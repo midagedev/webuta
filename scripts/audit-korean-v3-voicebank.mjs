@@ -18,10 +18,11 @@ const REQUIRED_FILES = [
 
 const DEMO_ALIASES = ['도', '히', '다', '이', '스', '키']
 const CODA_ALIASES = ['연']
+const EXPECTED_SAMPLE_RATE = 40000
 
 export async function auditKoreanV3Voicebank(options = {}) {
   const zipPath = resolve(options.zip ?? DEFAULT_ZIP)
-  const maxBytes = Number(options.maxBytes ?? 60 * 1024 * 1024)
+  const maxBytes = Number(options.maxBytes ?? 50_000_000)
   const minWavs = Number(options.minWavs ?? 600)
   const minAliases = Number(options.minAliases ?? 1400)
   const maxSamples = Number(options.maxSamples ?? Number.POSITIVE_INFINITY)
@@ -148,7 +149,9 @@ export function auditWav(path, bytes) {
   const durationSeconds = samples.length / parsed.sampleRate
   const activeRatio = active / Math.max(1, samples.length)
   const problems = [
-    ...(parsed.sampleRate !== 44100 ? [`sampleRate ${parsed.sampleRate}; expected 44100`] : []),
+    ...(parsed.sampleRate !== EXPECTED_SAMPLE_RATE
+      ? [`sampleRate ${parsed.sampleRate}; expected ${EXPECTED_SAMPLE_RATE} for web-optimized V3 source samples`]
+      : []),
     ...(parsed.channels !== 1 ? [`channels ${parsed.channels}; expected mono`] : []),
     ...(parsed.bitsPerSample !== 16 ? [`bitsPerSample ${parsed.bitsPerSample}; expected 16`] : []),
     ...(durationSeconds < 0.45 ? [`duration ${durationSeconds.toFixed(3)}s is too short`] : []),

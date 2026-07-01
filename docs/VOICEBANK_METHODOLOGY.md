@@ -14,9 +14,10 @@ join those units without destroying consonants.
 ## Current Position
 
 WebUtau now ships a generated Korean V3 synthetic UTAU voicebank. The current
-web profile contains 674 generated WAV samples, 1578 aliases, `oto.ini`, and a
-browser sample renderer. This is useful because it exercises the same route as
-an imported UTAU/OpenUtau singer, but it still has structural weaknesses:
+web profile contains 674 generated 40 kHz source WAV samples, 1578 aliases,
+`oto.ini`, and a browser sample renderer that exports songs as 44.1 kHz WAV.
+This is useful because it exercises the same route as an imported
+UTAU/OpenUtau singer, but it still has structural weaknesses:
 
 - It is synthetic, so the timbre is stylized rather than naturally human.
 - It still needs richer VC/CVVC phonemizer routing before full Korean coda

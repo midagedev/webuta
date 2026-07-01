@@ -371,13 +371,16 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 674 WAV samples, 1578 oto aliases, 53323698 bytes.
+- Default web profile: 674 WAV samples, 1578 oto aliases, 48391438 bytes,
+  using 40 kHz source WAVs to stay below GitHub's large-file warning while
+  keeping loop stability.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260701-v3-synthetic-web-4`.
+  version `20260701-v3-synthetic-web-5`.
 - The generator now uses synthesis profile
   `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
-  glottal body layer, deterministic soft saturation, and clearer `ㅡ`/`ㅢ`
-  vowel separation without using recordings, datasets, TTS, or model output.
+  glottal body layer, deterministic soft saturation, 40 kHz source WAVs, and
+  clearer `ㅡ`/`ㅢ` vowel separation without using recordings, datasets, TTS,
+  or model output.
 - Recording/private-singer prototype scripts are kept only under
   `experimental:*`, and the old Supertonic path is kept only under
   `legacy:voicebank:supertonic`; neither is part of the V3 release workflow.

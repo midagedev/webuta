@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
 import {
   analyzeVoicebankCoverage,
@@ -14,12 +15,16 @@ const generatedV3Path = join(process.cwd(), 'public', 'voicebanks', 'webuta-ko-v
 describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voicebank', () => {
   it('loads as a UTAU zip and covers the first-run demo phrase', async () => {
     const bytes = readFileSync(generatedV3Path)
+    const zip = await JSZip.loadAsync(bytes)
+    const manifest = JSON.parse(await zip.file('webuta-ko-v3.manifest.json')?.async('string') ?? '{}')
     const file = new File([bytes], 'webuta-ko-v3.zip', { type: 'application/zip' })
     const voicebank = await loadVoicebankZip(file)
     const demoNotes = ['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'].map((lyric) => ({ lyric }))
     const coverage = analyzeVoicebankCoverage(voicebank, demoNotes)
 
     expect(voicebank.name).toBe('WebUtau Korean V3 Synthetic')
+    expect(bytes.byteLength).toBeLessThan(50_000_000)
+    expect(manifest.sampleRate).toBe(40000)
     expect(voicebank.wavCount).toBe(674)
     expect(voicebank.sampleCount).toBe(1578)
     expect(coverage).toMatchObject({
