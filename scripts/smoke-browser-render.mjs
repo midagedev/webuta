@@ -105,9 +105,11 @@ export async function smokeBrowserRender(options = {}) {
         'render history visible',
         'desktop no page horizontal overflow',
         'desktop piano keyboard and bar ruler visible',
+        'desktop arrangement chord guide visible',
         'mobile export controls visible',
         'mobile touch keyboard visible',
         'mobile piano keyboard and bar ruler visible',
+        'mobile arrangement chord guide visible',
         'mobile no page horizontal overflow',
       ],
     }
@@ -316,6 +318,7 @@ async function assertPianoRollReadable(page, label) {
     return {
       keyLabels: visibleTexts('.keyboard .key-label'),
       barLabels: visibleTexts('.roll-bar-label'),
+      chordLabels: visibleTexts('.chord-marker strong'),
       rollGrid: rollGrid ? { width: rollGrid.width, height: rollGrid.height } : null,
     }
   })
@@ -327,6 +330,11 @@ async function assertPianoRollReadable(page, label) {
   }
   if (result.barLabels.length < 2) {
     throw new Error(`${label}: expected visible beat/bar ruler labels (${JSON.stringify(result)})`)
+  }
+  for (const chord of ['C', 'G', 'Am', 'F']) {
+    if (!result.chordLabels.includes(chord)) {
+      throw new Error(`${label}: expected visible arrangement chord marker ${chord} (${JSON.stringify(result)})`)
+    }
   }
 }
 
@@ -361,11 +369,17 @@ async function selectLocalNeuralModel(page) {
 async function assertDefaultV3DemoReady(page) {
   const starterGuide = page.getByLabel('First run guide')
   await starterGuide.getByText('처음 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterGuide.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByText('First Vocal Sketch').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('듣기 · 가사 · WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('1분 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('샘플 듣기 -> 가사 바꾸기 -> WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter hook chord guide').getByText('C -> G -> Am -> F').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const onboardingCoach = page.getByLabel('Starter onboarding coach')
+  await onboardingCoach.getByText('현재 열린 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await onboardingCoach.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await onboardingCoach.getByText('샘플 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await onboardingCoach.getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await onboardingCoach.getByText('다음 버튼').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter readiness snapshot').getByText(/바로 시작 가능|보컬 로딩 중/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter launch panel').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterRouteSummary = page.getByLabel('Starter route summary')
@@ -491,6 +505,7 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run onboarding coach visible',
     'first-run one-minute path visible',
     'first-run starter chord guide visible',
     'first-run route map visible',

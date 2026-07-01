@@ -120,6 +120,9 @@
   const exportStateLabel = $derived(rendered ? '지금' : '다음')
   const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
+  const coachPrimaryAction = $derived(rendered ? 'WAV 받기' : hasPendingLyricLine ? '가사 적용' : isStarterActionLocked ? '보컬 대기' : '샘플 듣기')
+  const coachNextAction = $derived(rendered ? 'DAW 번들' : hasPendingLyricLine ? '다시 듣기' : '가사 바꾸기')
+  const coachState = $derived(rendered ? '완성 파일 준비' : hasPendingLyricLine ? '가사 적용 대기' : isStarterActionLocked ? '보컬 준비 중' : '첫 재생 대기')
   const compassTone = $derived(
     isStarterActionLocked
       ? '보컬 불러오는 중'
@@ -179,6 +182,24 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
       <span class="starter-progress-pill">{starterProgressLabel}</span>
+    </div>
+  </div>
+
+  <div class="starter-coach-strip" aria-label="Starter onboarding coach">
+    <div>
+      <span>현재 열린 프로젝트</span>
+      <strong>{project.name}</strong>
+      <em>{projectStateTitle} · {voicebankLabel}</em>
+    </div>
+    <div>
+      <span>샘플 가사</span>
+      <strong>{lyricPreview}</strong>
+      <em>{coachState}</em>
+    </div>
+    <div class="hot">
+      <span>다음 버튼</span>
+      <strong>{coachPrimaryAction}</strong>
+      <em>{coachNextAction}</em>
     </div>
   </div>
 

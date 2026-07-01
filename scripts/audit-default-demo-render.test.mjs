@@ -10,6 +10,7 @@ describe('default demo render audit report', () => {
       checks: [
         'default V3 voicebank loaded',
         'first-run starter guide visible',
+        'first-run onboarding coach visible',
         'first-run one-minute path visible',
         'first-run starter chord guide visible',
         'first-run route map visible',
@@ -51,9 +52,11 @@ describe('default demo render audit report', () => {
         'render history visible',
         'desktop no page horizontal overflow',
         'desktop piano keyboard and bar ruler visible',
+        'desktop arrangement chord guide visible',
         'mobile export controls visible',
         'mobile touch keyboard visible',
         'mobile piano keyboard and bar ruler visible',
+        'mobile arrangement chord guide visible',
         'mobile no page horizontal overflow',
       ],
       download: {

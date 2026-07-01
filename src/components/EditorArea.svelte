@@ -29,7 +29,7 @@
     type SongNote,
     type SongProject,
   } from '../types'
-  import { normalizedTempoChanges, projectDurationTicks, toneName } from '../music'
+  import { normalizedTempoChanges, projectDurationTicks, tickPositionLabel, toneName } from '../music'
   import {
     compactLyricLine,
     formatVoicebankCacheStatus,
@@ -220,6 +220,7 @@
   let rendererModeLabel = $derived(selectedRendererId === 'local-neural' ? 'NEURAL' : voicebank ? 'UTAU ZIP' : 'DEMO')
   let renderProgressWidth = $derived(isRendering ? renderProgress.percent : displayDuration > 0 ? Math.min(100, (playbackTime / displayDuration) * 100) : 0)
   let tempoMarkerLabel = $derived(`${normalizedTempoChanges(project).length} MARK`)
+  let chordMarkers = $derived([...(project.chords ?? [])].sort((left, right) => left.start - right.start || left.symbol.localeCompare(right.symbol)))
 </script>
 
 <section class="editor-area">
@@ -288,6 +289,20 @@
     <span><Target size={14} aria-hidden="true" />가사·음정</span>
     <span><Download size={14} aria-hidden="true" />WAV 저장</span>
   </div>
+
+  {#if chordMarkers.length > 0}
+    <div class="mobile-chord-strip" aria-label="Mobile arrangement chord guide">
+      <span>CHORD</span>
+      <div>
+        {#each chordMarkers.slice(0, 6) as chord (`mobile-${chord.symbol}-${chord.start}`)}
+          <span class="chord-marker">
+            <strong>{chord.symbol}</strong>
+            <em>{tickPositionLabel(chord.start, project)}</em>
+          </span>
+        {/each}
+      </div>
+    </div>
+  {/if}
 
   <div class={`performance-panel ${isRecording ? 'recording' : ''}`} aria-label="Performance controls">
     <div class="performance-readout">
@@ -369,6 +384,30 @@
         {#each Array.from({ length: barCount }, (_, bar) => bar) as bar (bar)}
           <span style={`left: ${bar * project.beatPerBar * TICKS_PER_BEAT * TICK_WIDTH}px;`}>{bar + 1}</span>
         {/each}
+      </div>
+    </div>
+    <div class="chord-lane-head">
+      <Music2 size={16} aria-hidden="true" />
+      <div>
+        <strong>Chord Guide</strong>
+        <span>{chordMarkers.length} markers</span>
+      </div>
+    </div>
+    <div class="chord-lane-scroll" aria-label="Arrangement chord guide">
+      <div class="chord-lane-grid" style={`width: ${gridWidth}px;`}>
+        {#each Array.from({ length: beatCount + 1 }, (_, beat) => beat) as beat (beat)}
+          <div class={`beat-line ${beat % project.beatPerBar === 0 ? 'bar' : ''}`} style={`left: ${beat * TICKS_PER_BEAT * TICK_WIDTH}px;`}></div>
+        {/each}
+        {#each chordMarkers as chord (`${chord.symbol}-${chord.start}`)}
+          <span
+            class="chord-marker"
+            style={`left: ${chord.start * TICK_WIDTH}px; width: ${Math.max(48, chord.duration * TICK_WIDTH - 4)}px;`}
+          >
+            <strong>{chord.symbol}</strong>
+            <em>{tickPositionLabel(chord.start, project)}</em>
+          </span>
+        {/each}
+        <div class="playhead-line arrangement" style={`left: ${playheadLeft}px;`}></div>
       </div>
     </div>
     <div class="track-lane-head">
