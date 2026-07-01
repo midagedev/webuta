@@ -250,6 +250,7 @@ function publicReviewHubGate(path) {
       'listening-scores.local.json',
       'wav-daw/index.html',
       'handoff-report.local.json',
+      'release:accept-evidence',
       'voicebank:accept-review-v3',
       'release:accept-daw-handoff',
       'release:audit-utau',
@@ -447,6 +448,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['release:audit-utau']) {
         problems.push('package.json must expose release:audit-utau')
       }
+      if (!scripts['release:accept-evidence']) {
+        problems.push('package.json must expose release:accept-evidence')
+      }
       for (const [name, command] of Object.entries(scripts)) {
         const script = String(command)
         if (/^(experimental|legacy):/u.test(name)) {
@@ -494,6 +498,7 @@ function readmeGate(paths) {
       'Kasane Teto assets are not bundled',
       'License Boundaries',
       'public/review/index.html',
+      'release:accept-evidence',
     ]
     for (const snippet of requiredSnippets) {
       if (!readme.includes(snippet)) {
@@ -533,7 +538,7 @@ function readmeGate(paths) {
       '스타터 WAV 다운로드',
       'wav-daw-handoff.local.template.json',
       'review/wav-daw/index.html',
-      'release:accept-daw-handoff',
+      'release:accept-evidence',
       'Optional compatibility pass',
       'Any optional imported voicebank zip remains user-provided and private to the browser',
     ]) {
@@ -844,7 +849,8 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       html.includes('v3/index.html') &&
       html.includes('wav-daw/index.html') &&
       html.includes('listening-scores.local.json') &&
-      html.includes('handoff-report.local.json')
+      html.includes('handoff-report.local.json') &&
+      html.includes('release:accept-evidence')
     ) {
       evidence.checks.push('pages release review hub loaded')
     } else {
@@ -1049,10 +1055,10 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then open the V3 listening scorecard at public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/ to use progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons. Download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
+    actions.push('Open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then open the V3 listening scorecard at public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/ to use progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons. Download listening-scores.local.json and handoff-report.local.json, then run npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json.')
   }
   if (problems.some((problem) => problem.includes('wav-daw-handoff'))) {
-    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json. Accept it with npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json.')
+    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json. Accept both final JSON files with npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')
