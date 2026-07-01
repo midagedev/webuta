@@ -518,6 +518,8 @@ function readmeGate(paths) {
       'Kasane Teto assets are not bundled',
       '다음 선택',
       'DAW 번들',
+      'lyrics.txt',
+      'notes.csv',
       'License Boundaries',
       'public/review/index.html',
       '60-second physical handoff path',

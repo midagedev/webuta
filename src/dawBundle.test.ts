@@ -6,7 +6,7 @@ import { demoProject } from './demoProject'
 import type { RenderedAudio } from './types'
 
 describe('DAW handoff bundle', () => {
-  it('packages WAV, WebUtau, USTX, UST, README, and manifest files', async () => {
+  it('packages WAV, project files, readable sidecars, README, and manifest files', async () => {
     const wavBlob = encodeWav(new Float32Array(44100), 44100)
     const rendered: RenderedAudio = {
       blob: wavBlob,
@@ -38,6 +38,8 @@ describe('DAW handoff bundle', () => {
       'project/First-Vocal-Sketch.ust',
       'project/First-Vocal-Sketch.ustx',
       'project/First-Vocal-Sketch.webutau.json',
+      'project/lyrics.txt',
+      'project/notes.csv',
     ])
 
     const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'))
@@ -52,6 +54,14 @@ describe('DAW handoff bundle', () => {
       },
       voicebank: 'WebUtau Korean V3 Synthetic',
       renderer: 'UTAU sample renderer',
+      lyrics: {
+        file: 'project/lyrics.txt',
+        line: '도 히 도 히 다 이 스 키',
+      },
+      notes: {
+        file: 'project/notes.csv',
+        count: 8,
+      },
       wav: {
         file: 'audio/First-Vocal-Sketch.wav',
         sampleRate: 44100,
@@ -64,6 +74,13 @@ describe('DAW handoff bundle', () => {
     await expect(zip.file('project/First-Vocal-Sketch.ustx')!.async('string')).resolves.toContain('notes:')
     await expect(zip.file('project/First-Vocal-Sketch.ust')!.async('string')).resolves.toContain('[#SETTING]')
     await expect(zip.file('project/First-Vocal-Sketch.webutau.json')!.async('string')).resolves.toContain('webuta-project')
-    await expect(zip.file('README.txt')!.async('string')).resolves.toContain('Import the WAV into a DAW')
+    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
+    const notesCsv = await zip.file('project/notes.csv')!.async('string')
+    expect(notesCsv).toContain('index,lyric,tone,noteName,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
+    expect(notesCsv).toContain('1,도,64,E4,0,420,0.000,0.469,1:1')
+    const readme = await zip.file('README.txt')!.async('string')
+    expect(readme).toContain('Import audio/First-Vocal-Sketch.wav into your DAW')
+    expect(readme).toContain('project/lyrics.txt')
+    expect(readme).toContain('project/notes.csv')
   })
 })

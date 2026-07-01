@@ -721,12 +721,18 @@ describe('App editing workflow', () => {
     expect(zip.file('project/First-Vocal-Sketch.webutau.json')).toBeTruthy()
     expect(zip.file('project/First-Vocal-Sketch.ustx')).toBeTruthy()
     expect(zip.file('project/First-Vocal-Sketch.ust')).toBeTruthy()
+    expect(zip.file('project/lyrics.txt')).toBeTruthy()
+    expect(zip.file('project/notes.csv')).toBeTruthy()
     const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'))
     expect(manifest).toMatchObject({
       format: 'webuta-daw-handoff-bundle',
       project: { name: 'First Vocal Sketch', noteCount: 8 },
       voicebank: 'WebUtau Korean V3 Synthetic',
+      lyrics: { file: 'project/lyrics.txt', line: '도 히 도 히 다 이 스 키' },
+      notes: { file: 'project/notes.csv', count: 8 },
     })
+    await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
+    await expect(zip.file('project/notes.csv')!.async('string')).resolves.toContain('startSeconds')
   })
 
   it('adds a note by clicking an empty piano-roll cell', () => {
