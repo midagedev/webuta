@@ -21,7 +21,8 @@ tooling for other experiments, not the path for this V3 goal.
 
 WebUtau V3 is successful when a new visitor can:
 
-1. Open the web app and hear a good default Korean vocal sketch immediately.
+1. Open the web app, hear a good default Korean vocal sketch immediately, and
+   choose from a varied starter-sample gallery rather than a single demo song.
 2. Edit notes and lyrics in a Vocaloid-style piano-roll workflow.
 3. Render an imported or bundled UTAU-format voicebank without clipped attacks,
    repeated codas, broken sustain loops, or fallback-note surprises.
@@ -268,6 +269,10 @@ Recommended coverage shape:
 
 ### M7. First-Run Musical Quality
 
+- [x] Treat starter music as a diverse sample set, not one default demo: release
+  readiness requires multiple V3-renderable hooks with distinct genres, tempos,
+  lyric moods, chord progressions, melody contours, Hangul coda patterns, and
+  note ranges.
 - [x] Improve the default melody beyond a test scale: the built-in
   `네오빛이 메로디로 데려가` phrase now uses an A-B-C-B-D-C-B-A-C-D-E hook-shaped
   contour over `Am -> F -> C -> G`, and the first-run guide offers `Neon Lift`,
