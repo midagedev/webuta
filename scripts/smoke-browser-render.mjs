@@ -419,6 +419,12 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByRole('button', { name: '하단 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.locator('input[accept*=".ust"]').waitFor({ state: 'attached', timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const hubLink = page.getByRole('link', { name: '릴리스 허브 열기' })
+  await hubLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const hubHref = await hubLink.getAttribute('href')
+  if (!hubHref?.includes('/review/index.html')) {
+    throw new Error(`Unexpected release review hub href: ${hubHref ?? 'missing'}`)
+  }
   const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
   await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const reviewHref = await reviewLink.getAttribute('href')
@@ -461,6 +467,7 @@ async function assertDefaultV3DemoReady(page) {
     'selected-note duplicate controls visible',
     'classic UST import/export controls visible',
     'DAW handoff bundle export visible',
+    'community release review hub linked',
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]

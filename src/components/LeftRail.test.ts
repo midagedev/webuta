@@ -19,6 +19,7 @@ describe('LeftRail release readiness', () => {
     expect(releaseCard.textContent).toContain('0 warnings')
     expect(releaseCard.textContent).toContain('listening-scores.local.json 필요')
     expect(releaseCard.textContent).toContain('handoff-report.local.json 필요')
+    expect(screen.getByRole('link', { name: '릴리스 허브 열기' }).getAttribute('href')).toBe('/review/index.html')
     expect(screen.getByRole('link', { name: '청취 리뷰 열기' }).getAttribute('href')).toBe('/review/v3/index.html')
     expect(screen.getByRole('link', { name: 'DAW 리포트 만들기' }).getAttribute('href')).toBe('/review/wav-daw/index.html')
     const licenseCard = screen.getByLabelText('Voicebank license metadata')

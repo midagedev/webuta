@@ -17,6 +17,7 @@ const DEFAULTS = {
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
+  publicReviewHub: 'public/review/index.html',
   publicReviewIndex: 'public/review/v3/index.html',
   publicReviewManifest: 'public/review/v3/review-manifest.json',
   publicWavDawHandoffIndex: 'public/review/wav-daw/index.html',
@@ -63,6 +64,7 @@ const DEMO_REQUIRED_CHECKS = [
   'voicebank license metadata visible',
   'voicebank self-generated origin visible',
   'DAW handoff bundle export visible',
+  'community release review hub linked',
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',
@@ -94,6 +96,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     demoGate(paths.demoAudit),
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
     reviewPackGate(paths.reviewManifest),
+    publicReviewHubGate(paths.publicReviewHub),
     publicReviewGate(paths),
     publicWavDawHandoffGate(paths.publicWavDawHandoffIndex),
     sampleReviewGate(paths.sampleReview),
@@ -230,6 +233,34 @@ function reviewPackGate(path) {
     }
   }
   return makeGate('listening-pack', 'Browser-rendered V3 listening review pack', path, problems, summarizeReport(report))
+}
+
+function publicReviewHubGate(path) {
+  const problems = []
+  const html = readOptionalText(path, 'public release review hub', problems)
+  if (html) {
+    for (const snippet of [
+      'WebUtau Release Review Hub',
+      'Release Review Hub',
+      'WebUtau Korean V3 Synthetic',
+      'No recording needed',
+      'v3/index.html',
+      'listening-scores.local.json',
+      'wav-daw/index.html',
+      'handoff-report.local.json',
+      'voicebank:accept-review-v3',
+      'release:accept-daw-handoff',
+      'release:audit-utau',
+    ]) {
+      if (!html.includes(snippet)) {
+        problems.push(`public release review hub must include "${snippet}"`)
+      }
+    }
+  }
+  return makeGate('public-release-review-hub', 'Published release review hub', path, problems, html ? {
+    hasListeningLink: html.includes('v3/index.html'),
+    hasWavDawLink: html.includes('wav-daw/index.html'),
+  } : null)
 }
 
 function publicReviewGate(paths) {
@@ -456,6 +487,7 @@ function readmeGate(paths) {
       'must not ask the user, the user\'s family, or reviewers to record new voice material',
       'Kasane Teto assets are not bundled',
       'License Boundaries',
+      'public/review/index.html',
     ]
     for (const snippet of requiredSnippets) {
       if (!readme.includes(snippet)) {
@@ -745,6 +777,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages app loaded',
     'pages V3 zip cache-busted',
     'pages V3 zip bytes match local bundle',
+    'pages release review hub loaded',
     'pages V3 listening review scorecard loaded',
     'pages V3 listening review download gate loaded',
     'pages V3 listening review audio loaded',
@@ -764,10 +797,12 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     base.pathname += '/'
   }
   const app = await fetchWithProblem(base, 'GitHub Pages app', problems)
+  const hubUrl = new URL('review/index.html', base)
   const reviewUrl = new URL('review/v3/index.html', base)
   const handoffUrl = new URL('review/wav-daw/index.html', base)
   const zipUrl = new URL(`voicebanks/${bundled.file}`, base)
   zipUrl.searchParams.set('v', bundled.version)
+  const hub = await fetchWithProblem(hubUrl, 'GitHub Pages release review hub', problems)
   const review = await fetchWithProblem(reviewUrl, 'GitHub Pages V3 listening review', problems)
   const handoff = await fetchWithProblem(handoffUrl, 'GitHub Pages WAV DAW handoff builder', problems)
   const zip = await fetchWithProblem(zipUrl, 'GitHub Pages V3 zip', problems, { method: 'HEAD' })
@@ -775,6 +810,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   const evidence = {
     ok: problems.length === 0,
     url: base.href,
+    hubUrl: hubUrl.href,
     reviewUrl: reviewUrl.href,
     handoffUrl: handoffUrl.href,
     voicebankUrl: zipUrl.href,
@@ -793,6 +829,20 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   }
   if (zip?.ok) {
     evidence.checks.push('pages V3 zip cache-busted')
+  }
+  if (hub?.ok) {
+    const html = await hub.text()
+    if (
+      html.includes('WebUtau Release Review Hub') &&
+      html.includes('v3/index.html') &&
+      html.includes('wav-daw/index.html') &&
+      html.includes('listening-scores.local.json') &&
+      html.includes('handoff-report.local.json')
+    ) {
+      evidence.checks.push('pages release review hub loaded')
+    } else {
+      problems.push('GitHub Pages release review hub is missing release evidence links')
+    }
   }
   if (review?.ok) {
     const html = await review.text()
@@ -987,10 +1037,10 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/, use the scorecard progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
+    actions.push('Open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then open the V3 listening scorecard at public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/ to use progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons. Download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
   }
   if (problems.some((problem) => problem.includes('wav-daw-handoff'))) {
-    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json, then run npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json.')
+    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json. Accept it with npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')

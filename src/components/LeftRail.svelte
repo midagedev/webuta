@@ -206,6 +206,7 @@
   )
   let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
   let voicebankOriginState = $derived(!voicebank ? 'idle' : isSelfGeneratedVoicebank(voicebank) ? 'ready' : 'warning')
+  const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
 
@@ -492,6 +493,10 @@
         </div>
       </div>
       <div class="release-review-links">
+        <a class="release-review-link" href={releaseReviewHubHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>릴리스 허브 열기</span>
+        </a>
         <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
           <ExternalLink size={14} aria-hidden="true" />
           <span>청취 리뷰 열기</span>

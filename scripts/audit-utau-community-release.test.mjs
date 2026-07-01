@@ -359,6 +359,20 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('public-wav-daw-handoff: public WAV DAW handoff builder must include "webuta-wav-daw-handoff-v1"')
     expect(report.problems.join('\n')).toContain('public-wav-daw-handoff: public WAV DAW handoff builder must include "handoff-report.local.json"')
   })
+
+  it('blocks release when the public review hub is missing the final evidence links', async () => {
+    const fixture = await makeFixture()
+    writeFileSync(join(fixture.root, 'public', 'review', 'index.html'), '<h1>Release hub</h1>')
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('public-release-review-hub: public release review hub must include "listening-scores.local.json"')
+    expect(report.problems.join('\n')).toContain('public-release-review-hub: public release review hub must include "handoff-report.local.json"')
+  })
 })
 
 async function makeFixture(overrides = {}) {
@@ -404,6 +418,7 @@ async function makeFixture(overrides = {}) {
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
+  writeFileSync(join(root, 'public', 'review', 'index.html'), makeReviewHubPage())
   writeFileSync(join(root, 'public', 'review', 'wav-daw', 'index.html'), makeWavDawHandoffPage())
   for (const fileName of ['01-first-run-demo.wav', '02-coda-release-check.wav', '03-clear-cv-line.wav', '04-vowel-color-check.wav']) {
     writeFileSync(join(root, 'public', 'review', 'v3', 'audio', fileName), Buffer.alloc(200_000, 1))
@@ -452,6 +467,7 @@ async function makeFixture(overrides = {}) {
         'pages app loaded',
         'pages V3 zip cache-busted',
         'pages V3 zip bytes match local bundle',
+        'pages release review hub loaded',
         'pages V3 listening review scorecard loaded',
         'pages V3 listening review download gate loaded',
         'pages V3 listening review audio loaded',
@@ -554,6 +570,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'voicebank self-generated origin visible',
       'selected-note vibrato controls visible',
       'DAW handoff bundle export visible',
+      'community release review hub linked',
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
       'desktop WAV download',
@@ -818,6 +835,7 @@ function makeReadme() {
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
     'Kasane Teto assets are not bundled in this repository.',
     'See License Boundaries.',
+    'Use `public/review/index.html` as the release review hub.',
     '## Screenshots',
     '![WebUtau desktop editor](docs/screenshots/webuta-desktop.jpg)',
     '![WebUtau mobile editor](docs/screenshots/webuta-mobile.jpg)',
@@ -847,6 +865,24 @@ function makeWavDawQa() {
     'Fill `docs/wav-daw-handoff.local.template.json` and run `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json`.',
     'Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files.',
     'Any optional imported voicebank zip remains user-provided and private to the browser.',
+    '',
+  ].join('\n')
+}
+
+function makeReviewHubPage() {
+  return [
+    '<!doctype html>',
+    '<title>WebUtau Release Review Hub</title>',
+    '<h1>Release Review Hub</h1>',
+    '<p>WebUtau Korean V3 Synthetic</p>',
+    '<p>No recording needed</p>',
+    '<a href="v3/index.html">Open listening review</a>',
+    '<code>listening-scores.local.json</code>',
+    '<a href="wav-daw/index.html">Open DAW handoff</a>',
+    '<code>handoff-report.local.json</code>',
+    '<code>npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json</code>',
+    '<code>npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json</code>',
+    '<code>npm run release:audit-utau</code>',
     '',
   ].join('\n')
 }
