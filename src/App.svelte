@@ -20,7 +20,16 @@
     findDemoSample,
     type DemoSampleId,
   } from './demoProject'
-  import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicksInProject, ticksToSecondsInProject, toneName } from './music'
+  import {
+    midiToHz,
+    pitchRange,
+    projectDurationTicks,
+    sanitizeFileName,
+    secondsToTicksInProject,
+    sortedNotes,
+    ticksToSecondsInProject,
+    toneName,
+  } from './music'
   import {
     addNoteAfter,
     addNoteAtTick,
@@ -68,6 +77,7 @@
     analyzeVoicebankRenderWarnings,
     findEntryMatchForLyric,
     loadVoicebankZip,
+    type LyricMatchContext,
     type LoadedVoicebank,
   } from './voicebank'
   import { loadSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
@@ -157,9 +167,17 @@
   const canUndo = $derived(projectHistory.past.length > 0)
   const canRedo = $derived(projectHistory.future.length > 0)
   const selectedNote = $derived(project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0])
+  const sortedProjectNotes = $derived(sortedNotes(project.notes))
+  const selectedLyricMatchContext = $derived(
+    selectedNote ? lyricMatchContextForSelectedNote(sortedProjectNotes, selectedNote) : { phraseStart: true },
+  )
   const voicebankCoverage = $derived(voicebank ? analyzeVoicebankCoverage(voicebank, project.notes) : null)
   const voicebankWarnings = $derived(voicebank ? analyzeVoicebankRenderWarnings(voicebank, project.notes) : null)
-  const selectedLyricMatch = $derived(voicebank && selectedNote ? findEntryMatchForLyric(voicebank, selectedNote.lyric) : null)
+  const selectedLyricMatch = $derived(
+    voicebank && selectedNote
+      ? findEntryMatchForLyric(voicebank, selectedNote.lyric, selectedNote.tone, selectedLyricMatchContext)
+      : null,
+  )
   const range = $derived(pitchRange(project.notes))
   const rows = $derived(pitchRows(range.min, range.max))
   const songTicks = $derived(Math.max(projectDurationTicks(project), TICKS_PER_BEAT * 8))
@@ -1095,7 +1113,10 @@
       if (audioContext.state === 'suspended') {
         await audioContext.resume()
       }
-      const renderer = createUtauSampleRenderer(voicebank, audioContext)
+      const previewContext = lyricMatchContextForSelectedNote(sortedProjectNotes, note)
+      const renderer = createUtauSampleRenderer(voicebank, audioContext, {
+        lyricContextForNote: () => previewContext,
+      })
       const result = await renderer.render(makeVoicebankPreviewProject(note))
       const buffer = audioContext.createBuffer(1, result.samples.length, result.sampleRate)
       buffer.copyToChannel(result.samples, 0)
@@ -1148,6 +1169,19 @@
         },
       ],
     }
+  }
+
+  function lyricMatchContextForSelectedNote(notes: SongNote[], note: SongNote): LyricMatchContext {
+    const index = notes.findIndex((item) => item.id === note.id)
+    const previous = index > 0 ? notes[index - 1] : undefined
+    if (!previous || previous.trackId !== note.trackId) {
+      return { phraseStart: true }
+    }
+    const gapTicks = note.start - (previous.start + previous.duration)
+    if (gapTicks > TICKS_PER_BEAT / 2) {
+      return { phraseStart: true }
+    }
+    return { previousLyric: previous.lyric }
   }
 
   function throwIfRenderAborted(signal: AbortSignal) {

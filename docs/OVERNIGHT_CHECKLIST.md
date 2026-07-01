@@ -126,6 +126,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   3-point curve and verify imported pitch modes plus `snap_first` are preserved
   when the selected-note editor adjusts an existing curve.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
+- [x] Selected-note alias display and isolated sample preview use the same
+  phrase-start/previous-vowel VCV context as full-song UTAU rendering.
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate

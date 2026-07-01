@@ -593,7 +593,8 @@ function lyricSearchPlan(
   const primaryKeys = uniqueStrings([normalized, ...likelyAliases])
   const baseKeys = uniqueStrings([normalized, ...likelyAliases, hangulCvAlias, ...likelyCvAliases])
   const targetKeys = uniqueStrings([...likelyAliases, normalized, ...likelyCvAliases, hangulCvAlias])
-  const contextKeys = vcvContextAliasesForKeys(targetKeys, context)
+  const rawContextKeys = vcvContextAliasesForKeys(targetKeys, context)
+  const contextKeys = voicebankHasVcvContextAliases(voicebank) ? rawContextKeys : []
   const mappedContextKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, contextKeys, targetTone)
   const mappedKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, targetKeys, targetTone)
   const preferredKeys = uniqueStrings([...mappedContextKeys, ...contextKeys])
@@ -642,6 +643,15 @@ function entrySelectionScore(
   const pathPenalty = voicebankStylePenalty(path)
   const pitchPenalty = hasExplicitPitch(entry) ? Math.abs(estimateEntryBaseTone(entry) - targetTone) * 1.7 : 0
   return matchScore + primaryBonus + contextBonus + prefixMapPenalty + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+}
+
+function voicebankHasVcvContextAliases(voicebank: LoadedVoicebank) {
+  return voicebank.entries.some((entry) => isVcvContextAlias(entry.alias))
+}
+
+function isVcvContextAlias(alias: string) {
+  const normalized = normalizeLyric(alias)
+  return /^[-*]\s+\S/u.test(normalized) || /^[a-zぁ-んァ-ンー]\s+\S/u.test(normalized)
 }
 
 function vcvContextAliasesForKeys(keys: string[], context: LyricMatchContext) {

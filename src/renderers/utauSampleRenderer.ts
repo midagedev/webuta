@@ -25,7 +25,16 @@ const CODA_RELEASE_TAIL_MS = 240
 const CODA_LOOP_BODY_MS = 420
 const CODA_LOOP_TAIL_GAP_MS = 70
 const CONSONANT_GUARD_FADE_MS = 2
-export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContext: AudioContext): VocalRenderer {
+
+type UtauSampleRendererOptions = {
+  lyricContextForNote?: (note: SongNote, index: number, notes: SongNote[]) => LyricMatchContext | undefined
+}
+
+export function createUtauSampleRenderer(
+  voicebank: LoadedVoicebank,
+  audioContext: AudioContext,
+  rendererOptions: UtauSampleRendererOptions = {},
+): VocalRenderer {
   const cache = new Map<string, Promise<AudioBuffer>>()
   return {
     capability: {
@@ -43,7 +52,8 @@ export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContex
       const notes = sortedNotes(project.notes)
       for (const [index, note] of notes.entries()) {
         throwIfAborted(options.signal)
-        const matchContext = lyricMatchContextForRenderedNote(notes, index)
+        const matchContext =
+          rendererOptions.lyricContextForNote?.(note, index, notes) ?? lyricMatchContextForRenderedNote(notes, index)
         const sustainEntry = findSustainEntryForLyric(voicebank, note.lyric, note.tone)
         const entry = sustainEntry ?? findBestEntryForLyric(voicebank, note.lyric, note.tone, matchContext)
         const codaTailEntry = resolveCodaTailEntry(voicebank, note.lyric, note.tone, entry, Boolean(sustainEntry))

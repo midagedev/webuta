@@ -810,6 +810,61 @@ describe('UTAU sample renderer', () => {
 
     expect(requestedAliases).toEqual(['- ど', 'o ひ', 'i ど'])
   })
+
+  it('can use an explicit lyric context for isolated selected-note previews', async () => {
+    const entries: OtoEntry[] = [
+      {
+        fileName: 'start_hi_C4.wav',
+        path: 'Teto/start_hi_C4.wav',
+        alias: '- ひ',
+        offsetMs: 0,
+        consonantMs: 90,
+        cutoffMs: 0,
+        preutteranceMs: 35,
+        overlapMs: 18,
+      },
+      {
+        fileName: 'o_hi_C4.wav',
+        path: 'Teto/o_hi_C4.wav',
+        alias: 'o ひ',
+        offsetMs: 0,
+        consonantMs: 90,
+        cutoffMs: 0,
+        preutteranceMs: 35,
+        overlapMs: 18,
+      },
+    ]
+    const requestedAliases: string[] = []
+    const voicebank: LoadedVoicebank = {
+      id: 'test-vcv-bank',
+      name: 'VCV Test Bank',
+      sourceFileName: 'vcv.zip',
+      metadata: makeVoicebankMetadata(),
+      entries,
+      aliases: entries.map((entry) => entry.alias),
+      sampleCount: entries.length,
+      wavCount: entries.length,
+      async readSample(entry) {
+        requestedAliases.push(entry.alias)
+        return new Uint8Array([1]).buffer
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(0.7, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext, {
+      lyricContextForNote: () => ({ previousLyric: '도' }),
+    })
+    await renderer.render({
+      ...makeSingleNoteProject(),
+      notes: [{ ...makeSingleNoteProject().notes[0], lyric: '히' }],
+    })
+
+    expect(requestedAliases).toEqual(['o ひ'])
+  })
 })
 
 function makeVoicebankMetadata() {

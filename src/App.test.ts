@@ -506,6 +506,25 @@ describe('App editing workflow', () => {
     expect(licenseCard.textContent).toContain('Test Teto matching license')
   })
 
+  it('shows selected-note VCV alias matches with previous lyric context', async () => {
+    saveProject({
+      ...demoProject,
+      name: 'VCV Context Sketch',
+      notes: [
+        { id: 'vcv-1', trackId: 'track-main', partId: 'part-main', start: 0, duration: 480, tone: 60, lyric: '도' },
+        { id: 'vcv-2', trackId: 'track-main', partId: 'part-main', start: 480, duration: 480, tone: 62, lyric: '히' },
+      ],
+    })
+    await saveVoicebankFile(await makeVcvVoicebankZip())
+
+    render(App)
+
+    await waitForImportedTeto()
+    fireEvent.click(screen.getByRole('button', { name: '히 D4 note' }))
+
+    expect(screen.getByText('히 -> o ひ (exact)')).toBeTruthy()
+  })
+
   it('previews the selected note through the loaded UTAU sample renderer', async () => {
     await saveVoicebankFile(await makeMatchingVoicebankZip())
     const decodedSamples = new Float32Array(44100).fill(0.12)
@@ -1108,6 +1127,26 @@ async function makeMatchingVoicebankZip() {
   }
   const blob = await zip.generateAsync({ type: 'blob' })
   return new File([blob], 'matching-teto.zip', { type: 'application/zip' })
+}
+
+async function makeVcvVoicebankZip() {
+  const zip = new JSZip()
+  zip.file('Teto/character.yaml', 'name: Test Teto\n')
+  zip.file('Teto/readme.txt', 'Test Teto VCV readme for selected note context checks.\n')
+  zip.file('Teto/license.txt', 'Test Teto VCV license permits local WebUtau rendering.\n')
+  zip.file(
+    'Teto/oto.ini',
+    [
+      'start_do.wav=- ど,0,120,0,40,20',
+      'start_hi.wav=- ひ,0,120,0,40,20',
+      'o_hi.wav=o ひ,0,120,0,40,20',
+    ].join('\n'),
+  )
+  for (const fileName of ['start_do.wav', 'start_hi.wav', 'o_hi.wav']) {
+    zip.file(`Teto/${fileName}`, new Uint8Array([1, 2, 3, 4]))
+  }
+  const blob = await zip.generateAsync({ type: 'blob' })
+  return new File([blob], 'vcv-teto.zip', { type: 'application/zip' })
 }
 
 function makeRect(input: { left: number; top: number; width: number; height: number }) {
