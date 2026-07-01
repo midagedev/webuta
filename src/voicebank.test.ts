@@ -168,6 +168,46 @@ describe('voicebank zip loader', () => {
     })
   })
 
+  it('maps common Japanese romaji yoon lyrics to hiragana or katakana aliases', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/character.yaml', 'name: Test Teto\n')
+    zip.file(
+      'Teto/oto.ini',
+      [
+        'kya.wav=キャ,0,120,0,40,20',
+        'shu.wav=しゅ,0,120,0,40,20',
+        'ja.wav=じゃ,0,120,0,40,20',
+        'cho.wav=チョ,0,120,0,40,20',
+        'ryo.wav=りょ,0,120,0,40,20',
+      ].join('\n'),
+    )
+    for (const fileName of ['kya.wav', 'shu.wav', 'ja.wav', 'cho.wav', 'ryo.wav']) {
+      zip.file(`Teto/${fileName}`, new Uint8Array([1, 2, 3, 4]))
+    }
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'japanese-yoon.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(findEntryForLyric(voicebank, 'kya').alias).toBe('キャ')
+    expect(findEntryForLyric(voicebank, 'shu').alias).toBe('しゅ')
+    expect(findEntryForLyric(voicebank, 'ja').alias).toBe('じゃ')
+    expect(findEntryForLyric(voicebank, 'cho').alias).toBe('チョ')
+    expect(findEntryForLyric(voicebank, 'ryo').alias).toBe('りょ')
+    expect(analyzeVoicebankCoverage(voicebank, [
+      { lyric: 'kya' },
+      { lyric: 'shu' },
+      { lyric: 'ja' },
+      { lyric: 'cho' },
+      { lyric: 'ryo' },
+    ])).toMatchObject({
+      totalNotes: 5,
+      matchedNotes: 5,
+      fallbackNotes: 0,
+      fallbackLyrics: [],
+    })
+  })
+
   it('reports fallback coverage when a lyric has no alias match', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')
