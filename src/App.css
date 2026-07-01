@@ -6922,6 +6922,94 @@ button:disabled:active {
   padding: 0 1px;
 }
 
+.starter-compass {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.48fr);
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid rgba(157, 255, 106, 0.34);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(157, 255, 106, 0.11), rgba(88, 244, 255, 0.07), rgba(255, 75, 202, 0.055)),
+    rgba(5, 7, 14, 0.78);
+}
+
+.starter-compass-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+}
+
+.starter-compass-copy span,
+.starter-compass-copy strong,
+.starter-compass-copy em,
+.starter-compass-tags span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-compass-copy span {
+  color: var(--tracker-green, #9dff6a);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-compass-copy strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 15px;
+  line-height: 1.18;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-compass-copy em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.starter-compass-tags {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.starter-compass-tags span {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border: 1px solid rgba(88, 244, 255, 0.28);
+  border-radius: 4px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(12, 14, 26, 0.72);
+  font-size: 9px;
+  font-weight: 950;
+  text-align: center;
+  white-space: normal;
+}
+
+.starter-compass-tags span.ready {
+  border-color: rgba(157, 255, 106, 0.44);
+  color: var(--tracker-green, #9dff6a);
+  background: rgba(157, 255, 106, 0.1);
+}
+
+.starter-compass-tags span.pending {
+  border-color: rgba(255, 231, 106, 0.44);
+  color: var(--tracker-amber, #ffe76a);
+  background: rgba(255, 231, 106, 0.1);
+}
+
 .starter-guide.onboarding-v6 .starter-guide-launch {
   grid-template-columns: 1fr;
   gap: 7px;
@@ -7866,6 +7954,41 @@ button:disabled:active {
     display: none;
   }
 
+  .starter-guide.onboarding-v6 .starter-next-steps-card {
+    display: grid;
+    opacity: 1;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass-copy {
+    gap: 2px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass-copy strong {
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass-copy em {
+    font-size: 8px;
+    white-space: normal;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass-tags {
+    gap: 4px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-compass-tags span {
+    min-height: 30px;
+    padding: 0 5px;
+    font-size: 8px;
+  }
+
   .starter-guide.onboarding-v5 .starter-project-state {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -7898,6 +8021,23 @@ button:disabled:active {
 
   .starter-guide.onboarding-v5 .starter-quick-actions .starter-utility-button {
     min-height: 58px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-quick-actions {
+    gap: 6px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-project-state {
+    display: none;
+  }
+
+  .starter-guide.onboarding-v6 .starter-quick-actions .starter-utility-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-quick-actions .starter-utility-button {
+    min-height: 52px;
   }
 
   .starter-review-tools[open] {

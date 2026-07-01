@@ -101,6 +101,18 @@
   const exportProgressClass = $derived(rendered ? 'current' : 'next')
   const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
+  const compassTone = $derived(
+    rendered ? 'WAV 저장 가능' : hasPendingLyricLine ? '가사 적용 대기' : isVoicebankReady ? '바로 시작 가능' : '보컬 로딩 중',
+  )
+  const compassDetail = $derived(
+    rendered
+      ? '재생 확인이 끝났어요. WAV나 DAW 번들로 저장하면 됩니다.'
+      : hasPendingLyricLine
+        ? '새 가사를 멜로디에 넣은 뒤 샘플을 다시 들어보세요.'
+        : isVoicebankReady
+          ? '샘플을 먼저 듣고, 마음에 들면 가사만 바꿔보세요.'
+          : '기본 보컬을 불러오고 있어요. 준비되면 첫 버튼이 열립니다.',
+  )
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
   const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
@@ -135,6 +147,19 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
       <span class="starter-progress-pill">{starterProgressLabel}</span>
+    </div>
+  </div>
+
+  <div class="starter-compass" aria-label="First run one-minute path">
+    <div class="starter-compass-copy">
+      <span>1분 완성 루트</span>
+      <strong>샘플 듣기 -&gt; 가사 바꾸기 -&gt; WAV 저장</strong>
+      <em>{compassDetail}</em>
+    </div>
+    <div class="starter-compass-tags" aria-label="Starter readiness snapshot">
+      <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
+      <span>{project.notes.length} notes</span>
+      <span>{compassTone}</span>
     </div>
   </div>
 

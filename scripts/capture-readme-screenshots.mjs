@@ -57,6 +57,7 @@ async function waitForAppReady(page) {
   await page.getByLabel('Current project').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run guide').getByText('처음 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run one-minute path').getByText('1분 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter launch panel').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterRoute = page.getByLabel('Starter route summary')
   await starterRoute.getByRole('button', { name: '첫 단계 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })

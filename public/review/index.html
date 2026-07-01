@@ -152,6 +152,13 @@
         padding: 18px;
       }
 
+      .preflight {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        background: #0e1020;
+        padding: 18px;
+      }
+
       article {
         border: 1px solid var(--line);
         background: var(--panel-strong);
@@ -242,6 +249,98 @@
         margin-top: 8px;
       }
 
+      .preflight p {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .preflight-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .file-check {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+        border: 1px solid #34304f;
+        background: #0b0b18;
+        padding: 14px;
+      }
+
+      .file-check span,
+      .file-check strong,
+      .file-check em {
+        display: block;
+        min-width: 0;
+      }
+
+      .file-check span {
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .file-check strong {
+        color: var(--text);
+        font-size: 15px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+
+      .file-check input {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid #34304f;
+        background: #111022;
+        color: var(--text);
+        padding: 8px;
+      }
+
+      .file-status {
+        min-height: 28px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #34304f;
+        padding: 0 9px;
+        color: var(--muted);
+        background: #111022;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .file-status.ready {
+        border-color: rgba(184, 255, 87, 0.56);
+        color: var(--lime);
+      }
+
+      .file-status.warning {
+        border-color: rgba(255, 79, 216, 0.6);
+        color: var(--pink);
+      }
+
+      .preflight-result {
+        border: 1px solid #34304f;
+        background: #0b0b18;
+        padding: 12px;
+      }
+
+      .preflight-result.ready {
+        border-color: rgba(184, 255, 87, 0.52);
+        color: var(--lime);
+      }
+
+      .preflight-result.warning {
+        border-color: rgba(255, 79, 216, 0.58);
+        color: var(--pink);
+      }
+
       .commands details {
         margin-top: 12px;
         color: var(--muted);
@@ -266,11 +365,13 @@
         header,
         article,
         .fast-path,
+        .preflight,
         .commands {
           padding: 16px;
         }
 
-        .steps {
+        .steps,
+        .preflight-grid {
           grid-template-columns: 1fr;
         }
 
@@ -373,6 +474,33 @@
         </p>
       </section>
 
+      <section class="preflight" aria-label="Evidence preflight checker">
+        <h2>Evidence Preflight</h2>
+        <p>
+          No upload: choose the two downloaded JSON files here to check them locally in this browser before running
+          <code>npm run release:evidence-status</code>.
+        </p>
+        <div class="preflight-grid">
+          <label class="file-check" for="listeningEvidenceInput">
+            <span>01 Listening JSON</span>
+            <strong>listening-scores.local.json</strong>
+            <input id="listeningEvidenceInput" type="file" accept="application/json,.json" />
+            <em id="listeningEvidenceStatus" class="file-status">Waiting for file</em>
+          </label>
+          <label class="file-check" for="handoffEvidenceInput">
+            <span>02 DAW JSON</span>
+            <strong>handoff-report.local.json</strong>
+            <input id="handoffEvidenceInput" type="file" accept="application/json,.json" />
+            <em id="handoffEvidenceStatus" class="file-status">Waiting for file</em>
+          </label>
+        </div>
+        <p id="evidencePreflightSummary" class="preflight-result">
+          Choose both JSON files. When both are ready, keep them in Downloads and run
+          <code>npm run release:evidence-status</code>.
+        </p>
+        <code>webuta-evidence-preflight-v1</code>
+      </section>
+
       <section class="commands" aria-label="Acceptance commands">
         <p><code>npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json</code></p>
         <p><code>npm run release:audit-utau</code></p>
@@ -383,5 +511,215 @@
         </details>
       </section>
     </main>
+    <script>
+      const PASSING_DECISIONS = new Set(['community-ready', 'release-ready', 'pass'])
+      const SCORE_KEYS = [
+        'koreanClarityScore',
+        'vowelStabilityScore',
+        'consonantClarityScore',
+        'musicalityScore',
+        'artifactScore',
+      ]
+      const EXPECTED_PHRASES = new Map([
+        ['first-run-demo', 'audio/01-first-run-demo.wav'],
+        ['coda-release-check', 'audio/02-coda-release-check.wav'],
+        ['clear-cv-line', 'audio/03-clear-cv-line.wav'],
+        ['vowel-color-check', 'audio/04-vowel-color-check.wav'],
+      ])
+      const EXPECTED_COMPARISONS = new Map([
+        ['first-run-demo', ['audio/01-first-run-demo.wav', 'audio/legacy-v2/01-first-run-demo-legacy-v2.wav']],
+        ['coda-release-check', ['audio/02-coda-release-check.wav', 'audio/legacy-v2/02-coda-release-check-legacy-v2.wav']],
+        ['clear-cv-line', ['audio/03-clear-cv-line.wav', 'audio/legacy-v2/03-clear-cv-line-legacy-v2.wav']],
+        ['vowel-color-check', ['audio/04-vowel-color-check.wav', 'audio/legacy-v2/04-vowel-color-check-legacy-v2.wav']],
+      ])
+      const HANDOFF_CHECKS = [
+        'openedFromPublicUrl',
+        'defaultVoicebankSelected',
+        'firstRunGuideVisible',
+        'starterLyricInputVisible',
+        'defaultLyricsMatched',
+        'audioPreviewWorked',
+        'wavExportWorked',
+        'targetDawImportWorked',
+        'targetDawPlaybackAudible',
+        'browserDraftRestored',
+        'noHorizontalOverflowPortrait',
+        'userVoicebankPrivacyConfirmed',
+      ]
+      const evidenceState = {
+        listening: null,
+        handoff: null,
+      }
+
+      function scoreThreshold(thresholds, key) {
+        return thresholds[`min${key.charAt(0).toUpperCase()}${key.slice(1)}`] ?? 4
+      }
+
+      function idsMatch(items, expected) {
+        const actualIds = Array.isArray(items) ? items.map((item) => item.id).sort() : []
+        const expectedIds = [...expected.keys()].sort()
+        return actualIds.join('|') === expectedIds.join('|')
+      }
+
+      function validateListeningEvidence(payload) {
+        const problems = []
+        if (payload.version !== 1) {
+          problems.push('version must be 1')
+        }
+        if (payload.reviewId !== 'webuta-ko-v3-synthetic-listening-review') {
+          problems.push('wrong listening reviewId')
+        }
+        if (!payload.reviewer || !payload.reviewedAt) {
+          problems.push('reviewer and reviewedAt are required')
+        }
+        if (!PASSING_DECISIONS.has(String(payload.decision ?? '').trim().toLowerCase())) {
+          problems.push('decision must be release-ready, community-ready, or pass')
+        }
+        if (payload.reviewEnvironment?.noRecordingRequired !== true) {
+          problems.push('noRecordingRequired must be true')
+        }
+        if (!idsMatch(payload.phraseScores, EXPECTED_PHRASES)) {
+          problems.push('four expected phrase IDs are required')
+        }
+        if (!idsMatch(payload.comparisonScores, EXPECTED_COMPARISONS)) {
+          problems.push('four expected V2/V3 comparisons are required')
+        }
+        for (const phrase of payload.phraseScores ?? []) {
+          const expectedPath = EXPECTED_PHRASES.get(phrase.id)
+          if (expectedPath && phrase.wavPath !== expectedPath) {
+            problems.push(`${phrase.id} wavPath mismatch`)
+          }
+          for (const key of SCORE_KEYS) {
+            const threshold = scoreThreshold(payload.thresholds ?? {}, key)
+            if (typeof phrase[key] !== 'number' || phrase[key] < threshold) {
+              problems.push(`${phrase.id ?? 'phrase'} ${key} must be ${threshold}+`)
+            }
+          }
+        }
+        for (const comparison of payload.comparisonScores ?? []) {
+          const expected = EXPECTED_COMPARISONS.get(comparison.id)
+          if (expected && (comparison.v3WavPath !== expected[0] || comparison.legacyV2WavPath !== expected[1])) {
+            problems.push(`${comparison.id} comparison paths mismatch`)
+          }
+          const threshold = payload.thresholds?.minV3PreferenceScore ?? 4
+          if (typeof comparison.v3PreferenceScore !== 'number' || comparison.v3PreferenceScore < threshold) {
+            problems.push(`${comparison.id ?? 'comparison'} v3PreferenceScore must be ${threshold}+`)
+          }
+        }
+        return {
+          ok: problems.length === 0,
+          problems,
+          summary: `Ready: ${(payload.phraseScores ?? []).length} phrases / ${(payload.comparisonScores ?? []).length} comparisons`,
+        }
+      }
+
+      function validateHandoffEvidence(payload) {
+        const problems = []
+        if (payload.version !== 1) {
+          problems.push('version must be 1')
+        }
+        if (payload.reviewId !== 'webuta-wav-daw-handoff-v1') {
+          problems.push('wrong handoff reviewId')
+        }
+        if (!payload.reviewer || !payload.verifiedAt) {
+          problems.push('reviewer and verifiedAt are required')
+        }
+        if (!PASSING_DECISIONS.has(String(payload.decision ?? '').trim().toLowerCase())) {
+          problems.push('decision must be release-ready, community-ready, or pass')
+        }
+        if (payload.physicalDevice !== true) {
+          problems.push('physicalDevice must be true')
+        }
+        if (payload.defaultVoicebank !== 'WebUtau Korean V3 Synthetic') {
+          problems.push('defaultVoicebank must be WebUtau Korean V3 Synthetic')
+        }
+        for (const field of ['device', 'osVersion', 'browser', 'targetDaw', 'webutaUrl']) {
+          if (!payload.environment?.[field]) {
+            problems.push(`environment.${field} is required`)
+          }
+        }
+        if (!/^https:\/\/midagedev\.github\.io\/webuta\/?/u.test(String(payload.environment?.webutaUrl ?? ''))) {
+          problems.push('webutaUrl must point to GitHub Pages')
+        }
+        for (const key of HANDOFF_CHECKS) {
+          if (payload.checks?.[key] !== true) {
+            problems.push(`${key} must be true`)
+          }
+        }
+        const wav = payload.renderedWav ?? {}
+        if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
+          problems.push('renderedWav must be 44.1 kHz mono 16-bit')
+        }
+        if (typeof wav.durationSeconds !== 'number' || wav.durationSeconds < 2 || !String(wav.fileName ?? '').endsWith('.wav')) {
+          problems.push('renderedWav needs a valid .wav file and duration')
+        }
+        if (!['share', 'download', 'files'].includes(String(payload.handoff?.exportMethod ?? '').trim().toLowerCase())) {
+          problems.push('handoff.exportMethod must be share, download, or files')
+        }
+        if (payload.handoff?.importedRegionVisible !== true || payload.handoff?.noConversionError !== true) {
+          problems.push('DAW import details must pass')
+        }
+        if (!['pass', 'not-supported'].includes(String(payload.homeScreen?.status ?? '').trim().toLowerCase())) {
+          problems.push('homeScreen.status must be pass or not-supported')
+        }
+        return {
+          ok: problems.length === 0,
+          problems,
+          summary: `Ready: ${payload.environment?.targetDaw ?? 'DAW'} physical handoff pass`,
+        }
+      }
+
+      function updateEvidenceSummary() {
+        const summary = document.querySelector('#evidencePreflightSummary')
+        const readyCount = Number(Boolean(evidenceState.listening?.ok)) + Number(Boolean(evidenceState.handoff?.ok))
+        summary.classList.toggle('ready', readyCount === 2)
+        summary.classList.toggle('warning', readyCount < 2 && (evidenceState.listening || evidenceState.handoff))
+        if (readyCount === 2) {
+          summary.innerHTML = 'Both JSON files look ready. Keep them in Downloads, then run <code>npm run release:evidence-status</code> and <code>npm run release:accept-evidence</code>.'
+          return
+        }
+        const problems = [evidenceState.listening, evidenceState.handoff]
+          .filter(Boolean)
+          .flatMap((result) => result.problems.slice(0, 2))
+        summary.textContent = problems.length
+          ? `${readyCount}/2 ready. ${problems.slice(0, 3).join(' ')}`
+          : 'Choose both JSON files. No upload is performed; checks run locally in this browser.'
+      }
+
+      async function handleEvidenceFile(event, kind, validator, statusSelector) {
+        const status = document.querySelector(statusSelector)
+        const file = event.target.files?.[0]
+        if (!file) {
+          evidenceState[kind] = null
+          status.textContent = 'Waiting for file'
+          status.className = 'file-status'
+          updateEvidenceSummary()
+          return
+        }
+        try {
+          const payload = JSON.parse(await file.text())
+          const result = validator(payload)
+          evidenceState[kind] = result
+          status.textContent = result.ok ? result.summary : result.problems.slice(0, 2).join(' ')
+          status.className = `file-status ${result.ok ? 'ready' : 'warning'}`
+        } catch (error) {
+          evidenceState[kind] = { ok: false, problems: ['JSON parse failed'], summary: '' }
+          status.textContent = error instanceof Error ? error.message : 'JSON parse failed'
+          status.className = 'file-status warning'
+        }
+        updateEvidenceSummary()
+      }
+
+      document
+        .querySelector('#listeningEvidenceInput')
+        .addEventListener('change', (event) =>
+          handleEvidenceFile(event, 'listening', validateListeningEvidence, '#listeningEvidenceStatus'),
+        )
+      document
+        .querySelector('#handoffEvidenceInput')
+        .addEventListener('change', (event) =>
+          handleEvidenceFile(event, 'handoff', validateHandoffEvidence, '#handoffEvidenceStatus'),
+        )
+    </script>
   </body>
 </html>

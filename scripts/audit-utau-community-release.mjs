@@ -51,6 +51,7 @@ const EXPECTED_DECISIONS = {
 const DEMO_REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
   'first-run starter guide visible',
+  'first-run one-minute path visible',
   'first-run route map visible',
   'first-run three-step checklist visible',
   'first-run quick-start CTA visible',
@@ -269,6 +270,12 @@ function publicReviewHubGate(path) {
       'Download review bundle',
       'release-review-bundle.zip',
       'Fast Acceptance Path',
+      'Evidence Preflight',
+      'webuta-evidence-preflight-v1',
+      'evidencePreflightSummary',
+      'listeningEvidenceInput',
+      'handoffEvidenceInput',
+      'No upload',
       'Downloads',
       'release:evidence-status',
       'release:accept-evidence',
@@ -284,6 +291,7 @@ function publicReviewHubGate(path) {
   return makeGate('public-release-review-hub', 'Published release review hub', path, problems, html ? {
     hasListeningLink: html.includes('v3/index.html'),
     hasWavDawLink: html.includes('wav-daw/index.html'),
+    hasEvidencePreflight: html.includes('evidencePreflightSummary'),
   } : null)
 }
 
@@ -639,6 +647,7 @@ function readmeGate(paths) {
       'Kasane Teto assets are not bundled',
       '처음 시작',
       '듣기 · 가사 · WAV',
+      '1분 완성 루트',
       'STEP 01',
       '고급 도구',
       'DAW 번들',
@@ -656,6 +665,8 @@ function readmeGate(paths) {
       'release-review-bundle.zip',
       'release:evidence-status',
       'release:accept-evidence',
+      'Evidence Preflight',
+      'No upload',
       'Downloads',
     ]
     for (const snippet of requiredSnippets) {

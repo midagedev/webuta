@@ -363,6 +363,9 @@ async function assertDefaultV3DemoReady(page) {
   await starterGuide.getByText('처음 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('듣기 · 가사 · WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run one-minute path').getByText('1분 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run one-minute path').getByText('샘플 듣기 -> 가사 바꾸기 -> WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter readiness snapshot').getByText(/바로 시작 가능|보컬 로딩 중/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter launch panel').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterRouteSummary = page.getByLabel('Starter route summary')
   await starterRouteSummary.getByRole('button', { name: '첫 단계 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -476,6 +479,7 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run one-minute path visible',
     'first-run route map visible',
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',

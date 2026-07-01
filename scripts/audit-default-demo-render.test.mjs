@@ -10,6 +10,7 @@ describe('default demo render audit report', () => {
       checks: [
         'default V3 voicebank loaded',
         'first-run starter guide visible',
+        'first-run one-minute path visible',
         'first-run route map visible',
         'first-run three-step checklist visible',
         'first-run quick-start CTA visible',
