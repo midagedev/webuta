@@ -15,13 +15,16 @@ describe('starter sample gallery render audit', () => {
 
     expect(report.ok).toBe(true)
     expect(report.decision).toBe('starter-sample-gallery-render-pass')
-    expect(report.sampleCount).toBe(10)
+    expect(report.sampleCount).toBe(12)
     expect(report.diversity).toMatchObject({
-      moodCount: 10,
-      lyricLineCount: 10,
-      chordLineCount: 10,
+      moodCount: 12,
+      bestForCount: 12,
+      listeningCueCount: 12,
+      vocalFocusCount: 12,
+      lyricLineCount: 12,
+      chordLineCount: 12,
       tempoBandCount: 4,
-      codaSampleCount: 9,
+      codaSampleCount: 11,
     })
     expect(report.samples.every((sample) => sample.passed)).toBe(true)
     expect(report.samples.every((sample) => sample.dawBundle?.passed)).toBe(true)

@@ -15,6 +15,8 @@ export type DemoSampleId =
   | 'glass-pulse'
   | 'lofi-diary'
   | 'zero-gravity'
+  | 'candy-crash'
+  | 'velvet-orbit'
 
 export type DemoSample = {
   id: DemoSampleId
@@ -465,6 +467,93 @@ export const demoSamples: DemoSample[] = [
           tone: 71,
           lyric: '지',
           vibrato: { enabled: true, depthCents: 19, rateHz: 5.9, startPercent: 43 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'candy-crash',
+    title: 'Candy Crash',
+    mood: 'Electro Punk',
+    detail: '날카롭게 부서지는 챈트 후렴',
+    bestFor: '강한 챈트 후렴',
+    listeningCue: '깨지는 전자 질감',
+    vocalFocus: '자음 어택',
+    lyricLine: '캔 디 불 꽃 처 럼 번 져 가',
+    chordLine: 'C#m -> A -> E -> B',
+    project: makeSampleProject({
+      id: 'demo-candy-crash',
+      fileName: 'sample-candy-crash',
+      name: 'Candy Crash Vocal',
+      comment: 'A bright electro-punk Korean sample with sharp consonant attacks and a punchy chant cadence.',
+      bpm: 156,
+      partDuration: TICKS_PER_BEAT * 8,
+      chords: [
+        { symbol: 'C#m', start: 0, duration: TICKS_PER_BEAT * 2, tone: 61, quality: 'min', tones: [61, 64, 68] },
+        { symbol: 'A', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 69, quality: 'maj', tones: [69, 73, 76] },
+        { symbol: 'E', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 64, quality: 'maj', tones: [64, 68, 71] },
+        { symbol: 'B', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 2, tone: 71, quality: 'maj', tones: [71, 75, 78] },
+      ],
+      notes: [
+        { id: 'candy-1', start: 0, duration: 240, tone: 61, lyric: '캔' },
+        { id: 'candy-2', start: 240, duration: 240, tone: 64, lyric: '디' },
+        { id: 'candy-3', start: 480, duration: 480, tone: 68, lyric: '불' },
+        { id: 'candy-4', start: 960, duration: 240, tone: 73, lyric: '꽃' },
+        { id: 'candy-5', start: 1200, duration: 240, tone: 69, lyric: '처' },
+        { id: 'candy-6', start: 1440, duration: 480, tone: 64, lyric: '럼' },
+        { id: 'candy-7', start: 1920, duration: 360, tone: 68, lyric: '번' },
+        { id: 'candy-8', start: 2400, duration: 360, tone: 71, lyric: '져' },
+        {
+          id: 'candy-9',
+          start: 2880,
+          duration: 960,
+          tone: 71,
+          lyric: '가',
+          vibrato: { enabled: true, depthCents: 21, rateHz: 6.0, startPercent: 38 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'velvet-orbit',
+    title: 'Velvet Orbit',
+    mood: 'Synth R&B',
+    detail: '부드럽게 미끄러지는 우주 벌스',
+    bestFor: '느슨한 그루브 벌스',
+    listeningCue: '미끄러지는 R&B',
+    vocalFocus: '저음 슬라이드',
+    lyricLine: '너 의 궤 도 에 천 천 히 날 아',
+    chordLine: 'Cm -> Ab -> Eb -> Bb',
+    project: makeSampleProject({
+      id: 'demo-velvet-orbit',
+      fileName: 'sample-velvet-orbit',
+      name: 'Velvet Orbit Vocal',
+      comment: 'A laid-back synth-R&B Korean sample with low-register phrasing and a softer melodic turn.',
+      bpm: 100,
+      partDuration: TICKS_PER_BEAT * 11,
+      chords: [
+        { symbol: 'Cm', start: 0, duration: TICKS_PER_BEAT * 2, tone: 60, quality: 'min', tones: [60, 63, 67] },
+        { symbol: 'Ab', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 68, quality: 'maj', tones: [68, 72, 75] },
+        { symbol: 'Eb', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 63, quality: 'maj', tones: [63, 67, 70] },
+        { symbol: 'Bb', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 5, tone: 58, quality: 'maj', tones: [58, 62, 65, 70] },
+      ],
+      notes: [
+        { id: 'velvet-1', start: 0, duration: 600, tone: 60, lyric: '너' },
+        { id: 'velvet-2', start: 720, duration: 240, tone: 63, lyric: '의' },
+        { id: 'velvet-3', start: 960, duration: 480, tone: 67, lyric: '궤' },
+        { id: 'velvet-4', start: 1440, duration: 480, tone: 68, lyric: '도' },
+        { id: 'velvet-5', start: 1920, duration: 480, tone: 72, lyric: '에' },
+        { id: 'velvet-6', start: 2400, duration: 360, tone: 70, lyric: '천' },
+        { id: 'velvet-7', start: 2880, duration: 360, tone: 67, lyric: '천' },
+        { id: 'velvet-8', start: 3360, duration: 480, tone: 63, lyric: '히' },
+        { id: 'velvet-9', start: 3840, duration: 360, tone: 65, lyric: '날' },
+        {
+          id: 'velvet-10',
+          start: 4320,
+          duration: 960,
+          tone: 70,
+          lyric: '아',
+          vibrato: { enabled: true, depthCents: 10, rateHz: 4.9, startPercent: 57 },
         },
       ],
     }),

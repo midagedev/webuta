@@ -78,9 +78,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   header, `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`,
   visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`,
   `첫 사용 순서`, `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`,
-  `샘플 고르기`, `보컬로이드풍 훅 10개`, `Neon Lift`, `Blue Hour`, `Retro Run`,
+  `샘플 고르기`, `보컬로이드풍 훅 12개`, `Neon Lift`, `Blue Hour`, `Retro Run`,
   `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`,
-  `Lofi Diary`, `Zero Gravity`,
+  `Lofi Diary`, `Zero Gravity`, `Candy Crash`, `Velvet Orbit`,
   `BPM/음역/노트/받침/끝음` sample comparison metrics,
   collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`, `01 샘플 듣기` / `02 가사 바꾸기` /
   `03 WAV 받기` route, detailed starter lyric input with `한글 그대로 입력` behind `가사 자세히`,
@@ -136,13 +136,14 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [x] Selected-note alias display and isolated sample preview use the same
   phrase-start/previous-vowel VCV context as full-song UTAU rendering.
-- [x] Browser audit renders all ten first-run starter samples through the
+- [x] Browser audit renders all twelve first-run starter samples through the
   bundled V3 voicebank and checks DAW-ready non-silent WAV output plus matching
-  DAW handoff ZIP contents for each, with the gallery report recording ten
-  moods, ten lyric lines, ten chord progressions, four tempo bands, and Hangul
+  DAW handoff ZIP contents for each, with the gallery report recording twelve
+  moods, twelve lyric lines, twelve chord progressions, twelve use cases,
+  twelve listening cues, twelve vocal focus tags, four tempo bands, and Hangul
   coda coverage.
-- [x] `npm run voicebank:songwriting-v3` checks the ten starter samples
-  directly from source for slow/mid/fast BPM coverage, at least five melody
+- [x] `npm run voicebank:songwriting-v3` checks the twelve starter samples
+  directly from source for slow/mid/fast BPM coverage, at least six melody
   contours, Hangul coda lyrics, sustained cadence notes, chord-guide coverage,
   and lyric-token-to-note alignment.
 - [x] `npm run voicebank:compatibility-utau` renders diverse local fixture UTAU

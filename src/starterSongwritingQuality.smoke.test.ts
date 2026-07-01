@@ -144,15 +144,15 @@ function summarizePortfolio(samples: SampleSongwritingReport[]) {
     offGridSampleCount: samples.filter((sample) => sample.metrics.offGridStartCount > 0).length,
   }
   const problems = [
-    ...(samples.length >= 10 ? [] : [`starter songwriting sample count ${samples.length}; expected at least 10`]),
-    ...(summary.moodCount >= 10 ? [] : [`starter moods ${summary.moodCount}; expected at least 10`]),
-    ...(summary.chordProgressionCount >= 10 ? [] : [`starter chord progressions ${summary.chordProgressionCount}; expected at least 10`]),
+    ...(samples.length >= 12 ? [] : [`starter songwriting sample count ${samples.length}; expected at least 12`]),
+    ...(summary.moodCount >= 12 ? [] : [`starter moods ${summary.moodCount}; expected at least 12`]),
+    ...(summary.chordProgressionCount >= 12 ? [] : [`starter chord progressions ${summary.chordProgressionCount}; expected at least 12`]),
     ...(summary.bpmBandCount >= 3 ? [] : [`starter BPM bands ${summary.bpmBandCount}; expected slow, mid, and fast coverage`]),
     ...(summary.tempoSpan >= 70 ? [] : [`starter tempo span ${summary.tempoSpan}; expected at least 70 BPM`]),
-    ...(summary.codaSampleCount >= 4 ? [] : [`starter coda sample count ${summary.codaSampleCount}; expected at least 4`]),
-    ...(summary.contourSignatureCount >= 5
+    ...(summary.codaSampleCount >= 8 ? [] : [`starter coda sample count ${summary.codaSampleCount}; expected at least 8`]),
+    ...(summary.contourSignatureCount >= 6
       ? []
-      : [`starter contour signature count ${summary.contourSignatureCount}; expected at least 5`]),
+      : [`starter contour signature count ${summary.contourSignatureCount}; expected at least 6`]),
     ...(summary.globalToneRange >= 20 ? [] : [`starter global tone range ${summary.globalToneRange}; expected at least 20 semitones`]),
     ...(summary.offGridSampleCount >= 2 ? [] : [`starter off-grid sample count ${summary.offGridSampleCount}; expected at least 2`]),
   ]

@@ -362,9 +362,9 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery render audit must pass')
-    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least ten samples')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least twelve samples')
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must cover slow, mid, and fast tempo bands')
-    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must include at least four Hangul coda samples')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must include at least eight Hangul coda samples')
     expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
@@ -387,7 +387,7 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting quality audit must pass')
     expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting audit must cover slow, mid, and fast BPM bands')
-    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting audit must include at least five distinct melody contours')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting audit must include at least six distinct melody contours')
     expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift did not pass')
     expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift needs a sustained cadence note')
     expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift needs more chord-tone melody anchors')
@@ -836,6 +836,8 @@ function makeStarterSongwritingReport() {
     ['glass-pulse', 'Glass Pulse', 'K-Pop Dance', 132, 10, 11, 6, 4, 3, 1, 2, 0.7, 2, 'usdDudUuu'],
     ['lofi-diary', 'Lofi Diary', 'Bedroom Pop', 88, 9, 12, 6, 4, 1, 1, 1.5, 1, 7, 'uuUUdDdU'],
     ['zero-gravity', 'Zero Gravity', 'Future Rock', 140, 9, 11, 6, 4, 2, 1, 2, 0.7778, 5, 'uUddDduU'],
+    ['candy-crash', 'Candy Crash', 'Electro Punk', 156, 9, 12, 6, 5, 2, 1, 2, 1, 5, 'UUUDDUUs'],
+    ['velvet-orbit', 'Velvet Orbit', 'Synth R&B', 100, 10, 12, 7, 5, 2, 1, 2, 0.6, 3, 'UUuUdDDuU'],
   ]
   const samples = rows.map(
     ([
@@ -891,15 +893,15 @@ function makeStarterSongwritingReport() {
     generatedAt: '2026-07-01T00:00:00.000Z',
     sampleCount: samples.length,
     portfolio: {
-      moodCount: 10,
-      titleCount: 10,
+      moodCount: 12,
+      titleCount: 12,
       tempoSpan: 82,
       minBpm: 82,
       maxBpm: 164,
       bpmBandCount: 3,
-      codaSampleCount: 9,
-      contourSignatureCount: 10,
-      chordProgressionCount: 10,
+      codaSampleCount: 11,
+      contourSignatureCount: 12,
+      chordProgressionCount: 12,
       globalToneRange: 23,
       offGridSampleCount: 4,
     },
@@ -1003,6 +1005,8 @@ function makeStarterSamplesReport() {
     ['glass-pulse', 'Glass Pulse', 'K-Pop Dance', 'Glass Pulse Vocal', '유 리 빛 무 대 위 로 날 아 가', 'Gm -> Eb -> Bb -> F', 10],
     ['lofi-diary', 'Lofi Diary', 'Bedroom Pop', 'Lofi Diary Vocal', '새 벽 창 에 작 은 꿈 을 써', 'D -> A -> Bm -> G', 9],
     ['zero-gravity', 'Zero Gravity', 'Future Rock', 'Zero Gravity Vocal', '중 력 날 아 하 늘 빛 까 지', 'Am -> G -> F -> E', 9],
+    ['candy-crash', 'Candy Crash', 'Electro Punk', 'Candy Crash Vocal', '캔 디 불 꽃 처 럼 번 져 가', 'C#m -> A -> E -> B', 9],
+    ['velvet-orbit', 'Velvet Orbit', 'Synth R&B', 'Velvet Orbit Vocal', '너 의 궤 도 에 천 천 히 날 아', 'Cm -> Ab -> Eb -> Bb', 10],
   ].map(([id, title, mood, projectName, lyricLine, chordLine, noteCount], index) => ({
     id,
     title,
@@ -1067,11 +1071,14 @@ function makeStarterSamplesReport() {
     generatedAt: '2026-07-01T00:00:00.000Z',
     sampleCount: samples.length,
     diversity: {
-      moodCount: 10,
-      lyricLineCount: 10,
-      chordLineCount: 10,
+      moodCount: 12,
+      bestForCount: 12,
+      listeningCueCount: 12,
+      vocalFocusCount: 12,
+      lyricLineCount: 12,
+      chordLineCount: 12,
       tempoBandCount: 4,
-      codaSampleCount: 9,
+      codaSampleCount: 11,
     },
     samples,
     problems: [],
@@ -1424,7 +1431,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
-    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 10개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `선택 중`, `처음 듣는 기본 후렴`, `밝은 상승 멜로디`, `긴 끝음`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `Am -> F -> C -> G`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
+    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 12개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `Candy Crash`, `Velvet Orbit`, `선택 중`, `처음 듣는 기본 후렴`, `밝은 상승 멜로디`, `긴 끝음`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `Am -> F -> C -> G`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
     'The DAW handoff bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` sidecars.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
@@ -1465,7 +1472,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 10개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `선택 중`, `처음 듣는 기본 후렴`, `밝은 상승 멜로디`, `긴 끝음`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
+    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 12개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `Candy Crash`, `Velvet Orbit`, `선택 중`, `처음 듣는 기본 후렴`, `밝은 상승 멜로디`, `긴 끝음`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
     'The DAW bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',

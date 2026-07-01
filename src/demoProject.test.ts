@@ -28,6 +28,8 @@ describe('default demo project', () => {
       'Glass Pulse',
       'Lofi Diary',
       'Zero Gravity',
+      'Candy Crash',
+      'Velvet Orbit',
     ])
     expect(demoSamples.map((sample) => sample.mood)).toEqual([
       'Cyber Pop',
@@ -40,15 +42,17 @@ describe('default demo project', () => {
       'K-Pop Dance',
       'Bedroom Pop',
       'Future Rock',
+      'Electro Punk',
+      'Synth R&B',
     ])
-    expect(new Set(demoSamples.map((sample) => sample.lyricLine)).size).toBe(10)
-    expect(new Set(demoSamples.map((sample) => sample.chordLine)).size).toBe(10)
-    expect(new Set(demoSamples.map((sample) => sample.bestFor)).size).toBe(10)
-    expect(new Set(demoSamples.map((sample) => sample.listeningCue)).size).toBe(10)
-    expect(new Set(demoSamples.map((sample) => sample.vocalFocus)).size).toBeGreaterThanOrEqual(9)
+    expect(new Set(demoSamples.map((sample) => sample.lyricLine)).size).toBe(12)
+    expect(new Set(demoSamples.map((sample) => sample.chordLine)).size).toBe(12)
+    expect(new Set(demoSamples.map((sample) => sample.bestFor)).size).toBe(12)
+    expect(new Set(demoSamples.map((sample) => sample.listeningCue)).size).toBe(12)
+    expect(new Set(demoSamples.map((sample) => sample.vocalFocus)).size).toBe(12)
     expect(new Set(demoSamples.map((sample) => sample.project.bpm)).size).toBeGreaterThanOrEqual(6)
     expect(new Set(demoSamples.map((sample) => tempoBand(sample.project.bpm))).size).toBe(4)
-    expect(new Set(demoSamples.map((sample) => sample.project.source?.fileName)).size).toBe(10)
+    expect(new Set(demoSamples.map((sample) => sample.project.source?.fileName)).size).toBe(12)
     expect(demoSamples.every((sample) => sample.project.notes.length >= 9)).toBe(true)
     expect(demoSamples.every((sample) => sample.bestFor.length >= 6)).toBe(true)
     expect(demoSamples.every((sample) => sample.listeningCue.length >= 5)).toBe(true)
@@ -57,6 +61,8 @@ describe('default demo project', () => {
     expect(demoSamples.some((sample) => sample.lyricLine.includes('비 가 내 린 밤'))).toBe(true)
     expect(demoSamples.some((sample) => sample.lyricLine.includes('새 벽 창'))).toBe(true)
     expect(demoSamples.some((sample) => sample.lyricLine.includes('중 력 날'))).toBe(true)
+    expect(demoSamples.some((sample) => sample.lyricLine.includes('캔 디 불 꽃'))).toBe(true)
+    expect(demoSamples.some((sample) => sample.lyricLine.includes('너 의 궤 도'))).toBe(true)
   })
 })
 
