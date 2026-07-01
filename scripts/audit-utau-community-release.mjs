@@ -16,6 +16,7 @@ const DEFAULTS = {
   clarityAudit: 'experiments/utau-v3/work/v3-clarity-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
+  starterSongwritingAudit: 'experiments/utau-v3/work/starter-songwriting-quality-audit.json',
   starterSamplesAudit: 'experiments/utau-v3/work/starter-sample-gallery-render-audit.json',
   utauCompatibilityAudit: 'experiments/utau-v3/work/utau-import-compatibility-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
@@ -46,6 +47,7 @@ const EXPECTED_DECISIONS = {
   longSustainAudit: 'utau-long-sustain-audit-pass',
   clarityAudit: 'v3-clarity-audit-pass',
   demoAudit: 'default-demo-render-pass',
+  starterSongwritingAudit: 'starter-songwriting-quality-audit-pass',
   starterSamplesAudit: 'starter-sample-gallery-render-pass',
   utauCompatibilityAudit: 'utau-import-compatibility-audit-pass',
   reviewManifest: 'v3-listening-review-ready',
@@ -122,6 +124,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('phoneme-clarity', 'V3 phoneme clarity audit', paths.clarityAudit, EXPECTED_DECISIONS.clarityAudit),
     demoGate(paths.demoAudit),
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
+    starterSongwritingGate(paths.starterSongwritingAudit),
     starterSamplesGate(paths.starterSamplesAudit),
     utauCompatibilityGate(paths.utauCompatibilityAudit),
     reviewPackGate(paths.reviewManifest),
@@ -231,6 +234,83 @@ function validateDefaultDemoReport(report, problems) {
   if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
     problems.push('demo WAV must be 44.1 kHz mono 16-bit PCM')
   }
+}
+
+function starterSongwritingGate(path) {
+  const problems = []
+  const report = readOptionalJson(path, 'starter songwriting quality audit', problems)
+  if (report) {
+    if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.starterSongwritingAudit) {
+      problems.push('starter songwriting quality audit must pass')
+    }
+    if ((report.sampleCount ?? 0) < 7) {
+      problems.push('starter songwriting audit must cover at least seven samples')
+    }
+    const portfolio = report.portfolio ?? {}
+    if ((portfolio.moodCount ?? 0) < 7) {
+      problems.push('starter songwriting audit must cover seven distinct moods')
+    }
+    if ((portfolio.chordProgressionCount ?? 0) < 7) {
+      problems.push('starter songwriting audit must cover seven distinct chord progressions')
+    }
+    if ((portfolio.bpmBandCount ?? 0) < 3) {
+      problems.push('starter songwriting audit must cover slow, mid, and fast BPM bands')
+    }
+    if ((portfolio.tempoSpan ?? 0) < 70) {
+      problems.push('starter songwriting audit must span at least 70 BPM')
+    }
+    if ((portfolio.codaSampleCount ?? 0) < 4) {
+      problems.push('starter songwriting audit must include at least four samples with Hangul coda lyrics')
+    }
+    if ((portfolio.contourSignatureCount ?? 0) < 5) {
+      problems.push('starter songwriting audit must include at least five distinct melody contours')
+    }
+    if ((portfolio.globalToneRange ?? 0) < 20) {
+      problems.push('starter songwriting audit must cover at least 20 semitones across the sample gallery')
+    }
+    for (const sample of report.samples ?? []) {
+      const label = sample.title ?? sample.id ?? '(unknown)'
+      if (sample.passed !== true) {
+        problems.push(`starter songwriting sample ${label} did not pass`)
+      }
+      const metrics = sample.metrics ?? {}
+      if (metrics.noteCount !== metrics.lyricSyllableCount) {
+        problems.push(`starter songwriting sample ${label} must keep one lyric token per note`)
+      }
+      if ((metrics.chordCount ?? 0) < 4 || (metrics.uniqueChordCount ?? 0) < 4) {
+        problems.push(`starter songwriting sample ${label} must have at least four unique chord markers`)
+      }
+      if ((metrics.uniqueToneCount ?? 0) < 4 || (metrics.toneRange ?? 0) < 5) {
+        problems.push(`starter songwriting sample ${label} melody needs more pitch variety`)
+      }
+      if ((metrics.maxLeap ?? 99) > 8) {
+        problems.push(`starter songwriting sample ${label} has an extreme melody leap`)
+      }
+      if ((metrics.finalNoteBeats ?? 0) < 1.5 || (metrics.longNoteCount ?? 0) < 1) {
+        problems.push(`starter songwriting sample ${label} needs a sustained cadence note`)
+      }
+      if ((metrics.chordCoveredNoteCount ?? -1) !== metrics.noteCount) {
+        problems.push(`starter songwriting sample ${label} has notes outside chord guide coverage`)
+      }
+      if ((metrics.chordToneRatio ?? 0) < 0.34) {
+        problems.push(`starter songwriting sample ${label} needs more chord-tone melody anchors`)
+      }
+    }
+  }
+  return makeGate('starter-songwriting-quality', 'Seven starter lyrics, melodies, and chord guides have usable musical variety', path, problems, report ? {
+    sampleCount: report.sampleCount ?? 0,
+    portfolio: report.portfolio ?? null,
+    samples: (report.samples ?? []).map((sample) => ({
+      title: sample.title,
+      mood: sample.mood,
+      passed: sample.passed === true,
+      bpm: sample.metrics?.bpm ?? null,
+      noteCount: sample.metrics?.noteCount ?? null,
+      toneRange: sample.metrics?.toneRange ?? null,
+      chordToneRatio: sample.metrics?.chordToneRatio ?? null,
+      contourSignature: sample.metrics?.contourSignature ?? null,
+    })),
+  } : null)
 }
 
 function starterSamplesGate(path) {
@@ -770,6 +850,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['voicebank:compatibility-utau']) {
         problems.push('package.json must expose voicebank:compatibility-utau for imported UTAU zip compatibility evidence')
       }
+      if (!scripts['voicebank:songwriting-v3']) {
+        problems.push('package.json must expose voicebank:songwriting-v3 for starter lyric, melody, and chord quality evidence')
+      }
       if (!scripts['release:audit-utau']) {
         problems.push('package.json must expose release:audit-utau')
       }
@@ -880,6 +963,11 @@ function readmeGate(paths) {
       'release-packet.json',
       'release:bundle',
       'release-review-bundle.zip',
+      'voicebank:songwriting-v3',
+      'starter songwriting quality',
+      'slow, mid, and fast BPM',
+      'melody contours',
+      'Hangul coda lyrics',
       'voicebank:compatibility-utau',
       'UTAU import compatibility',
       'Japanese CV',
@@ -1602,6 +1690,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('pages-default-demo'))) {
     actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, WAV download, and DAW ZIP/MIDI guide download behavior.')
   }
+  if (problems.some((problem) => problem.includes('starter-songwriting-quality'))) {
+    actions.push('Run npm run voicebank:songwriting-v3 so the seven first-run starter samples prove lyric, melody contour, BPM-band, Hangul coda, and chord-guide variety before release.')
+  }
   if (problems.some((problem) => problem.includes('starter-sample-gallery'))) {
     actions.push('Run npm run voicebank:starter-samples-v3 so all seven first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
   }
@@ -1656,6 +1747,8 @@ function parseArgs(argv) {
       options.pagesReport = argv[++index]
     } else if (arg === '--pages-demo-audit') {
       options.pagesDemoAudit = argv[++index]
+    } else if (arg === '--starter-songwriting-audit') {
+      options.starterSongwritingAudit = argv[++index]
     } else if (arg === '--starter-samples-audit') {
       options.starterSamplesAudit = argv[++index]
     } else if (arg === '--utau-compatibility-audit') {
@@ -1676,6 +1769,7 @@ function parseArgs(argv) {
           '  --pages-url url          Verify a live GitHub Pages deployment',
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
           '  --pages-demo-audit path  Override deployed browser demo audit JSON path',
+          '  --starter-songwriting-audit path  Override starter songwriting quality audit JSON path',
           '  --starter-samples-audit path  Override starter sample gallery render audit JSON path',
           '  --utau-compatibility-audit path  Override imported UTAU compatibility audit JSON path',
           '  --listening-scores path  Override human listening score JSON path',

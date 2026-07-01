@@ -357,6 +357,32 @@ describe('UTAU community release audit', () => {
     expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
+  it('blocks release when starter songwriting quality evidence is weak', async () => {
+    const starterSongwritingAudit = makeStarterSongwritingReport()
+    starterSongwritingAudit.ok = false
+    starterSongwritingAudit.decision = 'starter-songwriting-quality-audit-fail'
+    starterSongwritingAudit.portfolio.bpmBandCount = 2
+    starterSongwritingAudit.portfolio.contourSignatureCount = 3
+    starterSongwritingAudit.samples[0].passed = false
+    starterSongwritingAudit.samples[0].metrics.chordToneRatio = 0.2
+    starterSongwritingAudit.samples[0].metrics.finalNoteBeats = 1
+    const fixture = await makeFixture({ starterSongwritingAudit })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting quality audit must pass')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting audit must cover slow, mid, and fast BPM bands')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting audit must include at least five distinct melody contours')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift did not pass')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift needs a sustained cadence note')
+    expect(report.problems.join('\n')).toContain('starter-songwriting-quality: starter songwriting sample Neon Lift needs more chord-tone melody anchors')
+    expect(report.nextActions.join('\n')).toContain('npm run voicebank:songwriting-v3')
+  })
+
   it('blocks release when starter samples render WAVs but do not prove DAW handoff bundles', async () => {
     const starterSamplesAudit = makeStarterSamplesReport()
     starterSamplesAudit.samples[0].dawBundle = {
@@ -597,6 +623,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-clarity-audit.json'), passReport('v3-clarity-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
   writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
+  writeJson(join(work, 'starter-songwriting-quality-audit.json'), overrides.starterSongwritingAudit ?? makeStarterSongwritingReport())
   writeJson(join(work, 'starter-sample-gallery-render-audit.json'), overrides.starterSamplesAudit ?? makeStarterSamplesReport())
   writeJson(join(work, 'utau-import-compatibility-audit.json'), overrides.utauCompatibilityAudit ?? makeUtauCompatibilityReport())
   writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
@@ -782,6 +809,87 @@ function passReport(decision) {
     ok: true,
     decision,
     generatedAt: '2026-06-30T00:00:00.000Z',
+  }
+}
+
+function makeStarterSongwritingReport() {
+  const rows = [
+    ['neon-lift', 'Neon Lift', 'Cyber Pop', 128, 11, 7, 5, 3, 4, 1, 2, 0.3636, 1, 'uudUdddUuu'],
+    ['blue-hour', 'Blue Hour', 'Dream Pop', 94, 9, 7, 5, 4, 3, 1, 1.5, 0.4444, 1, 'uuUddduD'],
+    ['retro-run', 'Retro Run', 'Retro Game', 150, 9, 15, 7, 8, 3, 1, 2, 0.5556, 0, 'UUUdDUdd'],
+    ['moon-signal', 'Moon Signal', 'Dark Synth', 112, 9, 7, 5, 4, 2, 1, 2, 0.4444, 7, 'UUdddduu'],
+    ['pink-noise', 'Pink Noise', 'Hyperpop', 164, 11, 9, 6, 5, 3, 1, 1.75, 0.5455, 4, 'uuUddUdddd'],
+    ['rain-verse', 'Rain Verse', 'Emo Ballad', 82, 10, 9, 5, 4, 3, 2, 2, 0.5, 3, 'uuUudDduD'],
+    ['city-glide', 'City Glide', 'City Pop', 106, 10, 7, 5, 3, 2, 1, 2, 0.5, 4, 'uuuuddddU'],
+  ]
+  const samples = rows.map(
+    ([
+      id,
+      title,
+      mood,
+      bpm,
+      noteCount,
+      toneRange,
+      uniqueToneCount,
+      maxLeap,
+      directionChangeCount,
+      longNoteCount,
+      finalNoteBeats,
+      chordToneRatio,
+      codaSyllableCount,
+      contourSignature,
+    ]) => ({
+      id,
+      title,
+      mood,
+      passed: true,
+      metrics: {
+        bpm,
+        noteCount,
+        lyricSyllableCount: noteCount,
+        chordCount: 4,
+        uniqueChordCount: 4,
+        toneRange,
+        uniqueToneCount,
+        maxLeap,
+        directionChangeCount,
+        longNoteCount,
+        finalNoteBeats,
+        chordCoveredNoteCount: noteCount,
+        chordToneRatio,
+        offGridStartCount: id === 'pink-noise' ? 1 : id === 'rain-verse' ? 2 : id === 'city-glide' ? 3 : 0,
+        codaSyllableCount,
+        contourSignature,
+      },
+      checks: [
+        { check: 'project has one lyric token per note', passed: true },
+        { check: 'melody has a vocal-synth hook range', passed: true },
+        { check: 'project chord line matches chord markers', passed: true },
+      ],
+      problems: [],
+    }),
+  )
+  return {
+    version: 1,
+    ok: true,
+    decision: 'starter-songwriting-quality-audit-pass',
+    generatedAt: '2026-07-01T00:00:00.000Z',
+    sampleCount: samples.length,
+    portfolio: {
+      moodCount: 7,
+      titleCount: 7,
+      tempoSpan: 82,
+      minBpm: 82,
+      maxBpm: 164,
+      bpmBandCount: 3,
+      codaSampleCount: 6,
+      contourSignatureCount: 7,
+      chordProgressionCount: 7,
+      globalToneRange: 23,
+      offGridSampleCount: 3,
+    },
+    samples,
+    problems: [],
   }
 }
 
@@ -1161,6 +1269,7 @@ function makePackageJson() {
       'voicebank:audit-v3': 'node scripts/audit-korean-v3-voicebank.mjs',
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
       'voicebank:starter-samples-v3': 'node scripts/audit-starter-sample-gallery.mjs',
+      'voicebank:songwriting-v3': 'WEBUTA_STARTER_SONGWRITING_REPORT=experiments/utau-v3/work/starter-songwriting-quality-audit.json vitest run src/starterSongwritingQuality.smoke.test.ts',
       'voicebank:compatibility-utau': 'WEBUTA_UTAU_COMPAT_REPORT=experiments/utau-v3/work/utau-import-compatibility-audit.json vitest run src/voicebank.compatibility.smoke.test.ts',
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
@@ -1297,6 +1406,7 @@ function makeReadme() {
     'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
+    'Run `npm run voicebank:songwriting-v3` for starter songwriting quality checks covering slow, mid, and fast BPM bands, melody contours, Hangul coda lyrics, and chord-guide variety.',
     'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Hangul CV/VC coda, and multi-oto style ranking.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',

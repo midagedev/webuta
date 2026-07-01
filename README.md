@@ -145,6 +145,7 @@ npm run voicebank:v3
 npm run voicebank:audit-v3
 npm run voicebank:demo-v3
 npm run voicebank:demo-v3:pages
+npm run voicebank:songwriting-v3
 npm run voicebank:starter-samples-v3
 npm run voicebank:compatibility-utau
 npm run voicebank:oto-v3
@@ -175,6 +176,7 @@ Current verified local smoke coverage:
 - Bundled `WebUtau Korean V3 Synthetic` contains `685` WAV samples and `1603` oto.ini alias lines in the default web profile.
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium, exports a DAW-ready WAV, downloads the DAW handoff ZIP, and inspects its manifest, WAV, UST/USTX/project exports, `melody.mid`, and `chords.mid`.
 - `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, live WAV download, and DAW ZIP/MIDI guide download.
+- `npm run voicebank:songwriting-v3` verifies starter songwriting quality directly from the first-run sample source: seven distinct moods and chord progressions, slow, mid, and fast BPM bands, at least five melody contours, Hangul coda lyrics, global tone-range coverage, lyric-token-to-note alignment, sustained cadence notes, and chord-guide coverage.
 - `npm run voicebank:starter-samples-v3` opens all seven starter samples in Chromium and verifies each one renders a DAW-ready, non-silent WAV plus a DAW handoff ZIP with native WebUtau, USTX, classic UST, `melody.mid`, `chords.mid`, lyric, note, chord, arrangement, manifest, and README files through the bundled V3 voicebank.
 - `npm run voicebank:compatibility-utau` builds diverse local fixture UTAU zips and verifies Japanese CV, Japanese VCV, `prefix.map` multipitch, Hangul CV/VC coda, and multi-oto style ranking render non-silent 44.1 kHz audio through the browser UTAU sample renderer without fallback aliases or render warnings.
 - The first-run browser smoke verifies the `처음 시작` / `듣기 · 가사 · WAV` header, `1분 미션` success board, `한글 한 줄을 보컬 WAV로 만들기`, visible `First-Vocal-Sketch.wav` output, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, top `빠른 가사 입력` / `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 7개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `한국어 UTAU 모드` alias/WAV path, collapsed `현재 프로젝트` context drawer, `처음 1분 가이드`, `Am -> F -> C -> G` chord guide, `01 샘플 듣기` / `02 가사 바꾸기` / `03 WAV 받기` route with `지금` / `다음` state badges, detailed starter lyric input with `한글 그대로 입력` behind `가사 자세히`, collapsed `추가 작업` utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and current lyric preview are reachable before WAV/DAW handoff.
@@ -208,6 +210,7 @@ Current verified local smoke coverage:
 - `npm run release:evidence-status` checks whether both downloaded release JSON files are present and valid without copying them, and returns the same structured `0/2` -> `2/2` readiness state plus next action as the browser preflight.
 - `npm run release:accept-evidence` validates both downloaded release JSON files, auto-detects them from Downloads when possible, installs them atomically, and then reruns the final release audit. The listening JSON must include real playback, blind lyric pass, and V2 comparison confirmations. Use `-- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json` only when the files are outside Downloads.
 - `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` and `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json` remain compatibility helpers for single-file acceptance; the release path should use `release:accept-evidence`.
+- `npm run release:audit-utau` verifies `voicebank:songwriting-v3` evidence, so the first-run sample set must be musically varied, not only technically renderable.
 - `npm run release:audit-utau` verifies `voicebank:starter-samples-v3` evidence, so the seven sample choices must be real V3-renderable starting points with matching DAW handoff bundles rather than only UI labels.
 - `npm run release:audit-utau` verifies `voicebank:compatibility-utau` evidence, so imported UTAU zip support must prove several real format shapes instead of a single happy-path sample.
 - `npm run release:audit-utau` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
