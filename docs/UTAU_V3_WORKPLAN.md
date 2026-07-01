@@ -482,6 +482,11 @@ Current verified V3 evidence:
   material.
 - Imported UTAU voicebanks with `prefix.map` now use the map's pitch-specific
   prefix/suffix aliases before falling back to filename pitch inference.
+- Japanese romaji lyric matching now treats common ambiguous CV spellings as
+  multiple candidate aliases, so imported UTAU banks can match both standard
+  `ti`/`tu` style aliases and extended `てぃ`/`とぅ`-style aliases. Unit tests
+  cover `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and
+  `gwa` against mixed hiragana/katakana oto aliases without fallback.
 - Voicebank zip import now applies browser safety limits before parsing: the
   loader accepts Teto-sized normal UTAU packages but rejects unsafe paths,
   abnormal entry counts, oversized `oto.ini`/WAV members, excessive expanded WAV

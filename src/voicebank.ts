@@ -367,13 +367,14 @@ export function findSustainEntryForLyric(voicebank: LoadedVoicebank, lyric: stri
 
 export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone?: number): LyricEntryMatch {
   const normalized = normalizeLyric(lyric)
-  const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
+  const likelyAliases = lyricToLikelyJapaneseAliases(normalized)
   const hangulCvAlias = hangulSyllableWithoutCoda(normalized)
-  const likelyCvAlias = hangulCvAlias ? lyricToLikelyJapaneseAlias(hangulCvAlias) : ''
-  const baseKeys = Array.from(new Set([normalized, likelyAlias, hangulCvAlias, likelyCvAlias].filter(Boolean)))
-  const targetKeys = Array.from(new Set([likelyAlias, normalized, likelyCvAlias, hangulCvAlias].filter(Boolean)))
+  const likelyCvAliases = hangulCvAlias ? lyricToLikelyJapaneseAliases(hangulCvAlias) : []
+  const baseKeys = Array.from(new Set([normalized, ...likelyAliases, hangulCvAlias, ...likelyCvAliases].filter(Boolean)))
+  const targetKeys = Array.from(new Set([...likelyAliases, normalized, ...likelyCvAliases, hangulCvAlias].filter(Boolean)))
   const mappedKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, targetKeys, targetTone)
   const searchKeys = Array.from(new Set([...mappedKeys, ...baseKeys].filter(Boolean)))
+  const targetAlias = mappedKeys[0] ?? likelyAliases[0] ?? normalized
 
   const exact = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeLyric(entry.alias) === key),
@@ -381,7 +382,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (exact.length > 0) {
     return {
       lyric,
-      targetAlias: mappedKeys[0] ?? likelyAlias,
+      targetAlias,
       candidates: exact,
       quality: 'exact',
     }
@@ -393,7 +394,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (coreExact.length > 0) {
     return {
       lyric,
-      targetAlias: mappedKeys[0] ?? likelyAlias,
+      targetAlias,
       candidates: coreExact,
       quality: 'core',
     }
@@ -405,7 +406,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
   if (contains.length > 0) {
     return {
       lyric,
-      targetAlias: mappedKeys[0] ?? likelyAlias,
+      targetAlias,
       candidates: contains,
       quality: 'contains',
     }
@@ -413,7 +414,7 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
 
   return {
     lyric,
-    targetAlias: mappedKeys[0] ?? likelyAlias,
+    targetAlias,
     candidates: voicebank.entries,
     quality: 'fallback',
   }
@@ -539,8 +540,8 @@ export function playbackRateForTone(entry: OtoEntry, targetTone: number) {
 
 function bestEntryCandidate(voicebank: LoadedVoicebank, entries: OtoEntry[], lyric: string, targetTone: number) {
   const normalized = normalizeLyric(lyric)
-  const likelyAlias = lyricToLikelyJapaneseAlias(normalized)
-  const searchKeys = Array.from(new Set([normalized, likelyAlias].filter(Boolean)))
+  const likelyAliases = lyricToLikelyJapaneseAliases(normalized)
+  const searchKeys = Array.from(new Set([normalized, ...likelyAliases].filter(Boolean)))
   const mappedKeys = prefixMappedAliasesForKeys(voicebank, searchKeys, targetTone)
   return entries
     .map((entry, index) => ({
@@ -907,8 +908,8 @@ function normalizeAliasCore(alias: string) {
     .replace(/[囁力↑↓'’]+$/g, '')
 }
 
-function lyricToLikelyJapaneseAlias(lyric: string) {
-  const map: Record<string, string> = {
+function lyricToLikelyJapaneseAliases(lyric: string) {
+  const map: Record<string, string | string[]> = {
     a: 'あ',
     i: 'い',
     u: 'う',
@@ -945,6 +946,14 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     gya: 'ぎゃ',
     gyu: 'ぎゅ',
     gyo: 'ぎょ',
+    kwa: 'くぁ',
+    kwi: 'くぃ',
+    kwe: 'くぇ',
+    kwo: 'くぉ',
+    gwa: 'ぐぁ',
+    gwi: 'ぐぃ',
+    gwe: 'ぐぇ',
+    gwo: 'ぐぉ',
     sa: 'さ',
     si: 'し',
     shi: 'し',
@@ -961,6 +970,7 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     syo: 'しょ',
     sha: 'しゃ',
     shu: 'しゅ',
+    she: 'しぇ',
     sho: 'しょ',
     ja: 'じゃ',
     ju: 'じゅ',
@@ -968,29 +978,45 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     jya: 'じゃ',
     jyu: 'じゅ',
     jyo: 'じょ',
+    je: 'じぇ',
     ta: 'た',
-    ti: 'ち',
+    ti: ['ち', 'てぃ'],
     chi: 'ち',
-    tu: 'つ',
+    tu: ['つ', 'とぅ'],
     tsu: 'つ',
     te: 'て',
     to: 'と',
+    tsa: 'つぁ',
+    tsi: 'つぃ',
+    tse: 'つぇ',
+    tso: 'つぉ',
+    thi: 'てぃ',
+    tei: 'てぃ',
+    twu: 'とぅ',
     da: 'だ',
-    di: 'ぢ',
-    du: 'づ',
+    di: ['ぢ', 'でぃ'],
+    du: ['づ', 'どぅ'],
     de: 'で',
     do: 'ど',
+    dhi: 'でぃ',
+    dei: 'でぃ',
+    dwu: 'どぅ',
     tya: 'ちゃ',
     tyu: 'ちゅ',
     tyo: 'ちょ',
     cha: 'ちゃ',
     chu: 'ちゅ',
+    che: 'ちぇ',
     cho: 'ちょ',
     ha: 'は',
     hi: 'ひ',
     fu: 'ふ',
     he: 'へ',
     ho: 'ほ',
+    fa: 'ふぁ',
+    fi: 'ふぃ',
+    fe: 'ふぇ',
+    fo: 'ふぉ',
     hya: 'ひゃ',
     hyu: 'ひゅ',
     hyo: 'ひょ',
@@ -1019,6 +1045,7 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     myu: 'みゅ',
     myo: 'みょ',
     ya: 'や',
+    ye: 'いぇ',
     yu: 'ゆ',
     yo: 'よ',
     nya: 'にゃ',
@@ -1028,6 +1055,8 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     ryu: 'りゅ',
     ryo: 'りょ',
     wa: 'わ',
+    wi: 'うぃ',
+    we: 'うぇ',
     wo: 'を',
     n: 'ん',
     아: 'あ',
@@ -1141,7 +1170,11 @@ function lyricToLikelyJapaneseAlias(lyric: string) {
     워: 'を',
     응: 'ん',
   }
-  return map[lyric] ?? lyric
+  const mapped = map[lyric]
+  if (Array.isArray(mapped)) {
+    return mapped
+  }
+  return mapped ? [mapped] : [lyric]
 }
 
 function hangulSyllableWithoutCoda(lyric: string) {

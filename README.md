@@ -167,7 +167,7 @@ Current verified local smoke coverage:
 - Official Teto zip imported in browser.
 - `6216` UTAU aliases and `1822` WAV samples detected.
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the bundled `WebUtau Korean V3 Synthetic` zip.
-- Voicebank tests verify Japanese romaji yoon lyrics such as `kya`, `shu`, `ja`, `cho`, and `ryo` match hiragana/katakana UTAU aliases without fallback.
+- Voicebank tests verify Japanese romaji yoon lyrics such as `kya`, `shu`, `ja`, `cho`, and `ryo`, plus extended CV aliases such as `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and `gwa`, match hiragana/katakana UTAU aliases without fallback.
 - Bundled `WebUtau Korean V3 Synthetic` contains `615` WAV samples and `1437` oto.ini alias lines in the default web profile.
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium, exports a DAW-ready WAV, downloads the DAW handoff ZIP, and inspects its manifest, WAV, UST/USTX/project exports, `melody.mid`, and `chords.mid`.
 - `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, live WAV download, and DAW ZIP/MIDI guide download.

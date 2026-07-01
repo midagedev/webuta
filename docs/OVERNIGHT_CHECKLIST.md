@@ -54,8 +54,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] `npm run test:teto` passes against local official `TETO-OUset240323.zip`.
 - [x] Official Teto zip covers the built-in Korean demo line with `8/8 matched` alias coverage.
 - [x] Voicebank unit tests verify common Japanese romaji yoon lyrics such as
-  `kya`, `shu`, `ja`, `cho`, and `ryo` match hiragana/katakana UTAU aliases
-  without falling back to the first sample.
+  `kya`, `shu`, `ja`, `cho`, and `ryo`, plus extended CV aliases such as
+  `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and `gwa`,
+  match hiragana/katakana UTAU aliases without falling back to the first sample.
 - [x] Bundled `WebUtau Korean V3 Synthetic` contains 615 WAV samples and 1437 oto.ini alias lines.
 - [x] Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.

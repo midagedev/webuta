@@ -208,6 +208,64 @@ describe('voicebank zip loader', () => {
     })
   })
 
+  it('maps extended Japanese romaji CV lyrics used by UTAU banks', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/character.yaml', 'name: Test Teto\n')
+    zip.file(
+      'Teto/oto.ini',
+      [
+        'fa.wav=ふぁ,0,120,0,40,20',
+        'fi.wav=フィ,0,120,0,40,20',
+        'she.wav=シェ,0,120,0,40,20',
+        'je.wav=じぇ,0,120,0,40,20',
+        'che.wav=チェ,0,120,0,40,20',
+        'ti.wav=ティ,0,120,0,40,20',
+        'tu.wav=トゥ,0,120,0,40,20',
+        'tsa.wav=つぁ,0,120,0,40,20',
+        'wi.wav=ウィ,0,120,0,40,20',
+        'kwa.wav=くぁ,0,120,0,40,20',
+        'gwa.wav=グァ,0,120,0,40,20',
+      ].join('\n'),
+    )
+    for (const fileName of ['fa', 'fi', 'she', 'je', 'che', 'ti', 'tu', 'tsa', 'wi', 'kwa', 'gwa']) {
+      zip.file(`Teto/${fileName}.wav`, new Uint8Array([1, 2, 3, 4]))
+    }
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'japanese-extended-cv.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(findEntryForLyric(voicebank, 'fa').alias).toBe('ふぁ')
+    expect(findEntryForLyric(voicebank, 'fi').alias).toBe('フィ')
+    expect(findEntryForLyric(voicebank, 'she').alias).toBe('シェ')
+    expect(findEntryForLyric(voicebank, 'je').alias).toBe('じぇ')
+    expect(findEntryForLyric(voicebank, 'che').alias).toBe('チェ')
+    expect(findEntryForLyric(voicebank, 'ti').alias).toBe('ティ')
+    expect(findEntryForLyric(voicebank, 'tu').alias).toBe('トゥ')
+    expect(findEntryForLyric(voicebank, 'tsa').alias).toBe('つぁ')
+    expect(findEntryForLyric(voicebank, 'wi').alias).toBe('ウィ')
+    expect(findEntryForLyric(voicebank, 'kwa').alias).toBe('くぁ')
+    expect(findEntryForLyric(voicebank, 'gwa').alias).toBe('グァ')
+    expect(analyzeVoicebankCoverage(voicebank, [
+      { lyric: 'fa' },
+      { lyric: 'fi' },
+      { lyric: 'she' },
+      { lyric: 'je' },
+      { lyric: 'che' },
+      { lyric: 'ti' },
+      { lyric: 'tu' },
+      { lyric: 'tsa' },
+      { lyric: 'wi' },
+      { lyric: 'kwa' },
+      { lyric: 'gwa' },
+    ])).toMatchObject({
+      totalNotes: 11,
+      matchedNotes: 11,
+      fallbackNotes: 0,
+      fallbackLyrics: [],
+    })
+  })
+
   it('reports fallback coverage when a lyric has no alias match', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')
