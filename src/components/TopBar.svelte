@@ -2,6 +2,7 @@
   import {
     Copy,
     Download,
+    FileArchive,
     FileDown,
     FilePlus,
     FileText,
@@ -54,6 +55,7 @@
     onCancelRender: () => void
     onShare: () => Promise<void>
     onDownloadWav: () => Promise<void>
+    onDownloadDawBundle: () => Promise<void>
     onProjectName: (name: string) => void
   }
 
@@ -88,6 +90,7 @@
     onCancelRender,
     onShare,
     onDownloadWav,
+    onDownloadDawBundle,
     onProjectName,
   }: Props = $props()
 
@@ -219,6 +222,16 @@
     <button type="button" class="export-button share-action" onclick={() => void onShare()} disabled={isRendering}>
       <Share2 size={19} aria-hidden="true" />
       <span>공유</span>
+    </button>
+    <button
+      type="button"
+      class="toolbar-button bundle-action"
+      aria-label="DAW 번들 다운로드"
+      title="DAW 번들 다운로드"
+      onclick={() => void onDownloadDawBundle()}
+      disabled={isRendering}
+    >
+      <FileArchive size={19} aria-hidden="true" />
     </button>
     <button
       type="button"

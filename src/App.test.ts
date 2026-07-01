@@ -653,6 +653,8 @@ describe('App editing workflow', () => {
 
     expect(screen.getByRole('button', { name: 'WAV 공유' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '하단 WAV 다운로드' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '하단 DAW 번들 다운로드' })).toBeTruthy()
+    expect(screen.getByTitle('DAW 번들 다운로드')).toBeTruthy()
   })
 
   it('downloads a rendered WAV from the explicit download action', async () => {
@@ -664,6 +666,33 @@ describe('App editing workflow', () => {
       expect(screen.getAllByText('WAV downloaded').length).toBeGreaterThan(0)
     })
     expect(screen.getByText(/DAW-ready WAV · 44.1 kHz PCM mono/)).toBeTruthy()
+  })
+
+  it('downloads a DAW handoff bundle with WAV and UTAU project files', async () => {
+    render(App)
+
+    fireEvent.click(screen.getByTitle('DAW 번들 다운로드'))
+
+    await waitFor(() => {
+      expect(screen.getAllByText('DAW handoff bundle downloaded').length).toBeGreaterThan(0)
+    })
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled()
+
+    const createdUrls = vi.mocked(URL.createObjectURL).mock.calls.map(([blob]) => blob)
+    const bundleBlob = createdUrls.find((blob) => blob instanceof Blob && blob.type === 'application/zip') as Blob | undefined
+    expect(bundleBlob).toBeTruthy()
+
+    const zip = await JSZip.loadAsync(await bundleBlob!.arrayBuffer())
+    expect(zip.file('audio/First-Vocal-Sketch.wav')).toBeTruthy()
+    expect(zip.file('project/First-Vocal-Sketch.webutau.json')).toBeTruthy()
+    expect(zip.file('project/First-Vocal-Sketch.ustx')).toBeTruthy()
+    expect(zip.file('project/First-Vocal-Sketch.ust')).toBeTruthy()
+    const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'))
+    expect(manifest).toMatchObject({
+      format: 'webuta-daw-handoff-bundle',
+      project: { name: 'First Vocal Sketch', noteCount: 8 },
+      voicebank: 'WebUtau Korean V3 Synthetic',
+    })
   })
 
   it('adds a note by clicking an empty piano-roll cell', () => {

@@ -11,6 +11,7 @@
   import { encodeWav, inspectWavBlob, isDawReadyWav } from './audio/wav'
   import { BUNDLED_UTAU_VOICEBANK_NAME, loadBundledUtauVoicebankFile } from './bundledVoicebank'
   import { applyMelodySuggestion, composeFromLyrics, formatChordLine, type ComposerMood } from './composer'
+  import { createDawHandoffBundle } from './dawBundle'
   import { createDemoProject, createStarterProject, duplicateProject as createProjectDuplicate } from './demoProject'
   import { midiToHz, pitchRange, projectDurationTicks, sanitizeFileName, secondsToTicksInProject, ticksToSecondsInProject, toneName } from './music'
   import {
@@ -1209,6 +1210,21 @@
     notice = 'WAV downloaded'
   }
 
+  async function downloadDawBundle() {
+    const current = await getRenderedWav()
+    if (!current) {
+      return
+    }
+    const bundle = await createDawHandoffBundle({
+      project,
+      rendered: current,
+      voicebankName,
+      rendererName: currentRendererName(),
+    })
+    downloadBlob(bundle.blob, bundle.fileName)
+    notice = 'DAW handoff bundle downloaded'
+  }
+
   function downloadUstx() {
     const blob = new Blob([serializeUstx(project)], { type: 'text/yaml;charset=utf-8' })
     downloadBlob(blob, `${sanitizeFileName(project.name)}.ustx`)
@@ -1459,6 +1475,7 @@
     onCancelRender={cancelRender}
     onShare={shareWav}
     onDownloadWav={downloadWav}
+    onDownloadDawBundle={downloadDawBundle}
     onProjectName={(name) => updateProject({ name })}
   />
 
@@ -1609,6 +1626,7 @@
         onNotePointerEnd={endNotePointer}
         onShare={shareWav}
         onDownloadWav={downloadWav}
+        onDownloadDawBundle={downloadDawBundle}
         onRetryRender={renderProject}
         onCancelRender={cancelRender}
       />

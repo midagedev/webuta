@@ -33,6 +33,7 @@ const REQUIRED_CHECKS = [
   'selected-note pitch bend controls visible',
   'selected-note duplicate controls visible',
   'classic UST import/export controls visible',
+  'DAW handoff bundle export visible',
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',

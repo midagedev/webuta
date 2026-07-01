@@ -4,6 +4,7 @@
     Circle,
     Copy,
     Download,
+    FileArchive,
     FileDown,
     History,
     Mic,
@@ -105,6 +106,7 @@
     onNotePointerEnd: (event: PointerEvent) => void
     onShare: () => Promise<void>
     onDownloadWav: () => Promise<void>
+    onDownloadDawBundle: () => Promise<void>
     onRetryRender: () => Promise<RenderedAudio | null>
     onCancelRender: () => void
   }
@@ -170,6 +172,7 @@
     onNotePointerEnd,
     onShare,
     onDownloadWav,
+    onDownloadDawBundle,
     onRetryRender,
     onCancelRender,
   }: Props = $props()
@@ -496,6 +499,10 @@
         <button type="button" class="dock-action" aria-label="하단 WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
           <Download size={18} aria-hidden="true" />
           <span>WAV</span>
+        </button>
+        <button type="button" class="dock-action" aria-label="하단 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering}>
+          <FileArchive size={18} aria-hidden="true" />
+          <span>ZIP</span>
         </button>
       {/if}
     </div>

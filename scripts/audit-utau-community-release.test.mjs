@@ -553,6 +553,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'voicebank license metadata visible',
       'voicebank self-generated origin visible',
       'selected-note vibrato controls visible',
+      'DAW handoff bundle export visible',
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
       'desktop WAV download',

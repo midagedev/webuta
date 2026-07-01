@@ -415,6 +415,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Selected note pitch bend').getByText('피치 벤드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 복제' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByTitle('UST 내보내기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByTitle('DAW 번들 다운로드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '하단 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.locator('input[accept*=".ust"]').waitFor({ state: 'attached', timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
@@ -458,6 +460,7 @@ async function assertDefaultV3DemoReady(page) {
     'selected-note pitch bend controls visible',
     'selected-note duplicate controls visible',
     'classic UST import/export controls visible',
+    'DAW handoff bundle export visible',
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]

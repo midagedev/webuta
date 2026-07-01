@@ -62,6 +62,7 @@ const DEMO_REQUIRED_CHECKS = [
   'community release readiness card visible',
   'voicebank license metadata visible',
   'voicebank self-generated origin visible',
+  'DAW handoff bundle export visible',
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',

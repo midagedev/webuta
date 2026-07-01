@@ -4405,6 +4405,7 @@ button:disabled {
   }
 
   .export-cluster .bank-action,
+  .export-cluster .bundle-action,
   .export-cluster .download-action {
     display: none;
   }
