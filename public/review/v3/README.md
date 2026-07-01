@@ -5,9 +5,9 @@ This folder contains browser-rendered WAVs from the bundled V3 UTAU sample rende
 Open: index.html
 Score template: listening-scores.local.template.json
 
-Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.
+Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json` after the scorecard says it passes.
 The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.
-The scorecard shows metadata, phrase-score, and V2/V3 comparison progress so missing or below-threshold scores are visible before download.
+The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.
 Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.
 No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.
 Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.

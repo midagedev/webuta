@@ -492,6 +492,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     input, select, textarea { padding: 10px 11px; }
     textarea { min-height: 82px; resize: vertical; }
     button { width: auto; padding: 10px 14px; cursor: pointer; font-weight: 800; }
+    button:disabled { cursor: not-allowed; opacity: 0.52; }
     article { display: grid; gap: 12px; margin: 16px 0; padding: 16px; }
     audio { width: 100%; }
     fieldset { margin: 0; padding: 12px; }
@@ -510,6 +511,8 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .status { font-weight: 800; }
     .status.ok { color: var(--ok); }
     .status.warn { color: var(--warn); }
+    .problem-list { display: grid; gap: 4px; margin: 0; padding-left: 20px; color: var(--warn); font-size: 12px; line-height: 1.4; }
+    .problem-list.ok { color: var(--ok); list-style: none; padding-left: 0; font-weight: 800; }
     #scoreJson { min-height: 320px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
     table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
     th, td { padding: 9px; border-bottom: 1px solid #303848; text-align: left; }
@@ -629,6 +632,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
         </div>
         <p id="progressSummary" class="progress-note warn">Metadata 0/3 · Phrase scores 0/${phrases.length * LISTENING_SCORE_FIELDS.length} · V2/V3 comparisons 0/${comparisons.length}</p>
         <p id="draftStatus" class="draft-note">Draft autosave is active in this browser.</p>
+        <ul id="problemList" class="problem-list"></ul>
         <textarea id="scoreJson" readonly spellcheck="false"></textarea>
       </section>
     </form>
@@ -660,6 +664,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     const progressSummary = document.querySelector('#progressSummary');
     const draftStatus = document.querySelector('#draftStatus');
     const downloadButton = document.querySelector('#downloadJson');
+    const problemList = document.querySelector('#problemList');
 
     reviewedAtInput.value = toLocalDateTime(new Date());
     restoreDraft();
@@ -755,6 +760,12 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       status.className = \`status \${problems.length === 0 ? 'ok' : 'warn'}\`;
       progressSummary.textContent = summarizeProgress(payload);
       progressSummary.className = \`progress-note \${problems.length === 0 ? 'ok' : 'warn'}\`;
+      downloadButton.disabled = problems.length > 0;
+      downloadButton.title = problems.length === 0 ? 'Download release-audit-ready listening score JSON' : 'Finish every required score before downloading';
+      problemList.className = \`problem-list \${problems.length === 0 ? 'ok' : ''}\`;
+      problemList.innerHTML = problems.length === 0
+        ? '<li>Ready: this JSON can be accepted by npm run voicebank:accept-review-v3.</li>'
+        : problems.slice(0, 8).map((problem) => \`<li>\${escapeText(problem)}</li>\`).join('');
     }
 
     function summarizeProgress(payload) {
@@ -881,8 +892,16 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     }
 
     function downloadJson() {
+      const payload = buildPayload();
+      const problems = validatePayload(payload);
       updateOutput();
       saveDraft();
+      if (problems.length > 0) {
+        status.textContent = 'Download blocked until the scorecard passes.';
+        status.className = 'status warn';
+        progressSummary.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        return;
+      }
       const blob = new Blob([output.value + '\\n'], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -895,6 +914,16 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     function toLocalDateTime(date) {
       const offsetMs = date.getTimezoneOffset() * 60 * 1000;
       return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+    }
+
+    function escapeText(text) {
+      return String(text ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]);
     }
   </script>
 </body>
@@ -911,9 +940,9 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     `Open: ${indexHtmlPath}`,
     `Score template: ${listeningTemplatePath}`,
     '',
-    'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json`.',
+    'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json` after the scorecard says it passes.',
     'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
-    'The scorecard shows metadata, phrase-score, and V2/V3 comparison progress so missing or below-threshold scores are visible before download.',
+    'The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.',
     'Accept the downloaded file with `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` before running the final release audit.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',

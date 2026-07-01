@@ -79,6 +79,8 @@ describe('UTAU V3 listening review pack', () => {
     expect(html).toContain('Build listening-scores.local.json')
     expect(html).toContain('Clear saved draft')
     expect(html).toContain('id="progressSummary"')
+    expect(html).toContain('id="problemList"')
+    expect(html).toContain('Finish every required score before downloading')
     expect(html).toContain('Phrase scores 0/5')
     expect(html).toContain('webuta.v3ListeningReviewDraft.v1')
     expect(html).toContain('No recording step')
@@ -116,12 +118,15 @@ describe('UTAU V3 listening review pack', () => {
       await page.click('#buildJson')
       const status = await page.locator('#status').textContent()
       const progress = await page.locator('#progressSummary').textContent()
+      const problemList = await page.locator('#problemList').textContent()
       const payload = JSON.parse(await page.locator('#scoreJson').inputValue())
 
       expect(status).toContain('passes')
       expect(progress).toContain('Metadata 3/3')
       expect(progress).toContain('Phrase scores 5/5 complete, 5/5 passing')
       expect(progress).toContain('V2/V3 comparisons 0/0 complete, 0/0 passing')
+      expect(await page.locator('#downloadJson').isEnabled()).toBe(true)
+      expect(problemList).toContain('Ready')
       expect(payload.reviewEnvironment.noRecordingRequired).toBe(true)
       expect(payload.reviewer).toBe('fixture reviewer')
       expect(payload.decision).toBe('community-ready')
@@ -184,6 +189,47 @@ describe('UTAU V3 listening review pack', () => {
         legacyV2WavPath: '/tmp/first-v2.wav',
         v3PreferenceScore: 5,
       })
+    } finally {
+      await browser.close()
+    }
+  }, 30_000)
+
+  it('blocks listening score downloads until all release thresholds pass', async () => {
+    const html = renderHtml({
+      phrases: [
+        {
+          id: 'first-run-demo',
+          title: 'First Run',
+          description: 'Default hook.',
+          lyricLine: '도 히 도 히 다 이 스 키',
+          wavPath: '/tmp/first.wav',
+          audioHref: 'audio/01-first-run-demo.wav',
+          gates: { passed: true, problems: [] },
+        },
+      ],
+      listeningTemplatePath: '/tmp/listening-scores.local.template.json',
+    })
+    const browser = await chromium.launch()
+    try {
+      const page = await browser.newPage()
+      await page.goto(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`)
+
+      expect(await page.locator('#downloadJson').isDisabled()).toBe(true)
+      expect(await page.locator('#problemList').textContent()).toContain('Reviewer is required')
+
+      await page.fill('#reviewer', 'fixture reviewer')
+      await page.selectOption('#decision', 'community-ready')
+      for (const field of LISTENING_SCORE_FIELDS) {
+        await page.selectOption(`[data-score-key="${field.key}"]`, field.key === 'artifactScore' ? '3' : '5')
+      }
+
+      expect(await page.locator('#downloadJson').isDisabled()).toBe(true)
+      expect(await page.locator('#problemList').textContent()).toContain('Artifact control 3 is below 4')
+
+      await page.selectOption('[data-score-key="artifactScore"]', '4')
+
+      expect(await page.locator('#downloadJson').isEnabled()).toBe(true)
+      expect(await page.locator('#problemList').textContent()).toContain('Ready')
     } finally {
       await browser.close()
     }

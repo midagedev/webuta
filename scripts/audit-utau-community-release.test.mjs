@@ -243,6 +243,7 @@ describe('UTAU community release audit', () => {
           'pages V3 zip cache-busted',
           'pages V3 zip bytes match local bundle',
           'pages V3 listening review scorecard loaded',
+          'pages V3 listening review download gate loaded',
           'pages V3 listening review audio loaded',
         ],
       },
@@ -399,7 +400,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><code>listening-scores.local.json</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
@@ -452,6 +453,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip cache-busted',
         'pages V3 zip bytes match local bundle',
         'pages V3 listening review scorecard loaded',
+        'pages V3 listening review download gate loaded',
         'pages V3 listening review audio loaded',
         'pages WAV DAW handoff builder loaded',
       ],

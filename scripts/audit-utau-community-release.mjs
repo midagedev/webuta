@@ -240,6 +240,8 @@ function publicReviewGate(paths) {
       'listening-scores.local.json',
       'No recording step',
       'progressSummary',
+      'problemList',
+      'Finish every required score before downloading',
     ]) {
       if (!html.includes(snippet)) {
         problems.push(`public review scorecard must include "${snippet}"`)
@@ -740,6 +742,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 zip cache-busted',
     'pages V3 zip bytes match local bundle',
     'pages V3 listening review scorecard loaded',
+    'pages V3 listening review download gate loaded',
     'pages V3 listening review audio loaded',
     'pages WAV DAW handoff builder loaded',
   ]) {
@@ -787,7 +790,13 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     evidence.checks.push('pages V3 zip cache-busted')
   }
   if (review?.ok) {
+    const html = await review.text()
     evidence.checks.push('pages V3 listening review scorecard loaded')
+    if (html.includes('problemList') && html.includes('Finish every required score before downloading')) {
+      evidence.checks.push('pages V3 listening review download gate loaded')
+    } else {
+      problems.push('GitHub Pages V3 listening review is missing scorecard download gate markers')
+    }
   }
   if (handoff?.ok) {
     const html = await handoff.text()
