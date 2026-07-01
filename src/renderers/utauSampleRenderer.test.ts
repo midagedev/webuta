@@ -47,6 +47,105 @@ describe('UTAU sample renderer', () => {
     expect(hasNonFiniteSample).toBe(false)
   })
 
+  it('keeps rest, tie, and missing breath markers silent instead of fallback singing', async () => {
+    const entry: OtoEntry = {
+      fileName: 'ra_C4.wav',
+      path: 'WebUtau/ra_C4.wav',
+      alias: '라',
+      offsetMs: 0,
+      consonantMs: 70,
+      cutoffMs: 0,
+      preutteranceMs: 20,
+      overlapMs: 12,
+    }
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample() {
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(0.45, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      id: 'test-project',
+      name: 'Renderer Rest Test',
+      comment: '',
+      bpm: 120,
+      beatPerBar: 4,
+      beatUnit: 4,
+      tracks: [{ id: 'track', name: 'Main Vocal', color: 'Coral' }],
+      parts: [{ id: 'part', trackId: 'track', name: 'Verse', start: 0, duration: TICKS_PER_BEAT * 14 }],
+      notes: [
+        { id: 'sing', trackId: 'track', partId: 'part', start: 0, duration: 240, tone: 60, lyric: '라' },
+        { id: 'r', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 2, duration: 480, tone: 60, lyric: 'R' },
+        { id: 'rest', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 4, duration: 480, tone: 60, lyric: 'rest' },
+        { id: 'hangul-rest', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 6, duration: 480, tone: 60, lyric: '쉼' },
+        { id: 'tie', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 8, duration: 480, tone: 60, lyric: '-' },
+        { id: 'breath-romaji', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 10, duration: 480, tone: 60, lyric: 'br' },
+        { id: 'breath-hangul', trackId: 'track', partId: 'part', start: TICKS_PER_BEAT * 12, duration: 480, tone: 60, lyric: '숨' },
+      ],
+    })
+
+    expect(energy(samplesAroundSecond(result.samples, 0.14))).toBeGreaterThan(0.01)
+    for (const centerSecond of [1.25, 2.25, 3.25, 4.25, 5.25, 6.25]) {
+      expect(energy(samplesAroundSecond(result.samples, centerSecond))).toBeLessThan(0.00001)
+    }
+  })
+
+  it('renders a breath marker when the voicebank provides a matching breath alias', async () => {
+    const entry: OtoEntry = {
+      fileName: 'br_C4.wav',
+      path: 'WebUtau/br_C4.wav',
+      alias: 'br',
+      offsetMs: 0,
+      consonantMs: 40,
+      cutoffMs: 0,
+      preutteranceMs: 10,
+      overlapMs: 8,
+    }
+    const requestedAliases: string[] = []
+    const voicebank: LoadedVoicebank = {
+      id: 'test-bank',
+      name: 'Test Bank',
+      sourceFileName: 'test.zip',
+      metadata: makeVoicebankMetadata(),
+      entries: [entry],
+      aliases: [entry.alias],
+      sampleCount: 1,
+      wavCount: 1,
+      async readSample(sampleEntry) {
+        requestedAliases.push(sampleEntry.alias)
+        return new ArrayBuffer(8)
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(0.34, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    const result = await renderer.render({
+      ...makeSingleNoteProject(),
+      notes: [{ ...makeSingleNoteProject().notes[0], lyric: 'br' }],
+    })
+
+    expect(requestedAliases).toEqual(['br'])
+    expect(energy(samplesAroundSecond(result.samples, 0.18))).toBeGreaterThan(0.01)
+  })
+
   it('downmixes stereo decoded samples before rendering', async () => {
     const entry: OtoEntry = {
       fileName: 'do_C4.wav',
@@ -1020,6 +1119,12 @@ function makeLoopWrapDiscontinuitySource(durationSeconds: number, sampleRate: nu
 
 function energy(samples: Float32Array) {
   return samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length
+}
+
+function samplesAroundSecond(samples: Float32Array, centerSecond: number, radiusSeconds = 0.08) {
+  const start = Math.max(0, Math.floor((centerSecond - radiusSeconds) * 44100))
+  const end = Math.min(samples.length, Math.ceil((centerSecond + radiusSeconds) * 44100))
+  return samples.slice(start, end)
 }
 
 function maxSampleStep(samples: Float32Array) {

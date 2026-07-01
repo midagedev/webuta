@@ -364,6 +364,40 @@ describe('voicebank zip loader', () => {
     })
   })
 
+  it('treats rest, tie, and missing breath markers as non-singing lyrics', async () => {
+    const zip = new JSZip()
+    zip.file('WebUtau/character.yaml', 'name: WebUtau Korean Test\n')
+    zip.file('WebUtau/oto.ini', 'ra_C4.wav=라,0,150,-560,70,30\n')
+    zip.file('WebUtau/ra_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'webuta-ko-test.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const notes = [
+      { id: 'sing', lyric: '라', tone: 60 },
+      { id: 'r', lyric: 'R', tone: 60 },
+      { id: 'rest', lyric: 'rest', tone: 60 },
+      { id: 'hangul-rest', lyric: '쉼', tone: 60 },
+      { id: 'tie', lyric: '-', tone: 60 },
+      { id: 'breath-romaji', lyric: 'br', tone: 60 },
+      { id: 'breath-word', lyric: 'breath', tone: 60 },
+      { id: 'breath-hangul', lyric: '숨', tone: 60 },
+    ]
+
+    expect(analyzeVoicebankCoverage(voicebank, notes)).toMatchObject({
+      totalNotes: 8,
+      matchedNotes: 8,
+      fallbackNotes: 0,
+      uniqueLyrics: 1,
+      fallbackLyrics: [],
+    })
+    expect(analyzeVoicebankRenderWarnings(voicebank, notes)).toMatchObject({
+      totalNotes: 8,
+      warningCount: 0,
+      errorCount: 0,
+    })
+  })
+
   it('approximates Hangul coda syllables with matching CV aliases', async () => {
     const zip = new JSZip()
     zip.file('WebUtau/character.yaml', 'name: WebUtau Korean Lite\n')

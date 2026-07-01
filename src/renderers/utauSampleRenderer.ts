@@ -8,7 +8,11 @@ import { TICKS_PER_BEAT, type SongNote, type SongProject } from '../types'
 import {
   findBestEntryForLyric,
   findCodaTailEntryForLyric,
+  findEntryMatchForLyric,
   findSustainEntryForLyric,
+  isBreathVoicebankLyric,
+  isSilentVoicebankLyric,
+  isTieVoicebankLyric,
   playbackRateForTone,
   type LyricMatchContext,
   type LoadedVoicebank,
@@ -52,11 +56,22 @@ export function createUtauSampleRenderer(
       const notes = sortedNotes(project.notes)
       for (const [index, note] of notes.entries()) {
         throwIfAborted(options.signal)
+        if (isSilentVoicebankLyric(note.lyric) || isTieVoicebankLyric(note.lyric)) {
+          continue
+        }
         const matchContext =
           rendererOptions.lyricContextForNote?.(note, index, notes) ?? lyricMatchContextForRenderedNote(notes, index)
-        const sustainEntry = findSustainEntryForLyric(voicebank, note.lyric, note.tone)
+        const match = findEntryMatchForLyric(voicebank, note.lyric, note.tone, matchContext)
+        if (isBreathVoicebankLyric(note.lyric) && match.quality === 'fallback') {
+          continue
+        }
+        const sustainEntry = isBreathVoicebankLyric(note.lyric)
+          ? undefined
+          : findSustainEntryForLyric(voicebank, note.lyric, note.tone)
         const entry = sustainEntry ?? findBestEntryForLyric(voicebank, note.lyric, note.tone, matchContext)
-        const codaTailEntry = resolveCodaTailEntry(voicebank, note.lyric, note.tone, entry, Boolean(sustainEntry))
+        const codaTailEntry = isBreathVoicebankLyric(note.lyric)
+          ? undefined
+          : resolveCodaTailEntry(voicebank, note.lyric, note.tone, entry, Boolean(sustainEntry))
         const sample = await getSample(entry.path, async () => {
           const buffer = await voicebank.readSample(entry)
           return audioContext.decodeAudioData(buffer.slice(0))

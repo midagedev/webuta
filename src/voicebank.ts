@@ -454,10 +454,21 @@ export function analyzeVoicebankCoverage(
   let matchedNotes = 0
   for (const [index, note] of notes.entries()) {
     const lyric = normalizeLyric(note.lyric)
+    if (isSilentVoicebankLyric(lyric) || isTieVoicebankLyric(lyric)) {
+      matchedNotes += 1
+      continue
+    }
     const context = lyricMatchContextForNote(notes, index)
     const cacheKey = `${context.previousLyric ?? (context.phraseStart ? '-' : '')}\u0000${lyric}`
     const match = matchCache.get(cacheKey) ?? findEntryMatchForLyric(voicebank, lyric, undefined, context)
     matchCache.set(cacheKey, match)
+    if (isBreathVoicebankLyric(lyric)) {
+      matchedNotes += 1
+      if (match.quality !== 'fallback') {
+        matchedLyrics.add(lyric)
+      }
+      continue
+    }
     uniqueLyrics.add(lyric)
     if (match.quality !== 'fallback') {
       matchedNotes += 1
@@ -488,8 +499,14 @@ export function analyzeVoicebankRenderWarnings(
   for (const [index, note] of notes.entries()) {
     const noteId = note.id ?? `${index}`
     const lyric = normalizeLyric(note.lyric)
+    if (isSilentVoicebankLyric(lyric) || isTieVoicebankLyric(lyric)) {
+      continue
+    }
     const context = lyricMatchContextForNote(notes, index)
     const match = findEntryMatchForLyric(voicebank, lyric, note.tone, context)
+    if (isBreathVoicebankLyric(lyric)) {
+      continue
+    }
     const sustainEntry = findSustainEntryForLyric(voicebank, lyric, note.tone)
     const selectedEntry = sustainEntry ?? findBestEntryForLyric(voicebank, lyric, note.tone, context)
     const codaTailEntry = findCodaTailEntryForLyric(voicebank, lyric, note.tone)
@@ -1175,6 +1192,20 @@ function noteNameToMidi(noteName: string) {
 
 function normalizeLyric(lyric: string) {
   return katakanaToHiragana(lyric.trim().toLowerCase())
+}
+
+export function isSilentVoicebankLyric(lyric: string) {
+  const normalized = normalizeLyric(lyric)
+  return !normalized || ['r', 'rest', '쉼', 'sp', 'sil', 'pau'].includes(normalized)
+}
+
+export function isBreathVoicebankLyric(lyric: string) {
+  const normalized = normalizeLyric(lyric)
+  return ['br', 'breath', '숨', '息'].includes(normalized)
+}
+
+export function isTieVoicebankLyric(lyric: string) {
+  return ['-', 'ー', '―', '－'].includes(normalizeLyric(lyric))
 }
 
 function katakanaToHiragana(text: string) {
