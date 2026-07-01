@@ -437,8 +437,9 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must pass')
-    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least six diverse fixture voicebanks')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least seven diverse fixture voicebanks')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case shift-jis-oto')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case legacy-character-txt')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case multi-oto-style-ranking')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV did not pass')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must have zero fallback notes')
@@ -1111,6 +1112,14 @@ function makeUtauCompatibilityReport() {
       aliasCount: 1,
       sampleCount: 1,
       wavCount: 1,
+      characterPath: 'ShiftJisSinger/character.yaml',
+    }),
+    makeUtauCompatibilityCase('legacy-character-txt', 'legacy character.txt metadata', ['あ'], {
+      lyricLine: 'a',
+      aliasCount: 1,
+      sampleCount: 1,
+      wavCount: 1,
+      characterPath: 'LegacySinger/character.txt',
     }),
     makeUtauCompatibilityCase('hangul-cv-vc-coda', 'Hangul CV/VC coda', ['여', 'ㅕㄴ'], {
       lyricLine: '연',
@@ -1149,6 +1158,7 @@ function makeUtauCompatibilityCase(id, title, requestedAliases, options = {}) {
       wavCount: options.wavCount ?? requestedAliases.length,
       aliasCount: options.aliasCount ?? requestedAliases.length,
       aliases: requestedAliases,
+      characterPath: options.characterPath ?? `${id}/character.yaml`,
       prefixMapPaths: options.prefixMapPaths ?? [],
     },
     project: {
@@ -1445,7 +1455,7 @@ function makeReadme() {
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
     'Run `npm run voicebank:songwriting-v3` for starter songwriting quality checks covering slow, mid, and fast BPM bands, melody contours, Hangul coda lyrics, and chord-guide variety.',
-    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, Hangul CV/VC coda, and multi-oto style ranking.',
+    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, character.txt, Hangul CV/VC coda, and multi-oto style ranking.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     'The public review hub includes `Evidence Preflight` with `No upload` local JSON checks.',

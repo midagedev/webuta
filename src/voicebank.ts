@@ -929,10 +929,45 @@ async function readCharacterInfo(files: ZipFileMap, limits: VoicebankZipSafetyLi
       }
     }
   }
+  const legacyCharacterPath = Object.keys(files).find((path) => /(^|\/)character\.txt$/i.test(path) && !files[path].dir)
+  if (legacyCharacterPath) {
+    try {
+      validateZipMemberSize(
+        files[legacyCharacterPath],
+        limits.maxSingleMetadataBytes,
+        `character metadata ${legacyCharacterPath}`,
+      )
+      const text = await readZipText(files[legacyCharacterPath])
+      return {
+        path: legacyCharacterPath,
+        name: parseLegacyCharacterTxtName(text),
+      }
+    } catch {
+      return {
+        path: legacyCharacterPath,
+        name: undefined,
+      }
+    }
+  }
   return {
     path: undefined,
     name: undefined,
   }
+}
+
+function parseLegacyCharacterTxtName(text: string) {
+  for (const rawLine of text.replace(/^\ufeff/u, '').split(/\r?\n/u)) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#') || line.startsWith(';')) {
+      continue
+    }
+    const match = line.match(/^(?:name|名前)\s*[:=]\s*(.+)$/iu)
+    const value = match?.[1]?.trim()
+    if (value) {
+      return value
+    }
+  }
+  return undefined
 }
 
 async function readVoicebankMetadata(

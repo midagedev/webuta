@@ -53,6 +53,23 @@ describe('voicebank zip loader', () => {
     expect(entry.path).toBe('Legacy/a.wav')
   })
 
+  it('reads legacy character.txt names from imported UTAU zips', async () => {
+    const zip = new JSZip()
+    zip.file('Legacy/character.txt', shiftJisBytesForAsciiAndA('name=テスト Singer\r\nsample=a.wav\r\n'))
+    zip.file('Legacy/oto.ini', shiftJisBytesForAsciiAndA('a.wav=あ,0,120,0,40,20\r\n'))
+    zip.file('Legacy/a.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'legacy-character-txt.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const entry = findEntryForLyric(voicebank, 'a')
+
+    expect(voicebank.name).toBe('テスト Singer')
+    expect(voicebank.metadata.characterPath).toBe('Legacy/character.txt')
+    expect(voicebank.aliases).toContain('あ')
+    expect(entry.alias).toBe('あ')
+  })
+
   it('extracts generated synthetic origin flags from a voicebank manifest', async () => {
     const zip = new JSZip()
     zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
@@ -511,10 +528,17 @@ describe('voicebank zip loader', () => {
 })
 
 function shiftJisBytesForAsciiAndA(text: string) {
+  const kanaBytes = new Map<string, number[]>([
+    ['あ', [0x82, 0xa0]],
+    ['テ', [0x83, 0x65]],
+    ['ス', [0x83, 0x58]],
+    ['ト', [0x83, 0x67]],
+  ])
   const bytes: number[] = []
   for (const char of text) {
-    if (char === 'あ') {
-      bytes.push(0x82, 0xa0)
+    const mapped = kanaBytes.get(char)
+    if (mapped) {
+      bytes.push(...mapped)
       continue
     }
     const code = char.charCodeAt(0)

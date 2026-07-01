@@ -39,6 +39,8 @@ type CompatibilityFixture = {
   fileName: string
   rootDir: string
   characterName: string
+  characterFormat?: 'yaml' | 'txt'
+  characterEncoding?: 'utf-8' | 'shift-jis'
   otoEncoding?: 'utf-8' | 'shift-jis'
   prefixMap?: string
   entries: OtoFixture[]
@@ -61,6 +63,7 @@ type CaseReport = {
     wavCount: number
     aliasCount: number
     aliases: string[]
+    characterPath?: string
     prefixMapPaths: string[]
   }
   project: {
@@ -104,7 +107,7 @@ describe('UTAU import compatibility smoke audit', () => {
       writeJson(resolve(REPORT_PATH), report)
     }
 
-    expect(report.caseCount).toBeGreaterThanOrEqual(6)
+    expect(report.caseCount).toBeGreaterThanOrEqual(7)
     expect(report.problems).toEqual([])
     expect(report.ok).toBe(true)
   }, 30000)
@@ -136,6 +139,16 @@ async function auditCompatibilityFixture(fixture: CompatibilityFixture): Promise
 
   addCheck('voicebank zip parsed with every fixture sample', voicebank.sampleCount >= fixture.entries.length)
   addCheck('voicebank wav inventory matches fixture', voicebank.wavCount >= fixture.entries.length)
+  addCheck(
+    'voicebank character metadata names the singer',
+    voicebank.name === fixture.characterName,
+    `voicebank name ${voicebank.name} did not match ${fixture.characterName}`,
+  )
+  addCheck(
+    'voicebank character metadata path loaded',
+    voicebank.metadata.characterPath === expectedCharacterPath(fixture),
+    `character path ${voicebank.metadata.characterPath ?? 'missing'} did not match ${expectedCharacterPath(fixture)}`,
+  )
   addCheck('all project lyrics matched aliases', coverage.fallbackNotes === 0, `fallback lyrics: ${coverage.fallbackLyrics.join(', ')}`)
   addCheck('render warning report has zero errors', warnings.errorCount === 0, `${warnings.errorCount} render errors`)
   addCheck('render warning report has zero warnings', warnings.warningCount === 0, `${warnings.warningCount} render warnings`)
@@ -171,6 +184,7 @@ async function auditCompatibilityFixture(fixture: CompatibilityFixture): Promise
       wavCount: voicebank.wavCount,
       aliasCount: voicebank.aliases.length,
       aliases: voicebank.aliases,
+      characterPath: voicebank.metadata.characterPath,
       prefixMapPaths: voicebank.metadata.prefixMapPaths ?? [],
     },
     project: {
@@ -272,6 +286,19 @@ function makeCompatibilityFixtures(): CompatibilityFixture[] {
       expectedAliases: { mode: 'exact', values: ['あ'] },
     },
     {
+      id: 'legacy-character-txt',
+      title: 'Legacy UTAU character.txt metadata',
+      fileName: 'compat-legacy-character-txt.zip',
+      rootDir: 'LegacySinger',
+      characterName: 'テスト Singer',
+      characterFormat: 'txt',
+      characterEncoding: 'shift-jis',
+      otoEncoding: 'shift-jis',
+      entries: [{ fileName: 'a_C4.wav', alias: 'あ', frequency: 262 }],
+      notes: [{ lyric: 'a', tone: 60 }],
+      expectedAliases: { mode: 'exact', values: ['あ'] },
+    },
+    {
       id: 'hangul-cv-vc-coda',
       title: 'Hangul coda lyric rendered as CV sustain plus VC tail',
       fileName: 'compat-hangul-coda.zip',
@@ -303,7 +330,15 @@ function makeCompatibilityFixtures(): CompatibilityFixture[] {
 
 async function buildVoicebankZip(fixture: CompatibilityFixture) {
   const zip = new JSZip()
-  zip.file(`${fixture.rootDir}/character.yaml`, `name: ${fixture.characterName}\n`)
+  if (fixture.characterFormat === 'txt') {
+    const characterText = `name=${fixture.characterName}\r\nsample=a_C4.wav\r\n`
+    zip.file(
+      `${fixture.rootDir}/character.txt`,
+      fixture.characterEncoding === 'shift-jis' ? encodeShiftJisSubset(characterText) : characterText,
+    )
+  } else {
+    zip.file(`${fixture.rootDir}/character.yaml`, `name: ${fixture.characterName}\n`)
+  }
   zip.file(`${fixture.rootDir}/readme.txt`, 'WebUtau compatibility fixture voicebank.\n')
   zip.file(`${fixture.rootDir}/license.txt`, 'Synthetic test fixture samples generated in this test.\n')
   if (fixture.prefixMap) {
@@ -369,6 +404,10 @@ function makeProject(fixture: CompatibilityFixture): SongProject {
     parts: [{ id: 'part-main', trackId: 'track-main', name: 'Compatibility phrase', start: 0, duration: position }],
     notes,
   }
+}
+
+function expectedCharacterPath(fixture: CompatibilityFixture) {
+  return `${fixture.rootDir}/character.${fixture.characterFormat === 'txt' ? 'txt' : 'yaml'}`
 }
 
 function withRequestLog(voicebank: LoadedVoicebank) {
@@ -544,7 +583,12 @@ function writeJson(path: string, value: unknown) {
 }
 
 function encodeShiftJisSubset(text: string) {
-  const kanaBytes = new Map<string, number[]>([['あ', [0x82, 0xa0]]])
+  const kanaBytes = new Map<string, number[]>([
+    ['あ', [0x82, 0xa0]],
+    ['テ', [0x83, 0x65]],
+    ['ス', [0x83, 0x58]],
+    ['ト', [0x83, 0x67]],
+  ])
   const bytes: number[] = []
   for (const char of text) {
     const mapped = kanaBytes.get(char)

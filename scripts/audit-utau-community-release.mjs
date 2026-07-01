@@ -406,8 +406,8 @@ function utauCompatibilityGate(path) {
       problems.push('UTAU import compatibility audit must pass')
     }
     const cases = Array.isArray(report.cases) ? report.cases : []
-    if ((report.caseCount ?? cases.length) < 6 || cases.length < 6) {
-      problems.push('UTAU import compatibility audit must cover at least six diverse fixture voicebanks')
+    if ((report.caseCount ?? cases.length) < 7 || cases.length < 7) {
+      problems.push('UTAU import compatibility audit must cover at least seven diverse fixture voicebanks')
     }
     const caseIds = new Set(cases.map((item) => String(item.id ?? '')))
     for (const requiredId of [
@@ -415,6 +415,7 @@ function utauCompatibilityGate(path) {
       'japanese-vcv-context',
       'prefix-map-multipitch',
       'shift-jis-oto',
+      'legacy-character-txt',
       'hangul-cv-vc-coda',
       'multi-oto-style-ranking',
     ]) {
@@ -453,7 +454,7 @@ function utauCompatibilityGate(path) {
       }
     }
   }
-  return makeGate('utau-import-compatibility', 'Diverse imported UTAU zip formats, including Shift-JIS oto.ini, render through the browser sample renderer', path, problems, report ? {
+  return makeGate('utau-import-compatibility', 'Diverse imported UTAU zip formats, including Shift-JIS oto.ini and legacy character.txt, render through the browser sample renderer', path, problems, report ? {
     caseCount: report.caseCount ?? 0,
     cases: (report.cases ?? []).map((item) => ({
       id: item.id,
@@ -461,6 +462,7 @@ function utauCompatibilityGate(path) {
       passed: item.passed === true,
       sampleCount: item.zip?.sampleCount ?? null,
       wavCount: item.zip?.wavCount ?? null,
+      characterPath: item.zip?.characterPath ?? null,
       fallbackNotes: item.coverage?.fallbackNotes ?? null,
       warningCount: item.warnings?.warningCount ?? null,
       requestedAliases: item.render?.requestedAliases ?? [],
@@ -1015,6 +1017,7 @@ function readmeGate(paths) {
       'Japanese VCV',
       'prefix.map',
       'Shift-JIS oto.ini',
+      'character.txt',
       'Hangul CV/VC coda',
       'multi-oto style ranking',
       'release:evidence-status',
@@ -1749,7 +1752,7 @@ function nextActionsForProblems(problems) {
     actions.push('Run npm run voicebank:starter-samples-v3 so all twelve first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
   }
   if (problems.some((problem) => problem.includes('utau-import-compatibility'))) {
-    actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Shift-JIS oto.ini, Hangul CV/VC coda, and multi-oto style-ranking fixture voicebanks all render through the browser UTAU sample path.')
+    actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Shift-JIS oto.ini, legacy character.txt metadata, Hangul CV/VC coda, and multi-oto style-ranking fixture voicebanks all render through the browser UTAU sample path.')
   }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')
