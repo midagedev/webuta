@@ -33,6 +33,9 @@ describe('DAW handoff bundle', () => {
       'README.txt',
       'audio/',
       'audio/First-Vocal-Sketch.wav',
+      'guide/',
+      'guide/First-Vocal-Sketch-chords.mid',
+      'guide/First-Vocal-Sketch-melody.mid',
       'manifest.json',
       'project/',
       'project/First-Vocal-Sketch.ust',
@@ -64,6 +67,11 @@ describe('DAW handoff bundle', () => {
         file: 'project/notes.csv',
         count: 8,
       },
+      midi: {
+        melodyFile: 'guide/First-Vocal-Sketch-melody.mid',
+        chordFile: 'guide/First-Vocal-Sketch-chords.mid',
+        ppq: 480,
+      },
       arrangement: {
         file: 'project/arrangement.txt',
         chordFile: 'project/chords.csv',
@@ -82,6 +90,8 @@ describe('DAW handoff bundle', () => {
     await expect(zip.file('project/First-Vocal-Sketch.ustx')!.async('string')).resolves.toContain('notes:')
     await expect(zip.file('project/First-Vocal-Sketch.ust')!.async('string')).resolves.toContain('[#SETTING]')
     await expect(zip.file('project/First-Vocal-Sketch.webutau.json')!.async('string')).resolves.toContain('webuta-project')
+    expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-melody.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
+    expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-chords.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
     await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
     const notesCsv = await zip.file('project/notes.csv')!.async('string')
     expect(notesCsv).toContain('index,lyric,tone,noteName,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
@@ -94,6 +104,8 @@ describe('DAW handoff bundle', () => {
     expect(arrangement).toContain('C  G  Am  F')
     const readme = await zip.file('README.txt')!.async('string')
     expect(readme).toContain('Import audio/First-Vocal-Sketch.wav into your DAW')
+    expect(readme).toContain('guide/First-Vocal-Sketch-melody.mid')
+    expect(readme).toContain('guide/First-Vocal-Sketch-chords.mid')
     expect(readme).toContain('project/arrangement.txt')
     expect(readme).toContain('project/chords.csv')
     expect(readme).toContain('project/lyrics.txt')

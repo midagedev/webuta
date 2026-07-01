@@ -359,8 +359,8 @@
     </summary>
     <div class="starter-handoff-package">
       <span>다운로드 패키지</span>
-      <strong>WAV · arrangement.txt · chords.csv</strong>
-      <em>lyrics.txt · notes.csv 포함</em>
+      <strong>WAV · melody.mid · chords.mid</strong>
+      <em>arrangement.txt · lyrics.txt · notes.csv 포함</em>
     </div>
     <div class="starter-handoff-links starter-review-grid">
       <a href={releaseReviewHubHref} target="_blank" rel="noreferrer" aria-label="스타터 릴리스 허브 열기">

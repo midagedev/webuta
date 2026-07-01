@@ -237,6 +237,9 @@ Recommended coverage shape:
   material before rendering.
 - [x] Add project save/load/export/import.
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
+- [x] Add DAW handoff MIDI guide files: the ZIP now includes
+  `melody.mid` for vocal pitch/lyric timing and `chords.mid` for the starter
+  harmony guide beside the WAV, UST/USTX, and text/CSV sidecars.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
   note timing.
 - [x] Show tempo-map markers in the pattern panel and allow imported/nonzero

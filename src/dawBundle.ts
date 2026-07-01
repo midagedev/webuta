@@ -1,12 +1,13 @@
 import JSZip from 'jszip'
 import { durationTicksToSeconds, sanitizeFileName, sortedNotes, tickPositionLabel, ticksToSecondsInProject, toneName } from './music'
+import { createChordMidi, createMelodyMidi } from './midi'
 import { serializeWebutaProject } from './projectFile'
 import { serializeUst } from './ust'
 import { serializeUstx } from './ustx'
-import type { ChordMarker, RenderedAudio, SongProject } from './types'
+import { TICKS_PER_BEAT, type ChordMarker, type RenderedAudio, type SongProject } from './types'
 
 export const DAW_HANDOFF_BUNDLE_FORMAT = 'webuta-daw-handoff-bundle'
-export const DAW_HANDOFF_BUNDLE_VERSION = 3
+export const DAW_HANDOFF_BUNDLE_VERSION = 4
 
 export type DawHandoffBundleOptions = {
   project: SongProject
@@ -29,6 +30,8 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
     webuta: `project/${baseName}.webutau.json`,
     ustx: `project/${baseName}.ustx`,
     ust: `project/${baseName}.ust`,
+    melodyMidi: `guide/${baseName}-melody.mid`,
+    chordMidi: `guide/${baseName}-chords.mid`,
     lyrics: 'project/lyrics.txt',
     notesCsv: 'project/notes.csv',
     chordsCsv: 'project/chords.csv',
@@ -61,6 +64,11 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
       file: files.notesCsv,
       count: options.project.notes.length,
     },
+    midi: {
+      melodyFile: files.melodyMidi,
+      chordFile: files.chordMidi,
+      ppq: TICKS_PER_BEAT,
+    },
     arrangement: {
       file: files.arrangement,
       chordFile: files.chordsCsv,
@@ -83,6 +91,8 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
   zip.file(files.webuta, serializeWebutaProject(options.project, exportedAt))
   zip.file(files.ustx, serializeUstx(options.project))
   zip.file(files.ust, serializeUst(options.project))
+  zip.file(files.melodyMidi, createMelodyMidi(options.project))
+  zip.file(files.chordMidi, createChordMidi(options.project))
   zip.file(files.lyrics, createLyricsText(options.project))
   zip.file(files.notesCsv, createNotesCsv(options.project))
   zip.file(files.chordsCsv, createChordsCsv(options.project))
@@ -110,14 +120,17 @@ function createBundleReadme(options: DawHandoffBundleOptions, files: Record<stri
     '',
     'Quick start:',
     `1. Import ${files.wav} into your DAW as the vocal audio track.`,
-    `2. Open ${files.arrangement} for the starter chord guide, then use ${files.lyrics} and ${files.notesCsv} to align lyrics and notes.`,
-    `3. Keep ${files.webuta}, ${files.ustx}, and ${files.ust} beside the WAV if you want to revise the song later.`,
+    `2. Import ${files.melodyMidi} as a pitch/lyric timing guide, and optionally import ${files.chordMidi} for the starter chords.`,
+    `3. Open ${files.arrangement} for the starter chord guide, then use ${files.lyrics} and ${files.notesCsv} to align lyrics and notes.`,
+    `4. Keep ${files.webuta}, ${files.ustx}, and ${files.ust} beside the WAV if you want to revise the song later.`,
     '',
     'Files:',
     `- ${files.wav}: rendered vocal audio, 44.1 kHz mono 16-bit PCM when the DAW-ready check passes.`,
     `- ${files.webuta}: native WebUtau project backup.`,
     `- ${files.ustx}: OpenUtau/USTX project export.`,
     `- ${files.ust}: classic UTAU project export.`,
+    `- ${files.melodyMidi}: Standard MIDI vocal melody guide with lyric meta events.`,
+    `- ${files.chordMidi}: Standard MIDI chord guide matching ${files.chordsCsv}.`,
     `- ${files.lyrics}: plain-text lyric line for quick checking.`,
     `- ${files.notesCsv}: note timing, pitch, and lyric table for DAW alignment.`,
     `- ${files.chordsCsv}: chord timing table for quickly sketching accompaniment.`,

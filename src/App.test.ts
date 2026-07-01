@@ -153,8 +153,8 @@ describe('App editing workflow', () => {
     expect(handoffChecklist.textContent).toContain('고급 도구')
     expect(handoffChecklist.textContent).toContain('검수 · 공개 준비')
     expect(handoffChecklist.textContent).toContain('다운로드 패키지')
-    expect(handoffChecklist.textContent).toContain('WAV · arrangement.txt · chords.csv')
-    expect(handoffChecklist.textContent).toContain('lyrics.txt · notes.csv')
+    expect(handoffChecklist.textContent).toContain('WAV · melody.mid · chords.mid')
+    expect(handoffChecklist.textContent).toContain('arrangement.txt · lyrics.txt · notes.csv')
     expect(within(handoffChecklist).getByRole('link', { name: '스타터 릴리스 허브 열기' }).getAttribute('href')).toContain('review/index.html')
     expect(within(handoffChecklist).getByRole('link', { name: '스타터 청취 리뷰 열기' }).getAttribute('href')).toContain('review/v3/index.html')
     expect(within(handoffChecklist).getByRole('link', { name: '스타터 DAW 리포트 만들기' }).getAttribute('href')).toContain('review/wav-daw/index.html')
@@ -757,6 +757,8 @@ describe('App editing workflow', () => {
     expect(zip.file('project/First-Vocal-Sketch.webutau.json')).toBeTruthy()
     expect(zip.file('project/First-Vocal-Sketch.ustx')).toBeTruthy()
     expect(zip.file('project/First-Vocal-Sketch.ust')).toBeTruthy()
+    expect(zip.file('guide/First-Vocal-Sketch-melody.mid')).toBeTruthy()
+    expect(zip.file('guide/First-Vocal-Sketch-chords.mid')).toBeTruthy()
     expect(zip.file('project/arrangement.txt')).toBeTruthy()
     expect(zip.file('project/chords.csv')).toBeTruthy()
     expect(zip.file('project/lyrics.txt')).toBeTruthy()
@@ -768,8 +770,11 @@ describe('App editing workflow', () => {
       voicebank: 'WebUtau Korean V3 Synthetic',
       lyrics: { file: 'project/lyrics.txt', line: '도 히 도 히 다 이 스 키' },
       notes: { file: 'project/notes.csv', count: 8 },
+      midi: { melodyFile: 'guide/First-Vocal-Sketch-melody.mid', chordFile: 'guide/First-Vocal-Sketch-chords.mid', ppq: 480 },
       arrangement: { file: 'project/arrangement.txt', chordFile: 'project/chords.csv', chordCount: 4, chordLine: 'C  G  Am  F' },
     })
+    expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-melody.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
+    expect(String.fromCharCode(...new Uint8Array(await zip.file('guide/First-Vocal-Sketch-chords.mid')!.async('arraybuffer')).slice(0, 4))).toBe('MThd')
     await expect(zip.file('project/arrangement.txt')!.async('string')).resolves.toContain('C  G  Am  F')
     await expect(zip.file('project/chords.csv')!.async('string')).resolves.toContain('1,C,0,960')
     await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
