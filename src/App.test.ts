@@ -247,7 +247,7 @@ describe('App editing workflow', () => {
 
     render(App)
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     expect(screen.getAllByText(/이 기기에서 복원됨/).length).toBeGreaterThan(0)
   })
 
@@ -257,7 +257,7 @@ describe('App editing workflow', () => {
 
     fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     await waitFor(() => {
       expect(screen.getAllByText(/이 기기 저장됨/).length).toBeGreaterThan(0)
     })
@@ -270,7 +270,7 @@ describe('App editing workflow', () => {
 
     fireEvent.change(zipInput, { target: { files: [await makeMatchingVoicebankZip()] } })
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     await waitFor(() => {
       expect(screen.getAllByText(/현재 세션 전용/).length).toBeGreaterThan(0)
     })
@@ -296,7 +296,7 @@ describe('App editing workflow', () => {
 
     render(App)
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     expect(screen.getAllByText(/8\/8 matched/).length).toBeGreaterThan(0)
     expect(screen.getByText('현재 6개 고유 발음이 모두 보이스뱅크 alias에 연결됩니다.')).toBeTruthy()
     expect(screen.getByText('도 -> ど (exact)')).toBeTruthy()
@@ -367,7 +367,7 @@ describe('App editing workflow', () => {
 
     render(App)
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     fireEvent.click(screen.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }))
 
     await waitFor(() => {
@@ -386,7 +386,7 @@ describe('App editing workflow', () => {
 
     render(App)
 
-    await screen.findByText('WebUtau // Test Teto')
+    await waitForImportedTeto()
     expect(screen.getByText('미매칭 8개: 도, 히, 다, 이, 스, 키')).toBeTruthy()
     expect(screen.getByText('도 -> ど alias 없음')).toBeTruthy()
     expect(screen.getByText('렌더 경고 8개')).toBeTruthy()
@@ -824,6 +824,12 @@ async function makeVoicebankZip() {
   zip.file('Teto/a.wav', new Uint8Array([1, 2, 3, 4]))
   const blob = await zip.generateAsync({ type: 'blob' })
   return new File([blob], 'test-teto.zip', { type: 'application/zip' })
+}
+
+async function waitForImportedTeto() {
+  await waitFor(() => {
+    expect(screen.getAllByText(/Test Teto/u).length).toBeGreaterThan(0)
+  }, { timeout: 5000 })
 }
 
 async function makeMatchingVoicebankZip() {
