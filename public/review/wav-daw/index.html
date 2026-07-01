@@ -234,6 +234,73 @@
         font-size: 12px;
       }
 
+      .finish-panel {
+        margin-top: 14px;
+        border-color: rgba(255, 231, 106, 0.38);
+        background:
+          linear-gradient(90deg, rgba(255, 231, 106, 0.08), rgba(88, 244, 255, 0.06)),
+          rgba(9, 10, 22, 0.92);
+      }
+
+      .finish-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .finish-step {
+        min-width: 0;
+        display: grid;
+        align-content: start;
+        gap: 7px;
+        min-height: 118px;
+        padding: 10px;
+        border: 1px solid rgba(255, 231, 106, 0.24);
+        border-radius: 5px;
+        background: rgba(3, 5, 12, 0.62);
+      }
+
+      .finish-step span,
+      .finish-step strong,
+      .finish-step em,
+      .finish-step code {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .finish-step span {
+        width: fit-content;
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        border: 1px solid rgba(157, 255, 106, 0.42);
+        border-radius: 4px;
+        color: #101307;
+        background: #9dff6a;
+        font-size: 11px;
+        font-weight: 950;
+      }
+
+      .finish-step strong {
+        color: #f8f4ff;
+        font-size: 13px;
+      }
+
+      .finish-step em {
+        color: #aeb8cc;
+        font-size: 12px;
+        font-style: normal;
+        line-height: 1.36;
+      }
+
+      .finish-step a {
+        width: fit-content;
+        color: #58f4ff;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
       .pill {
         min-height: 31px;
         display: inline-flex;
@@ -431,7 +498,8 @@
         .grid,
         .field-grid,
         .route-grid,
-        .starter-file-card {
+        .starter-file-card,
+        .finish-grid {
           grid-template-columns: 1fr;
         }
 
@@ -509,6 +577,36 @@
           <div>
             <span>voicebank</span>
             <strong>WebUtau Korean V3 Synthetic</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="finish-panel" aria-label="After handoff report download">
+        <div class="route-head">
+          <h2>After downloading this report</h2>
+          <span class="pill">finish both release evidence files</span>
+        </div>
+        <div class="finish-grid">
+          <div class="finish-step">
+            <span>01</span>
+            <strong>Keep both JSON files in Downloads</strong>
+            <em>
+              This page creates <code>handoff-report.local.json</code>. The listening page creates
+              <code>listening-scores.local.json</code>.
+            </em>
+            <a href="../v3/index.html">Open listening review</a>
+          </div>
+          <div class="finish-step">
+            <span>02</span>
+            <strong>Check them in Evidence Preflight</strong>
+            <em>No upload: the release hub checks both JSON files locally before terminal acceptance.</em>
+            <a href="../index.html#evidence-preflight">Open Evidence Preflight</a>
+          </div>
+          <div class="finish-step">
+            <span>03</span>
+            <strong>Run status then accept</strong>
+            <em><code>npm run release:evidence-status</code> then <code>npm run release:accept-evidence</code>.</em>
+            <a href="../index.html">Open release hub</a>
           </div>
         </div>
       </section>

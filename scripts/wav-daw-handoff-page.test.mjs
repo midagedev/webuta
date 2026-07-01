@@ -14,6 +14,7 @@ describe('WAV DAW handoff report builder page', () => {
     const { document } = dom.window
     const route = document.querySelector('[aria-label="60-second physical handoff path"]')
     const starterReference = document.querySelector('[aria-label="Starter WAV reference"]')
+    const afterDownload = document.querySelector('[aria-label="After handoff report download"]')
 
     expect(route?.textContent).toContain('manual evidence only after real DAW import')
     expect(route?.textContent).toContain('Open the public app')
@@ -23,6 +24,11 @@ describe('WAV DAW handoff report builder page', () => {
     expect(starterReference?.textContent).toContain('First-Vocal-Sketch.wav')
     expect(starterReference?.textContent).toContain('44.1 kHz mono 16-bit')
     expect(starterReference?.textContent).toContain('도 히 도 히 다 이 스 키')
+    expect(afterDownload?.textContent).toContain('After downloading this report')
+    expect(afterDownload?.textContent).toContain('listening-scores.local.json')
+    expect(afterDownload?.textContent).toContain('Evidence Preflight')
+    expect(afterDownload?.textContent).toContain('npm run release:evidence-status')
+    expect(afterDownload?.textContent).toContain('npm run release:accept-evidence')
 
     fill(document, 'reviewer', 'release reviewer')
     fill(document, 'decision', 'community-ready')
