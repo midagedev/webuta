@@ -113,15 +113,15 @@ describe('App editing workflow', () => {
     expect(within(quickChecklist).getByText('03')).toBeTruthy()
     expect(within(quickChecklist).getByText('가사 적용')).toBeTruthy()
     expect((within(guide).getByLabelText('스타터 가사 라인') as HTMLInputElement).value).toBe('도 히 도 히 다 이 스 키')
-    expect(within(guide).getByText('STEP 00')).toBeTruthy()
+    expect(within(guide).getByText('지금 할 일 · STEP 00')).toBeTruthy()
     expect(within(guide).getByLabelText('Starter next action').textContent).toContain('보컬 불러오는 중')
-    expect(within(guide).getAllByText('현재 가사').length).toBeGreaterThanOrEqual(2)
+    expect(within(guide).getAllByText('현재 가사').length).toBeGreaterThanOrEqual(1)
     expect(within(guide).getAllByText('기본 샘플').length).toBeGreaterThanOrEqual(2)
     expect(within(guide).getAllByText('샘플 듣기').length).toBeGreaterThan(0)
     expect(within(guide).getAllByText('도 히 도 히 다 이 스 키').length).toBeGreaterThan(0)
     expect(within(launchPanel).getByRole('button', { name: '스타터 재생' })).toBeTruthy()
-    expect(within(utilities).getByText('작업 시작')).toBeTruthy()
-    expect(within(utilities).getByText('필요한 것만 바로 꺼내기')).toBeTruthy()
+    expect(within(utilities).getByText('다음 선택')).toBeTruthy()
+    expect(within(utilities).getByText('처음엔 샘플을 듣고 가사만 바꿔도 충분해요')).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '새 프로젝트' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '데모 프로젝트로 복구' })).toBeTruthy()
@@ -142,6 +142,29 @@ describe('App editing workflow', () => {
     fireEvent.click(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' }))
 
     expect(screen.getByLabelText('Compose mode')).toBeTruthy()
+  })
+
+  it('makes a restored draft obvious and offers a one-tap return to the default sample', async () => {
+    saveProject({
+      ...demoProject,
+      name: 'Old Draft',
+      notes: demoProject.notes.map((note) => ({ ...note, lyric: '라' })),
+    })
+
+    render(App)
+
+    const guide = screen.getByLabelText('First run guide')
+    const preview = within(guide).getByLabelText('Starter lyric preview')
+    expect(preview.textContent).toContain('저장된 작업')
+    expect(preview.textContent).toContain('이전 작업을 이어서 열었어요')
+    expect(within(guide).getByLabelText('Starter next action').textContent).toContain('지난 작업을 이어서 열었어요')
+
+    fireEvent.click(within(preview).getByRole('button', { name: '저장된 작업 대신 기본 샘플 열기' }))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('First Vocal Sketch')
+      expect(loadSavedProject()?.notes.map((note) => note.lyric)).toEqual(['도', '히', '도', '히', '다', '이', '스', '키'])
+    })
   })
 
   it('adds a tempo marker at the selected note for DAW-style tempo maps', async () => {

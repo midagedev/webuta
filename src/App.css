@@ -4458,8 +4458,10 @@ button:disabled {
   .nav-cluster .open-project-action,
   .nav-cluster .save-project-action,
   .nav-cluster .export-ustx-action,
+  .nav-cluster .export-ust-action,
   .nav-cluster .duplicate-project-action,
   .nav-cluster .utility-action,
+  .nav-cluster .edit-action,
   .project-context {
     display: none;
   }
@@ -6323,7 +6325,8 @@ button:disabled:active {
 
 /* Onboarding clarity pass: one obvious launch path before the dense editor. */
 .starter-guide.onboarding-v2,
-.starter-guide.onboarding-v3 {
+.starter-guide.onboarding-v3,
+.starter-guide.onboarding-v4 {
   gap: 8px;
 }
 
@@ -6333,6 +6336,129 @@ button:disabled:active {
   grid-template-columns: minmax(280px, 1fr) minmax(210px, 0.42fr);
   gap: 8px;
   align-items: stretch;
+}
+
+.starter-guide.onboarding-v4 {
+  gap: 10px;
+  padding: 10px;
+}
+
+.starter-guide.onboarding-v4 .starter-guide-head {
+  align-items: center;
+}
+
+.starter-guide.onboarding-v4 .starter-title span {
+  color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-guide.onboarding-v4 .starter-coach-panel {
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.36fr);
+  gap: 10px;
+}
+
+.starter-guide.onboarding-v4 .starter-coach-card {
+  min-height: 116px;
+  grid-template-columns: minmax(0, 1fr) minmax(236px, 0.42fr);
+  gap: 12px;
+  border-color: rgba(255, 231, 106, 0.56);
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.16), rgba(255, 75, 202, 0.09), rgba(88, 244, 255, 0.08)),
+    rgba(5, 7, 14, 0.86);
+}
+
+.starter-guide.onboarding-v4 .starter-coach-copy {
+  gap: 4px;
+}
+
+.starter-guide.onboarding-v4 .starter-coach-copy span {
+  color: var(--tracker-amber, #ffe76a);
+  font-size: 10px;
+}
+
+.starter-guide.onboarding-v4 .starter-coach-copy strong {
+  font-size: clamp(22px, 3.2vw, 34px);
+  line-height: 1;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v4 .starter-coach-copy em {
+  font-size: 11px;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v4 .starter-next-button {
+  min-height: 84px;
+  justify-content: center;
+  text-align: center;
+}
+
+.starter-guide.onboarding-v4 .starter-next-button span {
+  font-size: 15px;
+}
+
+.starter-guide.onboarding-v4 .starter-next-button strong {
+  font-size: 11px;
+}
+
+.starter-project-state {
+  position: relative;
+  gap: 6px;
+  border-color: rgba(157, 255, 106, 0.44);
+  background:
+    linear-gradient(180deg, rgba(157, 255, 106, 0.08), rgba(88, 244, 255, 0.05)),
+    rgba(5, 7, 14, 0.78);
+}
+
+.starter-project-state strong {
+  font-size: 17px;
+}
+
+.starter-inline-reset {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 231, 106, 0.52);
+  border-radius: 4px;
+  color: #110817;
+  background: linear-gradient(135deg, var(--tracker-amber, #ffe76a), var(--tracker-pink, #ff4bca));
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.starter-inline-reset span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-guide.onboarding-v4 .starter-recipe-rail {
+  gap: 8px;
+}
+
+.starter-guide.onboarding-v4 .starter-progress-step {
+  min-height: 64px;
+  border-color: rgba(88, 244, 255, 0.34);
+}
+
+.starter-guide.onboarding-v4 .starter-onboarding-grid {
+  grid-template-columns: minmax(320px, 1.12fr) minmax(240px, 0.74fr);
+  gap: 10px;
+}
+
+.starter-next-steps-card {
+  border-color: rgba(88, 244, 255, 0.34);
+  background:
+    linear-gradient(90deg, rgba(88, 244, 255, 0.08), rgba(255, 75, 202, 0.055)),
+    rgba(5, 7, 14, 0.72);
+}
+
+.starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-button {
+  min-height: 68px;
 }
 
 .starter-guide.onboarding-v3 .starter-focus {
@@ -6898,6 +7024,100 @@ button:disabled:active {
   .starter-launch-panel {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  .starter-guide.onboarding-v4 {
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-guide-head {
+    display: grid;
+    grid-template-columns: minmax(108px, 0.72fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-panel {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-card {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-copy {
+    min-height: 0;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-copy span {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-copy strong {
+    font-size: 19px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-coach-copy em {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-next-button {
+    min-height: 50px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-next-button span {
+    font-size: 12px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-next-button strong {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-project-state {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 8px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-project-state span,
+  .starter-guide.onboarding-v4 .starter-project-state strong,
+  .starter-guide.onboarding-v4 .starter-project-state em {
+    grid-column: 1;
+  }
+
+  .starter-guide.onboarding-v4 .starter-project-state strong {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .starter-guide.onboarding-v4 .starter-inline-reset {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    min-height: 36px;
+    padding: 0 8px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-recipe-rail {
+    gap: 5px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-progress-step {
+    min-height: 48px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-onboarding-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-button {
+    min-height: 58px;
   }
 
   .starter-guide.onboarding-v3 .starter-focus {

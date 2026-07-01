@@ -86,6 +86,9 @@
   const exportProgressClass = $derived(rendered ? 'current' : 'next')
   const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
+  const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
+  const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
+  const coachDetail = $derived(isDraftProject ? '기본 샘플이 필요하면 아래에서 바로 되돌릴 수 있어요' : '처음엔 샘플을 듣고 가사만 바꿔도 충분해요')
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -100,7 +103,7 @@
   }
 </script>
 
-<section class="starter-guide onboarding-v3" aria-label="First run guide">
+<section class="starter-guide onboarding-v4" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>START HERE</span>
@@ -114,10 +117,10 @@
     </div>
   </div>
 
-  <div class="starter-launch-panel" aria-label="Starter launch panel">
-    <div class="starter-focus" aria-label="Starter next action">
-      <div class="starter-focus-copy">
-        <span>STEP {focusStep}</span>
+  <div class="starter-launch-panel starter-coach-panel" aria-label="Starter launch panel">
+    <div class="starter-focus starter-coach-card" aria-label="Starter next action">
+      <div class="starter-focus-copy starter-coach-copy">
+        <span>지금 할 일 · STEP {focusStep}</span>
         <strong>{focusTitle}</strong>
         <em>{nextActionDetail} · {focusMeta}</em>
       </div>
@@ -140,14 +143,22 @@
       </button>
     </div>
 
-    <div class="starter-mini-preview" aria-label="Starter lyric preview">
-      <span>현재 가사</span>
+    <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
+      <span>{projectStateTitle}</span>
       <strong>{lyricPreview}</strong>
-      <em>{voicebankLabel}</em>
+      <em>{projectStateDetail}</em>
+      {#if isDraftProject}
+        <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
+          <RotateCcw size={14} aria-hidden="true" />
+          <span>기본 샘플로</span>
+        </button>
+      {:else}
+        <em>{voicebankLabel}</em>
+      {/if}
     </div>
   </div>
 
-  <div class="starter-progress-rail" aria-label="Starter quick checklist">
+  <div class="starter-progress-rail starter-recipe-rail" aria-label="Starter quick checklist">
     <button
       type="button"
       class={`starter-progress-step ${listenProgressClass}`}
@@ -205,12 +216,12 @@
       </div>
     </div>
 
-    <div class="starter-quick-actions" aria-label="Starter project utilities">
+    <div class="starter-quick-actions starter-next-steps-card" aria-label="Starter project utilities">
       <div class="starter-quick-actions-head">
         <ListChecks size={16} aria-hidden="true" />
         <div>
-          <span>작업 시작</span>
-          <strong>필요한 것만 바로 꺼내기</strong>
+          <span>다음 선택</span>
+          <strong>{coachDetail}</strong>
         </div>
       </div>
       <div class="starter-utility-row">
