@@ -1,18 +1,21 @@
 # WebUtau Overnight Checklist
 
-Goal: build toward a full OpenUtau web port whose first usable path lets a beginner make a synthesized vocal line directly in the browser.
+Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW whose first usable path lets a beginner make a synthesized vocal line directly in the browser.
 
 ## Product Promise
 
-- [ ] Beginner-friendly vocal editor works on touch and desktop browsers.
-- [ ] A project can be created without reading OpenUtau documentation.
-- [ ] Notes can be edited with lyric, pitch, duration, and tempo controls.
-- [ ] WAV render is 44.1 kHz PCM and suitable for common DAW import.
-- [ ] UST/USTX import/export keeps a bridge to UTAU/OpenUtau projects.
-- [ ] Rendering engine boundary can later swap the demo renderer for OpenUtau-compatible synthesis.
-- [ ] License boundaries are documented before bundling any singer, model, or external engine.
-- [ ] Kasane Teto UTAU works through a user-imported official OpenUTAU zip, not a bundled copy.
+- [x] Beginner-friendly vocal editor works on touch and desktop browsers.
+- [x] A project can be created without reading OpenUtau documentation.
+- [x] Notes can be edited with lyric, pitch, duration, and tempo controls.
+- [x] WAV render is 44.1 kHz PCM and suitable for common DAW import.
+- [x] UST/USTX import/export keeps a bridge to UTAU/OpenUtau projects.
+- [x] Rendering engine boundary can swap between bundled UTAU sample rendering,
+  browser fallback synthesis, and planned external/neural renderers.
+- [x] License boundaries are documented before bundling any singer, model, or external engine.
+- [x] Kasane Teto UTAU works through a user-imported official OpenUTAU zip, not a bundled copy.
 - [x] Completion requires a local smoke test with the official `TETO-OUset240323.zip` test asset.
+- [ ] Community-ready release still requires accepted human listening scores for
+  the V3 review pack.
 
 ## Tonight's Implemented Slice
 
@@ -56,6 +59,9 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
   and WAV export DAW-ready.
 - [x] Deployed GitHub Pages app passes the same first-run V3 browser audit and
   live WAV download check.
+- [x] First-run onboarding smoke verifies the `지금 할 일` CTA, `처음 3분`
+  route, Korean mode navigation, and `01 보이스 확인` / `02 먼저 들어보기` /
+  `03 WAV 저장` guided path.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
 - [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and
@@ -93,16 +99,30 @@ Goal: build toward a full OpenUtau web port whose first usable path lets a begin
   3-point curve and verify imported pitch modes plus `snap_first` are preserved
   when the selected-note editor adjusts an existing curve.
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
+- [x] README desktop/mobile screenshots are captured from the running app and
+  checked by release audit for readable dimensions and minimum byte size.
+- [x] `npm run release:audit-utau` passes every automated community-release gate
+  except the intentionally required human listening score file.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams
 
-- [ ] OpenUtau Core parity: commands, full pitch-editor UI, full expression automation, and phonemizer behavior.
-- [ ] Voicebank management: zip import, browser storage, singer metadata, sample preview, and license display.
-- [ ] Kasane Teto UTAU support: parse the official OpenUTAU library zip, read `character.yaml` / `oto.ini`, and route Japanese lyrics through the compatible phonemizer.
+- [ ] OpenUtau Core parity: commands, full pitch-editor UI, full expression
+  automation, and phonemizer behavior beyond the current browser-focused editor.
+- [x] Voicebank management: zip import, browser storage, singer metadata, sample
+  preview, license display, origin display, and render-risk warnings.
+- [x] Kasane Teto UTAU support: parse the official OpenUTAU library zip, read
+  `character.yaml` / `oto.ini`, and render through the user-imported samples.
+- [ ] Japanese phonemizer parity beyond direct aliases and current compatibility
+  mapping.
 - [ ] Classic synthesis: WORLDLINE native bridge via server first, then WASM if practical.
 - [ ] AI synthesis: DiffSinger/ENUNU through a server renderer first because browser model size and ONNX compatibility are product risks.
 - [ ] Plugin compatibility: replace arbitrary EXE execution with a sandboxed web plugin API.
 - [ ] WAV handoff workflow: test browser download/share and DAW import on physical hardware.
-- [ ] Accessibility and youth UX: large touch targets, simple labels, clear recoverable states, and no destructive default actions.
-- [ ] Security: scan uploaded voicebanks, isolate server render jobs, and never execute user-provided binaries in a shared worker.
+- [x] First-run accessibility and youth UX baseline: large touch targets, simple
+  labels, clear next action, recoverable demo reset, and no destructive default
+  action in the first-run path.
+- [x] Browser voicebank security baseline: reject unsafe or oversized uploaded
+  UTAU zips and never execute user-provided binaries in the browser release.
+- [ ] Server render job isolation before any OpenUtau/WORLDLINE compatibility
+  server is exposed to users.

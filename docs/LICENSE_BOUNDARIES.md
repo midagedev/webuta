@@ -37,9 +37,9 @@ Action:
 - [x] Bundle only the generated `WebUtau Korean V3 Synthetic` starter voicebank.
 - [x] Keep public/private recorded datasets out of the bundled default voicebank source audio.
 - [x] Avoid Supertonic/TTS/model-output material in the V3 default voicebank.
-- [ ] Display singer license and usage terms in the singer picker.
-- [ ] Keep user-uploaded singers private to the user's browser/account.
-- [ ] Do not bundle third-party commercial or unclear-license voices.
+- [x] Display singer license and usage terms in the singer picker.
+- [x] Keep user-uploaded singers private to the user's browser/account.
+- [x] Do not bundle third-party commercial or unclear-license voices.
 - [x] Treat Kasane Teto UTAU as a user-imported official download, not a bundled asset.
 
 ## External Resamplers and Plugins
@@ -48,7 +48,7 @@ Desktop OpenUtau can run external binaries. A web app cannot safely or legally a
 
 Action:
 
-- [ ] Do not upload and execute arbitrary EXE/BAT plugins.
+- [x] Do not upload and execute arbitrary EXE/BAT plugins in the browser release.
 - [ ] Build a sandboxed JS/WASM plugin API for web-native plugins.
 - [ ] Treat server-side compatibility execution as opt-in and isolated per user.
 
@@ -59,7 +59,7 @@ Vocaloid is a third-party mark. The product should describe itself as a vocal sy
 Action:
 
 - [x] Use WebUtau and vocal synth wording in the app.
-- [ ] Avoid implying Yamaha/Vocaloid compatibility beyond import/export facts that are true and documented.
+- [x] Avoid implying Yamaha/Vocaloid compatibility beyond import/export facts that are true and documented.
 
 ## Project Artwork
 
