@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebUtau WAV DAW Handoff</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0a0712;
+        color: #f8f4ff;
+        font-synthesis: none;
+        letter-spacing: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100svh;
+        background:
+          linear-gradient(90deg, rgba(255, 75, 202, 0.14), rgba(88, 244, 255, 0.08)),
+          #0a0712;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 20px 0 42px;
+      }
+
+      header,
+      section {
+        border: 1px solid rgba(88, 244, 255, 0.26);
+        border-radius: 6px;
+        background: rgba(9, 10, 22, 0.9);
+      }
+
+      header {
+        display: grid;
+        gap: 10px;
+        padding: 18px;
+        border-color: rgba(255, 75, 202, 0.38);
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(28px, 7vw, 54px);
+        line-height: 0.98;
+      }
+
+      h2 {
+        font-size: 17px;
+      }
+
+      code,
+      .mono,
+      label,
+      button,
+      select,
+      input,
+      textarea,
+      .pill,
+      .status {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      a {
+        color: #58f4ff;
+      }
+
+      .eyebrow,
+      .status {
+        color: #9dff6a;
+        font-size: 12px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .copy {
+        max-width: 78ch;
+        color: #aeb8cc;
+        line-height: 1.55;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .pill {
+        min-height: 31px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px;
+        border: 1px solid rgba(88, 244, 255, 0.26);
+        border-radius: 4px;
+        color: #58f4ff;
+        background: rgba(3, 5, 12, 0.74);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      form {
+        display: grid;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      section {
+        display: grid;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      label {
+        display: grid;
+        gap: 5px;
+        color: #7fffea;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid rgba(88, 244, 255, 0.28);
+        border-radius: 4px;
+        padding: 9px 10px;
+        color: #f8f4ff;
+        background: #070914;
+        font-size: 14px;
+      }
+
+      textarea {
+        min-height: 86px;
+        resize: vertical;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid #ff4bca;
+        outline-offset: 2px;
+      }
+
+      .check-list {
+        display: grid;
+        gap: 7px;
+      }
+
+      .check-row {
+        min-height: 46px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 9px;
+        align-items: center;
+        padding: 8px;
+        border: 1px solid rgba(88, 244, 255, 0.18);
+        border-radius: 4px;
+        background: rgba(3, 5, 12, 0.54);
+      }
+
+      .check-row input {
+        width: 20px;
+        min-height: 20px;
+        accent-color: #9dff6a;
+      }
+
+      .check-row strong,
+      .check-row span {
+        display: block;
+      }
+
+      .check-row strong {
+        font-size: 13px;
+      }
+
+      .check-row span {
+        margin-top: 2px;
+        color: #98a6bd;
+        font-size: 12px;
+        line-height: 1.38;
+      }
+
+      .actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 4;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 8px;
+        align-items: center;
+        margin-top: 14px;
+        padding: 10px;
+        border: 1px solid rgba(255, 75, 202, 0.32);
+        border-radius: 6px;
+        background: rgba(8, 7, 18, 0.96);
+      }
+
+      .progress {
+        display: grid;
+        gap: 5px;
+      }
+
+      .bar {
+        height: 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #15182a;
+      }
+
+      .bar span {
+        display: block;
+        width: var(--progress, 0%);
+        height: 100%;
+        background: linear-gradient(90deg, #9dff6a, #58f4ff, #ff4bca);
+      }
+
+      button {
+        min-height: 42px;
+        border: 1px solid rgba(255, 231, 106, 0.5);
+        border-radius: 4px;
+        padding: 0 13px;
+        color: #170817;
+        background: linear-gradient(135deg, #ffe76a, #ff4bca);
+        font-size: 12px;
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        color: #f8f4ff;
+        border-color: rgba(88, 244, 255, 0.28);
+        background: #171b2f;
+      }
+
+      pre {
+        max-height: 320px;
+        overflow: auto;
+        margin: 0;
+        padding: 12px;
+        border: 1px solid rgba(88, 244, 255, 0.18);
+        border-radius: 4px;
+        background: #040711;
+        color: #c4d4ff;
+        font-size: 12px;
+        line-height: 1.48;
+        white-space: pre-wrap;
+      }
+
+      .problems {
+        color: #ffe76a;
+      }
+
+      @media (max-width: 760px) {
+        main {
+          width: min(100% - 16px, 1120px);
+          padding-top: 8px;
+        }
+
+        header,
+        section {
+          padding: 11px;
+        }
+
+        .grid,
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .actions {
+          grid-template-columns: 1fr;
+        }
+
+        button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">WebUtau release evidence</p>
+        <h1>WAV DAW Handoff</h1>
+        <p class="copy">
+          Run this on a physical device after exporting the default WebUtau vocal WAV and importing it into a target music app.
+          It generates <code>handoff-report.local.json</code> for <code>npm run release:accept-daw-handoff</code>.
+        </p>
+        <div class="toolbar" aria-label="Release context">
+          <span class="pill">reviewId: webuta-wav-daw-handoff-v1</span>
+          <span class="pill">voicebank: WebUtau Korean V3 Synthetic</span>
+          <span class="pill">public app: midagedev.github.io/webuta</span>
+          <span class="pill">No recording needed</span>
+        </div>
+      </header>
+
+      <form id="handoffForm">
+        <div class="grid">
+          <section aria-labelledby="reviewerTitle">
+            <h2 id="reviewerTitle">Reviewer</h2>
+            <div class="field-grid">
+              <label>
+                Reviewer
+                <input name="reviewer" autocomplete="name" placeholder="Name or handle" required />
+              </label>
+              <label>
+                Decision
+                <select name="decision" required>
+                  <option value="">Choose</option>
+                  <option value="community-ready">community-ready</option>
+                  <option value="release-ready">release-ready</option>
+                  <option value="pass">pass</option>
+                </select>
+              </label>
+              <label>
+                Verified at
+                <input name="verifiedAt" type="datetime-local" required />
+              </label>
+              <label>
+                Physical device
+                <select name="physicalDevice">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section aria-labelledby="environmentTitle">
+            <h2 id="environmentTitle">Environment</h2>
+            <div class="field-grid">
+              <label>
+                Device
+                <input name="device" placeholder="iPad, iPhone, Android tablet..." required />
+              </label>
+              <label>
+                OS version
+                <input name="osVersion" placeholder="iPadOS 26..." required />
+              </label>
+              <label>
+                Browser
+                <input name="browser" placeholder="Safari, Chrome..." required />
+              </label>
+              <label>
+                Target DAW
+                <input name="targetDaw" placeholder="GarageBand iPad, BandLab..." required />
+              </label>
+              <label>
+                WebUtau URL
+                <input name="webutaUrl" value="https://midagedev.github.io/webuta/" required />
+              </label>
+              <label>
+                Home-screen status
+                <select name="homeScreenStatus" required>
+                  <option value="">Choose</option>
+                  <option value="pass">pass</option>
+                  <option value="not-supported">not-supported</option>
+                </select>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <section aria-labelledby="checkTitle">
+          <h2 id="checkTitle">Required Checks</h2>
+          <div id="checks" class="check-list"></div>
+        </section>
+
+        <div class="grid">
+          <section aria-labelledby="wavTitle">
+            <h2 id="wavTitle">Rendered WAV</h2>
+            <div class="field-grid">
+              <label>
+                File name
+                <input name="fileName" value="First-Vocal-Sketch.wav" required />
+              </label>
+              <label>
+                Sample rate
+                <input name="sampleRate" type="number" value="44100" required />
+              </label>
+              <label>
+                Channels
+                <input name="channels" type="number" value="1" required />
+              </label>
+              <label>
+                Bits per sample
+                <input name="bitsPerSample" type="number" value="16" required />
+              </label>
+              <label>
+                Duration seconds
+                <input name="durationSeconds" type="number" min="2" step="0.01" placeholder="6.55" required />
+              </label>
+              <label>
+                Export method
+                <select name="exportMethod" required>
+                  <option value="">Choose</option>
+                  <option value="share">share</option>
+                  <option value="download">download</option>
+                  <option value="files">files</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section aria-labelledby="dawTitle">
+            <h2 id="dawTitle">DAW Import</h2>
+            <div class="field-grid">
+              <label>
+                Imported region visible
+                <select name="importedRegionVisible" required>
+                  <option value="">Choose</option>
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </label>
+              <label>
+                No conversion error
+                <select name="noConversionError" required>
+                  <option value="">Choose</option>
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Handoff notes
+              <textarea name="handoffNotes" placeholder="Import route, DAW behavior, any limits"></textarea>
+            </label>
+            <label>
+              Home-screen notes
+              <textarea name="homeScreenNotes" placeholder="Home-screen launch result or not-supported reason"></textarea>
+            </label>
+            <label>
+              General notes
+              <textarea name="notes" placeholder="Anything a release reviewer should know"></textarea>
+            </label>
+          </section>
+        </div>
+      </form>
+
+      <section aria-labelledby="previewTitle">
+        <h2 id="previewTitle">Generated Report</h2>
+        <p id="problemSummary" class="problems">Fill the required fields and checks.</p>
+        <pre id="jsonPreview" aria-label="handoff-report.local.json preview"></pre>
+      </section>
+
+      <div class="actions">
+        <div class="progress">
+          <p class="status" id="progressLabel">0% complete</p>
+          <div class="bar" aria-hidden="true"><span id="progressBar"></span></div>
+        </div>
+        <button type="button" class="secondary" id="clearDraft">Clear draft</button>
+        <button type="button" id="downloadReport">Download handoff-report.local.json</button>
+      </div>
+    </main>
+
+    <script>
+      const REVIEW_ID = 'webuta-wav-daw-handoff-v1';
+      const DEFAULT_VOICEBANK = 'WebUtau Korean V3 Synthetic';
+      const STORAGE_KEY = 'webuta.wavDawHandoffDraft.v1';
+      const checks = [
+        ['openedFromPublicUrl', 'Opened from public URL', 'Use https://midagedev.github.io/webuta/ rather than localhost.'],
+        ['defaultVoicebankSelected', 'Default V3 voicebank selected', 'No voicebank zip import is needed for the bundled release path.'],
+        ['firstRunGuideVisible', 'Quick Start guide visible', 'Confirm QUICK START, 처음이면, 현재 가사, and WAV 저장 are visible.'],
+        ['defaultLyricsMatched', 'Default lyrics matched', 'Confirm the default 도 히 도 히 다 이 스 키 project shows 8/8 matched.'],
+        ['audioPreviewWorked', 'Audio preview worked', 'Tap 먼저 들어보기 or the main play button and hear the vocal preview.'],
+        ['wavExportWorked', 'WAV export worked', 'Use share, download, or Files to save a WAV.'],
+        ['targetDawImportWorked', 'Target DAW import worked', 'Import the WAV into the target DAW.'],
+        ['targetDawPlaybackAudible', 'Target DAW playback audible', 'Play the target project and hear the vocal region.'],
+        ['browserDraftRestored', 'Browser draft restored', 'Refresh or relaunch WebUtau and confirm the draft returns.'],
+        ['noHorizontalOverflowPortrait', 'No portrait overflow', 'Confirm the main portrait workflow is not blocked by horizontal overflow.'],
+        ['userVoicebankPrivacyConfirmed', 'User voicebank privacy confirmed', 'Optional user ZIPs remain user-provided and private to this browser.'],
+      ];
+
+      const form = document.querySelector('#handoffForm');
+      const checkContainer = document.querySelector('#checks');
+      const preview = document.querySelector('#jsonPreview');
+      const problemSummary = document.querySelector('#problemSummary');
+      const progressLabel = document.querySelector('#progressLabel');
+      const progressBar = document.querySelector('#progressBar');
+
+      for (const [name, title, detail] of checks) {
+        const row = document.createElement('label');
+        row.className = 'check-row';
+        row.innerHTML = `
+          <input type="checkbox" name="${name}" />
+          <span><strong>${title}</strong><span>${detail}</span></span>
+        `;
+        checkContainer.append(row);
+      }
+
+      setDefaultTimestamp();
+      restoreDraft();
+      update();
+
+      form.addEventListener('input', () => {
+        saveDraft();
+        update();
+      });
+
+      document.querySelector('#clearDraft').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        form.reset();
+        setDefaultTimestamp();
+        update();
+      });
+
+      document.querySelector('#downloadReport').addEventListener('click', () => {
+        const { report, problems } = buildReport();
+        if (problems.length > 0) {
+          problemSummary.textContent = problems.slice(0, 4).join(' ');
+          return;
+        }
+        const blob = new Blob([`${JSON.stringify(report, null, 2)}\n`], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'handoff-report.local.json';
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      });
+
+      function setDefaultTimestamp() {
+        const input = form.elements.namedItem('verifiedAt');
+        if (!input.value) {
+          const now = new Date();
+          const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          input.value = local;
+        }
+      }
+
+      function restoreDraft() {
+        const text = localStorage.getItem(STORAGE_KEY);
+        if (!text) return;
+        try {
+          const draft = JSON.parse(text);
+          for (const [key, value] of Object.entries(draft)) {
+            const field = form.elements.namedItem(key);
+            if (!field) continue;
+            if (field instanceof RadioNodeList) continue;
+            if (field.type === 'checkbox') {
+              field.checked = value === true;
+            } else {
+              field.value = value ?? '';
+            }
+          }
+        } catch {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      function saveDraft() {
+        const draft = {};
+        for (const element of form.elements) {
+          if (!element.name) continue;
+          draft[element.name] = element.type === 'checkbox' ? element.checked : element.value;
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+      }
+
+      function update() {
+        const { report, problems, complete, total } = buildReport();
+        preview.textContent = `${JSON.stringify(report, null, 2)}\n`;
+        problemSummary.textContent = problems.length === 0 ? 'Handoff report is ready to download.' : problems.slice(0, 4).join(' ');
+        const pct = total === 0 ? 0 : Math.round((complete / total) * 100);
+        progressLabel.textContent = `${pct}% complete`;
+        progressBar.style.setProperty('--progress', `${pct}%`);
+      }
+
+      function buildReport() {
+        const values = Object.fromEntries(new FormData(form).entries());
+        const checkValues = Object.fromEntries(checks.map(([key]) => [key, Boolean(form.elements.namedItem(key).checked)]));
+        const verifiedAt = values.verifiedAt ? new Date(values.verifiedAt).toISOString() : '';
+        const report = {
+          version: 1,
+          reviewId: REVIEW_ID,
+          reviewer: clean(values.reviewer),
+          verifiedAt,
+          decision: clean(values.decision),
+          physicalDevice: values.physicalDevice === 'true',
+          defaultVoicebank: DEFAULT_VOICEBANK,
+          environment: {
+            device: clean(values.device),
+            osVersion: clean(values.osVersion),
+            browser: clean(values.browser),
+            targetDaw: clean(values.targetDaw),
+            webutaUrl: clean(values.webutaUrl),
+          },
+          checks: checkValues,
+          renderedWav: {
+            fileName: clean(values.fileName),
+            sampleRate: numberValue(values.sampleRate),
+            channels: numberValue(values.channels),
+            bitsPerSample: numberValue(values.bitsPerSample),
+            durationSeconds: numberValue(values.durationSeconds),
+          },
+          handoff: {
+            exportMethod: clean(values.exportMethod),
+            importedRegionVisible: values.importedRegionVisible === 'true',
+            noConversionError: values.noConversionError === 'true',
+            notes: clean(values.handoffNotes),
+          },
+          homeScreen: {
+            status: clean(values.homeScreenStatus),
+            notes: clean(values.homeScreenNotes),
+          },
+          notes: clean(values.notes),
+        };
+        const problems = validate(report);
+        const total = 29;
+        const complete =
+          ['reviewer', 'verifiedAt', 'decision'].filter((key) => report[key]).length +
+          (report.physicalDevice ? 1 : 0) +
+          Object.values(report.environment).filter(Boolean).length +
+          Object.values(report.checks).filter(Boolean).length +
+          [report.renderedWav.fileName, report.renderedWav.sampleRate, report.renderedWav.channels, report.renderedWav.bitsPerSample, report.renderedWav.durationSeconds].filter(Boolean).length +
+          [report.handoff.exportMethod, report.handoff.importedRegionVisible, report.handoff.noConversionError, report.homeScreen.status].filter(Boolean).length;
+        return { report, problems, complete, total };
+      }
+
+      function validate(report) {
+        const problems = [];
+        if (!report.reviewer) problems.push('Reviewer is required.');
+        if (!report.verifiedAt) problems.push('Verified time is required.');
+        if (!['community-ready', 'release-ready', 'pass'].includes(report.decision)) problems.push('Decision must be passing.');
+        if (!report.physicalDevice) problems.push('Physical device must be true.');
+        for (const [key, value] of Object.entries(report.environment)) {
+          if (!value) problems.push(`environment.${key} is required.`);
+        }
+        if (!/^https:\/\/midagedev\.github\.io\/webuta\/?/.test(report.environment.webutaUrl)) {
+          problems.push('WebUtau URL must be the public GitHub Pages app.');
+        }
+        for (const [key, value] of Object.entries(report.checks)) {
+          if (value !== true) problems.push(`${key} must be checked.`);
+        }
+        if (!report.renderedWav.fileName.endsWith('.wav')) problems.push('WAV file name must end with .wav.');
+        if (report.renderedWav.sampleRate !== 44100) problems.push('WAV sample rate must be 44100.');
+        if (report.renderedWav.channels !== 1) problems.push('WAV must be mono.');
+        if (report.renderedWav.bitsPerSample !== 16) problems.push('WAV must be 16-bit.');
+        if (!(report.renderedWav.durationSeconds >= 2)) problems.push('WAV duration must be at least 2 seconds.');
+        if (!['share', 'download', 'files'].includes(report.handoff.exportMethod)) problems.push('Export method is required.');
+        if (!report.handoff.importedRegionVisible) problems.push('Imported DAW region must be visible.');
+        if (!report.handoff.noConversionError) problems.push('No conversion error must be true.');
+        if (!['pass', 'not-supported'].includes(report.homeScreen.status)) problems.push('Home-screen status is required.');
+        return problems;
+      }
+
+      function clean(value) {
+        return String(value ?? '').trim();
+      }
+
+      function numberValue(value) {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+    </script>
+  </body>
+</html>

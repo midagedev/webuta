@@ -11,6 +11,7 @@ const REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
   'first-run starter guide visible',
   'first-run quick-start CTA visible',
+  'first-run beginner mission visible',
   'first-run current lyric card visible',
   'first-run guided path visible',
   'first-run sketch cues visible',

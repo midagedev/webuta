@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Download, FilePlus, Music2, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
+  import { Check, Download, FilePlus, Headphones, Music2, PencilLine, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatVoicebankCoverage } from '../app/ui'
@@ -60,6 +60,8 @@
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 다운로드' : '스타터 재생')
   const guideSummary = $derived(rendered ? '이제 WAV를 저장할 수 있어요' : '듣고, 가사를 바꾸고, WAV로 저장')
+  const missionStatus = $derived(isRendering ? '렌더 중' : rendered ? 'WAV 준비됨' : isVoicebankReady ? '보컬 준비됨' : '보컬 로딩')
+  const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -81,6 +83,43 @@
       <span>{project.bpm} BPM</span>
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{coverageLabel}</span>
       <span>{projectContextLabel}</span>
+    </div>
+  </div>
+
+  <div class="starter-mission" aria-label="Beginner mission">
+    <div class="starter-mission-copy">
+      <span>처음 1분</span>
+      <strong>샘플 듣기 / 가사·멜로디 / WAV 받기</strong>
+      <em>{missionStatus}</em>
+    </div>
+    <div class="starter-mission-actions" aria-label="Beginner mission actions">
+      <button
+        type="button"
+        class={`starter-mission-action primary ${isPlaying ? 'active' : ''}`}
+        aria-label={isPlaying ? '초보자 샘플 일시정지' : '초보자 샘플 듣기'}
+        onclick={() => void onPlayPause()}
+        disabled={isRendering}
+      >
+        <Headphones size={18} aria-hidden="true" />
+        <span>1 샘플 듣기</span>
+        <strong>{playStepLabel}</strong>
+      </button>
+      <button type="button" class="starter-mission-action" aria-label="초보자 가사 멜로디 열기" onclick={onOpenCompose}>
+        <PencilLine size={18} aria-hidden="true" />
+        <span>2 가사·멜로디</span>
+        <strong>{project.notes.length} notes</strong>
+      </button>
+      <button
+        type="button"
+        class={`starter-mission-action export ${rendered ? 'ready' : ''}`}
+        aria-label="초보자 WAV 받기"
+        onclick={() => void onDownloadWav()}
+        disabled={isRendering}
+      >
+        <Download size={18} aria-hidden="true" />
+        <span>3 WAV 받기</span>
+        <strong>{missionWavMeta}</strong>
+      </button>
     </div>
   </div>
 

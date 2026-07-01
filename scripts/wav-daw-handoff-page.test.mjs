@@ -1,0 +1,52 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { JSDOM } from 'jsdom'
+import { describe, expect, it } from 'vitest'
+import { validateHandoffReport } from './accept-wav-daw-handoff.mjs'
+
+describe('WAV DAW handoff report builder page', () => {
+  it('generates a report accepted by the release handoff validator', async () => {
+    const html = readFileSync(resolve('public/review/wav-daw/index.html'), 'utf8')
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      url: 'https://midagedev.github.io/webuta/review/wav-daw/index.html',
+    })
+    const { document } = dom.window
+
+    fill(document, 'reviewer', 'release reviewer')
+    fill(document, 'decision', 'community-ready')
+    fill(document, 'verifiedAt', '2026-07-01T09:00')
+    fill(document, 'device', 'iPad')
+    fill(document, 'osVersion', 'iPadOS 26')
+    fill(document, 'browser', 'Safari')
+    fill(document, 'targetDaw', 'GarageBand iPad')
+    fill(document, 'homeScreenStatus', 'pass')
+    fill(document, 'durationSeconds', '6.55')
+    fill(document, 'exportMethod', 'share')
+    fill(document, 'importedRegionVisible', 'true')
+    fill(document, 'noConversionError', 'true')
+    for (const checkbox of document.querySelectorAll('input[type="checkbox"]')) {
+      checkbox.checked = true
+    }
+    document.querySelector('#handoffForm').dispatchEvent(new dom.window.Event('input', { bubbles: true }))
+
+    const report = JSON.parse(document.querySelector('#jsonPreview').textContent)
+    const problems = validateHandoffReport(report, [])
+
+    expect(problems).toEqual([])
+    expect(report.reviewId).toBe('webuta-wav-daw-handoff-v1')
+    expect(report.defaultVoicebank).toBe('WebUtau Korean V3 Synthetic')
+    expect(report.renderedWav).toMatchObject({
+      sampleRate: 44100,
+      channels: 1,
+      bitsPerSample: 16,
+      durationSeconds: 6.55,
+    })
+    expect(document.querySelector('#problemSummary').textContent).toBe('Handoff report is ready to download.')
+  })
+})
+
+function fill(document, name, value) {
+  const field = document.querySelector(`[name="${name}"]`)
+  field.value = value
+}

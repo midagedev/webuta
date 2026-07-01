@@ -193,12 +193,13 @@
   )
   let releaseCardSummary = $derived(
     automatedReleaseChecksPass
-      ? '남은 단계: 생성된 WAV 청취 점수 저장'
+      ? '남은 단계: 청취 점수와 DAW 핸드오프 저장'
       : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
   )
   let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
   let voicebankOriginState = $derived(!voicebank ? 'idle' : isSelfGeneratedVoicebank(voicebank) ? 'ready' : 'warning')
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
+  const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
 
   function isSelfGeneratedVoicebank(current: LoadedVoicebank | null) {
     const origin = current?.metadata.origin
@@ -456,11 +457,22 @@
           <strong>NEED</strong>
           <em>listening-scores.local.json 필요</em>
         </div>
+        <div class="review-needed">
+          <span>DAW 확인</span>
+          <strong>NEED</strong>
+          <em>handoff-report.local.json 필요</em>
+        </div>
       </div>
-      <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
-        <ExternalLink size={14} aria-hidden="true" />
-        <span>청취 리뷰 열기</span>
-      </a>
+      <div class="release-review-links">
+        <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>청취 리뷰 열기</span>
+        </a>
+        <a class="release-review-link" href={wavDawHandoffHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>DAW 리포트 만들기</span>
+        </a>
+      </div>
     </div>
     <label class="field-label">
       BPM

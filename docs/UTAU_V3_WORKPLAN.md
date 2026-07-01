@@ -381,7 +381,8 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
-  visible, the first-run `QUICK START` / `처음이면` CTA, current lyric card,
+  visible, the first-run `QUICK START` / `처음 1분` / `처음이면` CTA,
+  beginner `샘플 듣기 / 가사·멜로디 / WAV 받기` actions, current lyric card,
   Korean mode navigation, `미리듣기` / `가사·음정` / `WAV 저장` sketch cues,
   and `01 보이스 확인` / `02 먼저 들어보기` / `03 WAV 저장` guided path are
   visible, the community

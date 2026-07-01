@@ -20,7 +20,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `QUICK START`, `처음이면`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.
+5. Confirm the first-run guide shows `QUICK START`, `처음 1분`, `처음이면`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
 8. Tap `공유` or `스타터 WAV 다운로드`.
@@ -30,7 +30,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 12. Return to WebUtau, refresh or relaunch, and confirm the browser draft restores locally.
 13. Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files and confirm it stays private to the browser storage.
 14. Turn network off, relaunch from the home-screen icon, and confirm the app shell opens after one prior online load.
-15. Copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path, fill every field from this physical-device pass, and accept it with:
+15. Open `review/wav-daw/index.html` from the public site, or copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path. Fill every field from this physical-device pass, download or save `handoff-report.local.json`, and accept it with:
 
 ```sh
 npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
@@ -40,7 +40,7 @@ npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.jso
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide shows a clear next action plus the voice, play, and WAV handoff path.
+- The first-run guide shows the `처음 1분` beginner mission plus the voice, play, and WAV handoff path.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.
@@ -53,4 +53,5 @@ npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.jso
 - Status: Not yet physically verified.
 - Release evidence path: `experiments/utau-v3/work/wav-daw-handoff/handoff-report.local.json`
 - Template: `docs/wav-daw-handoff.local.template.json`
+- Public report builder: `review/wav-daw/index.html`
 - Notes:

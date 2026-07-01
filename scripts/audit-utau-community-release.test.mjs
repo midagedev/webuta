@@ -344,6 +344,20 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('WAV / DAW QA doc must include "WebUtau Korean V3 Synthetic"')
     expect(report.problems.join('\n')).toContain('WAV / DAW QA doc must not make Kasane Teto import the default release path')
   })
+
+  it('blocks release when the public WAV DAW handoff builder is missing report markers', async () => {
+    const fixture = await makeFixture()
+    writeFileSync(join(fixture.root, 'public', 'review', 'wav-daw', 'index.html'), '<h1>WAV handoff</h1>')
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('public-wav-daw-handoff: public WAV DAW handoff builder must include "webuta-wav-daw-handoff-v1"')
+    expect(report.problems.join('\n')).toContain('public-wav-daw-handoff: public WAV DAW handoff builder must include "handoff-report.local.json"')
+  })
 })
 
 async function makeFixture(overrides = {}) {
@@ -363,6 +377,7 @@ async function makeFixture(overrides = {}) {
   mkdirSync(join(root, 'src'), { recursive: true })
   mkdirSync(join(root, 'public', 'voicebanks'), { recursive: true })
   mkdirSync(join(root, 'public', 'review', 'v3', 'audio', 'legacy-v2'), { recursive: true })
+  mkdirSync(join(root, 'public', 'review', 'wav-daw'), { recursive: true })
   writeJson(join(root, 'package.json'), overrides.packageJson ?? makePackageJson())
   writeJson(join(work, 'v3-voicebank-audit.json'), passReport('v3-voicebank-audit-pass'))
   writeJson(join(work, 'v3-oto-audit.json'), passReport('v3-oto-audit-pass'))
@@ -388,6 +403,7 @@ async function makeFixture(overrides = {}) {
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
+  writeFileSync(join(root, 'public', 'review', 'wav-daw', 'index.html'), makeWavDawHandoffPage())
   for (const fileName of ['01-first-run-demo.wav', '02-coda-release-check.wav', '03-clear-cv-line.wav', '04-vowel-color-check.wav']) {
     writeFileSync(join(root, 'public', 'review', 'v3', 'audio', fileName), Buffer.alloc(200_000, 1))
   }
@@ -437,6 +453,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip bytes match local bundle',
         'pages V3 listening review scorecard loaded',
         'pages V3 listening review audio loaded',
+        'pages WAV DAW handoff builder loaded',
       ],
       reviewAudio: makePagesReviewAudio(),
     },
@@ -519,6 +536,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'default V3 voicebank loaded',
       'first-run starter guide visible',
       'first-run quick-start CTA visible',
+      'first-run beginner mission visible',
       'first-run current lyric card visible',
       'first-run guided path visible',
       'first-run sketch cues visible',
@@ -815,11 +833,32 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `QUICK START`, `처음이면`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.',
+    'Confirm the first-run guide shows `QUICK START`, `처음 1분`, `처음이면`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.',
     'Tap `공유` or `스타터 WAV 다운로드`.',
+    'Open `review/wav-daw/index.html` to generate `handoff-report.local.json`.',
     'Fill `docs/wav-daw-handoff.local.template.json` and run `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json`.',
     'Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files.',
     'Any optional imported voicebank zip remains user-provided and private to the browser.',
+    '',
+  ].join('\n')
+}
+
+function makeWavDawHandoffPage() {
+  return [
+    '<!doctype html>',
+    '<title>WebUtau WAV DAW Handoff</title>',
+    '<h1>WebUtau WAV DAW Handoff</h1>',
+    '<p>No recording needed</p>',
+    '<code>webuta-wav-daw-handoff-v1</code>',
+    '<code>handoff-report.local.json</code>',
+    '<code>npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json</code>',
+    '<p>WebUtau Korean V3 Synthetic</p>',
+    '<p>https://midagedev.github.io/webuta/</p>',
+    '<p>GarageBand iPad</p>',
+    '<script>',
+    'const checks = ["openedFromPublicUrl","defaultVoicebankSelected","firstRunGuideVisible","defaultLyricsMatched","audioPreviewWorked","wavExportWorked","targetDawImportWorked","targetDawPlaybackAudible","browserDraftRestored","noHorizontalOverflowPortrait","userVoicebankPrivacyConfirmed"];',
+    'localStorage.setItem("fixture", JSON.stringify(checks));',
+    '</script>',
     '',
   ].join('\n')
 }
