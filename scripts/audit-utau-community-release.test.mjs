@@ -286,7 +286,13 @@ describe('UTAU community release audit', () => {
   it('blocks release when the deployed browser demo report predates the starter handoff strip', async () => {
     const stalePagesDemo = makeDemoReport('https://midagedev.github.io/webuta/')
     stalePagesDemo.requiredChecks = stalePagesDemo.requiredChecks.filter(
-      (check) => !['first-run DAW handoff checklist visible', 'first-run release evidence links visible'].includes(check.check),
+      (check) =>
+        ![
+          'first-run route map visible',
+          'first-run lyric helper visible',
+          'first-run DAW handoff checklist visible',
+          'first-run release evidence links visible',
+        ].includes(check.check),
     )
     const fixture = await makeFixture({
       pagesDemo: stalePagesDemo,
@@ -299,6 +305,8 @@ describe('UTAU community release audit', () => {
     })
 
     expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run route map visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run lyric helper visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
     expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
@@ -583,11 +591,13 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
     requiredChecks: [
       'default V3 voicebank loaded',
       'first-run starter guide visible',
+      'first-run route map visible',
       'first-run three-step checklist visible',
       'first-run quick-start CTA visible',
       'first-run focused next action visible',
       'first-run starter launch panel visible',
       'first-run inline lyric input visible',
+      'first-run lyric helper visible',
       'first-run current lyric card visible',
       'first-run utility actions visible',
       'first-run DAW handoff checklist visible',

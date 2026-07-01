@@ -49,11 +49,13 @@ const EXPECTED_DECISIONS = {
 const DEMO_REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
   'first-run starter guide visible',
+  'first-run route map visible',
   'first-run three-step checklist visible',
   'first-run quick-start CTA visible',
   'first-run focused next action visible',
   'first-run starter launch panel visible',
   'first-run inline lyric input visible',
+  'first-run lyric helper visible',
   'first-run current lyric card visible',
   'first-run utility actions visible',
   'first-run DAW handoff checklist visible',

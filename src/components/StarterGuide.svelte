@@ -104,6 +104,20 @@
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
   const coachDetail = $derived(isDraftProject ? '기본 샘플이 필요하면 아래에서 바로 되돌릴 수 있어요' : '처음엔 샘플을 듣고 가사만 바꿔도 충분해요')
+  const lyricInputTokenCount = $derived(lyricLine.trim().split(/\s+/u).filter(Boolean).length || compactLine(lyricLine).length)
+  const firstRunRouteTitle = $derived(
+    isRendering ? '소리 만드는 중' : rendered ? '이제 WAV로 저장' : hasPendingLyricLine ? '새 가사를 멜로디에 적용' : '샘플을 먼저 듣고 시작',
+  )
+  const firstRunRouteDetail = $derived(
+    isRendering
+      ? '잠시 뒤 재생과 다운로드가 열려요'
+      : rendered
+        ? '완성된 WAV를 바로 받을 수 있어요'
+        : hasPendingLyricLine
+          ? `${lyricInputTokenCount}개 발음이 입력됐어요`
+          : `${project.notes.length} notes · ${project.bpm} BPM`,
+  )
+  const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
@@ -133,6 +147,31 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
     </div>
+  </div>
+
+  <div class="starter-route-banner" aria-label="First run route">
+    <div class="starter-route-copy">
+      <span>처음 3분</span>
+      <strong>{firstRunRouteTitle}</strong>
+      <em>{firstRunRouteDetail}</em>
+    </div>
+    <ol class="starter-route-summary" aria-label="Starter route summary">
+      <li class={listenProgressClass}>
+        <span>01</span>
+        <strong>듣기</strong>
+        <em>{playStepLabel}</em>
+      </li>
+      <li class={lyricProgressClass}>
+        <span>02</span>
+        <strong>가사</strong>
+        <em>{lyricProgressMeta}</em>
+      </li>
+      <li class={exportProgressClass}>
+        <span>03</span>
+        <strong>저장</strong>
+        <em>{exportRouteStatus}</em>
+      </li>
+    </ol>
   </div>
 
   <div class="starter-launch-panel starter-coach-panel" aria-label="Starter launch panel">
@@ -214,6 +253,11 @@
       <div class="starter-edit-head">
         <span>가사 바꾸기</span>
         <strong>{project.notes.length} notes</strong>
+      </div>
+      <div class="starter-lyric-helper" aria-label="Lyric input helper">
+        <span>한글 그대로 입력</span>
+        <strong>예: 도히도히 다이스키 · 사랑해 · 별빛</strong>
+        <em>{lyricInputStatus}</em>
       </div>
       <div class="starter-lyric-input-row">
         <input

@@ -6351,6 +6351,143 @@ button:disabled:active {
   color: var(--tracker-amber, #ffe76a);
 }
 
+.starter-route-banner {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.68fr) minmax(0, 1.32fr);
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid rgba(157, 255, 106, 0.34);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(157, 255, 106, 0.1), rgba(88, 244, 255, 0.07), rgba(255, 75, 202, 0.055)),
+    rgba(5, 7, 14, 0.76);
+}
+
+.starter-route-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.starter-route-copy span,
+.starter-route-copy strong,
+.starter-route-copy em,
+.starter-route-summary span,
+.starter-route-summary strong,
+.starter-route-summary em,
+.starter-lyric-helper span,
+.starter-lyric-helper strong,
+.starter-lyric-helper em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-route-copy span {
+  color: var(--tracker-green, #9dff6a);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-route-copy strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 16px;
+  line-height: 1.12;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-route-copy em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.starter-route-summary {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.starter-route-summary li {
+  min-width: 0;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-areas:
+    "badge title"
+    "badge meta";
+  align-items: center;
+  column-gap: 7px;
+  padding: 6px 8px;
+  border: 1px solid rgba(88, 244, 255, 0.26);
+  border-radius: 4px;
+  background: rgba(12, 14, 26, 0.8);
+}
+
+.starter-route-summary span {
+  grid-area: badge;
+  width: 30px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(88, 244, 255, 0.34);
+  border-radius: 3px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(88, 244, 255, 0.08);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.starter-route-summary strong {
+  grid-area: title;
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-route-summary em {
+  grid-area: meta;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.starter-route-summary li.current {
+  border-color: rgba(255, 231, 106, 0.58);
+  background: rgba(255, 231, 106, 0.12);
+}
+
+.starter-route-summary li.current span,
+.starter-route-summary li.current em {
+  color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-route-summary li.done {
+  border-color: rgba(157, 255, 106, 0.48);
+  background: rgba(157, 255, 106, 0.12);
+}
+
+.starter-route-summary li.done span,
+.starter-route-summary li.done strong,
+.starter-route-summary li.done em {
+  color: var(--tracker-green, #9dff6a);
+}
+
 .starter-guide.onboarding-v4 .starter-coach-panel {
   grid-template-columns: minmax(0, 1fr) minmax(210px, 0.36fr);
   gap: 10px;
@@ -6647,7 +6784,7 @@ button:disabled:active {
 .starter-edit-card {
   min-width: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   gap: 7px;
   padding: 8px;
   border: 1px solid rgba(88, 244, 255, 0.32);
@@ -6752,6 +6889,48 @@ button:disabled:active {
   font-weight: 900;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-lyric-helper {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.25fr) auto;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 7px;
+  border: 1px solid rgba(157, 255, 106, 0.24);
+  border-radius: 4px;
+  background: rgba(157, 255, 106, 0.055);
+}
+
+.starter-lyric-helper span {
+  color: var(--tracker-green, #9dff6a);
+  font-size: 9px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-lyric-helper strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.starter-lyric-helper em {
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 1px solid rgba(255, 231, 106, 0.34);
+  border-radius: 3px;
+  color: var(--tracker-amber, #ffe76a);
+  background: rgba(255, 231, 106, 0.08);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 950;
   white-space: nowrap;
 }
 
@@ -7129,6 +7308,47 @@ button:disabled:active {
     align-items: stretch;
   }
 
+  .starter-route-banner {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-route-copy strong {
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .starter-route-copy em {
+    font-size: 9px;
+    white-space: normal;
+  }
+
+  .starter-route-summary {
+    gap: 5px;
+  }
+
+  .starter-route-summary li {
+    min-height: 44px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 6px;
+    padding: 5px 6px;
+  }
+
+  .starter-route-summary span {
+    width: 26px;
+    height: 30px;
+    font-size: 9px;
+  }
+
+  .starter-route-summary strong {
+    font-size: 10px;
+  }
+
+  .starter-route-summary em {
+    font-size: 8px;
+  }
+
   .starter-guide.onboarding-v4 .starter-coach-panel {
     grid-template-columns: 1fr;
     gap: 6px;
@@ -7196,6 +7416,7 @@ button:disabled:active {
   }
 
   .starter-guide.onboarding-v4 .starter-recipe-rail {
+    grid-template-columns: 1fr;
     gap: 5px;
   }
 
@@ -7309,6 +7530,26 @@ button:disabled:active {
 
   .starter-quick-actions-head strong {
     font-size: 11px;
+  }
+
+  .starter-lyric-helper {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 6px;
+  }
+
+  .starter-lyric-helper span,
+  .starter-lyric-helper strong {
+    grid-column: 1;
+  }
+
+  .starter-lyric-helper strong {
+    font-size: 9px;
+  }
+
+  .starter-lyric-helper em {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    font-size: 7px;
   }
 
   .starter-quick-actions .starter-utility-row {

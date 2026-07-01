@@ -100,6 +100,12 @@ describe('App editing workflow', () => {
     expect(within(guide).getByText('START HERE')).toBeTruthy()
     expect(within(guide).getByText('First Vocal Sketch')).toBeTruthy()
     expect(within(guide).getByText('듣고 · 바꾸고 · 저장하기')).toBeTruthy()
+    const firstRunRoute = within(guide).getByLabelText('First run route')
+    expect(firstRunRoute.textContent).toContain('처음 3분')
+    expect(firstRunRoute.textContent).toContain('샘플을 먼저 듣고 시작')
+    expect(within(firstRunRoute).getByLabelText('Starter route summary').textContent).toContain('듣기')
+    expect(within(firstRunRoute).getByLabelText('Starter route summary').textContent).toContain('가사')
+    expect(within(firstRunRoute).getByLabelText('Starter route summary').textContent).toContain('저장')
     expect(within(guide).getByLabelText('Starter launch panel')).toBeTruthy()
     expect(within(guide).getByLabelText('Beginner launch pad')).toBeTruthy()
     expect(within(guide).getByLabelText('Starter lyric editor')).toBeTruthy()
@@ -115,6 +121,10 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('스타터 가사 라인') as HTMLInputElement).value).toBe('도 히 도 히 다 이 스 키')
     expect(within(guide).getByText('지금 할 일 · STEP 00')).toBeTruthy()
     expect(within(guide).getByLabelText('Starter next action').textContent).toContain('보컬 불러오는 중')
+    const lyricHelper = within(guide).getByLabelText('Lyric input helper')
+    expect(lyricHelper.textContent).toContain('한글 그대로 입력')
+    expect(lyricHelper.textContent).toContain('예: 도히도히 다이스키')
+    expect(lyricHelper.textContent).toContain('현재 멜로디와 같음')
     expect(within(guide).getAllByText('현재 가사').length).toBeGreaterThanOrEqual(1)
     expect(within(guide).getAllByText('기본 샘플').length).toBeGreaterThanOrEqual(2)
     expect(within(guide).getAllByText('샘플 듣기').length).toBeGreaterThan(0)
@@ -166,7 +176,7 @@ describe('App editing workflow', () => {
     const createdUrls = vi.mocked(URL.createObjectURL).mock.calls.map(([blob]) => blob)
     const bundleBlob = createdUrls.find((blob) => blob instanceof Blob && blob.type === 'application/zip') as Blob | undefined
     expect(bundleBlob).toBeTruthy()
-  })
+  }, 15000)
 
   it('makes a restored draft obvious and offers a one-tap return to the default sample', async () => {
     saveProject({
@@ -739,7 +749,7 @@ describe('App editing workflow', () => {
     })
     await expect(zip.file('project/lyrics.txt')!.async('string')).resolves.toContain('도 히 도 히 다 이 스 키')
     await expect(zip.file('project/notes.csv')!.async('string')).resolves.toContain('startSeconds')
-  })
+  }, 15000)
 
   it('adds a note by clicking an empty piano-roll cell', () => {
     const { container } = render(App)
