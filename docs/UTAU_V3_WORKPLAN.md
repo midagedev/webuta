@@ -312,6 +312,8 @@ Recommended coverage shape:
   and matches their deployed byte sizes against local assets.
 - [x] GitHub Pages deployment passes the first-run default V3 Playwright demo
   audit, including desktop/mobile layout checks and live WAV download.
+- [x] Release audit requires an accepted physical-device WAV/DAW handoff report
+  before community release.
 - [ ] `npm run release:audit-utau`
   passes.
 
@@ -330,6 +332,7 @@ npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
 npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json
+npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
 npm run voicebank:sample-review-v3
 npm run screenshots:readme
 npm run release:audit-utau
@@ -541,10 +544,15 @@ Current verified V3 evidence:
 - Release audit now verifies `docs/WAV_DAW_QA.md` follows the bundled
   `WebUtau Korean V3 Synthetic` first-run flow and does not point reviewers at
   an old Teto-import-first release path.
+- Release audit now requires a physical-device handoff report accepted from
+  `docs/wav-daw-handoff.local.template.json`, proving the generated WAV can be
+  shared/downloaded, imported into a target DAW, and played back audibly.
 - `npm run release:audit-utau -- --report experiments/utau-v3/work/community-release-audit-pages.json`:
   verifies the live Pages app, cache-busted bundled V3 zip, public listening
-  review scorecard, and all deployed V3/V2 review WAV byte sizes; currently the
-  remaining release blocker is the required human listening score file.
+  review scorecard, all deployed V3/V2 review WAV byte sizes, and accepted
+  physical DAW handoff evidence; currently the remaining release blockers are
+  the required human listening score file and the required physical-device
+  DAW handoff report.
 - GitHub Actions Pages workflow is verified after release-gate pushes; it must
   pass build, tests, artifact upload, and deploy before sharing the live URL.
 - `npm test`: 92 passed / 1 skipped files, 428 passed / 2 skipped tests.

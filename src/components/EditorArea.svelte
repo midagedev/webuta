@@ -278,6 +278,12 @@
     <button type="button" onclick={onApplyLyricLine}>적용</button>
   </div>
 
+  <div class="sketch-cues" aria-label="Vocal sketch cues">
+    <span><Music2 size={14} aria-hidden="true" />미리듣기</span>
+    <span><Target size={14} aria-hidden="true" />가사·음정</span>
+    <span><Download size={14} aria-hidden="true" />WAV 저장</span>
+  </div>
+
   <div class={`performance-panel ${isRecording ? 'recording' : ''}`} aria-label="Performance controls">
     <div class="performance-readout">
       <span class={`status-dot ${isRecording ? 'recording' : isMetronomeOn ? 'ready' : 'idle'}`}></span>

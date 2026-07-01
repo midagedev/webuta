@@ -209,6 +209,7 @@
     <button
       type="button"
       class="toolbar-button bank-action"
+      aria-label="보컬 ZIP 가져오기"
       title="보컬 ZIP 가져오기"
       onclick={() => voicebankInput?.click()}
       disabled={isLoadingVoicebank}
@@ -219,7 +220,14 @@
       <Share2 size={19} aria-hidden="true" />
       <span>공유</span>
     </button>
-    <button type="button" class="toolbar-button download-action" title="WAV 다운로드" onclick={() => void onDownloadWav()} disabled={isRendering}>
+    <button
+      type="button"
+      class="toolbar-button download-action"
+      aria-label="WAV 다운로드"
+      title="WAV 다운로드"
+      onclick={() => void onDownloadWav()}
+      disabled={isRendering}
+    >
       <Download size={19} aria-hidden="true" />
     </button>
   </div>

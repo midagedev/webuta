@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import JSZip from 'jszip'
 import { validateScores as validateListeningScores } from './accept-utau-v3-listening-scores.mjs'
+import { validateHandoffReport as validateWavDawHandoff } from './accept-wav-daw-handoff.mjs'
 
 const DEFAULTS = {
   voicebankAudit: 'experiments/utau-v3/work/v3-voicebank-audit.json',
@@ -20,6 +21,7 @@ const DEFAULTS = {
   publicReviewManifest: 'public/review/v3/review-manifest.json',
   sampleReview: 'experiments/utau-v3/work/v3-sample-review-report.json',
   listeningScores: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
+  wavDawHandoff: 'experiments/utau-v3/work/wav-daw-handoff/handoff-report.local.json',
   packageJson: 'package.json',
   readme: 'README.md',
   licenseBoundaries: 'docs/LICENSE_BOUNDARIES.md',
@@ -86,6 +88,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     publicReviewGate(paths),
     sampleReviewGate(paths.sampleReview),
     listeningScoresGate(paths.listeningScores),
+    wavDawHandoffGate(paths.wavDawHandoff),
     noRecordingWorkflowGate(paths.packageJson),
     readmeGate(paths),
     bundledVoicebankGate(bundled),
@@ -319,6 +322,21 @@ function listeningScoresGate(path) {
   return makeGate('human-listening', 'Human listening review scores', path, problems, scores ? { phraseCount: scores.phraseScores?.length ?? 0, comparisonCount: scores.comparisonScores?.length ?? 0 } : null)
 }
 
+function wavDawHandoffGate(path) {
+  const problems = []
+  const handoff = readOptionalJson(path, 'physical WAV DAW handoff report', problems)
+  if (handoff) {
+    validateWavDawHandoff(handoff, problems)
+  }
+  return makeGate('wav-daw-handoff', 'Physical device WAV and DAW import handoff', path, problems, handoff ? {
+    device: handoff.environment?.device ?? null,
+    browser: handoff.environment?.browser ?? null,
+    targetDaw: handoff.environment?.targetDaw ?? null,
+    exportMethod: handoff.handoff?.exportMethod ?? null,
+    wav: handoff.renderedWav ?? null,
+  } : null)
+}
+
 function noRecordingWorkflowGate(path) {
   const problems = []
   const pkg = readOptionalJson(path, 'package.json', problems)
@@ -420,6 +438,8 @@ function readmeGate(paths) {
       '02 먼저 들어보기',
       '03 WAV 저장',
       '스타터 WAV 다운로드',
+      'wav-daw-handoff.local.template.json',
+      'release:accept-daw-handoff',
       'Optional compatibility pass',
       'Any optional imported voicebank zip remains user-provided and private to the browser',
     ]) {
@@ -888,6 +908,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('human-listening'))) {
     actions.push('Open public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/, use the scorecard progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons, download listening-scores.local.json after a human listening pass, then run npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json.')
   }
+  if (problems.some((problem) => problem.includes('wav-daw-handoff'))) {
+    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, fill docs/wav-daw-handoff.local.template.json from the device result, then run npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json.')
+  }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')
   }
@@ -947,6 +970,8 @@ function parseArgs(argv) {
       options.pagesDemoAudit = argv[++index]
     } else if (arg === '--listening-scores') {
       options.listeningScores = argv[++index]
+    } else if (arg === '--wav-daw-handoff') {
+      options.wavDawHandoff = argv[++index]
     } else if (arg === '--sample-review') {
       options.sampleReview = argv[++index]
     } else if (arg === '--help' || arg === '-h') {
@@ -960,6 +985,7 @@ function parseArgs(argv) {
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
           '  --pages-demo-audit path  Override deployed browser demo audit JSON path',
           '  --listening-scores path  Override human listening score JSON path',
+          '  --wav-daw-handoff path   Override physical WAV/DAW handoff JSON path',
           '  --sample-review path     Override V3 sample review report JSON path',
           '',
         ].join('\n'),

@@ -148,6 +148,7 @@ npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
 npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json
+npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
 npm run screenshots:readme
 npm run lint
 npm test
@@ -183,8 +184,9 @@ Current verified local smoke coverage:
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` validates and installs a human scorecard into the release-audit path.
+- `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json` validates and installs a physical-device WAV/DAW import report into the release-audit path.
 - `npm run release:audit-utau` verifies the deployed app, cache-busted V3 zip, public scorecard, and all 8 deployed V3/V2 review WAVs against local byte sizes.
-- `npm run release:audit-utau` also verifies the WAV/DAW QA checklist follows the bundled V3 first-run path instead of an old Teto-import-first flow.
+- `npm run release:audit-utau` also verifies the WAV/DAW QA checklist follows the bundled V3 first-run path and requires accepted physical-device DAW handoff evidence before release.
 - `npm run screenshots:readme` refreshes the desktop/mobile README screenshots from the live app UI.
 - Built-in `도히도히 다이스키` demo aliases are present in the bundled Korean V3 voicebank.
 - WAV download created at `test-output/First-Vocal-Sketch.wav`.
@@ -192,7 +194,7 @@ Current verified local smoke coverage:
 - The app surfaces local voicebank cache status, including `이 기기 저장됨`, `이 기기에서 복원됨`, and `현재 세션 전용`.
 - User-imported UTAU zip files are checked in the browser for unsafe paths, abnormal file counts, and oversized samples before parsing or playback.
 - Runtime npm dependency notices are generated in `docs/THIRD_PARTY_NOTICES.md`.
-- Manual WAV handoff verification is tracked in `docs/WAV_DAW_QA.md`.
+- Manual WAV handoff verification is tracked in `docs/WAV_DAW_QA.md` and accepted from `docs/wav-daw-handoff.local.template.json`.
 
 ## Visual Direction
 

@@ -30,6 +30,11 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 12. Return to WebUtau, refresh or relaunch, and confirm the browser draft restores locally.
 13. Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files and confirm it stays private to the browser storage.
 14. Turn network off, relaunch from the home-screen icon, and confirm the app shell opens after one prior online load.
+15. Copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path, fill every field from this physical-device pass, and accept it with:
+
+```sh
+npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json
+```
 
 ## Pass Criteria
 
@@ -46,4 +51,6 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 ## Result
 
 - Status: Not yet physically verified.
+- Release evidence path: `experiments/utau-v3/work/wav-daw-handoff/handoff-report.local.json`
+- Template: `docs/wav-daw-handoff.local.template.json`
 - Notes:

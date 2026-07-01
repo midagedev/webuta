@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "reviewId": "webuta-wav-daw-handoff-v1",
+  "reviewer": "",
+  "verifiedAt": "",
+  "decision": "",
+  "physicalDevice": true,
+  "defaultVoicebank": "WebUtau Korean V3 Synthetic",
+  "environment": {
+    "device": "",
+    "osVersion": "",
+    "browser": "",
+    "targetDaw": "",
+    "webutaUrl": "https://midagedev.github.io/webuta/"
+  },
+  "checks": {
+    "openedFromPublicUrl": false,
+    "defaultVoicebankSelected": false,
+    "firstRunGuideVisible": false,
+    "defaultLyricsMatched": false,
+    "audioPreviewWorked": false,
+    "wavExportWorked": false,
+    "targetDawImportWorked": false,
+    "targetDawPlaybackAudible": false,
+    "browserDraftRestored": false,
+    "noHorizontalOverflowPortrait": false,
+    "userVoicebankPrivacyConfirmed": false
+  },
+  "renderedWav": {
+    "fileName": "First-Vocal-Sketch.wav",
+    "sampleRate": 44100,
+    "channels": 1,
+    "bitsPerSample": 16,
+    "durationSeconds": null
+  },
+  "handoff": {
+    "exportMethod": "",
+    "importedRegionVisible": false,
+    "noConversionError": false,
+    "notes": ""
+  },
+  "homeScreen": {
+    "status": "",
+    "notes": ""
+  },
+  "notes": ""
+}

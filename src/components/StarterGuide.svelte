@@ -6,6 +6,7 @@
 
   type Props = {
     project: SongProject
+    projectSourceLabel: string
     voicebankName: string
     voicebankCoverage: VoicebankCoverage | null
     rendered: RenderedAudio | null
@@ -21,6 +22,7 @@
 
   let {
     project,
+    projectSourceLabel,
     voicebankName,
     voicebankCoverage,
     rendered,
@@ -42,6 +44,7 @@
   const voiceStepLabel = $derived(isVoicebankReady ? '준비됨' : '로딩')
   const playStepLabel = $derived(isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
   const exportStepLabel = $derived(rendered ? '다운로드' : '자동 생성')
+  const projectContextLabel = $derived(projectSourceLabel === 'Built-in Hangul demo' ? '기본 데모' : projectSourceLabel)
   const nextActionTitle = $derived(isRendering ? '렌더 중' : isPlaying ? '멈추기' : rendered ? 'WAV 받기' : '먼저 들어보기')
   const nextActionDetail = $derived(
     isRendering
@@ -56,6 +59,7 @@
   )
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 다운로드' : '스타터 재생')
+  const guideSummary = $derived(rendered ? '이제 WAV를 저장할 수 있어요' : '듣고, 가사를 바꾸고, WAV로 저장')
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -69,68 +73,65 @@
 <section class="starter-guide" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
-      <span>START</span>
-      <strong>첫 보컬 스케치</strong>
-      <em>기본 보이스와 멜로디 준비 완료</em>
+      <span>QUICK START</span>
+      <strong>{project.name}</strong>
+      <em>{guideSummary}</em>
     </div>
     <div class="starter-status" aria-label="Starter status">
       <span>{project.bpm} BPM</span>
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{coverageLabel}</span>
-      <span>{voicebankLabel}</span>
+      <span>{projectContextLabel}</span>
     </div>
   </div>
 
-  <div class="starter-now" aria-label="Starter next action">
-    <div class="starter-now-copy">
-      <span>지금 할 일</span>
+  <div class="starter-hero" aria-label="Starter next action">
+    <div class="starter-primary-card">
+      <span>처음이면</span>
       <strong>{nextActionTitle}</strong>
       <em>{nextActionDetail}</em>
+      <button
+        type="button"
+        class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
+        aria-label={nextActionAria}
+        onclick={() => void handleNextAction()}
+        disabled={isRendering}
+      >
+        {#if rendered && !isPlaying}
+          <Download size={20} aria-hidden="true" />
+        {:else if isPlaying}
+          <Music2 size={20} aria-hidden="true" />
+        {:else}
+          <Play size={20} aria-hidden="true" />
+        {/if}
+        <span>{nextActionTitle}</span>
+        <strong>{nextActionMeta}</strong>
+      </button>
     </div>
-    <div class="starter-map" aria-label="First run route">
-      <span>처음 3분</span>
-      <strong>보이스 확인 → 들어보기 → WAV 저장</strong>
-      <em>기본 샘플은 이미 선택됨</em>
-    </div>
-    <div class="starter-lyric-line" aria-label="Default lyric preview">
-      <span>가사</span>
-      <strong>{lyricPreview}</strong>
-    </div>
-    <button
-      type="button"
-      class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
-      aria-label={nextActionAria}
-      onclick={() => void handleNextAction()}
-      disabled={isRendering}
-    >
-      {#if rendered && !isPlaying}
-        <Download size={18} aria-hidden="true" />
-      {:else if isPlaying}
-        <Music2 size={18} aria-hidden="true" />
-      {:else}
-        <Play size={18} aria-hidden="true" />
-      {/if}
-      <span>{nextActionTitle}</span>
-      <strong>{nextActionMeta}</strong>
-    </button>
-  </div>
 
-  <ol class="starter-path" aria-label="Starter path">
-    <li class={`starter-path-step ${isVoicebankReady ? 'done' : 'active'}`}>
-      <span>01</span>
-      <strong>보이스 확인</strong>
-      <em>{isVoicebankReady ? voicebankLabel : voiceStepLabel}</em>
-    </li>
-    <li class={`starter-path-step ${rendered ? 'done' : 'active'}`}>
-      <span>02</span>
-      <strong>먼저 들어보기</strong>
-      <em>{playStepLabel}</em>
-    </li>
-    <li class={`starter-path-step ${rendered ? 'active' : 'todo'}`}>
-      <span>03</span>
-      <strong>WAV 저장</strong>
-      <em>{exportStepLabel}</em>
-    </li>
-  </ol>
+    <ol class="starter-checklist starter-path" aria-label="Starter path">
+      <li class={`starter-path-step ${isVoicebankReady ? 'done' : 'active'}`}>
+        <span>01</span>
+        <strong>보이스 확인</strong>
+        <em>{isVoicebankReady ? voicebankLabel : voiceStepLabel}</em>
+      </li>
+      <li class={`starter-path-step ${rendered ? 'done' : 'active'}`}>
+        <span>02</span>
+        <strong>먼저 들어보기</strong>
+        <em>{playStepLabel}</em>
+      </li>
+      <li class={`starter-path-step ${rendered ? 'active' : 'todo'}`}>
+        <span>03</span>
+        <strong>WAV 저장</strong>
+        <em>{exportStepLabel}</em>
+      </li>
+    </ol>
+
+    <div class="starter-sample-card" aria-label="Default lyric preview">
+      <span>현재 가사</span>
+      <strong>{lyricPreview}</strong>
+      <em>{project.notes.length} notes · {voicebankLabel}</em>
+    </div>
+  </div>
 
   <div class="starter-flow" aria-label="Starter actions">
     <button

@@ -102,7 +102,10 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate
-  except the intentionally required human listening score file.
+  except intentionally required human evidence files.
+- [x] Physical-device WAV/DAW handoff now has a local report template and
+  acceptance command, so release audit can block until the target DAW import is
+  human-verified.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams

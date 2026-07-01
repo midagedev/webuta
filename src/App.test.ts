@@ -39,7 +39,7 @@ describe('App editing workflow', () => {
 
     expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Recovered Draft')
     expect(screen.getByLabelText('Current project').textContent).toContain('Recovered Draft')
-    expect(screen.getByText('Saved browser draft')).toBeTruthy()
+    expect(screen.getAllByText('Saved browser draft').length).toBeGreaterThan(0)
   })
 
   it('auto-saves project name edits', async () => {
@@ -96,12 +96,12 @@ describe('App editing workflow', () => {
     const guide = screen.getByLabelText('First run guide')
     const path = within(guide).getByLabelText('Starter path')
 
-    expect(within(guide).getByText('첫 보컬 스케치')).toBeTruthy()
-    expect(within(guide).getByText('지금 할 일')).toBeTruthy()
-    expect(within(guide).getByText('기본 보이스와 멜로디 준비 완료')).toBeTruthy()
-    expect(within(guide).getByLabelText('First run route')).toBeTruthy()
-    expect(within(guide).getByText('처음 3분')).toBeTruthy()
-    expect(within(guide).getByText('보이스 확인 → 들어보기 → WAV 저장')).toBeTruthy()
+    expect(within(guide).getByText('QUICK START')).toBeTruthy()
+    expect(within(guide).getByText('First Vocal Sketch')).toBeTruthy()
+    expect(within(guide).getByText('듣고, 가사를 바꾸고, WAV로 저장')).toBeTruthy()
+    expect(within(guide).getByText('처음이면')).toBeTruthy()
+    expect(within(guide).getByText('현재 가사')).toBeTruthy()
+    expect(within(guide).getByText('기본 데모')).toBeTruthy()
     expect(within(guide).getAllByText('먼저 들어보기').length).toBeGreaterThan(0)
     expect(within(guide).getAllByText('도 히 도 히 다 이 스 키').length).toBeGreaterThan(0)
     expect(within(path).getByText('01')).toBeTruthy()
@@ -117,6 +117,9 @@ describe('App editing workflow', () => {
     expect(within(guide).getAllByRole('button', { name: '스타터 재생' }).length).toBeGreaterThanOrEqual(1)
     expect(within(guide).getByRole('button', { name: '스타터 WAV 다운로드' })).toBeTruthy()
     expect(within(guide).getByRole('button', { name: '새 프로젝트' })).toBeTruthy()
+    expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('미리듣기')
+    expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('가사·음정')
+    expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('WAV 저장')
 
     fireEvent.click(within(guide).getByRole('button', { name: '가사 라인 적용' }))
 

@@ -1469,6 +1469,7 @@
     <div class="main-stack">
       <StarterGuide
         {project}
+        {projectSourceLabel}
         {voicebankName}
         {voicebankCoverage}
         {rendered}
