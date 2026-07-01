@@ -381,6 +381,11 @@ async function assertDefaultV3DemoReady(page) {
   await beginnerStartPanel.getByText('기본 샘플 준비 완료').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByLabel('첫 사용 순서').getByText('1 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByLabel('Recommended starter action').getByText('01 샘플 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const topLyricEditor = beginnerStartPanel.getByLabel('Top starter lyric editor')
+  await topLyricEditor.getByText('가사 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await topLyricEditor.getByLabel('빠른 가사 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await topLyricEditor.getByRole('button', { name: '빠른 가사 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await topLyricEditor.getByText('현재 도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '초보자 첫 버튼' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '새 프로젝트 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const koreanModePath = page.getByLabel('Starter Korean mode path')
@@ -412,16 +417,19 @@ async function assertDefaultV3DemoReady(page) {
   await starterRouteSummary.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterRouteSummary.getByText('지금').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterRouteSummary.getByText('다음').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Beginner launch pad').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter lyric editor').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  const lyricHelper = page.getByLabel('Lyric input helper')
+  const beginnerLaunchPad = page.getByLabel('Beginner launch pad')
+  await beginnerLaunchPad.getByText('가사 자세히').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.getByText('예시 · 추가 작업').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.locator('.starter-beginner-details-head').click()
+  await beginnerLaunchPad.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.getByLabel('Starter lyric editor').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const lyricHelper = beginnerLaunchPad.getByLabel('Lyric input helper')
   await lyricHelper.getByText('한글 그대로 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await lyricHelper.getByText('예: 도히도히 다이스키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await lyricHelper.getByText('현재 멜로디와 같음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  const starterUtilities = page.getByLabel('Starter project utilities')
+  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerLaunchPad.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterUtilities = beginnerLaunchPad.getByLabel('Starter project utilities')
   await starterUtilities.getByText('추가 작업').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByText('멜로디 · DAW · 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.locator('summary').click()
@@ -534,6 +542,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run route state badges visible',
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
+    'first-run top lyric editor visible',
     'first-run Korean UTAU path visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',

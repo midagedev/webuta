@@ -178,9 +178,28 @@
         <span class={exportProgressClass}>3 저장</span>
       </div>
     </div>
+    <div class="starter-start-lyric" aria-label="Top starter lyric editor">
+      <div class="starter-start-lyric-head">
+        <span>가사 입력</span>
+        <strong>{lyricInputStatus}</strong>
+      </div>
+      <div class="starter-start-lyric-row">
+        <input
+          aria-label="빠른 가사 입력"
+          value={lyricLine}
+          placeholder="도히도히 다이스키"
+          oninput={(event) => onLyricLine(inputValue(event))}
+        />
+        <button type="button" aria-label="빠른 가사 적용" onclick={onApplyLyricLine}>
+          <Check size={16} aria-hidden="true" />
+          <span>적용</span>
+        </button>
+      </div>
+      <em>현재 {lyricPreview}</em>
+    </div>
     <div class="starter-start-actions">
       <div class="starter-action-note" aria-label="Recommended starter action">
-        <span>추천</span>
+        <span>지금 할 일</span>
         <strong>{recommendedStepLabel}</strong>
       </div>
       <button
@@ -299,79 +318,88 @@
     </ol>
   </div>
 
-  <div class="starter-onboarding-grid" aria-label="Beginner launch pad">
-    <div class="starter-edit-card" aria-label="Starter lyric editor">
-      <div class="starter-edit-head">
-        <span>가사 바꾸기</span>
-        <strong>{project.notes.length} notes</strong>
+  <details class="starter-onboarding-grid starter-beginner-details" aria-label="Beginner launch pad">
+    <summary class="starter-beginner-details-head">
+      <ListChecks size={16} aria-hidden="true" />
+      <div>
+        <span>가사 자세히</span>
+        <strong>예시 · 추가 작업</strong>
       </div>
-      <div class="starter-lyric-helper" aria-label="Lyric input helper">
-        <span>한글 그대로 입력</span>
-        <strong>예: 도히도히 다이스키 · 사랑해 · 별빛</strong>
-        <em>{lyricInputStatus}</em>
-      </div>
-      <div class="starter-lyric-input-row">
-        <input
-          aria-label="스타터 가사 라인"
-          value={lyricLine}
-          placeholder="도히도히 다이스키"
-          oninput={(event) => onLyricLine(inputValue(event))}
-        />
-        <button type="button" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
-          <Check size={17} aria-hidden="true" />
-          <span>적용</span>
-        </button>
-      </div>
-      <div class="starter-sample-card" aria-label="Default lyric preview">
-        <span>현재 가사</span>
-        <strong>{lyricPreview}</strong>
-        <em>{voicebankLabel} · {projectContextLabel}</em>
-      </div>
-    </div>
-
-    <details class="starter-quick-actions starter-next-steps-card" aria-label="Starter project utilities">
-      <summary class="starter-quick-actions-head">
-        <ListChecks size={16} aria-hidden="true" />
-        <div>
-          <span>추가 작업</span>
-          <strong>멜로디 · DAW · 프로젝트</strong>
+    </summary>
+    <div class="starter-beginner-details-body">
+      <div class="starter-edit-card" aria-label="Starter lyric editor">
+        <div class="starter-edit-head">
+          <span>가사 바꾸기</span>
+          <strong>{project.notes.length} notes</strong>
         </div>
-      </summary>
-      <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
-        <span>{projectStateTitle}</span>
-        <strong>{lyricPreview}</strong>
-        <em>{isDraftProject ? projectStateDetail : voicebankLabel}</em>
-        {#if isDraftProject}
-          <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
-            <RotateCcw size={14} aria-hidden="true" />
-            <span>기본 샘플로</span>
+        <div class="starter-lyric-helper" aria-label="Lyric input helper">
+          <span>한글 그대로 입력</span>
+          <strong>예: 도히도히 다이스키 · 사랑해 · 별빛</strong>
+          <em>{lyricInputStatus}</em>
+        </div>
+        <div class="starter-lyric-input-row">
+          <input
+            aria-label="스타터 가사 라인"
+            value={lyricLine}
+            placeholder="도히도히 다이스키"
+            oninput={(event) => onLyricLine(inputValue(event))}
+          />
+          <button type="button" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
+            <Check size={17} aria-hidden="true" />
+            <span>적용</span>
           </button>
-        {/if}
-      </div>
-      <div class="starter-utility-row">
-        <button type="button" class="starter-utility-button listen" aria-label="스타터 멜로디 추천" onclick={onOpenCompose}>
-          <Wand2 size={17} aria-hidden="true" />
-          <span>멜로디 추천</span>
-          <strong>선택 사항</strong>
-        </button>
-        <button type="button" class="starter-utility-button ready" aria-label="스타터 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering || isStarterActionLocked}>
-          <FileArchive size={17} aria-hidden="true" />
-          <span>DAW 번들</span>
-          <strong>{rendered ? 'WAV 포함' : '렌더 후 ZIP'}</strong>
-        </button>
-        <button type="button" class="starter-utility-button" aria-label="새 프로젝트" onclick={onNewProject}>
-          <FilePlus size={17} aria-hidden="true" />
-          <span>새 프로젝트</span>
-          <strong>blank</strong>
-        </button>
-        <button type="button" class="starter-utility-button ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
-          <RotateCcw size={17} aria-hidden="true" />
-          <span>기본 샘플</span>
+        </div>
+        <div class="starter-sample-card" aria-label="Default lyric preview">
+          <span>현재 가사</span>
           <strong>{lyricPreview}</strong>
-        </button>
+          <em>{voicebankLabel} · {projectContextLabel}</em>
+        </div>
       </div>
-    </details>
-  </div>
+
+      <details class="starter-quick-actions starter-next-steps-card" aria-label="Starter project utilities">
+        <summary class="starter-quick-actions-head">
+          <ListChecks size={16} aria-hidden="true" />
+          <div>
+            <span>추가 작업</span>
+            <strong>멜로디 · DAW · 프로젝트</strong>
+          </div>
+        </summary>
+        <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
+          <span>{projectStateTitle}</span>
+          <strong>{lyricPreview}</strong>
+          <em>{isDraftProject ? projectStateDetail : voicebankLabel}</em>
+          {#if isDraftProject}
+            <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
+              <RotateCcw size={14} aria-hidden="true" />
+              <span>기본 샘플로</span>
+            </button>
+          {/if}
+        </div>
+        <div class="starter-utility-row">
+          <button type="button" class="starter-utility-button listen" aria-label="스타터 멜로디 추천" onclick={onOpenCompose}>
+            <Wand2 size={17} aria-hidden="true" />
+            <span>멜로디 추천</span>
+            <strong>선택 사항</strong>
+          </button>
+          <button type="button" class="starter-utility-button ready" aria-label="스타터 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering || isStarterActionLocked}>
+            <FileArchive size={17} aria-hidden="true" />
+            <span>DAW 번들</span>
+            <strong>{rendered ? 'WAV 포함' : '렌더 후 ZIP'}</strong>
+          </button>
+          <button type="button" class="starter-utility-button" aria-label="새 프로젝트" onclick={onNewProject}>
+            <FilePlus size={17} aria-hidden="true" />
+            <span>새 프로젝트</span>
+            <strong>blank</strong>
+          </button>
+          <button type="button" class="starter-utility-button ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>
+            <RotateCcw size={17} aria-hidden="true" />
+            <span>기본 샘플</span>
+            <strong>{lyricPreview}</strong>
+          </button>
+        </div>
+      </details>
+    </div>
+  </details>
 
   <details class="starter-advanced-tools starter-review-tools" aria-label="Starter handoff checklist">
     <summary>
