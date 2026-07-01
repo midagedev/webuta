@@ -20,7 +20,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `지금 할 일`, `먼저 들어보기`, `01 보이스`, `02 재생`, and `03 WAV`.
+5. Confirm the first-run guide shows `지금 할 일`, `처음 3분`, `먼저 들어보기`, `01 보이스 확인`, `02 먼저 들어보기`, and `03 WAV 저장`.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
 8. Tap `공유` or `스타터 WAV 다운로드`.

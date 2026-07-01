@@ -361,16 +361,19 @@ async function selectLocalNeuralModel(page) {
 async function assertDefaultV3DemoReady(page) {
   const starterGuide = page.getByLabel('First run guide')
   await starterGuide.getByText('첫 보컬 스케치').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByText('기본 보이스와 멜로디 준비 완료').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByText('지금 할 일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run route').getByText('처음 3분').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('First run route').getByText('보이스 확인 → 들어보기 → WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('보이스 확인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('02').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('재생').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('먼저 들어보기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '컴포즈 모드 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -417,6 +420,7 @@ async function assertDefaultV3DemoReady(page) {
     'default V3 voicebank loaded',
     'first-run starter guide visible',
     'first-run next action CTA visible',
+    'first-run route visible',
     'first-run guided path visible',
     'Korean mode navigation visible',
     'first-run demo aliases fully matched',

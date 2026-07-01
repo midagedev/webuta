@@ -71,6 +71,7 @@
     <div class="starter-title">
       <span>START</span>
       <strong>첫 보컬 스케치</strong>
+      <em>기본 보이스와 멜로디 준비 완료</em>
     </div>
     <div class="starter-status" aria-label="Starter status">
       <span>{project.bpm} BPM</span>
@@ -84,6 +85,11 @@
       <span>지금 할 일</span>
       <strong>{nextActionTitle}</strong>
       <em>{nextActionDetail}</em>
+    </div>
+    <div class="starter-map" aria-label="First run route">
+      <span>처음 3분</span>
+      <strong>보이스 확인 → 들어보기 → WAV 저장</strong>
+      <em>기본 샘플은 이미 선택됨</em>
     </div>
     <div class="starter-lyric-line" aria-label="Default lyric preview">
       <span>가사</span>
@@ -111,17 +117,17 @@
   <ol class="starter-path" aria-label="Starter path">
     <li class={`starter-path-step ${isVoicebankReady ? 'done' : 'active'}`}>
       <span>01</span>
-      <strong>보이스</strong>
-      <em>{voiceStepLabel}</em>
+      <strong>보이스 확인</strong>
+      <em>{isVoicebankReady ? voicebankLabel : voiceStepLabel}</em>
     </li>
     <li class={`starter-path-step ${rendered ? 'done' : 'active'}`}>
       <span>02</span>
-      <strong>재생</strong>
+      <strong>먼저 들어보기</strong>
       <em>{playStepLabel}</em>
     </li>
     <li class={`starter-path-step ${rendered ? 'active' : 'todo'}`}>
       <span>03</span>
-      <strong>WAV</strong>
+      <strong>WAV 저장</strong>
       <em>{exportStepLabel}</em>
     </li>
   </ol>
@@ -139,7 +145,7 @@
       {:else}
         <Play size={17} aria-hidden="true" />
       {/if}
-      <span>{isPlaying ? '일시정지' : '들어보기'}</span>
+      <span>{isPlaying ? '일시정지' : '1 들어보기'}</span>
       <strong>{isRendering ? '렌더 중' : `${project.beatPerBar}/${project.beatUnit}`}</strong>
     </button>
     <button
@@ -154,22 +160,22 @@
       {:else}
         <Download size={17} aria-hidden="true" />
       {/if}
-      <span>{wavLabel}</span>
+      <span>2 {wavLabel}</span>
       <strong>{rendered ? 'download' : '44.1k mono'}</strong>
     </button>
     <button type="button" class="starter-step" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
       <Check size={17} aria-hidden="true" />
-      <span>가사 적용</span>
+      <span>가사 넣기</span>
       <strong>{project.notes.length} notes</strong>
     </button>
     <button type="button" class="starter-step" aria-label="컴포즈 모드 열기" onclick={onOpenCompose}>
       <Wand2 size={17} aria-hidden="true" />
-      <span>멜로디</span>
+      <span>멜로디 만들기</span>
       <strong>compose</strong>
     </button>
     <button type="button" class="starter-step" aria-label="새 프로젝트" onclick={onNewProject}>
       <FilePlus size={17} aria-hidden="true" />
-      <span>새 프로젝트</span>
+      <span>새로 시작</span>
       <strong>blank</strong>
     </button>
     <button type="button" class="starter-step ghost" aria-label="데모 프로젝트로 복구" onclick={onResetDemoProject}>

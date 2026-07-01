@@ -719,7 +719,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `지금 할 일`, `먼저 들어보기`, `01 보이스`, `02 재생`, and `03 WAV`.',
+    'Confirm the first-run guide shows `지금 할 일`, `처음 3분`, `먼저 들어보기`, `01 보이스 확인`, `02 먼저 들어보기`, and `03 WAV 저장`.',
     'Tap `공유` or `스타터 WAV 다운로드`.',
     'Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files.',
     'Any optional imported voicebank zip remains user-provided and private to the browser.',

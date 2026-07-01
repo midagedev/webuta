@@ -369,12 +369,33 @@ button:disabled {
   font-weight: 780;
 }
 
+.mode-tab small {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(88, 244, 255, 0.26);
+  border-radius: 3px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(88, 244, 255, 0.08);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 950;
+}
+
 .mode-tab.active {
   color: #ffffff;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 36%),
     linear-gradient(180deg, #4a5360 0%, #323a45 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.mode-tab.active small {
+  color: #160b08;
+  border-color: rgba(255, 231, 106, 0.62);
+  background: var(--tracker-amber, #ffe76a);
 }
 
 .session-chip {
@@ -2576,6 +2597,12 @@ button:disabled {
     min-width: 98px;
     min-height: 34px;
     padding: 0 10px;
+  }
+
+  .mode-tab small {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
   }
 
   .session-chip {
@@ -4854,7 +4881,6 @@ button:disabled:active {
 .starter-flow,
 .starter-path,
 .starter-step,
-.starter-now,
 .starter-next-button {
   min-width: 0;
   display: flex;
@@ -4900,6 +4926,17 @@ button:disabled:active {
   white-space: nowrap;
 }
 
+.starter-title em {
+  min-width: 0;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 820;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .starter-status {
   justify-content: flex-end;
   gap: 5px;
@@ -4935,6 +4972,10 @@ button:disabled:active {
 
 .starter-now {
   min-height: 72px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(126px, 0.72fr) minmax(186px, 0.98fr) minmax(0, 1.16fr) minmax(164px, 0.86fr);
+  align-items: stretch;
   gap: 10px;
   padding: 8px;
   border: 1px solid rgba(88, 244, 255, 0.28);
@@ -4979,11 +5020,50 @@ button:disabled:active {
 
 .starter-lyric-line {
   min-width: 0;
-  flex: 1 1 auto;
   display: grid;
   gap: 4px;
   padding: 6px 8px;
   border-left: 1px solid rgba(88, 244, 255, 0.18);
+}
+
+.starter-map {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid rgba(157, 255, 106, 0.22);
+  border-radius: 4px;
+  background: rgba(157, 255, 106, 0.055);
+}
+
+.starter-map span,
+.starter-map strong,
+.starter-map em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-map span {
+  color: var(--tracker-green, #9dff6a);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-map strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.starter-map em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
 }
 
 .starter-lyric-line strong {
@@ -5265,6 +5345,10 @@ button:disabled:active {
     font-size: 13px;
   }
 
+  .starter-title em {
+    font-size: 8px;
+  }
+
   .starter-status {
     flex: 1 1 auto;
     display: grid;
@@ -5281,7 +5365,7 @@ button:disabled:active {
   .starter-now {
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(94px, 0.9fr) minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
     padding: 6px;
   }
@@ -5298,10 +5382,32 @@ button:disabled:active {
     font-size: 8px;
   }
 
-  .starter-lyric-line {
+  .starter-map {
     min-width: 0;
     padding: 4px 6px;
-    border-left: 1px solid rgba(88, 244, 255, 0.18);
+    gap: 2px;
+  }
+
+  .starter-map span {
+    font-size: 8px;
+  }
+
+  .starter-map strong {
+    font-size: 11px;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .starter-map em {
+    font-size: 8px;
+  }
+
+  .starter-lyric-line {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding: 4px 6px;
+    border-left: 0;
+    border-top: 1px solid rgba(88, 244, 255, 0.18);
   }
 
   .starter-lyric-line strong {

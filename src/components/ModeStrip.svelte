@@ -29,18 +29,22 @@
   </div>
   <div class="mode-tabs">
     <button type="button" class={`mode-tab ${activeMode === 'compose' ? 'active' : ''}`} onclick={() => onMode('compose')}>
+      <small aria-hidden="true">1</small>
       <Wand2 size={17} aria-hidden="true" />
       <span>작곡</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'pattern' ? 'active' : ''}`} onclick={() => onMode('pattern')}>
+      <small aria-hidden="true">2</small>
       <Mic size={17} aria-hidden="true" />
       <span>편집</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'rows' ? 'active' : ''}`} onclick={() => onMode('rows')}>
+      <small aria-hidden="true">3</small>
       <Scissors size={17} aria-hidden="true" />
       <span>노트</span>
     </button>
     <button type="button" class={`mode-tab ${activeMode === 'mixer' ? 'active' : ''}`} onclick={() => onMode('mixer')}>
+      <small aria-hidden="true">4</small>
       <Gauge size={17} aria-hidden="true" />
       <span>믹서</span>
     </button>
