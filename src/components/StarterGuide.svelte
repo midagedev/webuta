@@ -63,14 +63,11 @@
   const isVoicebankReady = $derived(Boolean(voicebankCoverage && voicebankCoverage.fallbackNotes === 0))
   const isStarterActionLocked = $derived(isLoadingVoicebank && !rendered)
   const voicebankStatusLabel = $derived(isLoadingVoicebank ? '보컬 로딩' : isVoicebankReady ? '발음 준비' : coverageLabel)
-  const playStepLabel = $derived(isStarterActionLocked ? '준비 중' : isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
   const projectContextLabel = $derived(formatProjectSourceLabel(projectSourceLabel))
   const isDraftProject = $derived(projectSourceLabel === 'Saved browser draft')
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const guideSummary = $derived(rendered ? 'WAV 준비 완료' : '듣기 · 가사 · WAV')
-  const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
   const chordGuide = $derived(project.chords?.slice(0, 4).map((chord) => chord.symbol).join(' -> ') || '멜로디 중심')
-  const lyricRouteStatus = $derived(`${project.notes.length} notes`)
   const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(lyricPreview) && compactLine(lyricLine).length > 0)
   const listenProgressClass = $derived(isStarterActionLocked || isPlaying || !rendered ? 'current' : 'done')
   const lyricProgressClass = $derived(hasPendingLyricLine ? 'current' : rendered ? 'done' : 'next')
@@ -78,8 +75,6 @@
   const listenStateLabel = $derived(isStarterActionLocked ? '준비' : isPlaying ? '재생 중' : rendered ? '완료' : '지금')
   const lyricStateLabel = $derived(hasPendingLyricLine ? '지금' : rendered ? '완료' : '다음')
   const exportStateLabel = $derived(rendered ? '지금' : '다음')
-  const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
-  const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
   const coachPrimaryAction = $derived(rendered ? 'WAV 받기' : hasPendingLyricLine ? '가사 적용' : isStarterActionLocked ? '보컬 대기' : '샘플 듣기')
   const coachNextAction = $derived(rendered ? 'DAW 번들' : hasPendingLyricLine ? '다시 듣기' : '가사 바꾸기')
   const coachState = $derived(rendered ? '완성 파일 준비' : hasPendingLyricLine ? '가사 적용 대기' : isStarterActionLocked ? '보컬 준비 중' : '첫 재생 대기')
@@ -93,17 +88,6 @@
           : isVoicebankReady
             ? '바로 시작 가능'
             : '보컬 로딩 중',
-  )
-  const compassDetail = $derived(
-    isStarterActionLocked
-      ? '기본 UTAU 보이스를 불러오고 있어요. 준비되면 첫 버튼이 켜집니다.'
-      : rendered
-      ? '재생 확인이 끝났어요. WAV나 DAW 번들로 저장하면 됩니다.'
-      : hasPendingLyricLine
-        ? '새 가사를 멜로디에 넣은 뒤 샘플을 다시 들어보세요.'
-        : isVoicebankReady
-          ? '샘플을 먼저 듣고, 마음에 들면 가사만 바꿔보세요.'
-          : '기본 보컬을 불러오고 있어요. 준비되면 첫 버튼이 열립니다.',
   )
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
@@ -132,6 +116,17 @@
   const startSecondaryMeta = $derived(isDraftProject ? '도히도히' : '새 노래')
   const startSecondaryAria = $derived(isDraftProject ? '기본 샘플로 시작' : '새 프로젝트 만들기')
   const recommendedStepLabel = $derived(rendered && !isPlaying ? '03 WAV 저장' : hasPendingLyricLine ? '02 가사 적용' : '01 샘플 듣기')
+  const routeCoachTitle = $derived(rendered ? '이제 저장하면 돼요' : hasPendingLyricLine ? '가사를 적용해볼 차례' : '먼저 샘플을 들어봐요')
+  const routeCoachDetail = $derived(
+    rendered
+      ? 'WAV 받기를 누르면 바로 내려받을 수 있어요.'
+      : hasPendingLyricLine
+        ? '입력한 가사를 멜로디에 넣고 다시 들어보세요.'
+        : '노란색 단계만 따라가면 첫 WAV까지 갈 수 있어요.',
+  )
+  const listenStepDetail = $derived(isStarterActionLocked ? '보컬 준비 후 클릭' : isPlaying ? '한 번 더 누르면 멈춤' : rendered ? '다시 들어보기' : '기본 소리 확인')
+  const lyricStepDetail = $derived(hasPendingLyricLine ? '새 가사 적용하기' : '위 입력칸에서 바꾸기')
+  const exportStepDetail = $derived(rendered ? '음악 앱용 파일' : '듣고 나면 저장')
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
@@ -150,9 +145,15 @@
   function compactLine(line: string) {
     return line.replace(/\s+/gu, '')
   }
+
+  function focusQuickLyricInput() {
+    const input = document.querySelector<HTMLInputElement>('[data-starter-quick-lyric="true"]')
+    input?.focus()
+    input?.select()
+  }
 </script>
 
-<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8" aria-label="First run guide">
+<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8 onboarding-v9" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>처음 시작</span>
@@ -185,6 +186,7 @@
       </div>
       <div class="starter-start-lyric-row">
         <input
+          data-starter-quick-lyric="true"
           aria-label="빠른 가사 입력"
           value={lyricLine}
           placeholder="도히도히 다이스키"
@@ -244,6 +246,54 @@
     </div>
   </div>
 
+  <div class="starter-guide-launch" aria-label="Starter launch panel">
+    <div class="starter-route-head starter-compass" aria-label="First run one-minute path">
+      <div class="starter-compass-copy">
+        <span>처음 1분 가이드</span>
+        <strong>{routeCoachTitle}</strong>
+        <div class="starter-hook-guide" aria-label="Starter hook chord guide">
+          <Music2 size={14} aria-hidden="true" />
+          <span>{chordGuide}</span>
+        </div>
+        <em>{routeCoachDetail}</em>
+      </div>
+      <div class="starter-compass-tags" aria-label="Starter readiness snapshot">
+        <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
+        <span>{project.notes.length} notes</span>
+        <span>{compassTone}</span>
+      </div>
+    </div>
+    <ol class="starter-journey" aria-label="Starter route summary">
+      <li class={listenProgressClass} aria-current={listenProgressClass === 'current' ? 'step' : undefined}>
+        <button type="button" aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'} onclick={() => void onPlayPause()} disabled={isRendering || isStarterActionLocked}>
+          <span class="progress-index">01</span>
+          <Headphones size={18} aria-hidden="true" />
+          <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
+          <em>{listenStepDetail}</em>
+          <span class="step-state">{listenStateLabel}</span>
+        </button>
+      </li>
+      <li class={lyricProgressClass} aria-current={lyricProgressClass === 'current' ? 'step' : undefined}>
+        <button type="button" aria-label="둘째 단계 가사 바꾸기" onclick={hasPendingLyricLine ? onApplyLyricLine : focusQuickLyricInput}>
+          <span class="progress-index">02</span>
+          <PencilLine size={18} aria-hidden="true" />
+          <strong>{hasPendingLyricLine ? '가사 적용' : '가사 바꾸기'}</strong>
+          <em>{lyricStepDetail}</em>
+          <span class="step-state">{lyricStateLabel}</span>
+        </button>
+      </li>
+      <li class={exportProgressClass} aria-current={exportProgressClass === 'current' ? 'step' : undefined}>
+        <button type="button" aria-label="셋째 단계 WAV 받기" onclick={() => void onDownloadWav()} disabled={isRendering || isStarterActionLocked}>
+          <span class="progress-index">03</span>
+          <Download size={18} aria-hidden="true" />
+          <strong>WAV 받기</strong>
+          <em>{exportStepDetail}</em>
+          <span class="step-state">{exportStateLabel}</span>
+        </button>
+      </li>
+    </ol>
+  </div>
+
   <details class="starter-context-drawer" aria-label="Starter context drawer">
     <summary>
       <ListChecks size={15} aria-hidden="true" />
@@ -268,55 +318,6 @@
       </div>
     </div>
   </details>
-
-  <div class="starter-compass" aria-label="First run one-minute path">
-    <div class="starter-compass-copy">
-      <span>첫 완성 루트</span>
-      <strong>샘플 듣기 -&gt; 가사 바꾸기 -&gt; WAV 저장</strong>
-      <div class="starter-hook-guide" aria-label="Starter hook chord guide">
-        <Music2 size={14} aria-hidden="true" />
-        <span>{chordGuide}</span>
-      </div>
-      <em>{compassDetail}</em>
-    </div>
-    <div class="starter-compass-tags" aria-label="Starter readiness snapshot">
-      <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
-      <span>{project.notes.length} notes</span>
-      <span>{compassTone}</span>
-    </div>
-  </div>
-
-  <div class="starter-guide-launch" aria-label="Starter launch panel">
-    <ol class="starter-journey" aria-label="Starter route summary">
-      <li class={listenProgressClass} aria-current={listenProgressClass === 'current' ? 'step' : undefined}>
-        <button type="button" aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'} onclick={() => void onPlayPause()} disabled={isRendering || isStarterActionLocked}>
-          <span class="progress-index">01</span>
-          <Headphones size={18} aria-hidden="true" />
-          <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
-          <em>{playStepLabel}</em>
-          <span class="step-state">{listenStateLabel}</span>
-        </button>
-      </li>
-      <li class={lyricProgressClass} aria-current={lyricProgressClass === 'current' ? 'step' : undefined}>
-        <button type="button" aria-label="둘째 단계 가사 적용" onclick={onApplyLyricLine}>
-          <span class="progress-index">02</span>
-          <PencilLine size={18} aria-hidden="true" />
-          <strong>가사 적용</strong>
-          <em>{lyricProgressMeta}</em>
-          <span class="step-state">{lyricStateLabel}</span>
-        </button>
-      </li>
-      <li class={exportProgressClass} aria-current={exportProgressClass === 'current' ? 'step' : undefined}>
-        <button type="button" aria-label="셋째 단계 WAV 받기" onclick={() => void onDownloadWav()} disabled={isRendering || isStarterActionLocked}>
-          <span class="progress-index">03</span>
-          <Download size={18} aria-hidden="true" />
-          <strong>WAV 받기</strong>
-          <em>{exportRouteStatus}</em>
-          <span class="step-state">{exportStateLabel}</span>
-        </button>
-      </li>
-    </ol>
-  </div>
 
   <details class="starter-onboarding-grid starter-beginner-details" aria-label="Beginner launch pad">
     <summary class="starter-beginner-details-head">

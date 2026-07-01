@@ -7950,6 +7950,86 @@ button:disabled:active {
   align-items: start;
 }
 
+/* Onboarding v9: make the beginner path feel like one guided mission board. */
+.starter-guide.onboarding-v9 .starter-guide-launch {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.starter-guide.onboarding-v9 .starter-route-head {
+  padding: 9px 10px;
+  border-color: rgba(255, 231, 106, 0.46);
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.13), rgba(255, 75, 202, 0.08), rgba(88, 244, 255, 0.07)),
+    rgba(5, 7, 14, 0.84);
+}
+
+.starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "label title"
+    "hook detail";
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy > span {
+  grid-area: label;
+  color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy > strong {
+  grid-area: title;
+  font-size: 16px;
+}
+
+.starter-guide.onboarding-v9 .starter-route-head .starter-hook-guide {
+  grid-area: hook;
+}
+
+.starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy > em {
+  grid-area: detail;
+}
+
+.starter-guide.onboarding-v9 .starter-journey {
+  gap: 7px;
+}
+
+.starter-guide.onboarding-v9 .starter-journey button {
+  min-height: 74px;
+  grid-template-columns: 36px 22px minmax(0, 1fr) auto;
+  padding: 9px 10px;
+  border-color: rgba(88, 244, 255, 0.34);
+  background: rgba(12, 14, 26, 0.86);
+}
+
+.starter-guide.onboarding-v9 .starter-journey strong {
+  font-size: 14px;
+}
+
+.starter-guide.onboarding-v9 .starter-journey em {
+  font-size: 10px;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v9 .starter-journey .progress-index {
+  width: 32px;
+  height: 42px;
+  border-color: rgba(88, 244, 255, 0.34);
+  background: rgba(88, 244, 255, 0.08);
+}
+
+.starter-guide.onboarding-v9 .starter-journey li.current button {
+  border-color: rgba(255, 231, 106, 0.72);
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.2), rgba(255, 75, 202, 0.1)),
+    rgba(5, 7, 14, 0.88);
+}
+
+.starter-guide.onboarding-v9 .starter-journey li.next button {
+  opacity: 0.9;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -9501,6 +9581,81 @@ button:disabled:active {
 
   .starter-guide.onboarding-v8 .starter-quick-actions-head {
     min-height: 38px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "label"
+      "title"
+      "hook"
+      "detail";
+    gap: 3px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy > strong {
+    font-size: 12px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head .starter-compass-copy > em {
+    white-space: normal;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head .starter-compass-tags {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-route-head .starter-compass-tags span {
+    min-height: 26px;
+    padding: 0 4px;
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey button {
+    min-height: 58px;
+    grid-template-columns: 28px 18px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "index icon title state"
+      "index icon meta state";
+    column-gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey svg {
+    display: block;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey .progress-index {
+    width: 26px;
+    height: 34px;
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey strong {
+    font-size: 11px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey em {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v9 .starter-journey .step-state {
+    min-width: 32px;
+    min-height: 24px;
+    padding: 0 5px;
+    font-size: 8px;
   }
 }
 
