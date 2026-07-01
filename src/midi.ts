@@ -33,6 +33,13 @@ type ParsedMidiPitchWheel = {
   cents: number
 }
 
+type MidiChannelState = {
+  rpnMsb?: number
+  rpnLsb?: number
+  pitchBendRangeCents: number
+  pitchBendRangeFineCents: number
+}
+
 type ParsedMidiLyric = {
   tick: number
   text: string
@@ -316,19 +323,23 @@ function pitchWheelValue(cents: number) {
   return Math.max(0, Math.min(0x3fff, Math.round(value)))
 }
 
-function pitchWheelCents(lsb: number, msb: number) {
+function pitchWheelCentsForRange(lsb: number, msb: number, rangeCents: number) {
   const value = ((msb & 0x7f) << 7) | (lsb & 0x7f)
   const normalized =
     value < MIDI_PITCH_CENTER
       ? (value - MIDI_PITCH_CENTER) / MIDI_PITCH_CENTER
       : (value - MIDI_PITCH_CENTER) / (MIDI_PITCH_CENTER - 1)
-  return roundNumber(normalized * MIDI_PITCH_BEND_RANGE_CENTS, 3)
+  return roundNumber(normalized * sanitizePitchBendRangeCents(rangeCents), 3)
 }
 
 function clampPitchWheelCents(cents: number) {
   return Number.isFinite(cents)
     ? Math.max(-MIDI_PITCH_BEND_RANGE_CENTS, Math.min(MIDI_PITCH_BEND_RANGE_CENTS, cents))
     : 0
+}
+
+function sanitizePitchBendRangeCents(rangeCents: number) {
+  return Number.isFinite(rangeCents) ? Math.max(1, Math.min(2400, Math.round(rangeCents))) : MIDI_PITCH_BEND_RANGE_CENTS
 }
 
 function sortedChords(project: SongProject) {
@@ -410,6 +421,7 @@ function parseMidiTrack(
 ) {
   const reader = new MidiEventReader(data)
   const active = new Map<string, Array<{ tick: number; lyric: string; intensity?: number }>>()
+  const channelStates = new Map<number, MidiChannelState>()
   let tick = 0
   let runningStatus = 0
   let pendingLyric = ''
@@ -462,6 +474,15 @@ function parseMidiTrack(
 
     const command = status & 0xf0
     const channel = status & 0x0f
+    if (command === 0xb0) {
+      const controller = reader.readByte()
+      const value = reader.readByte()
+      if (channel !== 9) {
+        updateMidiChannelController(channelStateFor(channelStates, channel), controller, value)
+      }
+      continue
+    }
+
     if (command === 0x80 || command === 0x90) {
       const tone = reader.readByte()
       const velocity = reader.readByte()
@@ -505,10 +526,11 @@ function parseMidiTrack(
       const lsb = reader.readByte()
       const msb = reader.readByte()
       if (channel !== 9) {
+        const channelState = channelStateFor(channelStates, channel)
         track.pitchWheels.push({
           tick: scaleMidiTick(tick, division),
           channel,
-          cents: pitchWheelCents(lsb, msb),
+          cents: pitchWheelCentsForRange(lsb, msb, channelState.pitchBendRangeCents),
         })
       }
       continue
@@ -520,6 +542,46 @@ function parseMidiTrack(
     }
     reader.readBytes(byteCount)
   }
+}
+
+function channelStateFor(states: Map<number, MidiChannelState>, channel: number) {
+  const existing = states.get(channel)
+  if (existing) {
+    return existing
+  }
+  const created: MidiChannelState = {
+    pitchBendRangeCents: MIDI_PITCH_BEND_RANGE_CENTS,
+    pitchBendRangeFineCents: 0,
+  }
+  states.set(channel, created)
+  return created
+}
+
+function updateMidiChannelController(state: MidiChannelState, controller: number, value: number) {
+  const data = Math.max(0, Math.min(127, Math.round(value)))
+  if (controller === 101) {
+    state.rpnMsb = data === 127 ? undefined : data
+    return
+  }
+  if (controller === 100) {
+    state.rpnLsb = data === 127 ? undefined : data
+    return
+  }
+  if (!isPitchBendRangeRpn(state)) {
+    return
+  }
+  if (controller === 6) {
+    state.pitchBendRangeCents = sanitizePitchBendRangeCents(data * 100 + state.pitchBendRangeFineCents)
+  } else if (controller === 38) {
+    state.pitchBendRangeFineCents = Math.min(99, data)
+    state.pitchBendRangeCents = sanitizePitchBendRangeCents(
+      Math.floor(state.pitchBendRangeCents / 100) * 100 + state.pitchBendRangeFineCents,
+    )
+  }
+}
+
+function isPitchBendRangeRpn(state: MidiChannelState) {
+  return state.rpnMsb === 0 && state.rpnLsb === 0
 }
 
 function optionalImportedPitchBend(

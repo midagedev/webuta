@@ -80,6 +80,17 @@ describe('MIDI export', () => {
     expect(imported.notes[1].pitchBend).toBeUndefined()
   })
 
+  it('imports pitch wheel movement using the declared MIDI pitch bend range', () => {
+    const project = parseMelodyMidi(createSingleTrackWidePitchBendMidi(), 'wide-bend.mid')
+    const points = project.notes[0].pitchBend?.points ?? []
+
+    expect(points.map((point) => point.timePercent)).toEqual([0, 50, 100])
+    expect(points[0].cents).toBeCloseTo(0, 3)
+    expect(points[1].cents).toBeGreaterThan(599)
+    expect(points[1].cents).toBeLessThan(601)
+    expect(points[2].cents).toBeCloseTo(0, 3)
+  })
+
   it('round-trips WebUtau intensity as MIDI note velocity', () => {
     const dynamicProject = {
       ...demoProject,
@@ -169,6 +180,35 @@ function createMelodyAndChordMidi(project: typeof demoProject) {
     melodyTracks[0],
     melodyTracks[1],
     chordTracks[1],
+  ])
+}
+
+function createSingleTrackWidePitchBendMidi() {
+  const textEncoder = new TextEncoder()
+  const events = [
+    metaEvent(0, 0, 0x03, 'Wide Bend Vocal Export', textEncoder),
+    { tick: 0, priority: 0, data: [0xff, 0x51, 0x03, 0x07, 0x27, 0x0e] },
+    { tick: 0, priority: 0, data: [0xff, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08] },
+    { tick: 0, priority: 1, data: [0xb0, 101, 0] },
+    { tick: 0, priority: 1, data: [0xb0, 100, 0] },
+    { tick: 0, priority: 1, data: [0xb0, 6, 12] },
+    { tick: 0, priority: 1, data: [0xb0, 38, 0] },
+    { tick: 0, priority: 1, data: [0xb0, 101, 127] },
+    { tick: 0, priority: 1, data: [0xb0, 100, 127] },
+    metaEvent(0, 2, 0x05, '라', textEncoder),
+    { tick: 0, priority: 3, data: [0xe0, 0, 64] },
+    { tick: 0, priority: 4, data: [0x90, 69, 96] },
+    { tick: 240, priority: 1, data: [0xe0, 0, 96] },
+    { tick: 480, priority: -1, data: [0xe0, 0, 64] },
+    { tick: 480, priority: 0, data: [0x80, 69, 0] },
+  ]
+  return concatBytes([
+    asciiBytes('MThd'),
+    u32(6),
+    u16(0),
+    u16(1),
+    u16(480),
+    createTrack(events),
   ])
 }
 

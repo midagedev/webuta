@@ -242,6 +242,8 @@ Recommended coverage shape:
   harmony guide beside the WAV, UST/USTX, and text/CSV sidecars.
 - [x] Round-trip WebUtau `Intensity` through `melody.mid` as standard MIDI note
   velocity, so DAW dynamic edits can come back into browser rendering.
+- [x] Import declared MIDI pitch bend range RPN controller data, so DAW MIDI
+  files using wider pitch wheels map back to WebUtau note-local cents correctly.
 - [x] Round-trip simple note pitch bends through `melody.mid` as standard MIDI
   pitch wheel events with a declared +/-2 semitone pitch bend range.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
