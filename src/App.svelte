@@ -1211,6 +1211,7 @@
   }
 
   async function downloadDawBundle() {
+    notice = 'Preparing DAW handoff bundle'
     const current = await getRenderedWav()
     if (!current) {
       return

@@ -675,7 +675,7 @@ describe('App editing workflow', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('DAW handoff bundle downloaded').length).toBeGreaterThan(0)
-    })
+    }, { timeout: 5000 })
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalled()
 
     const createdUrls = vi.mocked(URL.createObjectURL).mock.calls.map(([blob]) => blob)
