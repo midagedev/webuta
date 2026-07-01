@@ -6428,6 +6428,70 @@ button:disabled:active {
   border-color: rgba(255, 75, 202, 0.32);
 }
 
+.starter-advanced-tools {
+  min-width: 0;
+  border: 1px solid rgba(88, 244, 255, 0.22);
+  border-radius: 4px;
+  background: rgba(5, 7, 14, 0.58);
+}
+
+.starter-advanced-tools > summary {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  color: var(--tracker-muted, #9fb3ca);
+  cursor: pointer;
+  list-style: none;
+}
+
+.starter-advanced-tools > summary::-webkit-details-marker {
+  display: none;
+}
+
+.starter-advanced-tools > summary svg {
+  flex: 0 0 auto;
+  color: var(--tracker-cyan, #58f4ff);
+  transition: transform 120ms ease;
+}
+
+.starter-advanced-tools[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+.starter-advanced-tools > summary span,
+.starter-advanced-tools > summary strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-advanced-tools > summary span {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.starter-advanced-tools > summary strong {
+  margin-left: auto;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.starter-advanced-tools .starter-utility-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0 6px 6px;
+}
+
+.starter-route-step.optional {
+  border-color: rgba(255, 75, 202, 0.28);
+  background: rgba(255, 75, 202, 0.065);
+}
+
 .starter-guide.onboarding-v2 .starter-hero {
   grid-template-columns: minmax(230px, 0.82fr) minmax(0, 1.18fr);
 }
@@ -6533,6 +6597,19 @@ button:disabled:active {
 
   .starter-utility-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .starter-advanced-tools > summary {
+    min-height: 36px;
+    padding: 0 8px;
+  }
+
+  .starter-advanced-tools > summary span {
+    font-size: 10px;
+  }
+
+  .starter-advanced-tools > summary strong {
+    font-size: 8px;
   }
 
   .starter-utility-button {

@@ -22,7 +22,7 @@
     X,
   } from '@lucide/svelte'
   import type { RenderProgress, SongProject } from '../types'
-  import { formatTime, inputValue } from '../app/ui'
+  import { formatProjectSourceLabel, formatTime, inputValue } from '../app/ui'
 
   type Props = {
     project: SongProject
@@ -96,6 +96,7 @@
 
   let projectInput: HTMLInputElement
   let voicebankInput: HTMLInputElement
+  const projectSourceDisplay = $derived(formatProjectSourceLabel(projectSourceLabel))
 
   async function handleProjectFileChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement
@@ -151,7 +152,7 @@
     <div class="project-context" aria-label="Current project">
       <span>현재 프로젝트</span>
       <strong>{project.name}</strong>
-      <em>{projectSourceLabel}</em>
+      <em>{projectSourceDisplay}</em>
     </div>
   </div>
 

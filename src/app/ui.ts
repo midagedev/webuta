@@ -85,6 +85,21 @@ export function formatVoicebankCacheStatus(status: VoicebankCacheStatus) {
   }
 }
 
+export function formatProjectSourceLabel(sourceLabel: string) {
+  switch (sourceLabel) {
+    case 'Built-in Hangul demo':
+      return '기본 샘플'
+    case 'Saved browser draft':
+      return '저장된 작업'
+    case 'New vocal sketch':
+      return '새 프로젝트'
+    case 'Duplicated from current project':
+      return '복제본'
+    default:
+      return sourceLabel
+  }
+}
+
 export function formatLyricLine(notes: SongNote[]) {
   return [...notes]
     .sort((a, b) => a.start - b.start || a.tone - b.tone)

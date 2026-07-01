@@ -20,10 +20,10 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `QUICK START`, `처음이면`, `첫 샘플 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `샘플 듣기`, `가사 적용`, `멜로디 만들기`, `WAV 받기`, `현재 가사`, and `가사·음정`.
+5. Confirm the first-run guide shows `VOCAL STARTER`, `다음 행동`, `샘플 먼저 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, `WAV 받기`, `현재 가사`, and folded `프로젝트 도구`.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
-8. Tap `공유` or `스타터 WAV 다운로드`.
+8. Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.
 9. Send or save the WAV through the platform share/download flow.
 10. In the target music tool, confirm the imported audio region appears on a track.
 11. Play the target project and confirm the imported vocal audio is audible.
@@ -40,7 +40,7 @@ npm run release:accept-evidence -- --scores path/to/listening-scores.local.json 
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide puts the focused `첫 샘플 듣기` action and `스타터 가사 라인` input before the `처음 1분` route, then shows large `샘플 듣기`, `가사 적용`, `멜로디 만들기`, and `WAV 받기` action cards.
+- The first-run guide puts the focused `샘플 먼저 듣기` action and `스타터 가사 라인` input before the `처음 1분` route, then shows large `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, and `WAV 받기` action cards with project utilities folded below.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.
