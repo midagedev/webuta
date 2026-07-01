@@ -45,8 +45,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   gallery proves varied lyrics, melodies, BPM bands, chord guides, and Hangul
   coda usage before release.
 - [x] Add imported UTAU compatibility audit coverage for diverse zip shapes:
-  Japanese CV, Japanese VCV, `prefix.map` multipitch, Hangul CV/VC coda, and
-  multi-oto style ranking.
+  Japanese CV, Japanese VCV, `prefix.map` multipitch, Shift-JIS `oto.ini`,
+  Hangul CV/VC coda, and multi-oto style ranking.
 - [x] Add current voicebank license/readme metadata display for bundled V3 and
   user-imported UTAU zips.
 - [x] Add a non-redistributed `test-assets/` workflow and `npm run asset:teto` downloader for the official test zip.
@@ -147,8 +147,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   and lyric-token-to-note alignment.
 - [x] `npm run voicebank:compatibility-utau` renders diverse local fixture UTAU
   zips through the browser sample renderer and writes compatibility evidence for
-  Japanese CV, Japanese VCV, `prefix.map` multipitch, Hangul CV/VC coda, and
-  multi-oto style ranking.
+  Japanese CV, Japanese VCV, `prefix.map` multipitch, Shift-JIS `oto.ini`,
+  Hangul CV/VC coda, and multi-oto style ranking.
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate

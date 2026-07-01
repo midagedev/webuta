@@ -39,6 +39,7 @@ type CompatibilityFixture = {
   fileName: string
   rootDir: string
   characterName: string
+  otoEncoding?: 'utf-8' | 'shift-jis'
   prefixMap?: string
   entries: OtoFixture[]
   notes: NoteFixture[]
@@ -103,7 +104,7 @@ describe('UTAU import compatibility smoke audit', () => {
       writeJson(resolve(REPORT_PATH), report)
     }
 
-    expect(report.caseCount).toBeGreaterThanOrEqual(5)
+    expect(report.caseCount).toBeGreaterThanOrEqual(6)
     expect(report.problems).toEqual([])
     expect(report.ok).toBe(true)
   }, 30000)
@@ -260,6 +261,17 @@ function makeCompatibilityFixtures(): CompatibilityFixture[] {
       expectedPrefixMapPaths: ['PrefixSinger/prefix.map'],
     },
     {
+      id: 'shift-jis-oto',
+      title: 'Shift-JIS encoded oto.ini aliases',
+      fileName: 'compat-shift-jis-oto.zip',
+      rootDir: 'ShiftJisSinger',
+      characterName: 'Compatibility Shift-JIS Singer',
+      otoEncoding: 'shift-jis',
+      entries: [{ fileName: 'a_C4.wav', alias: 'あ', frequency: 262 }],
+      notes: [{ lyric: 'a', tone: 60 }],
+      expectedAliases: { mode: 'exact', values: ['あ'] },
+    },
+    {
       id: 'hangul-cv-vc-coda',
       title: 'Hangul coda lyric rendered as CV sustain plus VC tail',
       fileName: 'compat-hangul-coda.zip',
@@ -324,7 +336,8 @@ async function buildVoicebankZip(fixture: CompatibilityFixture) {
         }),
       )
     }
-    zip.file(`${directory}/oto.ini`, `${otoLines.join('\n')}\n`)
+    const otoText = `${otoLines.join('\r\n')}\r\n`
+    zip.file(`${directory}/oto.ini`, fixture.otoEncoding === 'shift-jis' ? encodeShiftJisSubset(otoText) : otoText)
   }
   return zip.generateAsync({ type: 'blob', compression: 'STORE' })
 }
@@ -528,4 +541,22 @@ function roundNumber(value: number) {
 function writeJson(path: string, value: unknown) {
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+}
+
+function encodeShiftJisSubset(text: string) {
+  const kanaBytes = new Map<string, number[]>([['あ', [0x82, 0xa0]]])
+  const bytes: number[] = []
+  for (const char of text) {
+    const mapped = kanaBytes.get(char)
+    if (mapped) {
+      bytes.push(...mapped)
+      continue
+    }
+    const code = char.charCodeAt(0)
+    if (code > 0x7f) {
+      throw new Error(`Unsupported Shift-JIS fixture character: ${char}`)
+    }
+    bytes.push(code)
+  }
+  return new Uint8Array(bytes)
 }

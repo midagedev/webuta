@@ -36,6 +36,23 @@ describe('voicebank zip loader', () => {
     expect(await voicebank.readSample(entry)).toBeInstanceOf(ArrayBuffer)
   })
 
+  it('decodes legacy Shift-JIS oto.ini aliases from imported UTAU zips', async () => {
+    const zip = new JSZip()
+    zip.file('Legacy/character.yaml', 'name: Shift-JIS Singer\n')
+    zip.file('Legacy/oto.ini', shiftJisBytesForAsciiAndA('a.wav=あ,0,120,0,40,20\r\n'))
+    zip.file('Legacy/a.wav', new Uint8Array([1, 2, 3, 4]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'shift-jis-oto.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const entry = findEntryForLyric(voicebank, 'a')
+
+    expect(voicebank.name).toBe('Shift-JIS Singer')
+    expect(voicebank.aliases).toContain('あ')
+    expect(entry.alias).toBe('あ')
+    expect(entry.path).toBe('Legacy/a.wav')
+  })
+
   it('extracts generated synthetic origin flags from a voicebank manifest', async () => {
     const zip = new JSZip()
     zip.file('WebUtau/character.yaml', 'name: WebUtau Korean V3 Synthetic\n')
@@ -492,3 +509,19 @@ describe('voicebank zip loader', () => {
     })
   })
 })
+
+function shiftJisBytesForAsciiAndA(text: string) {
+  const bytes: number[] = []
+  for (const char of text) {
+    if (char === 'あ') {
+      bytes.push(0x82, 0xa0)
+      continue
+    }
+    const code = char.charCodeAt(0)
+    if (code > 0x7f) {
+      throw new Error(`Unsupported Shift-JIS fixture character: ${char}`)
+    }
+    bytes.push(code)
+  }
+  return new Uint8Array(bytes)
+}

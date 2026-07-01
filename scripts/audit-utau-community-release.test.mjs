@@ -422,8 +422,8 @@ describe('UTAU community release audit', () => {
     const utauCompatibilityAudit = makeUtauCompatibilityReport()
     utauCompatibilityAudit.ok = false
     utauCompatibilityAudit.decision = 'utau-import-compatibility-audit-fail'
-    utauCompatibilityAudit.caseCount = 4
-    utauCompatibilityAudit.cases = utauCompatibilityAudit.cases.slice(0, 4)
+    utauCompatibilityAudit.caseCount = 3
+    utauCompatibilityAudit.cases = utauCompatibilityAudit.cases.slice(0, 3)
     utauCompatibilityAudit.cases[0].passed = false
     utauCompatibilityAudit.cases[0].coverage.fallbackNotes = 1
     utauCompatibilityAudit.cases[0].warnings.warningCount = 1
@@ -437,7 +437,8 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must pass')
-    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least five diverse fixture voicebanks')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least six diverse fixture voicebanks')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case shift-jis-oto')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case multi-oto-style-ranking')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV did not pass')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must have zero fallback notes')
@@ -1098,6 +1099,12 @@ function makeUtauCompatibilityReport() {
       wavCount: 2,
       prefixMapPaths: ['PrefixSinger/prefix.map'],
     }),
+    makeUtauCompatibilityCase('shift-jis-oto', 'Shift-JIS oto.ini', ['あ'], {
+      lyricLine: 'a',
+      aliasCount: 1,
+      sampleCount: 1,
+      wavCount: 1,
+    }),
     makeUtauCompatibilityCase('hangul-cv-vc-coda', 'Hangul CV/VC coda', ['여', 'ㅕㄴ'], {
       lyricLine: '연',
       aliasCount: 3,
@@ -1431,7 +1438,7 @@ function makeReadme() {
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
     'Run `npm run voicebank:songwriting-v3` for starter songwriting quality checks covering slow, mid, and fast BPM bands, melody contours, Hangul coda lyrics, and chord-guide variety.',
-    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Hangul CV/VC coda, and multi-oto style ranking.',
+    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, Hangul CV/VC coda, and multi-oto style ranking.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     'The public review hub includes `Evidence Preflight` with `No upload` local JSON checks.',
