@@ -58,6 +58,7 @@ If either file is outside Downloads, pass both paths explicitly with `npm run re
 - The DAW bundle should include `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV and project exports.
 - The listening review scorecard should show `Real listening guard` and block `listening-scores.local.json` until real playback, blind lyric pass, and V2 comparison confirmations are checked.
 - Automated browser smoke must download the DAW bundle ZIP and inspect its `manifest.json`, rendered WAV, WebUtau project, USTX, classic UST, `melody.mid`, `chords.mid`, lyric, note, chord, arrangement, and README files before the physical-device handoff is accepted.
+- `npm run voicebank:starter-samples-v3` must also open all seven starter samples and inspect each sample's WAV plus DAW bundle ZIP, including native WebUtau, USTX, classic UST, MIDI guide, lyric, note, chord, arrangement, manifest, and README files.
 - Unit coverage must re-import the DAW bundle's `.webutau.json`, USTX, and classic UST exports and verify the starter lyric, pitch, timing, BPM, and chord guide survive the handoff.
 - Default lyrics show `11/11 matched`.
 - Rendered WAV shows DAW-ready format metadata.

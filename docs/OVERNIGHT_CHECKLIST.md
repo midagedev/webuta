@@ -129,7 +129,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Selected-note alias display and isolated sample preview use the same
   phrase-start/previous-vowel VCV context as full-song UTAU rendering.
 - [x] Browser audit renders all seven first-run starter samples through the
-  bundled V3 voicebank and checks DAW-ready non-silent WAV output for each.
+  bundled V3 voicebank and checks DAW-ready non-silent WAV output plus matching
+  DAW handoff ZIP contents for each.
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate

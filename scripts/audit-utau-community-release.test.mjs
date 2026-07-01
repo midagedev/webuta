@@ -357,6 +357,30 @@ describe('UTAU community release audit', () => {
     expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
+  it('blocks release when starter samples render WAVs but do not prove DAW handoff bundles', async () => {
+    const starterSamplesAudit = makeStarterSamplesReport()
+    starterSamplesAudit.samples[0].dawBundle = {
+      ...starterSamplesAudit.samples[0].dawBundle,
+      passed: false,
+      midi: {
+        ...starterSamplesAudit.samples[0].dawBundle.midi,
+        ppq: 240,
+      },
+      problems: ['broken guide MIDI'],
+    }
+    const fixture = await makeFixture({ starterSamplesAudit })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.gates.find((gate) => gate.id === 'starter-sample-gallery')?.passed).toBe(false)
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample Neon Lift DAW handoff bundle must pass')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample Neon Lift DAW bundle must include PCM WAV and 480 PPQ MIDI guides')
+  })
+
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
     const fixture = await makeFixture({ badSyntheticOrigin: true })
 
@@ -837,6 +861,43 @@ function makeStarterSamplesReport() {
       bytes: 361_000 + index * 1200,
       peak: 0.4,
       rms: 0.06,
+    },
+    dawBundle: {
+      fileName: `${String(projectName).replaceAll(' ', '-')}-daw-handoff.zip`,
+      bytes: 460_000 + index * 1300,
+      format: 'webuta-daw-handoff-bundle',
+      version: 4,
+      projectName,
+      noteCount,
+      lyricLine,
+      chordLine: String(chordLine).replaceAll(' -> ', '  '),
+      requiredFileCount: 12,
+      wav: {
+        sampleRate: 44100,
+        channels: 1,
+        bitsPerSample: 16,
+        durationSeconds: 4.1 + index * 0.2,
+        bytes: 361_000 + index * 1200,
+      },
+      midi: {
+        melodyFile: `guide/${String(projectName).replaceAll(' ', '-')}-melody.mid`,
+        chordFile: `guide/${String(projectName).replaceAll(' ', '-')}-chords.mid`,
+        ppq: 480,
+        melodyBytes: 260,
+        chordBytes: 210,
+      },
+      project: {
+        projectName,
+        noteCount,
+        lyricLine,
+      },
+      sidecars: {
+        lyricLinePresent: true,
+        noteRows: noteCount,
+        chordSymbols: String(chordLine).split(' -> '),
+      },
+      passed: true,
+      problems: [],
     },
     passed: true,
   }))

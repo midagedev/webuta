@@ -257,9 +257,26 @@ function starterSamplesGate(path) {
       if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
         problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} WAV must be 44.1 kHz mono 16-bit PCM`)
       }
+      const dawBundle = sample.dawBundle ?? {}
+      if (dawBundle.passed !== true) {
+        problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} DAW handoff bundle must pass`)
+      }
+      if (
+        dawBundle.format !== 'webuta-daw-handoff-bundle' ||
+        Number(dawBundle.version ?? 0) < 4 ||
+        dawBundle.midi?.ppq !== 480 ||
+        dawBundle.wav?.sampleRate !== 44100 ||
+        dawBundle.wav?.channels !== 1 ||
+        dawBundle.wav?.bitsPerSample !== 16
+      ) {
+        problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} DAW bundle must include PCM WAV and 480 PPQ MIDI guides`)
+      }
+      if (dawBundle.noteCount !== sample.noteCount || dawBundle.lyricLine !== sample.lyricLine) {
+        problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} DAW bundle must preserve notes and lyric line`)
+      }
     }
   }
-  return makeGate('starter-sample-gallery', 'Seven varied starter samples render through bundled V3', path, problems, report ? {
+  return makeGate('starter-sample-gallery', 'Seven varied starter samples render WAV and DAW bundles through bundled V3', path, problems, report ? {
     sampleCount: report.sampleCount ?? 0,
     diversity: report.diversity ?? null,
     samples: (report.samples ?? []).map((sample) => ({
@@ -267,6 +284,13 @@ function starterSamplesGate(path) {
       mood: sample.mood,
       durationSeconds: sample.wav?.durationSeconds ?? null,
       bytes: sample.wav?.bytes ?? null,
+      dawBundle: sample.dawBundle ? {
+        passed: sample.dawBundle.passed === true,
+        bytes: sample.dawBundle.bytes ?? null,
+        version: sample.dawBundle.version ?? null,
+        melodyBytes: sample.dawBundle.midi?.melodyBytes ?? null,
+        chordBytes: sample.dawBundle.midi?.chordBytes ?? null,
+      } : null,
     })),
   } : null)
 }

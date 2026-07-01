@@ -9,6 +9,7 @@ describe('starter sample gallery render audit', () => {
         ...sample,
         fileName: `${sample.projectName.replaceAll(' ', '-')}.wav`,
         wav: makeWav({ durationSeconds: 3.4 + index * 0.2 }),
+        dawBundle: makeDawBundle(sample, index),
       })),
     })
 
@@ -21,6 +22,7 @@ describe('starter sample gallery render audit', () => {
       chordLineCount: 7,
     })
     expect(report.samples.every((sample) => sample.passed)).toBe(true)
+    expect(report.samples.every((sample) => sample.dawBundle?.passed)).toBe(true)
   })
 
   it('fails when a sample is missing or renders a silent/short WAV', () => {
@@ -40,6 +42,7 @@ describe('starter sample gallery render audit', () => {
     expect(report.problems.join('\n')).toContain('missing rendered starter sample: Blue Hour')
     expect(report.problems.join('\n')).toContain('Neon Lift: WAV duration 1.200s')
     expect(report.problems.join('\n')).toContain('Neon Lift: WAV peak 0.0010')
+    expect(report.problems.join('\n')).toContain('Neon Lift: DAW handoff bundle missing')
   })
 })
 
@@ -53,5 +56,39 @@ function makeWav(overrides = {}) {
     peak: 0.42,
     rms: 0.08,
     ...overrides,
+  }
+}
+
+function makeDawBundle(sample, index = 0) {
+  return {
+    fileName: `${sample.projectName.replaceAll(' ', '-')}-daw-handoff.zip`,
+    bytes: 450_000 + index * 1000,
+    format: 'webuta-daw-handoff-bundle',
+    version: 4,
+    projectName: sample.projectName,
+    noteCount: sample.noteCount,
+    lyricLine: sample.lyricLine,
+    chordLine: sample.chordLine.replaceAll(' -> ', '  '),
+    requiredFileCount: 12,
+    wav: makeWav(),
+    midi: {
+      melodyFile: `guide/${sample.projectName.replaceAll(' ', '-')}-melody.mid`,
+      chordFile: `guide/${sample.projectName.replaceAll(' ', '-')}-chords.mid`,
+      ppq: 480,
+      melodyBytes: 260,
+      chordBytes: 210,
+    },
+    project: {
+      projectName: sample.projectName,
+      noteCount: sample.noteCount,
+      lyricLine: sample.lyricLine,
+    },
+    sidecars: {
+      lyricLinePresent: true,
+      noteRows: sample.noteCount,
+      chordSymbols: sample.chordLine.split(' -> '),
+    },
+    passed: true,
+    problems: [],
   }
 }
