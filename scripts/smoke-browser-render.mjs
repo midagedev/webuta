@@ -369,6 +369,9 @@ async function assertDefaultV3DemoReady(page) {
   await beginnerMission.getByRole('button', { name: '초보자 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerMission.getByRole('button', { name: '초보자 가사 멜로디 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerMission.getByRole('button', { name: '초보자 WAV 받기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Beginner launch pad').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter lyric editor').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByText('처음이면').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -435,6 +438,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run quick-start CTA visible',
     'first-run focused next action visible',
     'first-run beginner mission visible',
+    'first-run inline lyric input visible',
     'first-run current lyric card visible',
     'first-run guided path visible',
     'first-run sketch cues visible',

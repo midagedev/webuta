@@ -2,11 +2,12 @@
   import { Check, Download, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
-  import { formatVoicebankCoverage } from '../app/ui'
+  import { formatVoicebankCoverage, inputValue } from '../app/ui'
 
   type Props = {
     project: SongProject
     projectSourceLabel: string
+    lyricLine: string
     voicebankName: string
     voicebankCoverage: VoicebankCoverage | null
     rendered: RenderedAudio | null
@@ -14,6 +15,7 @@
     isPlaying: boolean
     onNewProject: () => void
     onResetDemoProject: () => void
+    onLyricLine: (line: string) => void
     onApplyLyricLine: () => void
     onOpenCompose: () => void
     onPlayPause: () => Promise<void>
@@ -23,6 +25,7 @@
   let {
     project,
     projectSourceLabel,
+    lyricLine,
     voicebankName,
     voicebankCoverage,
     rendered,
@@ -30,6 +33,7 @@
     isPlaying,
     onNewProject,
     onResetDemoProject,
+    onLyricLine,
     onApplyLyricLine,
     onOpenCompose,
     onPlayPause,
@@ -79,7 +83,7 @@
   }
 </script>
 
-<section class="starter-guide" aria-label="First run guide">
+<section class="starter-guide onboarding-v2" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>QUICK START</span>
@@ -93,69 +97,58 @@
     </div>
   </div>
 
-  <div class="starter-focus" aria-label="Starter next action">
-    <div class="starter-focus-copy">
-      <span>처음이면</span>
-      <strong>{focusTitle}</strong>
-      <em>{focusMeta}</em>
+  <div class="starter-onboarding-grid" aria-label="Beginner launch pad">
+    <div class="starter-focus" aria-label="Starter next action">
+      <div class="starter-focus-copy">
+        <span>처음이면</span>
+        <strong>{focusTitle}</strong>
+        <em>{focusMeta}</em>
+      </div>
+      <button
+        type="button"
+        class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
+        aria-label={nextActionAria}
+        onclick={() => void handleNextAction()}
+        disabled={isRendering}
+      >
+        {#if rendered && !isPlaying}
+          <Download size={21} aria-hidden="true" />
+        {:else if isPlaying}
+          <Music2 size={21} aria-hidden="true" />
+        {:else}
+          <Play size={21} aria-hidden="true" />
+        {/if}
+        <span>{nextActionTitle}</span>
+        <strong>{nextActionMeta}</strong>
+      </button>
+      <div class="starter-focus-badge" aria-label="Current starter step">
+        <ListChecks size={16} aria-hidden="true" />
+        <span>{focusStep}</span>
+      </div>
     </div>
-    <button
-      type="button"
-      class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
-      aria-label={nextActionAria}
-      onclick={() => void handleNextAction()}
-      disabled={isRendering}
-    >
-      {#if rendered && !isPlaying}
-        <Download size={21} aria-hidden="true" />
-      {:else if isPlaying}
-        <Music2 size={21} aria-hidden="true" />
-      {:else}
-        <Play size={21} aria-hidden="true" />
-      {/if}
-      <span>{nextActionTitle}</span>
-      <strong>{nextActionMeta}</strong>
-    </button>
-    <div class="starter-focus-badge" aria-label="Current starter step">
-      <ListChecks size={16} aria-hidden="true" />
-      <span>{focusStep}</span>
-    </div>
-  </div>
 
-  <div class="starter-mission" aria-label="Beginner mission">
-    <div class="starter-mission-copy">
-      <span>처음 1분</span>
-      <strong>샘플 듣기 / 가사·멜로디 / WAV 받기</strong>
-      <em>{missionStatus}</em>
-    </div>
-    <div class="starter-mission-actions" aria-label="Beginner mission actions">
-      <button
-        type="button"
-        class={`starter-mission-action primary ${isPlaying ? 'active' : ''}`}
-        aria-label={isPlaying ? '초보자 샘플 일시정지' : '초보자 샘플 듣기'}
-        onclick={() => void onPlayPause()}
-        disabled={isRendering}
-      >
-        <Headphones size={18} aria-hidden="true" />
-        <span>1 샘플 듣기</span>
-        <strong>{playStepLabel}</strong>
-      </button>
-      <button type="button" class="starter-mission-action" aria-label="초보자 가사 멜로디 열기" onclick={onOpenCompose}>
-        <PencilLine size={18} aria-hidden="true" />
-        <span>2 가사·멜로디</span>
+    <div class="starter-edit-card" aria-label="Starter lyric editor">
+      <div class="starter-edit-head">
+        <span>가사</span>
         <strong>{project.notes.length} notes</strong>
-      </button>
-      <button
-        type="button"
-        class={`starter-mission-action export ${rendered ? 'ready' : ''}`}
-        aria-label="초보자 WAV 받기"
-        onclick={() => void onDownloadWav()}
-        disabled={isRendering}
-      >
-        <Download size={18} aria-hidden="true" />
-        <span>3 WAV 받기</span>
-        <strong>{missionWavMeta}</strong>
-      </button>
+      </div>
+      <div class="starter-lyric-input-row">
+        <input
+          aria-label="스타터 가사 라인"
+          value={lyricLine}
+          placeholder="도히도히 다이스키"
+          oninput={(event) => onLyricLine(inputValue(event))}
+        />
+        <button type="button" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
+          <Check size={17} aria-hidden="true" />
+          <span>적용</span>
+        </button>
+      </div>
+      <div class="starter-sample-card" aria-label="Default lyric preview">
+        <span>현재 가사</span>
+        <strong>{lyricPreview}</strong>
+        <em>{voicebankLabel} · {projectContextLabel}</em>
+      </div>
     </div>
   </div>
 
@@ -178,10 +171,41 @@
       </li>
     </ol>
 
-    <div class="starter-sample-card" aria-label="Default lyric preview">
-      <span>현재 가사</span>
-      <strong>{lyricPreview}</strong>
-      <em>{project.notes.length} notes · {voicebankLabel}</em>
+    <div class="starter-mission" aria-label="Beginner mission">
+      <div class="starter-mission-copy">
+        <span>처음 1분</span>
+        <strong>샘플 듣기 / 가사·멜로디 / WAV 받기</strong>
+        <em>{missionStatus}</em>
+      </div>
+      <div class="starter-mission-actions" aria-label="Beginner mission actions">
+        <button
+          type="button"
+          class={`starter-mission-action primary ${isPlaying ? 'active' : ''}`}
+          aria-label={isPlaying ? '초보자 샘플 일시정지' : '초보자 샘플 듣기'}
+          onclick={() => void onPlayPause()}
+          disabled={isRendering}
+        >
+          <Headphones size={18} aria-hidden="true" />
+          <span>1 샘플 듣기</span>
+          <strong>{playStepLabel}</strong>
+        </button>
+        <button type="button" class="starter-mission-action" aria-label="초보자 가사 멜로디 열기" onclick={onOpenCompose}>
+          <PencilLine size={18} aria-hidden="true" />
+          <span>2 가사·멜로디</span>
+          <strong>{project.notes.length} notes</strong>
+        </button>
+        <button
+          type="button"
+          class={`starter-mission-action export ${rendered ? 'ready' : ''}`}
+          aria-label="초보자 WAV 받기"
+          onclick={() => void onDownloadWav()}
+          disabled={isRendering}
+        >
+          <Download size={18} aria-hidden="true" />
+          <span>3 WAV 받기</span>
+          <strong>{missionWavMeta}</strong>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -215,11 +239,6 @@
       {/if}
       <span>2 {wavLabel}</span>
       <strong>{rendered ? 'download' : '44.1k mono'}</strong>
-    </button>
-    <button type="button" class="starter-step" aria-label="가사 라인 적용" onclick={onApplyLyricLine}>
-      <Check size={17} aria-hidden="true" />
-      <span>가사 넣기</span>
-      <strong>{project.notes.length} notes</strong>
     </button>
     <button type="button" class="starter-step" aria-label="컴포즈 모드 열기" onclick={onOpenCompose}>
       <Wand2 size={17} aria-hidden="true" />

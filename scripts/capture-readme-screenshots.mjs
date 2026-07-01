@@ -59,6 +59,7 @@ async function waitForAppReady(page) {
   await page.getByLabel('First run guide').getByText('QUICK START').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByText('처음이면').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')

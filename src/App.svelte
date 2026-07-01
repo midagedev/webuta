@@ -1511,6 +1511,7 @@
       <StarterGuide
         {project}
         {projectSourceLabel}
+        {lyricLine}
         {voicebankName}
         {voicebankCoverage}
         {rendered}
@@ -1518,6 +1519,12 @@
         {isPlaying}
         onNewProject={newProject}
         onResetDemoProject={resetDemoProject}
+        onLyricLine={(line) => {
+          lyricLine = line
+          isLyricLinePinned = true
+          lyricCursor = 0
+          recordingLyricTokens = []
+        }}
         onApplyLyricLine={applyLyricLine}
         onOpenCompose={() => (activeMode = 'compose')}
         onPlayPause={playOrPause}

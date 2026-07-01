@@ -6057,6 +6057,184 @@ button:disabled:active {
   }
 }
 
+/* Onboarding clarity pass: one obvious launch path before the dense editor. */
+.starter-guide.onboarding-v2 {
+  gap: 8px;
+}
+
+.starter-onboarding-grid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.78fr) minmax(320px, 1.22fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.starter-guide.onboarding-v2 .starter-focus {
+  min-height: 138px;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "copy badge"
+    "button button";
+}
+
+.starter-guide.onboarding-v2 .starter-focus-copy {
+  grid-area: copy;
+}
+
+.starter-guide.onboarding-v2 .starter-focus-badge {
+  grid-area: badge;
+}
+
+.starter-guide.onboarding-v2 .starter-next-button {
+  grid-area: button;
+  min-height: 66px;
+}
+
+.starter-edit-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(88, 244, 255, 0.32);
+  border-radius: 4px;
+  background: rgba(5, 7, 14, 0.74);
+}
+
+.starter-edit-head {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.starter-edit-head span,
+.starter-edit-head strong,
+.starter-lyric-input-row input,
+.starter-lyric-input-row button span {
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-edit-head span {
+  color: var(--tracker-cyan, #58f4ff);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-edit-head strong {
+  min-width: 0;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-lyric-input-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px;
+  gap: 6px;
+}
+
+.starter-lyric-input-row input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid rgba(157, 255, 106, 0.36);
+  border-radius: 4px;
+  color: var(--tracker-text, #f8f4ff);
+  background: rgba(12, 14, 26, 0.96);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0;
+  outline: none;
+}
+
+.starter-lyric-input-row input:focus {
+  border-color: rgba(255, 231, 106, 0.72);
+  box-shadow: 0 0 0 2px rgba(255, 231, 106, 0.16);
+}
+
+.starter-lyric-input-row button {
+  min-width: 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 231, 106, 0.56);
+  border-radius: 4px;
+  color: #110817;
+  background: linear-gradient(135deg, var(--tracker-amber, #ffe76a), var(--tracker-pink, #ff4bca));
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.starter-guide.onboarding-v2 .starter-hero {
+  grid-template-columns: minmax(230px, 0.82fr) minmax(0, 1.18fr);
+}
+
+.starter-guide.onboarding-v2 .starter-mission {
+  grid-template-columns: minmax(168px, 0.56fr) minmax(0, 1.44fr);
+}
+
+.starter-guide.onboarding-v2 .starter-flow {
+  grid-template-columns: repeat(2, minmax(128px, 1.1fr)) repeat(3, minmax(94px, 0.85fr));
+}
+
+@media (max-width: 760px) {
+  .starter-onboarding-grid,
+  .starter-guide.onboarding-v2 .starter-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .starter-guide.onboarding-v2 .starter-focus {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    grid-template-rows: auto auto;
+  }
+
+  .starter-guide.onboarding-v2 .starter-next-button {
+    min-height: 50px;
+  }
+
+  .starter-edit-card {
+    padding: 7px;
+  }
+
+  .starter-lyric-input-row {
+    grid-template-columns: minmax(0, 1fr) 72px;
+  }
+
+  .starter-lyric-input-row input {
+    min-height: 42px;
+    font-size: 13px;
+  }
+
+  .starter-lyric-input-row button {
+    min-height: 42px;
+    padding: 0 8px;
+  }
+
+  .starter-guide.onboarding-v2 .starter-mission {
+    grid-template-columns: 1fr;
+  }
+
+  .starter-guide.onboarding-v2 .starter-checklist.starter-path {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .starter-guide.onboarding-v2 .starter-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .toolbar-button,
   .transport-button,
@@ -6072,6 +6250,8 @@ button:disabled:active {
   .performance-action,
   .lyric-pads button,
   .lyric-line-editor button,
+  .starter-lyric-input-row button,
+  .starter-lyric-input-row input,
   .performance-keyboard button,
   .field-label input,
   .field-label select,

@@ -13,6 +13,7 @@ describe('default demo render audit report', () => {
         'first-run quick-start CTA visible',
         'first-run focused next action visible',
         'first-run beginner mission visible',
+        'first-run inline lyric input visible',
         'first-run current lyric card visible',
         'first-run guided path visible',
         'first-run sketch cues visible',
