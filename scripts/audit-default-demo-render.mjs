@@ -24,6 +24,7 @@ const REQUIRED_CHECKS = [
   'first-run starter sample gallery visible',
   'first-run starter sample choices visible',
   'first-run starter sample metrics visible',
+  'first-run starter sample selection guide visible',
   'first-run Korean UTAU path visible',
   'first-run starter launch panel visible',
   'first-run inline lyric input visible',

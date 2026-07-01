@@ -21,6 +21,9 @@ export type DemoSample = {
   title: string
   mood: string
   detail: string
+  bestFor: string
+  listeningCue: string
+  vocalFocus: string
   lyricLine: string
   chordLine: string
   project: SongProject
@@ -34,6 +37,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Neon Lift',
     mood: 'Cyber Pop',
     detail: '반짝이는 첫 훅',
+    bestFor: '처음 듣는 기본 후렴',
+    listeningCue: '밝은 상승 멜로디',
+    vocalFocus: '긴 끝음',
     lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
     chordLine: 'Am -> F -> C -> G',
     project: makeSampleProject({
@@ -76,6 +82,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Blue Hour',
     mood: 'Dream Pop',
     detail: '밤 공기의 부드러운 훅',
+    bestFor: '부드러운 가사 스케치',
+    listeningCue: '느린 밤 공기',
+    vocalFocus: '모음 지속',
     lyricLine: '밤 이 와 너 와 나 노 래 해',
     chordLine: 'F -> C -> G -> Am',
     project: makeSampleProject({
@@ -116,6 +125,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Retro Run',
     mood: 'Retro Game',
     detail: '도트 게임 같은 빠른 훅',
+    bestFor: '빠른 리듬 아이디어',
+    listeningCue: '픽셀 점프감',
+    vocalFocus: '짧은 음절',
     lyricLine: '레 트 로 비 트 로 뛰 어 가',
     chordLine: 'Dm -> Bb -> F -> C',
     project: makeSampleProject({
@@ -156,6 +168,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Moon Signal',
     mood: 'Dark Synth',
     detail: '받침이 있는 어두운 프리코러스',
+    bestFor: '어두운 프리코러스',
+    listeningCue: '달빛 신스 톤',
+    vocalFocus: '받침 발음',
     lyricLine: '달 빛 속 에 숨 은 말 을 켜',
     chordLine: 'Em -> C -> G -> D',
     project: makeSampleProject({
@@ -196,6 +211,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Pink Noise',
     mood: 'Hyperpop',
     detail: '빠른 당김음과 강한 받침 테스트',
+    bestFor: '강한 하이퍼팝 훅',
+    listeningCue: '높은 에너지',
+    vocalFocus: '고음 받침',
     lyricLine: '핑 크 노 이 즈 가 심 장 을 깨 워',
     chordLine: 'Bm -> G -> D -> A',
     project: makeSampleProject({
@@ -238,6 +256,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Rain Verse',
     mood: 'Emo Ballad',
     detail: '긴 모음과 낮은 음역',
+    bestFor: '감정적인 벌스',
+    listeningCue: '느린 비 오는 밤',
+    vocalFocus: '낮은 장음',
     lyricLine: '비 가 내 린 밤 너 를 부 르 네',
     chordLine: 'C -> G -> Am -> F',
     project: makeSampleProject({
@@ -279,6 +300,9 @@ export const demoSamples: DemoSample[] = [
     title: 'City Glide',
     mood: 'City Pop',
     detail: '도시적인 코드감의 부드러운 후렴',
+    bestFor: '세련된 후렴 라인',
+    listeningCue: '도시 야경감',
+    vocalFocus: '중음 연결',
     lyricLine: '도 시 불 빛 위 로 우 린 날 아',
     chordLine: 'F -> E -> Am -> C',
     project: makeSampleProject({
@@ -320,6 +344,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Glass Pulse',
     mood: 'K-Pop Dance',
     detail: '유리처럼 선명한 댄스 후렴',
+    bestFor: '댄스 팝 코러스',
+    listeningCue: '선명한 무대감',
+    vocalFocus: '밝은 받침',
     lyricLine: '유 리 빛 무 대 위 로 날 아 가',
     chordLine: 'Gm -> Eb -> Bb -> F',
     project: makeSampleProject({
@@ -361,6 +388,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Lofi Diary',
     mood: 'Bedroom Pop',
     detail: '새벽 일기 같은 낮은 훅',
+    bestFor: '차분한 방구석 팝',
+    listeningCue: '작은 새벽감',
+    vocalFocus: '낮은 받침',
     lyricLine: '새 벽 창 에 작 은 꿈 을 써',
     chordLine: 'D -> A -> Bm -> G',
     project: makeSampleProject({
@@ -401,6 +431,9 @@ export const demoSamples: DemoSample[] = [
     title: 'Zero Gravity',
     mood: 'Future Rock',
     detail: '높이 튀어 오르는 록 후렴',
+    bestFor: '튀어 오르는 록 훅',
+    listeningCue: '무중력 상승감',
+    vocalFocus: '오프그리드',
     lyricLine: '중 력 날 아 하 늘 빛 까 지',
     chordLine: 'Am -> G -> F -> E',
     project: makeSampleProject({

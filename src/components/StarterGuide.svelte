@@ -105,6 +105,7 @@
     isVoicebankReady ? `${voicebankLabel}가 현재 가사를 모두 매칭합니다.` : '기본 보컬의 한글 발음 매칭을 확인하고 있어요.',
   )
   const koreanWavStepLabel = $derived(rendered ? 'WAV 준비됨' : '렌더하면 WAV')
+  const activeSample = $derived(demoSamples.find((sample) => sample.id === activeSampleId) ?? demoSamples[0])
   const completionCount = $derived(rendered ? 3 : hasPendingLyricLine ? 1 : isPlaying ? 1 : 0)
   const starterProgressLabel = $derived(`${completionCount}/3`)
   const startPanelTitle = $derived(isDraftProject ? '지난 작업이 열렸어요' : '기본 샘플 준비 완료')
@@ -332,6 +333,20 @@
       <strong>보컬로이드풍 훅 {demoSamples.length}개</strong>
       <em>장르, 템포, 가사 발음이 다른 샘플을 먼저 고르고 바로 들어보세요.</em>
     </div>
+    {#if activeSample}
+      <div class="starter-sample-spotlight" aria-label="Starter sample selection guide">
+        <div class="starter-sample-spotlight-copy">
+          <span>선택 중</span>
+          <strong>{activeSample.title}</strong>
+          <em>{activeSample.bestFor}</em>
+        </div>
+        <div class="starter-sample-spotlight-tags">
+          <span>{activeSample.mood}</span>
+          <span>{activeSample.listeningCue}</span>
+          <span>{activeSample.vocalFocus}</span>
+        </div>
+      </div>
+    {/if}
     <div class="starter-sample-grid">
       {#each demoSamples as sample}
         {@const stats = starterSampleStats(sample)}
@@ -344,7 +359,12 @@
         >
           <span>{sample.mood}</span>
           <strong>{sample.title}</strong>
+          <span class="starter-sample-best">{sample.bestFor}</span>
           <em>{sample.lyricLine}</em>
+          <span class="starter-sample-cues" aria-label={`${sample.title} selection guide`}>
+            <b>{sample.listeningCue}</b>
+            <b>{sample.vocalFocus}</b>
+          </span>
           <span class="starter-sample-metrics" aria-label={`${sample.title} sample metrics`}>
             <b>{stats.bpm} BPM</b>
             <b>{stats.rangeLabel}</b>

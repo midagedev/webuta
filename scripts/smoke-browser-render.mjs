@@ -408,6 +408,16 @@ async function assertDefaultV3DemoReady(page) {
   await starterSampleGallery.getByRole('button', { name: 'Glass Pulse 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'Lofi Diary 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'Zero Gravity 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterSelectionGuide = starterSampleGallery.getByLabel('Starter sample selection guide')
+  await starterSelectionGuide.getByText('선택 중').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSelectionGuide.getByText('처음 듣는 기본 후렴').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSelectionGuide.getByText('밝은 상승 멜로디').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSelectionGuide.getByText('긴 끝음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByLabel('Neon Lift selection guide').getByText('밝은 상승 멜로디').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByLabel('Neon Lift selection guide').getByText('긴 끝음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByText('느린 밤 공기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByText('픽셀 점프감').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleGallery.getByText('고음 받침').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const neonMetrics = starterSampleGallery.getByLabel('Neon Lift sample metrics')
   await neonMetrics.getByText('128 BPM').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await neonMetrics.getByText('A4-E5').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -597,6 +607,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run starter sample gallery visible',
     'first-run starter sample choices visible',
     'first-run starter sample metrics visible',
+    'first-run starter sample selection guide visible',
     'first-run Korean UTAU path visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',

@@ -140,6 +140,17 @@ describe('App editing workflow', () => {
     expect(sampleGallery.textContent).toContain('Lofi Diary')
     expect(sampleGallery.textContent).toContain('Zero Gravity')
     expect(sampleGallery.textContent).toContain('장르, 템포, 가사 발음이 다른 샘플')
+    const sampleSelectionGuide = within(sampleGallery).getByLabelText('Starter sample selection guide')
+    expect(sampleSelectionGuide.textContent).toContain('선택 중')
+    expect(sampleSelectionGuide.textContent).toContain('Neon Lift')
+    expect(sampleSelectionGuide.textContent).toContain('처음 듣는 기본 후렴')
+    expect(sampleSelectionGuide.textContent).toContain('밝은 상승 멜로디')
+    expect(sampleSelectionGuide.textContent).toContain('긴 끝음')
+    expect(within(sampleGallery).getByLabelText('Neon Lift selection guide').textContent).toContain('밝은 상승 멜로디')
+    expect(within(sampleGallery).getByLabelText('Neon Lift selection guide').textContent).toContain('긴 끝음')
+    expect(sampleGallery.textContent).toContain('느린 밤 공기')
+    expect(sampleGallery.textContent).toContain('픽셀 점프감')
+    expect(sampleGallery.textContent).toContain('고음 받침')
     const neonMetrics = within(sampleGallery).getByLabelText('Neon Lift sample metrics')
     expect(neonMetrics.textContent).toContain('128 BPM')
     expect(neonMetrics.textContent).toContain('A4-E5')
@@ -283,6 +294,8 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('밤 이 와 너 와 나 노 래 해')
     expect(within(sampleGallery).getByRole('button', { name: 'Blue Hour 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('F -> C -> G -> Am')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('부드러운 가사 스케치')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('모음 지속')
 
     fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Retro Run 샘플 열기' }))
 
@@ -292,6 +305,8 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('레 트 로 비 트 로 뛰 어 가')
     expect(within(sampleGallery).getByRole('button', { name: 'Retro Run 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Dm -> Bb -> F -> C')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('빠른 리듬 아이디어')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('짧은 음절')
 
     fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Pink Noise 샘플 열기' }))
 
@@ -301,6 +316,8 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('핑 크 노 이 즈 가 심 장 을 깨 워')
     expect(within(sampleGallery).getByRole('button', { name: 'Pink Noise 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Bm -> G -> D -> A')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('강한 하이퍼팝 훅')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('고음 받침')
 
     fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Zero Gravity 샘플 열기' }))
 
@@ -310,6 +327,8 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('중 력 날 아 하 늘 빛 까 지')
     expect(within(sampleGallery).getByRole('button', { name: 'Zero Gravity 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Am -> G -> F -> E')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('튀어 오르는 록 훅')
+    expect(within(sampleGallery).getByLabelText('Starter sample selection guide').textContent).toContain('오프그리드')
   })
 
   it('exposes a first-run DAW bundle action that renders and downloads a handoff zip', async () => {
