@@ -14,35 +14,36 @@ import {
 } from './accept-wav-daw-handoff.mjs'
 import { auditUtauCommunityRelease } from './audit-utau-community-release.mjs'
 
-const DEFAULT_PAGES_URL = 'https://midagedev.github.io/webuta/'
-const LISTENING_FILE_NAME = 'listening-scores.local.json'
-const HANDOFF_FILE_NAME = 'handoff-report.local.json'
+export const DEFAULT_PAGES_URL = 'https://midagedev.github.io/webuta/'
+export const LISTENING_FILE_NAME = 'listening-scores.local.json'
+export const HANDOFF_FILE_NAME = 'handoff-report.local.json'
+export const PUBLIC_REVIEW_URLS = {
+  hub: 'https://midagedev.github.io/webuta/review/',
+  listening: 'https://midagedev.github.io/webuta/review/v3/',
+  wavDawHandoff: 'https://midagedev.github.io/webuta/review/wav-daw/',
+}
+
+export function inspectReleaseEvidence(options = {}) {
+  const { cwd, listeningOut, handoffOut, listening, handoff, problems } = collectReleaseEvidence(options)
+  const ok = problems.length === 0
+  const report = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    ok,
+    decision: ok ? 'release-evidence-ready' : 'release-evidence-missing',
+    listening: summarizeEvidenceStatus(listening, listeningOut),
+    wavDawHandoff: summarizeEvidenceStatus(handoff, handoffOut),
+    problems,
+    nextActions: evidenceStatusNextActions({ ok }),
+  }
+  if (options.report) {
+    writeJson(resolve(cwd, options.report), report)
+  }
+  return report
+}
 
 export async function acceptReleaseEvidence(options = {}) {
-  const cwd = resolve(options.cwd ?? process.cwd())
-  const downloadsDir = options.downloadsDir ? resolve(cwd, options.downloadsDir) : null
-  const listeningOut = resolve(cwd, options.listeningOut ?? DEFAULT_LISTENING_OUT)
-  const handoffOut = resolve(cwd, options.handoffOut ?? DEFAULT_HANDOFF_OUT)
-  const listening = readAndValidateEvidence({
-    cwd,
-    explicitPath: options.scores,
-    downloadsDir,
-    fileName: LISTENING_FILE_NAME,
-    label: 'human listening scores',
-    validate: validateListeningScores,
-  })
-  const handoff = readAndValidateEvidence({
-    cwd,
-    explicitPath: options.handoff,
-    downloadsDir,
-    fileName: HANDOFF_FILE_NAME,
-    label: 'physical WAV DAW handoff report',
-    validate: validateHandoffReport,
-  })
-  const problems = [
-    ...listening.problems.map((problem) => `human-listening: ${problem}`),
-    ...handoff.problems.map((problem) => `wav-daw-handoff: ${problem}`),
-  ]
+  const { cwd, listeningOut, handoffOut, listening, handoff, problems } = collectReleaseEvidence(options)
   let audit = null
 
   if (problems.length === 0) {
@@ -79,6 +80,41 @@ export async function acceptReleaseEvidence(options = {}) {
     writeJson(resolve(cwd, options.report), report)
   }
   return report
+}
+
+function collectReleaseEvidence(options) {
+  const cwd = resolve(options.cwd ?? process.cwd())
+  const downloadsDir = options.downloadsDir ? resolve(cwd, options.downloadsDir) : null
+  const listeningOut = resolve(cwd, options.listeningOut ?? DEFAULT_LISTENING_OUT)
+  const handoffOut = resolve(cwd, options.handoffOut ?? DEFAULT_HANDOFF_OUT)
+  const listening = readAndValidateEvidence({
+    cwd,
+    explicitPath: options.scores,
+    downloadsDir,
+    fileName: LISTENING_FILE_NAME,
+    label: 'human listening scores',
+    validate: validateListeningScores,
+  })
+  const handoff = readAndValidateEvidence({
+    cwd,
+    explicitPath: options.handoff,
+    downloadsDir,
+    fileName: HANDOFF_FILE_NAME,
+    label: 'physical WAV DAW handoff report',
+    validate: validateHandoffReport,
+  })
+  const problems = [
+    ...listening.problems.map((problem) => `human-listening: ${problem}`),
+    ...handoff.problems.map((problem) => `wav-daw-handoff: ${problem}`),
+  ]
+  return {
+    cwd,
+    listeningOut,
+    handoffOut,
+    listening,
+    handoff,
+    problems,
+  }
 }
 
 function readAndValidateEvidence({ cwd, explicitPath, downloadsDir, fileName, label, validate }) {
@@ -160,12 +196,36 @@ function summarizeEvidence(evidence, outPath) {
   }
 }
 
+function summarizeEvidenceStatus(evidence, outPath) {
+  return {
+    found: Boolean(evidence.sourcePath),
+    valid: Boolean(evidence.sourcePath && evidence.problems.length === 0),
+    sourcePath: evidence.sourcePath,
+    outPath,
+    problems: evidence.problems,
+  }
+}
+
 function summarizeAudit(audit) {
   return {
     ok: audit.ok,
     decision: audit.decision,
     problems: audit.problems,
   }
+}
+
+function evidenceStatusNextActions({ ok }) {
+  if (ok) {
+    return [
+      'Both release evidence JSON files are found and valid. Run npm run release:accept-evidence to install them atomically and rerun the final release audit.',
+    ]
+  }
+  return [
+    `Open the release review hub at ${PUBLIC_REVIEW_URLS.hub}.`,
+    `Download ${LISTENING_FILE_NAME} from ${PUBLIC_REVIEW_URLS.listening}.`,
+    `Download ${HANDOFF_FILE_NAME} from ${PUBLIC_REVIEW_URLS.wavDawHandoff} after a real physical-device WAV/DAW import pass.`,
+    'Keep both files in Downloads, then run npm run release:evidence-status before npm run release:accept-evidence.',
+  ]
 }
 
 function nextActions({ ok, skipAudit, audit }) {

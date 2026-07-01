@@ -262,6 +262,7 @@ function publicReviewHubGate(path) {
       'handoff-report.local.json',
       'Fast Acceptance Path',
       'Downloads',
+      'release:evidence-status',
       'release:accept-evidence',
       'voicebank:accept-review-v3',
       'release:accept-daw-handoff',
@@ -359,7 +360,8 @@ function publicWavDawHandoffGate(path) {
       'href="../index.html"',
       '60-second physical handoff path',
       'manual evidence only after real DAW import',
-      '처음 3분 route map',
+      '처음 시작',
+      '듣기 · 가사 · WAV',
       'First-Vocal-Sketch.wav',
       '44.1 kHz mono 16-bit',
       '도 히 도 히 다 이 스 키',
@@ -473,6 +475,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['release:audit-utau']) {
         problems.push('package.json must expose release:audit-utau')
       }
+      if (!scripts['release:evidence-status']) {
+        problems.push('package.json must expose release:evidence-status')
+      }
       if (!scripts['release:accept-evidence']) {
         problems.push('package.json must expose release:accept-evidence')
       }
@@ -521,7 +526,10 @@ function readmeGate(paths) {
       'derived from public/private recorded datasets',
       'must not ask the user, the user\'s family, or reviewers to record new voice material',
       'Kasane Teto assets are not bundled',
-      '다음 선택',
+      '처음 시작',
+      '듣기 · 가사 · WAV',
+      'STEP 01',
+      '고급 도구',
       'DAW 번들',
       '다운로드 패키지',
       'lyrics.txt',
@@ -531,6 +539,7 @@ function readmeGate(paths) {
       '60-second physical handoff path',
       '10-minute listening review path',
       'First-Vocal-Sketch.wav',
+      'release:evidence-status',
       'release:accept-evidence',
       'Downloads',
     ]
@@ -557,11 +566,8 @@ function readmeGate(paths) {
     for (const snippet of [
       'WebUtau Korean V3 Synthetic',
       'selected without importing a voicebank zip',
-      'START HERE',
-      '처음 3분',
-      '듣기',
-      '가사',
-      '저장',
+      '처음 시작',
+      '듣기 · 가사 · WAV',
       '01 샘플 듣기',
       '02 가사 적용',
       '03 WAV 받기',
@@ -570,18 +576,19 @@ function readmeGate(paths) {
       '한글 그대로 입력',
       '스타터 가사 라인',
       '현재 가사',
-      '다음 선택',
       '샘플 듣기',
       '멜로디 추천',
       'DAW 번들',
       '렌더 후 ZIP',
       '새 프로젝트',
       '기본 샘플',
+      '고급 도구',
       'wav-daw-handoff.local.template.json',
       'review/wav-daw/index.html',
       '60-second physical handoff path',
       'First-Vocal-Sketch.wav',
       '44.1 kHz mono 16-bit',
+      'release:evidence-status',
       'release:accept-evidence',
       'Downloads',
       'Optional compatibility pass',
