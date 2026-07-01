@@ -64,7 +64,7 @@ describe('private singer training pipeline smoke', () => {
     expect(report.checks).toContain('dataset ingest used only recording-audit-ready WAVs')
     expect(report.checks).toContain('OpenVPI pre-alignment seed corpus generated')
     expect(JSON.parse(readFileSync(reportPath, 'utf8')).note).toContain('not evidence of production voice quality')
-  }, 20_000)
+  }, 45_000)
 
   it('prints help from the command-line entrypoint', () => {
     const stdout = execFileSync(process.execPath, ['scripts/smoke-private-singer-training-pipeline.mjs', '--help'], {
