@@ -12,6 +12,17 @@ describe('WAV DAW handoff report builder page', () => {
       url: 'https://midagedev.github.io/webuta/review/wav-daw/index.html',
     })
     const { document } = dom.window
+    const route = document.querySelector('[aria-label="60-second physical handoff path"]')
+    const starterReference = document.querySelector('[aria-label="Starter WAV reference"]')
+
+    expect(route?.textContent).toContain('manual evidence only after real DAW import')
+    expect(route?.textContent).toContain('Open the public app')
+    expect(route?.textContent).toContain('Export the starter WAV')
+    expect(route?.textContent).toContain('Import into the DAW')
+    expect(route?.textContent).toContain('Save the report')
+    expect(starterReference?.textContent).toContain('First-Vocal-Sketch.wav')
+    expect(starterReference?.textContent).toContain('44.1 kHz mono 16-bit')
+    expect(starterReference?.textContent).toContain('도 히 도 히 다 이 스 키')
 
     fill(document, 'reviewer', 'release reviewer')
     fill(document, 'decision', 'community-ready')

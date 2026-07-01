@@ -127,6 +127,113 @@
         margin-top: 6px;
       }
 
+      .handoff-route {
+        display: grid;
+        gap: 12px;
+        margin-top: 14px;
+        border-color: rgba(157, 255, 106, 0.34);
+      }
+
+      .route-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .route-head h2 {
+        font-size: 20px;
+      }
+
+      .route-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .route-step {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        min-height: 142px;
+        padding: 11px;
+        border: 1px solid rgba(88, 244, 255, 0.2);
+        border-radius: 5px;
+        background: rgba(3, 5, 12, 0.64);
+      }
+
+      .route-step span {
+        width: 28px;
+        min-height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 231, 106, 0.55);
+        border-radius: 4px;
+        color: #170817;
+        background: #ffe76a;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      .route-step strong,
+      .route-step em {
+        display: block;
+        min-width: 0;
+      }
+
+      .route-step strong {
+        color: #f8f4ff;
+        font-size: 14px;
+        line-height: 1.18;
+      }
+
+      .route-step em {
+        color: #aeb8cc;
+        font-size: 12px;
+        font-style: normal;
+        line-height: 1.42;
+      }
+
+      .starter-file-card {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        padding-top: 2px;
+      }
+
+      .starter-file-card div {
+        min-width: 0;
+        border: 1px solid rgba(255, 75, 202, 0.22);
+        border-radius: 4px;
+        background: rgba(12, 11, 25, 0.86);
+        padding: 9px;
+      }
+
+      .starter-file-card span,
+      .starter-file-card strong {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .starter-file-card span {
+        color: #ff8ee2;
+        font-size: 10px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .starter-file-card strong {
+        margin-top: 4px;
+        color: #f8f4ff;
+        font-size: 12px;
+      }
+
       .pill {
         min-height: 31px;
         display: inline-flex;
@@ -322,7 +429,9 @@
         }
 
         .grid,
-        .field-grid {
+        .field-grid,
+        .route-grid,
+        .starter-file-card {
           grid-template-columns: 1fr;
         }
 
@@ -356,6 +465,53 @@
           <a class="quick-link" href="../index.html">Open release hub</a>
         </div>
       </header>
+
+      <section class="handoff-route" aria-label="60-second physical handoff path">
+        <div class="route-head">
+          <h2>60-second physical handoff path</h2>
+          <span class="pill">manual evidence only after real DAW import</span>
+        </div>
+        <div class="route-grid">
+          <div class="route-step">
+            <span>01</span>
+            <strong>Open the public app</strong>
+            <em>Use the Open WebUtau app link, confirm START HERE and the bundled V3 voicebank are visible.</em>
+          </div>
+          <div class="route-step">
+            <span>02</span>
+            <strong>Export the starter WAV</strong>
+            <em>Tap 샘플 듣기, then WAV 받기 or the share/download route for First-Vocal-Sketch.wav.</em>
+          </div>
+          <div class="route-step">
+            <span>03</span>
+            <strong>Import into the DAW</strong>
+            <em>Use Files, Share, or Download to place the WAV in GarageBand iPad or another target music app.</em>
+          </div>
+          <div class="route-step">
+            <span>04</span>
+            <strong>Save the report</strong>
+            <em>Only download handoff-report.local.json after the region is visible and playback is audible.</em>
+          </div>
+        </div>
+        <div class="starter-file-card" aria-label="Starter WAV reference">
+          <div>
+            <span>file</span>
+            <strong>First-Vocal-Sketch.wav</strong>
+          </div>
+          <div>
+            <span>format</span>
+            <strong>44.1 kHz mono 16-bit</strong>
+          </div>
+          <div>
+            <span>lyrics</span>
+            <strong>도 히 도 히 다 이 스 키</strong>
+          </div>
+          <div>
+            <span>voicebank</span>
+            <strong>WebUtau Korean V3 Synthetic</strong>
+          </div>
+        </div>
+      </section>
 
       <form id="handoffForm">
         <div class="grid">

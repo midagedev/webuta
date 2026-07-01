@@ -23,6 +23,7 @@ describe('UTAU community release audit', () => {
       pagesReport: fixture.pagesReport,
     })
 
+    expect(report.problems).toEqual([])
     expect(report.ok).toBe(true)
     expect(report.decision).toBe('community-release-ready')
     expect(report.gates.every((gate) => gate.passed)).toBe(true)
@@ -477,6 +478,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 listening review download gate loaded',
         'pages V3 listening review audio loaded',
         'pages WAV DAW handoff builder loaded',
+        'pages WAV DAW physical handoff path loaded',
         'pages WAV DAW starter lyric input handoff gate loaded',
       ],
       reviewAudio: makePagesReviewAudio(),
@@ -851,6 +853,7 @@ function makeReadme() {
     'Kasane Teto assets are not bundled in this repository.',
     'See License Boundaries.',
     'Use `public/review/index.html` as the release review hub.',
+    'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     '## Screenshots',
     '![WebUtau desktop editor](docs/screenshots/webuta-desktop.jpg)',
@@ -876,6 +879,7 @@ function makeWavDawQa() {
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
     'Confirm the first-run guide shows `START HERE`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `STEP 01`, `샘플 먼저 듣기`, `스타터 가사 라인`, `현재 가사`, `작업 시작`, `필요한 것만 바로 꺼내기`, `샘플 듣기`, `멜로디 추천`, `새 프로젝트`, and `기본 샘플`.',
+    'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',
     'Open `review/wav-daw/index.html` to generate `handoff-report.local.json`.',
     'Fill `docs/wav-daw-handoff.local.template.json`, keep both JSON files in Downloads, and run `npm run release:accept-evidence`.',
@@ -926,6 +930,11 @@ function makeWavDawHandoffPage() {
     '<p>GarageBand iPad</p>',
     '<a href="../../">Open WebUtau app</a>',
     '<a href="../index.html">Open release hub</a>',
+    '<section aria-label="60-second physical handoff path">',
+    '<p>manual evidence only after real DAW import</p>',
+    '<p>First-Vocal-Sketch.wav</p>',
+    '<p>44.1 kHz mono 16-bit</p>',
+    '<p>도 히 도 히 다 이 스 키</p>',
     '<script>',
     'const checks = ["openedFromPublicUrl","defaultVoicebankSelected","firstRunGuideVisible","starterLyricInputVisible","defaultLyricsMatched","audioPreviewWorked","wavExportWorked","targetDawImportWorked","targetDawPlaybackAudible","browserDraftRestored","noHorizontalOverflowPortrait","userVoicebankPrivacyConfirmed"];',
     'localStorage.setItem("fixture", JSON.stringify(checks));',

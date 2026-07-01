@@ -348,6 +348,11 @@ function publicWavDawHandoffGate(path) {
       'Open release hub',
       'href="../../"',
       'href="../index.html"',
+      '60-second physical handoff path',
+      'manual evidence only after real DAW import',
+      'First-Vocal-Sketch.wav',
+      '44.1 kHz mono 16-bit',
+      '도 히 도 히 다 이 스 키',
       'openedFromPublicUrl',
       'defaultVoicebankSelected',
       'firstRunGuideVisible',
@@ -508,6 +513,8 @@ function readmeGate(paths) {
       'Kasane Teto assets are not bundled',
       'License Boundaries',
       'public/review/index.html',
+      '60-second physical handoff path',
+      'First-Vocal-Sketch.wav',
       'release:accept-evidence',
       'Downloads',
     ]
@@ -550,6 +557,9 @@ function readmeGate(paths) {
       '기본 샘플',
       'wav-daw-handoff.local.template.json',
       'review/wav-daw/index.html',
+      '60-second physical handoff path',
+      'First-Vocal-Sketch.wav',
+      '44.1 kHz mono 16-bit',
       'release:accept-evidence',
       'Downloads',
       'Optional compatibility pass',
@@ -806,6 +816,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 listening review download gate loaded',
     'pages V3 listening review audio loaded',
     'pages WAV DAW handoff builder loaded',
+    'pages WAV DAW physical handoff path loaded',
     'pages WAV DAW starter lyric input handoff gate loaded',
   ]) {
     if (!checks.has(check)) {
@@ -901,6 +912,16 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages WAV DAW starter lyric input handoff gate loaded')
     } else {
       problems.push('GitHub Pages WAV DAW handoff builder is missing starter lyric input gate markers')
+    }
+    if (
+      html.includes('60-second physical handoff path') &&
+      html.includes('manual evidence only after real DAW import') &&
+      html.includes('First-Vocal-Sketch.wav') &&
+      html.includes('44.1 kHz mono 16-bit')
+    ) {
+      evidence.checks.push('pages WAV DAW physical handoff path loaded')
+    } else {
+      problems.push('GitHub Pages WAV DAW handoff builder is missing physical handoff path markers')
     }
   }
   if (reviewAudio.length >= 8 && reviewAudio.every((item) => item.status === 200 && item.bytes >= 180_000 && item.bytes === item.localBytes)) {
