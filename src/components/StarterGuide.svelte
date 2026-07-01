@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Download, FilePlus, Headphones, Music2, PencilLine, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
+  import { Check, Download, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Sparkles, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatVoicebankCoverage } from '../app/ui'
@@ -62,6 +62,13 @@
   const guideSummary = $derived(rendered ? '이제 WAV를 저장할 수 있어요' : '듣고, 가사를 바꾸고, WAV로 저장')
   const missionStatus = $derived(isRendering ? '렌더 중' : rendered ? 'WAV 준비됨' : isVoicebankReady ? '보컬 준비됨' : '보컬 로딩')
   const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
+  const focusStep = $derived(isRendering ? '02' : rendered ? '03' : isVoicebankReady ? '01' : '00')
+  const focusTitle = $derived(
+    isRendering ? '렌더가 끝날 때까지 기다리기' : rendered ? '완성 WAV 저장하기' : isVoicebankReady ? '첫 샘플 듣기' : '보컬 준비 기다리기',
+  )
+  const focusMeta = $derived(
+    isRendering ? '곧 재생·저장이 가능해져요' : rendered ? rendered.fileName : isVoicebankReady ? '기본 가사와 멜로디가 이미 들어있어요' : coverageLabel,
+  )
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -83,6 +90,35 @@
       <span>{project.bpm} BPM</span>
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{coverageLabel}</span>
       <span>{projectContextLabel}</span>
+    </div>
+  </div>
+
+  <div class="starter-focus" aria-label="Starter next action">
+    <div class="starter-focus-copy">
+      <span>처음이면</span>
+      <strong>{focusTitle}</strong>
+      <em>{focusMeta}</em>
+    </div>
+    <button
+      type="button"
+      class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
+      aria-label={nextActionAria}
+      onclick={() => void handleNextAction()}
+      disabled={isRendering}
+    >
+      {#if rendered && !isPlaying}
+        <Download size={21} aria-hidden="true" />
+      {:else if isPlaying}
+        <Music2 size={21} aria-hidden="true" />
+      {:else}
+        <Play size={21} aria-hidden="true" />
+      {/if}
+      <span>{nextActionTitle}</span>
+      <strong>{nextActionMeta}</strong>
+    </button>
+    <div class="starter-focus-badge" aria-label="Current starter step">
+      <ListChecks size={16} aria-hidden="true" />
+      <span>{focusStep}</span>
     </div>
   </div>
 
@@ -123,30 +159,7 @@
     </div>
   </div>
 
-  <div class="starter-hero" aria-label="Starter next action">
-    <div class="starter-primary-card">
-      <span>처음이면</span>
-      <strong>{nextActionTitle}</strong>
-      <em>{nextActionDetail}</em>
-      <button
-        type="button"
-        class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
-        aria-label={nextActionAria}
-        onclick={() => void handleNextAction()}
-        disabled={isRendering}
-      >
-        {#if rendered && !isPlaying}
-          <Download size={20} aria-hidden="true" />
-        {:else if isPlaying}
-          <Music2 size={20} aria-hidden="true" />
-        {:else}
-          <Play size={20} aria-hidden="true" />
-        {/if}
-        <span>{nextActionTitle}</span>
-        <strong>{nextActionMeta}</strong>
-      </button>
-    </div>
-
+  <div class="starter-hero" aria-label="Starter overview">
     <ol class="starter-checklist starter-path" aria-label="Starter path">
       <li class={`starter-path-step ${isVoicebankReady ? 'done' : 'active'}`}>
         <span>01</span>

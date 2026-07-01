@@ -20,7 +20,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `QUICK START`, `처음 1분`, `처음이면`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.
+5. Confirm the first-run guide shows `QUICK START`, `처음이면`, `첫 샘플 듣기`, the `01` current-step badge, `처음 1분`, `먼저 들어보기`, `현재 가사`, `01 보이스 확인`, `02 먼저 들어보기`, `03 WAV 저장`, and `가사·음정`.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
 8. Tap `공유` or `스타터 WAV 다운로드`.
@@ -40,7 +40,7 @@ npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.jso
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide shows the `처음 1분` beginner mission plus the voice, play, and WAV handoff path.
+- The first-run guide puts the focused `첫 샘플 듣기` action before the `처음 1분` beginner mission, then shows the voice, play, and WAV handoff path.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.

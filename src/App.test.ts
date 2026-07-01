@@ -104,6 +104,8 @@ describe('App editing workflow', () => {
     expect(within(guide).getByLabelText('Beginner mission')).toBeTruthy()
     expect(within(guide).getByLabelText('Beginner mission actions')).toBeTruthy()
     expect(within(guide).getByText('처음이면')).toBeTruthy()
+    expect(within(guide).getByLabelText('Starter next action').textContent).toContain('처음이면')
+    expect(within(guide).getByLabelText('Current starter step')).toBeTruthy()
     expect(within(guide).getByText('현재 가사')).toBeTruthy()
     expect(within(guide).getByText('기본 데모')).toBeTruthy()
     expect(within(guide).getAllByText('먼저 들어보기').length).toBeGreaterThan(0)

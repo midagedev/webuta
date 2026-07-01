@@ -5049,6 +5049,8 @@ button:disabled:active {
 .starter-mission,
 .starter-mission-actions,
 .starter-mission-action,
+.starter-focus,
+.starter-focus-badge,
 .starter-flow,
 .starter-path,
 .starter-step,
@@ -5077,6 +5079,9 @@ button:disabled:active {
 .starter-mission-copy em,
 .starter-mission-action span,
 .starter-mission-action strong,
+.starter-focus-copy span,
+.starter-focus-copy em,
+.starter-focus-badge span,
 .starter-primary-card span,
 .starter-primary-card em,
 .starter-sample-card span,
@@ -5269,10 +5274,74 @@ button:disabled:active {
   color: #06140b;
 }
 
+.starter-focus {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(260px, 1.15fr) 52px;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 231, 106, 0.42);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.11), rgba(255, 75, 202, 0.08), rgba(88, 244, 255, 0.08)),
+    rgba(5, 7, 14, 0.8);
+}
+
+.starter-focus-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.starter-focus-copy span {
+  color: var(--tracker-amber, #ffe76a);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-focus-copy strong {
+  min-width: 0;
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 22px;
+  line-height: 1.05;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-focus-copy em {
+  min-width: 0;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-focus-badge {
+  min-width: 0;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid rgba(88, 244, 255, 0.34);
+  border-radius: 4px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(88, 244, 255, 0.08);
+}
+
+.starter-focus-badge span {
+  font-size: 13px;
+  font-weight: 950;
+}
+
 .starter-hero {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(210px, 0.74fr) minmax(300px, 1fr) minmax(210px, 0.84fr);
+  grid-template-columns: minmax(300px, 1fr) minmax(210px, 0.72fr);
   gap: 8px;
   align-items: stretch;
 }
@@ -5791,6 +5860,41 @@ button:disabled:active {
   .starter-mission-action strong {
     max-width: 100%;
     font-size: 8px;
+  }
+
+  .starter-focus {
+    grid-template-columns: minmax(0, 1fr) 42px;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .starter-focus-copy {
+    min-height: 42px;
+  }
+
+  .starter-focus-copy span {
+    font-size: 8px;
+  }
+
+  .starter-focus-copy strong {
+    font-size: 15px;
+  }
+
+  .starter-focus-copy em {
+    font-size: 8px;
+  }
+
+  .starter-focus .starter-next-button {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .starter-focus-badge {
+    min-height: 42px;
+  }
+
+  .starter-focus-badge span {
+    font-size: 11px;
   }
 
   .starter-hero {

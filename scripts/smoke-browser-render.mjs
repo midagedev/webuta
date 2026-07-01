@@ -395,6 +395,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByRole('button', { name: '믹서', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByText('첫 샘플 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Current starter step').getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -431,6 +433,7 @@ async function assertDefaultV3DemoReady(page) {
     'default V3 voicebank loaded',
     'first-run starter guide visible',
     'first-run quick-start CTA visible',
+    'first-run focused next action visible',
     'first-run beginner mission visible',
     'first-run current lyric card visible',
     'first-run guided path visible',
