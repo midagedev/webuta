@@ -282,6 +282,7 @@ function publicReviewGate(paths) {
       'problemList',
       'Finish every required score before downloading',
       'release:accept-evidence',
+      'Downloads',
     ]) {
       if (!html.includes(snippet)) {
         problems.push(`public review scorecard must include "${snippet}"`)
@@ -871,7 +872,8 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     if (
       html.includes('problemList') &&
       html.includes('Finish every required score before downloading') &&
-      html.includes('release:accept-evidence')
+      html.includes('release:accept-evidence') &&
+      html.includes('Downloads')
     ) {
       evidence.checks.push('pages V3 listening review download gate loaded')
     } else {
