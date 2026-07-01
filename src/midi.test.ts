@@ -69,6 +69,14 @@ describe('MIDI export', () => {
     expect(project.notes).toHaveLength(3)
   })
 
+  it('still chooses the vocal channel when same-tick harmony notes are stored before melody notes', () => {
+    const project = parseMelodyMidi(createSingleTrackLyricHarmonyMidi({ chordFirst: true }), 'chord-first-type-zero.mid')
+
+    expect(project.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛'])
+    expect(project.notes.map((note) => note.tone)).toEqual([69, 71, 72])
+    expect(project.notes).toHaveLength(3)
+  })
+
   it('round-trips every varied starter sample through melody MIDI', () => {
     for (const sample of demoSamples) {
       const project = parseMelodyMidi(createMelodyMidi(sample.project), `${sample.id}.mid`)
@@ -117,15 +125,15 @@ function createMelodyAndChordMidi(project: typeof demoProject) {
   ])
 }
 
-function createSingleTrackLyricHarmonyMidi() {
+function createSingleTrackLyricHarmonyMidi(options: { chordFirst?: boolean } = {}) {
   const textEncoder = new TextEncoder()
   const events = [
     metaEvent(0, 0, 0x03, 'One Track DAW Export', textEncoder),
     { tick: 0, priority: 0, data: [0xff, 0x51, 0x03, 0x07, 0x27, 0x0e] },
     { tick: 0, priority: 0, data: [0xff, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08] },
-    ...lyricHarmonyEvents(0, '네', 69, [60, 64, 67], textEncoder),
-    ...lyricHarmonyEvents(480, '오', 71, [65, 69, 72], textEncoder),
-    ...lyricHarmonyEvents(960, '빛', 72, [67, 71, 74], textEncoder),
+    ...lyricHarmonyEvents(0, '네', 69, [60, 64, 67], textEncoder, options),
+    ...lyricHarmonyEvents(480, '오', 71, [65, 69, 72], textEncoder, options),
+    ...lyricHarmonyEvents(960, '빛', 72, [67, 71, 74], textEncoder, options),
   ]
   return concatBytes([
     asciiBytes('MThd'),
@@ -137,13 +145,22 @@ function createSingleTrackLyricHarmonyMidi() {
   ])
 }
 
-function lyricHarmonyEvents(tick: number, lyric: string, melodyTone: number, chordTones: number[], textEncoder: TextEncoder) {
+function lyricHarmonyEvents(
+  tick: number,
+  lyric: string,
+  melodyTone: number,
+  chordTones: number[],
+  textEncoder: TextEncoder,
+  options: { chordFirst?: boolean } = {},
+) {
+  const melodyPriority = options.chordFirst ? 3 : 2
+  const chordPriority = options.chordFirst ? 2 : 3
   return [
     metaEvent(tick, 1, 0x05, lyric, textEncoder),
-    { tick, priority: 2, data: [0x90, melodyTone, 96] },
+    { tick, priority: melodyPriority, data: [0x90, melodyTone, 96] },
     { tick: tick + 360, priority: 0, data: [0x80, melodyTone, 0] },
     ...chordTones.flatMap((tone) => [
-      { tick, priority: 3, data: [0x91, tone, 72] },
+      { tick, priority: chordPriority, data: [0x91, tone, 72] },
       { tick: tick + 480, priority: 0, data: [0x81, tone, 0] },
     ]),
   ]

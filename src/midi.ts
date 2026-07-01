@@ -17,6 +17,7 @@ type ParsedMidiNote = {
   duration: number
   tone: number
   lyric: string
+  channel: number
 }
 
 type ParsedMidiLyric = {
@@ -387,6 +388,7 @@ function parseMidiTrack(
             duration: Math.max(1, scaledTick - start.tick),
             tone: sanitizeMidiNote(tone),
             lyric: start.lyric,
+            channel,
           })
         }
         if (stack && stack.length === 0) {
@@ -441,10 +443,6 @@ function vocalNotesForTrack(track: ParsedMidiTrack, lyrics: ParsedMidiLyric[]) {
   if (lyrics.length === 0) {
     return track.notes
   }
-  const lyricNotes = track.notes.filter((note) => note.lyric.trim().length > 0)
-  if (lyricNotes.length > 0) {
-    return lyricNotes
-  }
   const usedIndexes = new Set<number>()
   return lyrics
     .map((lyric, lyricIndex) => {
@@ -453,7 +451,7 @@ function vocalNotesForTrack(track: ParsedMidiTrack, lyrics: ParsedMidiLyric[]) {
       const candidates = track.notes
         .map((note, noteIndex) => ({ note, noteIndex }))
         .filter(({ note, noteIndex }) => !usedIndexes.has(noteIndex) && note.start >= lyric.tick && note.start <= maxStart)
-        .sort((a, b) => Math.abs(a.note.start - lyric.tick) - Math.abs(b.note.start - lyric.tick) || b.note.tone - a.note.tone)
+        .sort((a, b) => lyricCandidateScore(a.note, lyric) - lyricCandidateScore(b.note, lyric))
       const match = candidates[0]
       if (!match) {
         return null
@@ -465,6 +463,13 @@ function vocalNotesForTrack(track: ParsedMidiTrack, lyrics: ParsedMidiLyric[]) {
       }
     })
     .filter((note): note is ParsedMidiNote => note !== null)
+}
+
+function lyricCandidateScore(note: ParsedMidiNote, lyric: ParsedMidiLyric) {
+  const channelPenalty = note.channel === MELODY_CHANNEL ? 0 : 20
+  const lyricPenalty = note.lyric === lyric.text ? 0 : note.lyric.trim().length > 0 ? 10 : 4
+  const startPenalty = Math.abs(note.start - lyric.tick) / TICKS_PER_BEAT
+  return channelPenalty + lyricPenalty + startPenalty
 }
 
 function lyricForMidiNote(note: ParsedMidiNote, lyrics: ParsedMidiLyric[], index: number) {
