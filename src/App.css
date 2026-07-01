@@ -1359,6 +1359,15 @@ button:disabled {
   background: #423220;
 }
 
+.official-teto-link {
+  min-width: 0;
+  padding: 0 8px;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .model-list {
   display: grid;
   gap: 8px;

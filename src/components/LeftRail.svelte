@@ -554,8 +554,15 @@
         <Volume2 size={18} aria-hidden="true" />
         <span>{isPreviewingVoicebankSample ? 'PLAY' : '샘플'}</span>
       </button>
-      <a class="text-link-button" href="https://kasaneteto.jp/utau/" target="_blank" rel="noreferrer">
-        Teto UTAU
+      <a
+        class="text-link-button official-teto-link"
+        href="https://kasaneteto.jp/utau/"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Kasane Teto 공식 UTAU 다운로드 열기"
+        title="사용자가 직접 받는 공식 Teto UTAU"
+      >
+        Teto 공식
       </a>
       <input
         bind:this={voicebankInput}
