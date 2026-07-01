@@ -18,6 +18,7 @@ const DEFAULTS = {
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   publicReviewHub: 'public/review/index.html',
+  publicReviewPacket: 'public/review/release-packet.json',
   publicReviewIndex: 'public/review/v3/index.html',
   publicReviewManifest: 'public/review/v3/review-manifest.json',
   publicWavDawHandoffIndex: 'public/review/wav-daw/index.html',
@@ -103,6 +104,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
     reviewPackGate(paths.reviewManifest),
     publicReviewHubGate(paths.publicReviewHub),
+    publicReviewPacketGate(paths.publicReviewPacket, bundled),
     publicReviewGate(paths),
     publicWavDawHandoffGate(paths.publicWavDawHandoffIndex),
     sampleReviewGate(paths.sampleReview),
@@ -260,6 +262,8 @@ function publicReviewHubGate(path) {
       'listening-scores.local.json',
       'wav-daw/index.html',
       'handoff-report.local.json',
+      'Download review packet',
+      'release-packet.json',
       'Fast Acceptance Path',
       'Downloads',
       'release:evidence-status',
@@ -276,6 +280,49 @@ function publicReviewHubGate(path) {
   return makeGate('public-release-review-hub', 'Published release review hub', path, problems, html ? {
     hasListeningLink: html.includes('v3/index.html'),
     hasWavDawLink: html.includes('wav-daw/index.html'),
+  } : null)
+}
+
+function publicReviewPacketGate(path, bundled) {
+  const problems = []
+  const packet = readOptionalJson(path, 'public release review packet', problems)
+  if (packet) {
+    if (packet.ok !== true || packet.decision !== 'release-review-packet-ready') {
+      problems.push('public release review packet must be ready')
+    }
+    if (packet.voicebank?.name !== bundled.name) {
+      problems.push(`public release review packet voicebank name ${packet.voicebank?.name ?? 'missing'} does not match ${bundled.name}`)
+    }
+    if (packet.voicebank?.file !== bundled.file) {
+      problems.push(`public release review packet voicebank file ${packet.voicebank?.file ?? 'missing'} does not match ${bundled.file}`)
+    }
+    if (packet.voicebank?.version !== bundled.version) {
+      problems.push(`public release review packet voicebank version ${packet.voicebank?.version ?? 'missing'} does not match ${bundled.version}`)
+    }
+    if (packet.voicebank?.noRecordingRequired !== true || packet.noRecordingRequired !== true) {
+      problems.push('public release review packet must mark noRecordingRequired true')
+    }
+    if (packet.voicebank?.kasaneTetoBundled !== false) {
+      problems.push('public release review packet must mark Kasane Teto as not bundled')
+    }
+    const evidenceFiles = new Set((packet.requiredEvidence ?? []).map((item) => item.downloadFile))
+    for (const fileName of ['listening-scores.local.json', 'handoff-report.local.json']) {
+      if (!evidenceFiles.has(fileName)) {
+        problems.push(`public release review packet must require ${fileName}`)
+      }
+    }
+    if (!Array.isArray(packet.reviewAudio) || packet.reviewAudio.length < 8) {
+      problems.push('public release review packet must list at least eight V3/V2 review audio files')
+    }
+    for (const command of ['status', 'accept', 'audit']) {
+      if (typeof packet.commands?.[command] !== 'string' || !packet.commands[command].startsWith('npm run ')) {
+        problems.push(`public release review packet command ${command} must be an npm script`)
+      }
+    }
+  }
+  return makeGate('public-release-review-packet', 'Published release review packet', path, problems, packet ? {
+    reviewAudioCount: packet.reviewAudio?.length ?? 0,
+    requiredEvidence: (packet.requiredEvidence ?? []).map((item) => item.downloadFile),
   } : null)
 }
 
@@ -476,6 +523,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['release:audit-utau']) {
         problems.push('package.json must expose release:audit-utau')
       }
+      if (!scripts['release:packet']) {
+        problems.push('package.json must expose release:packet')
+      }
       if (!scripts['release:evidence-status']) {
         problems.push('package.json must expose release:evidence-status')
       }
@@ -540,6 +590,8 @@ function readmeGate(paths) {
       '60-second physical handoff path',
       '10-minute listening review path',
       'First-Vocal-Sketch.wav',
+      'release:packet',
+      'release-packet.json',
       'release:evidence-status',
       'release:accept-evidence',
       'Downloads',
@@ -842,6 +894,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 zip cache-busted',
     'pages V3 zip bytes match local bundle',
     'pages release review hub loaded',
+    'pages release review packet loaded',
     'pages V3 listening review scorecard loaded',
     'pages V3 listening review path loaded',
     'pages V3 listening review download gate loaded',
@@ -864,11 +917,13 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   }
   const app = await fetchWithProblem(base, 'GitHub Pages app', problems)
   const hubUrl = new URL('review/index.html', base)
+  const packetUrl = new URL('review/release-packet.json', base)
   const reviewUrl = new URL('review/v3/index.html', base)
   const handoffUrl = new URL('review/wav-daw/index.html', base)
   const zipUrl = new URL(`voicebanks/${bundled.file}`, base)
   zipUrl.searchParams.set('v', bundled.version)
   const hub = await fetchWithProblem(hubUrl, 'GitHub Pages release review hub', problems)
+  const packet = await fetchWithProblem(packetUrl, 'GitHub Pages release review packet', problems)
   const review = await fetchWithProblem(reviewUrl, 'GitHub Pages V3 listening review', problems)
   const handoff = await fetchWithProblem(handoffUrl, 'GitHub Pages WAV DAW handoff builder', problems)
   const zip = await fetchWithProblem(zipUrl, 'GitHub Pages V3 zip', problems, { method: 'HEAD' })
@@ -877,6 +932,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     ok: problems.length === 0,
     url: base.href,
     hubUrl: hubUrl.href,
+    packetUrl: packetUrl.href,
     reviewUrl: reviewUrl.href,
     handoffUrl: handoffUrl.href,
     voicebankUrl: zipUrl.href,
@@ -903,6 +959,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       html.includes('Open WebUtau app') &&
       html.includes('v3/index.html') &&
       html.includes('wav-daw/index.html') &&
+      html.includes('release-packet.json') &&
       html.includes('listening-scores.local.json') &&
       html.includes('handoff-report.local.json') &&
       html.includes('release:accept-evidence')
@@ -910,6 +967,25 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages release review hub loaded')
     } else {
       problems.push('GitHub Pages release review hub is missing release evidence links')
+    }
+  }
+  if (packet?.ok) {
+    const data = await readResponseJson(packet, 'GitHub Pages release review packet', problems)
+    if (
+      data?.ok === true &&
+      data.decision === 'release-review-packet-ready' &&
+      data.voicebank?.file === bundled.file &&
+      data.voicebank?.version === bundled.version &&
+      data.noRecordingRequired === true &&
+      data.requiredEvidence?.some((item) => item.downloadFile === 'listening-scores.local.json') &&
+      data.requiredEvidence?.some((item) => item.downloadFile === 'handoff-report.local.json') &&
+      data.reviewAudio?.length >= 8 &&
+      data.commands?.status === 'npm run release:evidence-status' &&
+      data.commands?.accept === 'npm run release:accept-evidence'
+    ) {
+      evidence.checks.push('pages release review packet loaded')
+    } else {
+      problems.push('GitHub Pages release review packet is missing required release markers')
     }
   }
   if (review?.ok) {
@@ -1070,6 +1146,15 @@ async function fetchWithProblem(url, label, problems, init = {}) {
     return response
   } catch (error) {
     problems.push(`${label} fetch failed: ${error instanceof Error ? error.message : String(error)}`)
+    return null
+  }
+}
+
+async function readResponseJson(response, label, problems) {
+  try {
+    return await response.json()
+  } catch (error) {
+    problems.push(`${label} is not valid JSON: ${error instanceof Error ? error.message : String(error)}`)
     return null
   }
 }

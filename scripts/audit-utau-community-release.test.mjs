@@ -410,6 +410,32 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('public-release-review-hub: public release review hub must include "listening-scores.local.json"')
     expect(report.problems.join('\n')).toContain('public-release-review-hub: public release review hub must include "handoff-report.local.json"')
   })
+
+  it('blocks release when the public release packet is missing or stale', async () => {
+    const fixture = await makeFixture({
+      releasePacket: {
+        decision: 'release-review-packet-blocked',
+        voicebank: {
+          version: 'old',
+          noRecordingRequired: false,
+          kasaneTetoBundled: true,
+        },
+        requiredEvidence: [],
+        reviewAudio: [],
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must be ready')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260701-v3-synthetic-web-3')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must require listening-scores.local.json')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must list at least eight V3/V2 review audio files')
+  })
 })
 
 async function makeFixture(overrides = {}) {
@@ -455,6 +481,9 @@ async function makeFixture(overrides = {}) {
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
+  if (!overrides.omitReleasePacket) {
+    writeJson(join(root, 'public', 'review', 'release-packet.json'), deepMerge(makeReleasePacket(), overrides.releasePacket ?? {}))
+  }
   writeFileSync(join(root, 'public', 'review', 'index.html'), makeReviewHubPage())
   writeFileSync(join(root, 'public', 'review', 'wav-daw', 'index.html'), makeWavDawHandoffPage())
   for (const fileName of ['01-first-run-demo.wav', '02-coda-release-check.wav', '03-clear-cv-line.wav', '04-vowel-color-check.wav']) {
@@ -505,6 +534,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip cache-busted',
         'pages V3 zip bytes match local bundle',
         'pages release review hub loaded',
+        'pages release review packet loaded',
         'pages V3 listening review scorecard loaded',
         'pages V3 listening review path loaded',
         'pages V3 listening review download gate loaded',
@@ -770,6 +800,7 @@ function makePackageJson() {
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
+      'release:packet': 'node scripts/build-release-review-packet.mjs',
       'release:audit-utau': 'node scripts/audit-utau-community-release.mjs --pages-url https://midagedev.github.io/webuta/',
       'release:evidence-status': 'node scripts/release-evidence-status.mjs',
       'release:accept-evidence': 'node scripts/accept-release-evidence.mjs',
@@ -892,8 +923,10 @@ function makeReadme() {
     'Kasane Teto assets are not bundled in this repository.',
     'See License Boundaries.',
     'Use `public/review/index.html` as the release review hub.',
+    'Use `public/review/release-packet.json` as the machine-readable reviewer packet.',
     'Use the `10-minute listening review path` before accepting listening evidence.',
     'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
+    'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     '## Screenshots',
@@ -943,6 +976,7 @@ function makeReviewHubPage() {
     '<p>0/2 left</p>',
     '<a href="../">Open WebUtau app</a>',
     '<a href="v3/index.html">Open listening review</a>',
+    '<a href="release-packet.json">Download review packet</a>',
     '<code>listening-scores.local.json</code>',
     '<a href="wav-daw/index.html">Open DAW handoff</a>',
     '<code>handoff-report.local.json</code>',
@@ -954,8 +988,57 @@ function makeReviewHubPage() {
     '<code>npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json</code>',
     '<code>npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json</code>',
     '<code>npm run release:audit-utau</code>',
+    '<code>release-packet.json</code>',
     '',
   ].join('\n')
+}
+
+function makeReleasePacket() {
+  return {
+    version: 1,
+    ok: true,
+    decision: 'release-review-packet-ready',
+    pagesUrl: 'https://midagedev.github.io/webuta/',
+    reviewHubUrl: 'https://midagedev.github.io/webuta/review/',
+    listeningReviewUrl: 'https://midagedev.github.io/webuta/review/v3/',
+    wavDawHandoffUrl: 'https://midagedev.github.io/webuta/review/wav-daw/',
+    packetUrl: 'https://midagedev.github.io/webuta/review/release-packet.json',
+    voicebank: {
+      name: 'WebUtau Korean V3 Synthetic',
+      file: 'webuta-ko-v3.zip',
+      version: '20260701-v3-synthetic-web-3',
+      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-3',
+      bundledByDefault: true,
+      origin: 'self-generated synthetic UTAU sample voicebank',
+      noRecordingRequired: true,
+      kasaneTetoBundled: false,
+    },
+    requiredEvidence: [
+      {
+        id: 'human-listening',
+        downloadFile: 'listening-scores.local.json',
+        acceptedPath: 'experiments/utau-v3/work/v3-listening-review/listening-scores.local.json',
+      },
+      {
+        id: 'wav-daw-handoff',
+        downloadFile: 'handoff-report.local.json',
+        acceptedPath: 'experiments/utau-v3/work/wav-daw-handoff/handoff-report.local.json',
+      },
+    ],
+    reviewAudio: makePagesReviewAudio().map((item) => ({
+      role: item.role,
+      id: item.id,
+      href: item.href,
+      bytes: item.bytes,
+    })),
+    commands: {
+      status: 'npm run release:evidence-status',
+      accept: 'npm run release:accept-evidence',
+      audit: 'npm run release:audit-utau',
+    },
+    noRecordingRequired: true,
+    problems: [],
+  }
 }
 
 function makeWavDawHandoffPage() {

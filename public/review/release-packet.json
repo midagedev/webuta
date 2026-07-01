@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-01T08:04:40.399Z",
+  "ok": true,
+  "decision": "release-review-packet-ready",
+  "pagesUrl": "https://midagedev.github.io/webuta/",
+  "reviewHubUrl": "https://midagedev.github.io/webuta/review/",
+  "listeningReviewUrl": "https://midagedev.github.io/webuta/review/v3/",
+  "wavDawHandoffUrl": "https://midagedev.github.io/webuta/review/wav-daw/",
+  "packetUrl": "https://midagedev.github.io/webuta/review/release-packet.json",
+  "voicebank": {
+    "name": "WebUtau Korean V3 Synthetic",
+    "file": "webuta-ko-v3.zip",
+    "version": "20260701-v3-synthetic-web-3",
+    "url": "https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-3",
+    "bundledByDefault": true,
+    "origin": "self-generated synthetic UTAU sample voicebank",
+    "noRecordingRequired": true,
+    "kasaneTetoBundled": false
+  },
+  "requiredEvidence": [
+    {
+      "id": "human-listening",
+      "label": "Human listening review scores",
+      "publicPage": "review/v3/index.html",
+      "downloadFile": "listening-scores.local.json",
+      "acceptedPath": "experiments/utau-v3/work/v3-listening-review/listening-scores.local.json",
+      "requirement": "Score every V3 render and V2 comparison honestly after real listening."
+    },
+    {
+      "id": "wav-daw-handoff",
+      "label": "Physical WAV and DAW import report",
+      "publicPage": "review/wav-daw/index.html",
+      "downloadFile": "handoff-report.local.json",
+      "acceptedPath": "experiments/utau-v3/work/wav-daw-handoff/handoff-report.local.json",
+      "requirement": "Export the default WAV from the public app, import it on a real device/music app, and confirm audible playback."
+    }
+  ],
+  "reviewAudio": [
+    {
+      "role": "V3",
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "lyricLine": "도 히 도 히 다 이 스 키",
+      "href": "audio/01-first-run-demo.wav",
+      "bytes": 578384,
+      "durationSeconds": 6.557142857142857,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "V3",
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "lyricLine": "연 한 랑 밤 말",
+      "href": "audio/02-coda-release-check.wav",
+      "bytes": 563846,
+      "durationSeconds": 6.392312925170068,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "V3",
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "lyricLine": "가 나 다 라 마 사",
+      "href": "audio/03-clear-cv-line.wav",
+      "bytes": 470850,
+      "durationSeconds": 5.337936507936508,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "V3",
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "lyricLine": "아 이 우 에 오",
+      "href": "audio/04-vowel-color-check.wav",
+      "bytes": 497886,
+      "durationSeconds": 5.644467120181406,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "legacy V2",
+      "id": "first-run-demo",
+      "title": "First-run hook",
+      "lyricLine": "도 히 도 히 다 이 스 키",
+      "href": "audio/legacy-v2/01-first-run-demo-legacy-v2.wav",
+      "bytes": 578384,
+      "durationSeconds": 6.557142857142857,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "legacy V2",
+      "id": "coda-release-check",
+      "title": "Batchim release check",
+      "lyricLine": "연 한 랑 밤 말",
+      "href": "audio/legacy-v2/02-coda-release-check-legacy-v2.wav",
+      "bytes": 563846,
+      "durationSeconds": 6.392312925170068,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "legacy V2",
+      "id": "clear-cv-line",
+      "title": "Clear CV line",
+      "lyricLine": "가 나 다 라 마 사",
+      "href": "audio/legacy-v2/03-clear-cv-line-legacy-v2.wav",
+      "bytes": 470850,
+      "durationSeconds": 5.337936507936508,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    },
+    {
+      "role": "legacy V2",
+      "id": "vowel-color-check",
+      "title": "Vowel color check",
+      "lyricLine": "아 이 우 에 오",
+      "href": "audio/legacy-v2/04-vowel-color-check-legacy-v2.wav",
+      "bytes": 497886,
+      "durationSeconds": 5.644467120181406,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bitsPerSample": 16
+    }
+  ],
+  "commands": {
+    "status": "npm run release:evidence-status",
+    "accept": "npm run release:accept-evidence",
+    "audit": "npm run release:audit-utau",
+    "explicitAccept": "npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json"
+  },
+  "checklist": [
+    "Open the release review hub.",
+    "Complete the V3 listening scorecard from real playback.",
+    "Complete the physical-device WAV/DAW handoff report.",
+    "Keep both downloaded JSON files in Downloads.",
+    "Run npm run release:evidence-status.",
+    "Run npm run release:accept-evidence.",
+    "Run npm run release:audit-utau."
+  ],
+  "noRecordingRequired": true,
+  "problems": []
+}
