@@ -406,8 +406,8 @@ function utauCompatibilityGate(path) {
       problems.push('UTAU import compatibility audit must pass')
     }
     const cases = Array.isArray(report.cases) ? report.cases : []
-    if ((report.caseCount ?? cases.length) < 8 || cases.length < 8) {
-      problems.push('UTAU import compatibility audit must cover at least eight diverse fixture voicebanks')
+    if ((report.caseCount ?? cases.length) < 9 || cases.length < 9) {
+      problems.push('UTAU import compatibility audit must cover at least nine diverse fixture voicebanks')
     }
     const caseIds = new Set(cases.map((item) => String(item.id ?? '')))
     for (const requiredId of [
@@ -419,6 +419,7 @@ function utauCompatibilityGate(path) {
       'hangul-cv-vc-coda',
       'multi-oto-style-ranking',
       'folder-scoped-oto-duplicates',
+      'windows-backslash-oto-path',
     ]) {
       if (!caseIds.has(requiredId)) {
         problems.push(`UTAU import compatibility audit missing case ${requiredId}`)
@@ -455,7 +456,7 @@ function utauCompatibilityGate(path) {
       }
     }
   }
-  return makeGate('utau-import-compatibility', 'Diverse imported UTAU zip formats, including Shift-JIS oto.ini, legacy character.txt, and folder-scoped duplicate WAV names, render through the browser sample renderer', path, problems, report ? {
+  return makeGate('utau-import-compatibility', 'Diverse imported UTAU zip formats, including Shift-JIS oto.ini, legacy character.txt, folder-scoped duplicate WAV names, and Windows backslash sample paths, render through the browser sample renderer', path, problems, report ? {
     caseCount: report.caseCount ?? 0,
     cases: (report.cases ?? []).map((item) => ({
       id: item.id,
@@ -1023,6 +1024,7 @@ function readmeGate(paths) {
       'Hangul CV/VC coda',
       'multi-oto style ranking',
       'folder-scoped duplicate WAV names',
+      'Windows backslash sample paths',
       'release:evidence-status',
       'release:accept-evidence',
       'Evidence Preflight',
@@ -1755,7 +1757,7 @@ function nextActionsForProblems(problems) {
     actions.push('Run npm run voicebank:starter-samples-v3 so all twelve first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
   }
   if (problems.some((problem) => problem.includes('utau-import-compatibility'))) {
-    actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Shift-JIS oto.ini, legacy character.txt metadata, Hangul CV/VC coda, multi-oto style-ranking, and folder-scoped duplicate-WAV fixture voicebanks all render through the browser UTAU sample path.')
+    actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Shift-JIS oto.ini, legacy character.txt metadata, Hangul CV/VC coda, multi-oto style-ranking, folder-scoped duplicate-WAV, and Windows backslash-path fixture voicebanks all render through the browser UTAU sample path.')
   }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')

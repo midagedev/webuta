@@ -507,6 +507,23 @@ describe('voicebank zip loader', () => {
     expect([...sample]).toEqual([5, 6, 7, 8])
   })
 
+  it('resolves Windows-style backslash sample paths from oto.ini', async () => {
+    const zip = new JSZip()
+    zip.file('Singer/character.yaml', 'name: Windows Path Singer\n')
+    zip.file('Singer/oto.ini', 'sub\\a_C4.wav=あ,0,120,0,40,20\n')
+    zip.file('Singer/sub/a_C4.wav', new Uint8Array([13, 14, 15, 16]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'windows-oto-path.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const entry = findBestEntryForLyric(voicebank, 'a', 60)
+    const sample = new Uint8Array(await voicebank.readSample(entry))
+
+    expect(entry.fileName).toBe('sub\\a_C4.wav')
+    expect(entry.path).toBe('Singer/sub/a_C4.wav')
+    expect([...sample]).toEqual([13, 14, 15, 16])
+  })
+
   it('chooses the closest pitched sample for the same alias', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')

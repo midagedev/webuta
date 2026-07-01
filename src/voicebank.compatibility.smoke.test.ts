@@ -17,6 +17,7 @@ const REPORT_PATH = process.env.WEBUTA_UTAU_COMPAT_REPORT
 type OtoFixture = {
   directory?: string
   fileName: string
+  samplePath?: string
   alias: string
   offsetMs?: number
   consonantMs?: number
@@ -111,7 +112,7 @@ describe('UTAU import compatibility smoke audit', () => {
       writeJson(resolve(REPORT_PATH), report)
     }
 
-    expect(report.caseCount).toBeGreaterThanOrEqual(8)
+    expect(report.caseCount).toBeGreaterThanOrEqual(9)
     expect(report.problems).toEqual([])
     expect(report.ok).toBe(true)
   }, 30000)
@@ -351,6 +352,17 @@ function makeCompatibilityFixtures(): CompatibilityFixture[] {
       expectedAliases: { mode: 'exact', values: ['あ'] },
       expectedSamplePaths: { mode: 'exact', values: ['FolderSinger/bright/a_C4.wav'] },
     },
+    {
+      id: 'windows-backslash-oto-path',
+      title: 'Windows-style backslash sample paths in oto.ini',
+      fileName: 'compat-windows-backslash-oto-path.zip',
+      rootDir: 'WindowsSinger',
+      characterName: 'Compatibility Windows Path Singer',
+      entries: [{ fileName: 'sub\\a_C4.wav', samplePath: 'sub/a_C4.wav', alias: 'あ', frequency: 262 }],
+      notes: [{ lyric: 'a', tone: 60 }],
+      expectedAliases: { mode: 'exact', values: ['あ'] },
+      expectedSamplePaths: { mode: 'exact', values: ['WindowsSinger/sub/a_C4.wav'] },
+    },
   ]
 }
 
@@ -390,7 +402,7 @@ async function buildVoicebankZip(fixture: CompatibilityFixture) {
         ].join(','),
       )
       zip.file(
-        `${directory}/${entry.fileName}`,
+        `${directory}/${entry.samplePath ?? entry.fileName}`,
         makePcm16Wav({
           durationSeconds: entry.durationSeconds ?? 0.95,
           frequency: entry.frequency ?? 260,

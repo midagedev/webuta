@@ -1134,11 +1134,18 @@ function textDecodeScore(text: string) {
 }
 
 function resolveSamplePath(directory: string, fileName: string, files: ZipFileMap) {
-  const direct = `${directory}${fileName}`
-  if (files[direct]) {
-    return direct
+  const candidates = uniqueStrings([fileName, normalizeOtoSampleFileName(fileName)])
+  for (const candidate of candidates) {
+    const direct = `${directory}${candidate}`
+    if (files[direct]) {
+      return direct
+    }
   }
-  return Object.keys(files).find((path) => path.endsWith(`/${fileName}`) || path === fileName)
+  return Object.keys(files).find((path) => candidates.some((candidate) => path.endsWith(`/${candidate}`) || path === candidate))
+}
+
+function normalizeOtoSampleFileName(fileName: string) {
+  return fileName.replaceAll('\\', '/').replace(/^\.\//u, '')
 }
 
 function findSample(files: ZipFileMap, path: string) {
