@@ -3,7 +3,7 @@ import { sanitizeOptionalNoteEnvelope } from './envelope'
 import { sanitizeOptionalNoteFlags, sanitizeOptionalNoteIntensity, sanitizeOptionalNoteModulation, sanitizeOptionalNoteVelocity } from './expression'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
 import { sanitizeOptionalNoteTiming } from './timing'
-import { TICKS_PER_BEAT, type SongNote, type SongProject, type VoicePart } from './types'
+import { TICKS_PER_BEAT, type ChordMarker, type SongNote, type SongProject, type VoicePart } from './types'
 import { sanitizeOptionalNoteVibrato } from './vibrato'
 
 export const GRID_SNAP_TICKS = 120
@@ -207,6 +207,46 @@ export function quantizeProjectNotes(project: SongProject, gridTicks = GRID_SNAP
   }
 }
 
+export function transposeProject(project: SongProject, semitones: number) {
+  const requestedSteps = sanitizeTransposeSteps(semitones)
+  const steps = boundedTransposeSteps(project.notes, requestedSteps)
+  const clampedNoteCount = steps !== requestedSteps ? project.notes.length : 0
+  if (steps === 0) {
+    return { project, changedNoteCount: 0, clampedNoteCount, changedChordCount: 0 }
+  }
+
+  let changedNoteCount = 0
+  const notes = project.notes
+    .map((note) => {
+      const tone = clampTone(note.tone + steps)
+      if (tone !== note.tone) {
+        changedNoteCount += 1
+      }
+      return sanitizeNote({ ...note, tone })
+    })
+    .sort((a, b) => a.start - b.start || a.tone - b.tone)
+
+  let changedChordCount = 0
+  const chords = project.chords?.map((chord) => {
+    const nextChord = transposeChordMarker(chord, steps)
+    if (JSON.stringify(nextChord) !== JSON.stringify(chord)) {
+      changedChordCount += 1
+    }
+    return nextChord
+  })
+
+  return {
+    project: {
+      ...project,
+      notes,
+      ...(chords ? { chords } : {}),
+    },
+    changedNoteCount,
+    clampedNoteCount,
+    changedChordCount,
+  }
+}
+
 export function applyLyricLineToProject(project: SongProject, lyricLine: string) {
   const tokens = tokenizeLyricLine(lyricLine)
   if (tokens.length === 0) {
@@ -235,6 +275,78 @@ export function tokenizeLyricLine(lyricLine: string) {
     tokens.push(...parts)
   }
   return tokens
+}
+
+const SHARP_ROOTS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const FLAT_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+const ROOT_TO_CLASS: Map<string, number> = new Map(
+  [
+    ['C', 0],
+    ['C#', 1],
+    ['Db', 1],
+    ['D', 2],
+    ['D#', 3],
+    ['Eb', 3],
+    ['E', 4],
+    ['F', 5],
+    ['F#', 6],
+    ['Gb', 6],
+    ['G', 7],
+    ['G#', 8],
+    ['Ab', 8],
+    ['A', 9],
+    ['A#', 10],
+    ['Bb', 10],
+    ['B', 11],
+  ] as const,
+)
+
+function transposeChordMarker(chord: ChordMarker, steps: number): ChordMarker {
+  return {
+    ...chord,
+    symbol: transposeChordSymbol(chord.symbol, steps),
+    ...(chord.tone !== undefined ? { tone: transposeMidiTone(chord.tone, steps) } : {}),
+    ...(chord.tones ? { tones: chord.tones.map((tone) => transposeMidiTone(tone, steps)) } : {}),
+  }
+}
+
+function transposeChordSymbol(symbol: string, steps: number) {
+  const match = symbol.match(/^([A-G](?:#|b)?)(.*)$/u)
+  if (!match) {
+    return symbol
+  }
+  const [, root, suffix] = match
+  return `${transposeRoot(root, steps)}${suffix.replace(/\/([A-G](?:#|b)?)/gu, (_match, bassRoot: string) => `/${transposeRoot(bassRoot, steps)}`)}`
+}
+
+function transposeRoot(root: string, steps: number) {
+  const toneClass = ROOT_TO_CLASS.get(root)
+  if (toneClass === undefined) {
+    return root
+  }
+  const roots = root.includes('b') ? FLAT_ROOTS : SHARP_ROOTS
+  return roots[mod(toneClass + steps, 12)]
+}
+
+function transposeMidiTone(tone: number, steps: number) {
+  return Math.max(0, Math.min(127, Math.round(tone + steps)))
+}
+
+function sanitizeTransposeSteps(semitones: number) {
+  return Number.isFinite(semitones) ? Math.max(-24, Math.min(24, Math.round(semitones))) : 0
+}
+
+function boundedTransposeSteps(notes: SongNote[], requestedSteps: number) {
+  if (requestedSteps === 0 || notes.length === 0) {
+    return requestedSteps
+  }
+  const minTone = Math.min(...notes.map((note) => note.tone))
+  const maxTone = Math.max(...notes.map((note) => note.tone))
+  return Math.max(48 - minTone, Math.min(84 - maxTone, requestedSteps))
+}
+
+function mod(value: number, divisor: number) {
+  return ((value % divisor) + divisor) % divisor
 }
 
 function insertNote(

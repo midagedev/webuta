@@ -44,6 +44,7 @@
     snapTickToGrid,
     splitNoteInProject,
     tokenizeLyricLine,
+    transposeProject,
     updateNoteInProject,
   } from './projectEditing'
   import {
@@ -931,6 +932,20 @@
     notice = `${result.changedCount} notes quantized`
   }
 
+  function transposeCurrentProject(semitones: number) {
+    const result = transposeProject(project, semitones)
+    if (result.changedNoteCount === 0 && result.changedChordCount === 0) {
+      notice = result.clampedNoteCount > 0 ? 'Transpose stopped at vocal range' : 'No transpose applied'
+      return
+    }
+    commitProject(result.project)
+    selectedNoteId = reconcileSelectedNoteId(result.project, selectedNoteId)
+    clearRendered()
+    const direction = semitones > 0 ? '+' : ''
+    const clamped = result.clampedNoteCount > 0 ? ' · range limited' : ''
+    notice = `Song transposed ${direction}${semitones}${clamped}`
+  }
+
   function toggleLoop() {
     isLoopOn = !isLoopOn
     notice = isLoopOn ? 'Loop playback on' : 'Loop playback off'
@@ -1597,6 +1612,7 @@
         onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
         onTempoChange={updateTempoChange}
         onRemoveTempoChange={removeTempoChange}
+        onTransposeProject={transposeCurrentProject}
         onRenderer={selectRenderer}
         onNeuralModel={selectNeuralModel}
         onLyric={(lyric) => {

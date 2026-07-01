@@ -1084,6 +1084,23 @@ describe('App editing workflow', () => {
     })
   })
 
+  it('transposes the whole project with the chord guide from the pattern panel', async () => {
+    render(App)
+
+    const transposePanel = screen.getByLabelText('Project transpose')
+    expect(transposePanel.textContent).toContain('A4-E5')
+
+    fireEvent.click(within(transposePanel).getByRole('button', { name: '전체 곡 반음 높이기' }))
+    fireEvent.click(within(transposePanel).getByRole('button', { name: '전체 곡 반음 높이기' }))
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.notes.map((note) => note.tone)).toEqual(demoProject.notes.map((note) => note.tone + 2))
+      expect(saved?.chords?.map((chord) => chord.symbol)).toEqual(['Bm', 'G', 'D', 'A'])
+    })
+    expect(screen.getAllByText('Song transposed +1').length).toBeGreaterThan(0)
+  })
+
   it('drags a piano-roll note to edit timing and pitch', async () => {
     const { container } = render(App)
     const noteBlock = container.querySelector('.note-block') as HTMLButtonElement

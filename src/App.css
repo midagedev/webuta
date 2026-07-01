@@ -605,6 +605,7 @@ button:disabled {
 .voicebank-license-card,
 .voicebank-origin-card,
 .render-warning-card,
+.transpose-card,
 .tempo-map-card,
 .lyric-match-chip,
 .render-note-chip {
@@ -619,6 +620,7 @@ button:disabled {
 .voicebank-license-card,
 .voicebank-origin-card,
 .render-warning-card,
+.transpose-card,
 .tempo-map-card {
   margin-top: 8px;
   padding: 9px 10px;
@@ -630,6 +632,38 @@ button:disabled {
   gap: 8px;
   border-color: #263b48;
   background: #101a21;
+}
+
+.transpose-card {
+  gap: 8px;
+  border-color: #2c334a;
+  background: #121620;
+}
+
+.transpose-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.transpose-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 30px;
+  border: 1px solid #2a3340;
+  border-radius: 7px;
+  color: #edf4ff;
+  background: #0b1118;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.transpose-actions button:hover {
+  border-color: #83f7ff;
+  color: #83f7ff;
 }
 
 .tempo-map-head,

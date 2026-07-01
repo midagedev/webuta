@@ -12,6 +12,7 @@ import {
   pasteCopiedNoteInProject,
   quantizeProjectNotes,
   splitNoteInProject,
+  transposeProject,
   tokenizeLyricLine,
   updateNoteInProject,
 } from './projectEditing'
@@ -108,6 +109,31 @@ describe('project editing helpers', () => {
 
     expect(changedCount).toBe(1)
     expect(project.notes[0]).toMatchObject({ start: 120, duration: 480 })
+  })
+
+  it('transposes the full vocal project with its chord guide', () => {
+    const { project, changedNoteCount, changedChordCount } = transposeProject(demoProject, 2)
+
+    expect(changedNoteCount).toBe(demoProject.notes.length)
+    expect(changedChordCount).toBe(demoProject.chords?.length)
+    expect(project.notes.map((note) => note.tone)).toEqual(demoProject.notes.map((note) => note.tone + 2))
+    expect(project.chords?.map((chord) => chord.symbol)).toEqual(['Bm', 'G', 'D', 'A'])
+    expect(project.chords?.[0].tone).toBe((demoProject.chords?.[0].tone ?? 0) + 2)
+    expect(project.chords?.[0].tones).toEqual(demoProject.chords?.[0].tones?.map((tone) => tone + 2))
+  })
+
+  it('keeps vocal transpose inside the supported note range', () => {
+    const highProject: SongProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note) => ({ ...note, tone: 84 })),
+    }
+
+    const { project, changedNoteCount, clampedNoteCount } = transposeProject(highProject, 12)
+
+    expect(changedNoteCount).toBe(0)
+    expect(clampedNoteCount).toBe(highProject.notes.length)
+    expect(project.notes.every((note) => note.tone === 84)).toBe(true)
+    expect(project.chords?.map((chord) => chord.symbol)).toEqual(highProject.chords?.map((chord) => chord.symbol))
   })
 
   it('keeps the project unchanged when a note is missing', () => {

@@ -527,6 +527,9 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('템포 맵').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('1 marker').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Project transpose').getByText('키 이동').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Project transpose').getByText('A4-E5').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '전체 곡 반음 높이기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '작곡', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -629,6 +632,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run release evidence links visible',
     'first-run sketch cues visible',
     'tempo map controls visible',
+    'project transpose controls visible',
     'Korean mode navigation visible',
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',

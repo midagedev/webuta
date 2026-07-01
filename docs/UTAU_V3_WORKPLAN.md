@@ -238,6 +238,8 @@ Recommended coverage shape:
   material before rendering.
 - [x] Add project save/load/export/import.
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
+- [x] Add whole-song transpose controls that move vocal notes and chord-guide
+  markers together while keeping the vocal melody inside the supported range.
 - [x] Add DAW handoff MIDI guide files: the ZIP now includes
   `melody.mid` for vocal pitch/lyric timing and `chords.mid` for the starter
   harmony guide beside the WAV, UST/USTX, and text/CSV sidecars.

@@ -55,6 +55,7 @@
     onBeat: (beatPerBar: number, beatUnit: number) => void
     onTempoChange: (position: number, bpm: number) => void
     onRemoveTempoChange: (position: number) => void
+    onTransposeProject: (semitones: number) => void
     onRenderer: (renderer: RendererId) => void
     onNeuralModel: (modelId: string) => void
     onLyric: (lyric: string) => void
@@ -92,6 +93,7 @@
     onBeat,
     onTempoChange,
     onRemoveTempoChange,
+    onTransposeProject,
     onRenderer,
     onNeuralModel,
     onLyric,
@@ -154,6 +156,14 @@
     return 'Planned'
   }
 
+  function formatProjectRange(notes: SongNote[]) {
+    if (notes.length === 0) {
+      return 'no notes'
+    }
+    const tones = notes.map((note) => note.tone)
+    return `${toneName(Math.min(...tones))}-${toneName(Math.max(...tones))}`
+  }
+
   let selectedRenderWarnings = $derived(
     selectedNote && voicebankWarnings ? voicebankWarnings.warnings.filter((warning) => warning.noteId === selectedNote.id) : [],
   )
@@ -173,6 +183,7 @@
   let tempoMap = $derived(normalizedTempoChanges(project))
   let tempoMarkerCountLabel = $derived(`${tempoMap.length} marker${tempoMap.length === 1 ? '' : 's'}`)
   let selectedTempoMarkerLabel = $derived(selectedNote ? tickPositionLabel(selectedNote.start, project) : '노트 선택')
+  let projectRangeLabel = $derived(formatProjectRange(project.notes))
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
   let isBundledDefaultVoicebank = $derived(
     Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
@@ -486,6 +497,30 @@
         <option value="6/8">6/8</option>
       </select>
     </label>
+    <div class="transpose-card" aria-label="Project transpose">
+      <div class="tempo-map-head">
+        <strong>키 이동</strong>
+        <span>{projectRangeLabel}</span>
+      </div>
+      <div class="transpose-actions">
+        <button type="button" aria-label="전체 곡 한 옥타브 낮추기" onclick={() => onTransposeProject(-12)}>
+          <ArrowDown size={14} aria-hidden="true" />
+          <span>12</span>
+        </button>
+        <button type="button" aria-label="전체 곡 반음 낮추기" onclick={() => onTransposeProject(-1)}>
+          <ArrowDown size={14} aria-hidden="true" />
+          <span>1</span>
+        </button>
+        <button type="button" aria-label="전체 곡 반음 높이기" onclick={() => onTransposeProject(1)}>
+          <ArrowUp size={14} aria-hidden="true" />
+          <span>1</span>
+        </button>
+        <button type="button" aria-label="전체 곡 한 옥타브 높이기" onclick={() => onTransposeProject(12)}>
+          <ArrowUp size={14} aria-hidden="true" />
+          <span>12</span>
+        </button>
+      </div>
+    </div>
     <div class="tempo-map-card" aria-label="Tempo map">
       <div class="tempo-map-head">
         <strong>템포 맵</strong>
