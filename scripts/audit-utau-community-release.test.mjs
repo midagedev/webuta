@@ -381,6 +381,33 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample Neon Lift DAW bundle must include PCM WAV and 480 PPQ MIDI guides')
   })
 
+  it('blocks release when imported UTAU compatibility evidence is incomplete', async () => {
+    const utauCompatibilityAudit = makeUtauCompatibilityReport()
+    utauCompatibilityAudit.ok = false
+    utauCompatibilityAudit.decision = 'utau-import-compatibility-audit-fail'
+    utauCompatibilityAudit.caseCount = 4
+    utauCompatibilityAudit.cases = utauCompatibilityAudit.cases.slice(0, 4)
+    utauCompatibilityAudit.cases[0].passed = false
+    utauCompatibilityAudit.cases[0].coverage.fallbackNotes = 1
+    utauCompatibilityAudit.cases[0].warnings.warningCount = 1
+    utauCompatibilityAudit.cases[0].render.requestedAliases = []
+    const fixture = await makeFixture({ utauCompatibilityAudit })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must pass')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least five diverse fixture voicebanks')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case multi-oto-style-ranking')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV did not pass')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must have zero fallback notes')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must record requested oto aliases')
+    expect(report.nextActions.join('\n')).toContain('npm run voicebank:compatibility-utau')
+  })
+
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
     const fixture = await makeFixture({ badSyntheticOrigin: true })
 
@@ -571,6 +598,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
   writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
   writeJson(join(work, 'starter-sample-gallery-render-audit.json'), overrides.starterSamplesAudit ?? makeStarterSamplesReport())
+  writeJson(join(work, 'utau-import-compatibility-audit.json'), overrides.utauCompatibilityAudit ?? makeUtauCompatibilityReport())
   writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
   writeFileSync(join(review, 'audio', '01-first-run-demo.wav'), 'wav')
   writeFileSync(join(review, 'audio', '02-coda-release-check.wav'), 'wav')
@@ -917,6 +945,103 @@ function makeStarterSamplesReport() {
   }
 }
 
+function makeUtauCompatibilityReport() {
+  const cases = [
+    makeUtauCompatibilityCase('japanese-cv-kana', 'Japanese CV', ['ど', 'ひ', 'だ', 'い', 'す', 'き'], {
+      lyricLine: '도 히 다 이 스 키',
+      aliasCount: 6,
+      sampleCount: 6,
+      wavCount: 6,
+    }),
+    makeUtauCompatibilityCase('japanese-vcv-context', 'Japanese VCV', ['- ど', 'o ひ', 'i ど'], {
+      lyricLine: '도 히 도',
+      aliasCount: 3,
+      sampleCount: 3,
+      wavCount: 3,
+    }),
+    makeUtauCompatibilityCase('prefix-map-multipitch', 'prefix.map multipitch', ['あ_LOW', 'あ_HIGH'], {
+      lyricLine: 'a a',
+      aliasCount: 2,
+      sampleCount: 2,
+      wavCount: 2,
+      prefixMapPaths: ['PrefixSinger/prefix.map'],
+    }),
+    makeUtauCompatibilityCase('hangul-cv-vc-coda', 'Hangul CV/VC coda', ['여', 'ㅕㄴ'], {
+      lyricLine: '연',
+      aliasCount: 3,
+      sampleCount: 3,
+      wavCount: 3,
+    }),
+    makeUtauCompatibilityCase('multi-oto-style-ranking', 'multi-oto style ranking', ['ど'], {
+      lyricLine: '도',
+      aliasCount: 2,
+      sampleCount: 2,
+      wavCount: 2,
+    }),
+  ]
+  return {
+    version: 1,
+    ok: true,
+    decision: 'utau-import-compatibility-audit-pass',
+    generatedAt: '2026-07-01T00:00:00.000Z',
+    caseCount: cases.length,
+    cases,
+    problems: [],
+  }
+}
+
+function makeUtauCompatibilityCase(id, title, requestedAliases, options = {}) {
+  const noteCount = String(options.lyricLine ?? '').split(/\s+/).filter(Boolean).length || requestedAliases.length
+  return {
+    id,
+    title,
+    passed: true,
+    zip: {
+      fileName: `compat-${id}.zip`,
+      sourceFileName: `compat-${id}.zip`,
+      sampleCount: options.sampleCount ?? requestedAliases.length,
+      wavCount: options.wavCount ?? requestedAliases.length,
+      aliasCount: options.aliasCount ?? requestedAliases.length,
+      aliases: requestedAliases,
+      prefixMapPaths: options.prefixMapPaths ?? [],
+    },
+    project: {
+      name: title,
+      noteCount,
+      lyricLine: options.lyricLine ?? requestedAliases.join(' '),
+    },
+    coverage: {
+      totalNotes: noteCount,
+      matchedNotes: noteCount,
+      fallbackNotes: 0,
+      uniqueLyrics: noteCount,
+      matchedLyrics: String(options.lyricLine ?? requestedAliases.join(' ')).split(/\s+/).filter(Boolean),
+      fallbackLyrics: [],
+    },
+    warnings: {
+      warningCount: 0,
+      errorCount: 0,
+      warnings: [],
+    },
+    render: {
+      sampleRate: 44100,
+      durationSeconds: 4.1,
+      peak: 0.42,
+      rms: 0.06,
+      nonFiniteSampleCount: 0,
+      requestedAliases,
+      requestedPaths: requestedAliases.map((alias) => `samples/${alias}.wav`),
+    },
+    checks: [
+      { check: 'voicebank zip parsed with every fixture sample', passed: true },
+      { check: 'all project lyrics matched aliases', passed: true },
+      { check: 'renderer produced audible rms', passed: true },
+      { check: 'renderer requested expected oto aliases', passed: true },
+    ],
+    problems: [],
+  }
+}
+
 function makeReviewManifest(review) {
   const phrases = [
     ['first-run-demo', '01-first-run-demo.wav'],
@@ -1036,6 +1161,7 @@ function makePackageJson() {
       'voicebank:audit-v3': 'node scripts/audit-korean-v3-voicebank.mjs',
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
       'voicebank:starter-samples-v3': 'node scripts/audit-starter-sample-gallery.mjs',
+      'voicebank:compatibility-utau': 'WEBUTA_UTAU_COMPAT_REPORT=experiments/utau-v3/work/utau-import-compatibility-audit.json vitest run src/voicebank.compatibility.smoke.test.ts',
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
       'release:packet': 'node scripts/build-release-review-packet.mjs',
@@ -1171,6 +1297,7 @@ function makeReadme() {
     'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
+    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Hangul CV/VC coda, and multi-oto style ranking.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     'The public review hub includes `Evidence Preflight` with `No upload` local JSON checks.',

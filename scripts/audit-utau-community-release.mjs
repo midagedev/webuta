@@ -17,6 +17,7 @@ const DEFAULTS = {
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
   starterSamplesAudit: 'experiments/utau-v3/work/starter-sample-gallery-render-audit.json',
+  utauCompatibilityAudit: 'experiments/utau-v3/work/utau-import-compatibility-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   publicReviewHub: 'public/review/index.html',
   publicReviewPacket: 'public/review/release-packet.json',
@@ -46,6 +47,7 @@ const EXPECTED_DECISIONS = {
   clarityAudit: 'v3-clarity-audit-pass',
   demoAudit: 'default-demo-render-pass',
   starterSamplesAudit: 'starter-sample-gallery-render-pass',
+  utauCompatibilityAudit: 'utau-import-compatibility-audit-pass',
   reviewManifest: 'v3-listening-review-ready',
   sampleReview: 'v3-sample-review-report-ready',
 }
@@ -121,6 +123,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     demoGate(paths.demoAudit),
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
     starterSamplesGate(paths.starterSamplesAudit),
+    utauCompatibilityGate(paths.utauCompatibilityAudit),
     reviewPackGate(paths.reviewManifest),
     publicReviewHubGate(paths.publicReviewHub),
     publicReviewPacketGate(paths.publicReviewPacket, bundled),
@@ -291,6 +294,75 @@ function starterSamplesGate(path) {
         melodyBytes: sample.dawBundle.midi?.melodyBytes ?? null,
         chordBytes: sample.dawBundle.midi?.chordBytes ?? null,
       } : null,
+    })),
+  } : null)
+}
+
+function utauCompatibilityGate(path) {
+  const problems = []
+  const report = readOptionalJson(path, 'UTAU import compatibility audit', problems)
+  if (report) {
+    if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.utauCompatibilityAudit) {
+      problems.push('UTAU import compatibility audit must pass')
+    }
+    const cases = Array.isArray(report.cases) ? report.cases : []
+    if ((report.caseCount ?? cases.length) < 5 || cases.length < 5) {
+      problems.push('UTAU import compatibility audit must cover at least five diverse fixture voicebanks')
+    }
+    const caseIds = new Set(cases.map((item) => String(item.id ?? '')))
+    for (const requiredId of [
+      'japanese-cv-kana',
+      'japanese-vcv-context',
+      'prefix-map-multipitch',
+      'hangul-cv-vc-coda',
+      'multi-oto-style-ranking',
+    ]) {
+      if (!caseIds.has(requiredId)) {
+        problems.push(`UTAU import compatibility audit missing case ${requiredId}`)
+      }
+    }
+    for (const item of cases) {
+      const label = item.title ?? item.id ?? '(unknown)'
+      if (item.passed !== true) {
+        problems.push(`UTAU compatibility case ${label} did not pass`)
+      }
+      if ((item.coverage?.fallbackNotes ?? 0) !== 0) {
+        problems.push(`UTAU compatibility case ${label} must have zero fallback notes`)
+      }
+      if ((item.warnings?.errorCount ?? 0) !== 0) {
+        problems.push(`UTAU compatibility case ${label} must have zero render errors`)
+      }
+      if ((item.warnings?.warningCount ?? 0) !== 0) {
+        problems.push(`UTAU compatibility case ${label} must have zero render warnings`)
+      }
+      if (item.render?.sampleRate !== 44100) {
+        problems.push(`UTAU compatibility case ${label} render must be 44.1 kHz`)
+      }
+      if ((item.render?.peak ?? 0) <= 0.02) {
+        problems.push(`UTAU compatibility case ${label} render peak is too low`)
+      }
+      if ((item.render?.rms ?? 0) <= 0.001) {
+        problems.push(`UTAU compatibility case ${label} render RMS is too low`)
+      }
+      if ((item.render?.nonFiniteSampleCount ?? 0) !== 0) {
+        problems.push(`UTAU compatibility case ${label} render contains non-finite samples`)
+      }
+      if (!Array.isArray(item.render?.requestedAliases) || item.render.requestedAliases.length === 0) {
+        problems.push(`UTAU compatibility case ${label} must record requested oto aliases`)
+      }
+    }
+  }
+  return makeGate('utau-import-compatibility', 'Diverse imported UTAU zip formats render through the browser sample renderer', path, problems, report ? {
+    caseCount: report.caseCount ?? 0,
+    cases: (report.cases ?? []).map((item) => ({
+      id: item.id,
+      title: item.title,
+      passed: item.passed === true,
+      sampleCount: item.zip?.sampleCount ?? null,
+      wavCount: item.zip?.wavCount ?? null,
+      fallbackNotes: item.coverage?.fallbackNotes ?? null,
+      warningCount: item.warnings?.warningCount ?? null,
+      requestedAliases: item.render?.requestedAliases ?? [],
     })),
   } : null)
 }
@@ -695,6 +767,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['voicebank:v3']) {
         problems.push('package.json must expose voicebank:v3 as the self-generated V3 builder')
       }
+      if (!scripts['voicebank:compatibility-utau']) {
+        problems.push('package.json must expose voicebank:compatibility-utau for imported UTAU zip compatibility evidence')
+      }
       if (!scripts['release:audit-utau']) {
         problems.push('package.json must expose release:audit-utau')
       }
@@ -805,6 +880,13 @@ function readmeGate(paths) {
       'release-packet.json',
       'release:bundle',
       'release-review-bundle.zip',
+      'voicebank:compatibility-utau',
+      'UTAU import compatibility',
+      'Japanese CV',
+      'Japanese VCV',
+      'prefix.map',
+      'Hangul CV/VC coda',
+      'multi-oto style ranking',
       'release:evidence-status',
       'release:accept-evidence',
       'Evidence Preflight',
@@ -1523,6 +1605,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('starter-sample-gallery'))) {
     actions.push('Run npm run voicebank:starter-samples-v3 so all seven first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
   }
+  if (problems.some((problem) => problem.includes('utau-import-compatibility'))) {
+    actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Hangul CV/VC coda, and multi-oto style-ranking fixture voicebanks all render through the browser UTAU sample path.')
+  }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')
   }
@@ -1573,6 +1658,8 @@ function parseArgs(argv) {
       options.pagesDemoAudit = argv[++index]
     } else if (arg === '--starter-samples-audit') {
       options.starterSamplesAudit = argv[++index]
+    } else if (arg === '--utau-compatibility-audit') {
+      options.utauCompatibilityAudit = argv[++index]
     } else if (arg === '--listening-scores') {
       options.listeningScores = argv[++index]
     } else if (arg === '--wav-daw-handoff') {
@@ -1590,6 +1677,7 @@ function parseArgs(argv) {
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
           '  --pages-demo-audit path  Override deployed browser demo audit JSON path',
           '  --starter-samples-audit path  Override starter sample gallery render audit JSON path',
+          '  --utau-compatibility-audit path  Override imported UTAU compatibility audit JSON path',
           '  --listening-scores path  Override human listening score JSON path',
           '  --wav-daw-handoff path   Override physical WAV/DAW handoff JSON path',
           '  --sample-review path     Override V3 sample review report JSON path',

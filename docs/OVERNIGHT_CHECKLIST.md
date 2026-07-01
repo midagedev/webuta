@@ -41,6 +41,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   unsafe paths, abnormal file counts, and oversized WAV/oto members.
 - [x] Add UTAU `prefix.map` parsing so imported multipitch voicebanks can select
   pitch-specific alias prefixes/suffixes.
+- [x] Add imported UTAU compatibility audit coverage for diverse zip shapes:
+  Japanese CV, Japanese VCV, `prefix.map` multipitch, Hangul CV/VC coda, and
+  multi-oto style ranking.
 - [x] Add current voicebank license/readme metadata display for bundled V3 and
   user-imported UTAU zips.
 - [x] Add a non-redistributed `test-assets/` workflow and `npm run asset:teto` downloader for the official test zip.
@@ -131,6 +134,10 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Browser audit renders all seven first-run starter samples through the
   bundled V3 voicebank and checks DAW-ready non-silent WAV output plus matching
   DAW handoff ZIP contents for each.
+- [x] `npm run voicebank:compatibility-utau` renders diverse local fixture UTAU
+  zips through the browser sample renderer and writes compatibility evidence for
+  Japanese CV, Japanese VCV, `prefix.map` multipitch, Hangul CV/VC coda, and
+  multi-oto style ranking.
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate
