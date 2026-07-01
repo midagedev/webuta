@@ -489,6 +489,7 @@
         ['openedFromPublicUrl', 'Opened from public URL', 'Use https://midagedev.github.io/webuta/ rather than localhost.'],
         ['defaultVoicebankSelected', 'Default V3 voicebank selected', 'No voicebank zip import is needed for the bundled release path.'],
         ['firstRunGuideVisible', 'Quick Start guide visible', 'Confirm QUICK START, 처음이면, 현재 가사, and WAV 저장 are visible.'],
+        ['starterLyricInputVisible', 'Starter lyric input visible', 'Confirm 스타터 가사 라인 is visible in the first-run guide.'],
         ['defaultLyricsMatched', 'Default lyrics matched', 'Confirm the default 도 히 도 히 다 이 스 키 project shows 8/8 matched.'],
         ['audioPreviewWorked', 'Audio preview worked', 'Tap 먼저 들어보기 or the main play button and hear the vocal preview.'],
         ['wavExportWorked', 'WAV export worked', 'Use share, download, or Files to save a WAV.'],
@@ -635,7 +636,7 @@
           notes: clean(values.notes),
         };
         const problems = validate(report);
-        const total = 29;
+        const total = 30;
         const complete =
           ['reviewer', 'verifiedAt', 'decision'].filter((key) => report[key]).length +
           (report.physicalDevice ? 1 : 0) +

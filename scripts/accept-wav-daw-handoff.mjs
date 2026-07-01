@@ -14,6 +14,7 @@ const REQUIRED_CHECKS = [
   'openedFromPublicUrl',
   'defaultVoicebankSelected',
   'firstRunGuideVisible',
+  'starterLyricInputVisible',
   'defaultLyricsMatched',
   'audioPreviewWorked',
   'wavExportWorked',

@@ -17,6 +17,7 @@
     "openedFromPublicUrl": false,
     "defaultVoicebankSelected": false,
     "firstRunGuideVisible": false,
+    "starterLyricInputVisible": false,
     "defaultLyricsMatched": false,
     "audioPreviewWorked": false,
     "wavExportWorked": false,

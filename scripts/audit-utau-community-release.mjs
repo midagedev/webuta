@@ -302,6 +302,7 @@ function publicWavDawHandoffGate(path) {
       'openedFromPublicUrl',
       'defaultVoicebankSelected',
       'firstRunGuideVisible',
+      'starterLyricInputVisible',
       'defaultLyricsMatched',
       'audioPreviewWorked',
       'wavExportWorked',
@@ -747,6 +748,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 listening review download gate loaded',
     'pages V3 listening review audio loaded',
     'pages WAV DAW handoff builder loaded',
+    'pages WAV DAW starter lyric input handoff gate loaded',
   ]) {
     if (!checks.has(check)) {
       problems.push(`GitHub Pages evidence missing check: ${check}`)
@@ -806,6 +808,11 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages WAV DAW handoff builder loaded')
     } else {
       problems.push('GitHub Pages WAV DAW handoff builder is missing release report markers')
+    }
+    if (html.includes('starterLyricInputVisible') && html.includes('스타터 가사 라인')) {
+      evidence.checks.push('pages WAV DAW starter lyric input handoff gate loaded')
+    } else {
+      problems.push('GitHub Pages WAV DAW handoff builder is missing starter lyric input gate markers')
     }
   }
   if (reviewAudio.length >= 8 && reviewAudio.every((item) => item.status === 200 && item.bytes >= 180_000 && item.bytes === item.localBytes)) {

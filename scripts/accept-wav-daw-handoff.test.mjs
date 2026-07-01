@@ -116,6 +116,7 @@ function makeHandoff(overrides = {}) {
         openedFromPublicUrl: true,
         defaultVoicebankSelected: true,
         firstRunGuideVisible: true,
+        starterLyricInputVisible: true,
         defaultLyricsMatched: true,
         audioPreviewWorked: true,
         wavExportWorked: true,
