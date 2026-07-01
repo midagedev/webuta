@@ -17,6 +17,8 @@ describe('default demo render audit report', () => {
         'first-run inline lyric input visible',
         'first-run current lyric card visible',
         'first-run utility actions visible',
+        'first-run DAW handoff checklist visible',
+        'first-run release evidence links visible',
         'first-run sketch cues visible',
         'tempo map controls visible',
         'Korean mode navigation visible',

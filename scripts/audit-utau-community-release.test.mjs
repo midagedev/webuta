@@ -283,6 +283,27 @@ describe('UTAU community release audit', () => {
     expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
   })
 
+  it('blocks release when the deployed browser demo report predates the starter handoff strip', async () => {
+    const stalePagesDemo = makeDemoReport('https://midagedev.github.io/webuta/')
+    stalePagesDemo.requiredChecks = stalePagesDemo.requiredChecks.filter(
+      (check) => !['first-run DAW handoff checklist visible', 'first-run release evidence links visible'].includes(check.check),
+    )
+    const fixture = await makeFixture({
+      pagesDemo: stalePagesDemo,
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+      pagesUrl: 'https://midagedev.github.io/webuta/',
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
+    expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
+  })
+
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
     const fixture = await makeFixture({ badSyntheticOrigin: true })
 
@@ -569,6 +590,8 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run inline lyric input visible',
       'first-run current lyric card visible',
       'first-run utility actions visible',
+      'first-run DAW handoff checklist visible',
+      'first-run release evidence links visible',
       'first-run sketch cues visible',
       'tempo map controls visible',
       'first-run demo aliases fully matched',

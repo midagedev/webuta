@@ -169,7 +169,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium and exports a DAW-ready WAV.
 - `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, and live WAV download.
 - The first-run browser smoke verifies the `START HERE` / `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` checklist, `지금 할 일 · STEP 01` / `샘플 먼저 듣기` focused launch panel, inline starter lyric input, `다음 선택` utilities, `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and current lyric preview are visible before WAV/DAW handoff.
-- The first-run browser smoke verifies the `다운로드 패키지` strip shows `WAV · lyrics.txt · notes.csv` and links the release hub, listening review, and DAW report builder from the starter card.
+- The first-run browser smoke and release audit require the `다운로드 패키지` strip to show `WAV · lyrics.txt · notes.csv` and link the release hub, listening review, and DAW report builder from the starter card.
 - The first-run browser smoke verifies the `템포 맵` panel is visible, so imported UST/USTX tempo events are not hidden from the DAW workflow.
 - The first-run browser smoke now verifies the community release readiness card is visible, marks the two manual evidence files as required, and shows the `공개 전 마지막 2단계` checklist.
 - The first-run browser smoke verifies the current voicebank license metadata card and bundled V3 license excerpt are visible.
