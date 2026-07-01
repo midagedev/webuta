@@ -374,6 +374,8 @@ async function assertDefaultV3DemoReady(page) {
   await starterRouteSummary.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterRouteSummary.getByText('02').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterRouteSummary.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterRouteSummary.getByText('지금').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterRouteSummary.getByText('다음').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Beginner launch pad').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter lyric editor').getByLabel('스타터 가사 라인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter lyric editor').getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -489,6 +491,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run starter guide visible',
     'first-run one-minute path visible',
     'first-run route map visible',
+    'first-run route state badges visible',
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
     'first-run focused next action visible',

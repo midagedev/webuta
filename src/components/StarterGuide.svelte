@@ -23,6 +23,7 @@
     lyricLine: string
     voicebankName: string
     voicebankCoverage: VoicebankCoverage | null
+    isLoadingVoicebank: boolean
     rendered: RenderedAudio | null
     isRendering: boolean
     isPlaying: boolean
@@ -42,6 +43,7 @@
     lyricLine,
     voicebankName,
     voicebankCoverage,
+    isLoadingVoicebank,
     rendered,
     isRendering,
     isPlaying,
@@ -59,13 +61,16 @@
   const voicebankLabel = $derived(voicebankName.replace(/^WebUtau\s*\/\/\s*/u, '') || voicebankName)
   const coverageLabel = $derived(voicebankCoverage ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'loading')
   const isVoicebankReady = $derived(Boolean(voicebankCoverage && voicebankCoverage.fallbackNotes === 0))
-  const voicebankStatusLabel = $derived(isVoicebankReady ? '발음 준비' : coverageLabel)
-  const playStepLabel = $derived(isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
+  const isStarterActionLocked = $derived(isLoadingVoicebank && !rendered)
+  const voicebankStatusLabel = $derived(isLoadingVoicebank ? '보컬 로딩' : isVoicebankReady ? '발음 준비' : coverageLabel)
+  const playStepLabel = $derived(isStarterActionLocked ? '준비 중' : isRendering ? '렌더 중' : rendered ? '재생 가능' : '눌러보기')
   const projectContextLabel = $derived(formatProjectSourceLabel(projectSourceLabel))
   const isDraftProject = $derived(projectSourceLabel === 'Saved browser draft')
-  const nextActionTitle = $derived(isRendering ? '렌더 중' : isPlaying ? '멈추기' : rendered ? 'WAV 받기' : '샘플 듣기')
+  const nextActionTitle = $derived(isStarterActionLocked ? '보컬 준비 중' : isRendering ? '렌더 중' : isPlaying ? '멈추기' : rendered ? 'WAV 받기' : '샘플 듣기')
   const nextActionDetail = $derived(
-    isRendering
+    isStarterActionLocked
+      ? 'UTAU 샘플 불러오는 중'
+      : isRendering
       ? 'WAV를 만드는 중'
       : isPlaying
         ? '지금 재생 중'
@@ -81,10 +86,20 @@
   const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
   const focusStep = $derived(isRendering ? '02' : rendered ? '03' : '01')
   const focusTitle = $derived(
-    isRendering ? '소리 만드는 중' : rendered ? 'WAV 저장하기' : isVoicebankReady ? '샘플 먼저 듣기' : '샘플 준비 중',
+    isStarterActionLocked
+      ? '보컬 불러오는 중'
+      : isRendering
+        ? '소리 만드는 중'
+        : rendered
+          ? 'WAV 저장하기'
+          : isVoicebankReady
+            ? '샘플 먼저 듣기'
+            : '샘플 준비 중',
   )
   const focusMeta = $derived(
-    isRendering
+    isStarterActionLocked
+      ? '기본 UTAU 샘플 zip 로딩'
+      : isRendering
       ? '곧 재생·저장이 가능해져요'
       : rendered
         ? rendered.fileName
@@ -96,16 +111,29 @@
   )
   const lyricRouteStatus = $derived(`${project.notes.length} notes`)
   const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(lyricPreview) && compactLine(lyricLine).length > 0)
-  const listenProgressClass = $derived(isPlaying || !rendered ? 'current' : 'done')
+  const listenProgressClass = $derived(isStarterActionLocked || isPlaying || !rendered ? 'current' : 'done')
   const lyricProgressClass = $derived(hasPendingLyricLine ? 'current' : rendered ? 'done' : 'next')
   const exportProgressClass = $derived(rendered ? 'current' : 'next')
+  const listenStateLabel = $derived(isStarterActionLocked ? '준비' : isPlaying ? '재생 중' : rendered ? '완료' : '지금')
+  const lyricStateLabel = $derived(hasPendingLyricLine ? '지금' : rendered ? '완료' : '다음')
+  const exportStateLabel = $derived(rendered ? '지금' : '다음')
   const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
   const compassTone = $derived(
-    rendered ? 'WAV 저장 가능' : hasPendingLyricLine ? '가사 적용 대기' : isVoicebankReady ? '바로 시작 가능' : '보컬 로딩 중',
+    isStarterActionLocked
+      ? '보컬 불러오는 중'
+      : rendered
+        ? 'WAV 저장 가능'
+        : hasPendingLyricLine
+          ? '가사 적용 대기'
+          : isVoicebankReady
+            ? '바로 시작 가능'
+            : '보컬 로딩 중',
   )
   const compassDetail = $derived(
-    rendered
+    isStarterActionLocked
+      ? '기본 UTAU 보이스를 불러오고 있어요. 준비되면 첫 버튼이 켜집니다.'
+      : rendered
       ? '재생 확인이 끝났어요. WAV나 DAW 번들로 저장하면 됩니다.'
       : hasPendingLyricLine
         ? '새 가사를 멜로디에 넣은 뒤 샘플을 다시 들어보세요.'
@@ -125,6 +153,9 @@
   async function handleNextAction() {
     if (rendered && !isPlaying) {
       await onDownloadWav()
+      return
+    }
+    if (isStarterActionLocked) {
       return
     }
     await onPlayPause()
@@ -175,7 +206,7 @@
         class={`starter-next-button ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
         aria-label={nextActionAria}
         onclick={() => void handleNextAction()}
-        disabled={isRendering}
+        disabled={isRendering || isStarterActionLocked}
       >
         {#if rendered && !isPlaying}
           <Download size={22} aria-hidden="true" />
@@ -190,28 +221,31 @@
     </div>
 
     <ol class="starter-journey" aria-label="Starter route summary">
-      <li class={listenProgressClass}>
-        <button type="button" aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'} onclick={() => void onPlayPause()} disabled={isRendering}>
+      <li class={listenProgressClass} aria-current={listenProgressClass === 'current' ? 'step' : undefined}>
+        <button type="button" aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'} onclick={() => void onPlayPause()} disabled={isRendering || isStarterActionLocked}>
           <span class="progress-index">01</span>
           <Headphones size={18} aria-hidden="true" />
           <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
           <em>{playStepLabel}</em>
+          <span class="step-state">{listenStateLabel}</span>
         </button>
       </li>
-      <li class={lyricProgressClass}>
+      <li class={lyricProgressClass} aria-current={lyricProgressClass === 'current' ? 'step' : undefined}>
         <button type="button" aria-label="둘째 단계 가사 적용" onclick={onApplyLyricLine}>
           <span class="progress-index">02</span>
           <PencilLine size={18} aria-hidden="true" />
           <strong>가사 적용</strong>
           <em>{lyricProgressMeta}</em>
+          <span class="step-state">{lyricStateLabel}</span>
         </button>
       </li>
-      <li class={exportProgressClass}>
-        <button type="button" aria-label="셋째 단계 WAV 받기" onclick={() => void onDownloadWav()} disabled={isRendering}>
+      <li class={exportProgressClass} aria-current={exportProgressClass === 'current' ? 'step' : undefined}>
+        <button type="button" aria-label="셋째 단계 WAV 받기" onclick={() => void onDownloadWav()} disabled={isRendering || isStarterActionLocked}>
           <span class="progress-index">03</span>
           <Download size={18} aria-hidden="true" />
           <strong>WAV 받기</strong>
           <em>{exportRouteStatus}</em>
+          <span class="step-state">{exportStateLabel}</span>
         </button>
       </li>
     </ol>
@@ -272,7 +306,7 @@
           <span>멜로디 추천</span>
           <strong>선택 사항</strong>
         </button>
-        <button type="button" class="starter-utility-button ready" aria-label="스타터 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering}>
+        <button type="button" class="starter-utility-button ready" aria-label="스타터 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering || isStarterActionLocked}>
           <FileArchive size={17} aria-hidden="true" />
           <span>DAW 번들</span>
           <strong>{rendered ? 'WAV 포함' : '렌더 후 ZIP'}</strong>

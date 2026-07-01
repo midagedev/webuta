@@ -12,6 +12,7 @@ const REQUIRED_CHECKS = [
   'first-run starter guide visible',
   'first-run one-minute path visible',
   'first-run route map visible',
+  'first-run route state badges visible',
   'first-run three-step checklist visible',
   'first-run quick-start CTA visible',
   'first-run focused next action visible',

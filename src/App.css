@@ -6790,10 +6790,10 @@ button:disabled:active {
   height: 100%;
   min-height: 120px;
   display: grid;
-  grid-template-columns: 34px 22px minmax(0, 1fr);
+  grid-template-columns: 34px 22px minmax(0, 1fr) auto;
   grid-template-areas:
-    "index icon title"
-    "index icon meta";
+    "index icon title state"
+    "index icon meta state";
   align-items: center;
   column-gap: 7px;
   padding: 10px;
@@ -6838,6 +6838,25 @@ button:disabled:active {
   font-weight: 850;
 }
 
+.step-state {
+  grid-area: state;
+  min-width: 44px;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border: 1px solid rgba(88, 244, 255, 0.3);
+  border-radius: 4px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(88, 244, 255, 0.08);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 950;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .starter-journey li.current button {
   border-color: rgba(255, 231, 106, 0.6);
   background: rgba(255, 231, 106, 0.12);
@@ -6846,8 +6865,14 @@ button:disabled:active {
 .starter-journey li.current svg,
 .starter-journey li.current strong,
 .starter-journey li.current em,
-.starter-journey li.current .progress-index {
+.starter-journey li.current .progress-index,
+.starter-journey li.current .step-state {
   color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-journey li.current .step-state {
+  border-color: rgba(255, 231, 106, 0.5);
+  background: rgba(255, 231, 106, 0.12);
 }
 
 .starter-journey li.done button {
@@ -6858,8 +6883,14 @@ button:disabled:active {
 .starter-journey li.done svg,
 .starter-journey li.done strong,
 .starter-journey li.done em,
-.starter-journey li.done .progress-index {
+.starter-journey li.done .progress-index,
+.starter-journey li.done .step-state {
   color: var(--tracker-green, #9dff6a);
+}
+
+.starter-journey li.done .step-state {
+  border-color: rgba(157, 255, 106, 0.48);
+  background: rgba(157, 255, 106, 0.1);
 }
 
 .starter-guide.onboarding-v5 .starter-onboarding-grid {
@@ -7041,7 +7072,7 @@ button:disabled:active {
 
 .starter-guide.onboarding-v6 .starter-journey button {
   min-height: 56px;
-  grid-template-columns: 30px 19px minmax(0, 1fr);
+  grid-template-columns: 30px 19px minmax(0, 1fr) auto;
   padding: 7px 8px;
 }
 
@@ -8283,10 +8314,10 @@ button:disabled:active {
 
   .starter-guide.onboarding-v6 .starter-journey button {
     min-height: 46px;
-    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-columns: 22px minmax(0, 1fr) auto;
     grid-template-areas:
-      "index title"
-      "index meta";
+      "index title state"
+      "index meta state";
     column-gap: 5px;
     padding: 5px;
   }
@@ -8306,6 +8337,13 @@ button:disabled:active {
   }
 
   .starter-guide.onboarding-v6 .starter-journey em {
+    font-size: 7px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey .step-state {
+    min-width: 30px;
+    min-height: 22px;
+    padding: 0 4px;
     font-size: 7px;
   }
 

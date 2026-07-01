@@ -120,6 +120,8 @@ describe('App editing workflow', () => {
     expect(within(routeSummary).getByText('01')).toBeTruthy()
     expect(within(routeSummary).getByText('02')).toBeTruthy()
     expect(within(routeSummary).getByText('03')).toBeTruthy()
+    expect(routeSummary.textContent).toMatch(/지금|준비/)
+    expect(routeSummary.textContent).toContain('다음')
     expect(within(routeSummary).getByText('가사 적용')).toBeTruthy()
     expect((within(guide).getByLabelText('스타터 가사 라인') as HTMLInputElement).value).toBe('도 히 도 히 다 이 스 키')
     expect(within(guide).getByText('STEP 01 · 지금 누를 버튼')).toBeTruthy()

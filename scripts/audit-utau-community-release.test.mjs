@@ -295,6 +295,7 @@ describe('UTAU community release audit', () => {
       (check) =>
         ![
           'first-run route map visible',
+          'first-run route state badges visible',
           'first-run lyric helper visible',
           'first-run DAW handoff checklist visible',
           'first-run release evidence links visible',
@@ -673,6 +674,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run starter guide visible',
       'first-run one-minute path visible',
       'first-run route map visible',
+      'first-run route state badges visible',
       'first-run three-step checklist visible',
       'first-run quick-start CTA visible',
       'first-run focused next action visible',

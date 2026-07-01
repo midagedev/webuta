@@ -1532,6 +1532,7 @@
         {lyricLine}
         {voicebankName}
         {voicebankCoverage}
+        {isLoadingVoicebank}
         {rendered}
         {isRendering}
         {isPlaying}
