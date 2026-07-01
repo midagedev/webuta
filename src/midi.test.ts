@@ -47,6 +47,39 @@ describe('MIDI export', () => {
     expect(project.parts[0].duration).toBeGreaterThanOrEqual(5760)
   })
 
+  it('round-trips simple pitch bends as MIDI pitch wheel movement', () => {
+    const bentProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note, index) =>
+        index === 0
+          ? {
+              ...note,
+              pitchBend: {
+                points: [
+                  { timePercent: 0, cents: 0 },
+                  { timePercent: 50, cents: 80 },
+                  { timePercent: 100, cents: 0 },
+                ],
+              },
+            }
+          : note,
+      ),
+    }
+    const midi = createMelodyMidi(bentProject)
+    const imported = parseMelodyMidi(midi, 'bent-starter-hook.mid')
+    const points = imported.notes[0].pitchBend?.points ?? []
+
+    expect(hasEvent(midi, [0xb0, 101, 0])).toBe(true)
+    expect(hasEvent(midi, [0xb0, 100, 0])).toBe(true)
+    expect(hasEvent(midi, [0xb0, 6, 2])).toBe(true)
+    expect(hasEvent(midi, [0xe0, 0, 64])).toBe(true)
+    expect(points.map((point) => point.timePercent)).toEqual([0, 50, 100])
+    expect(points[0].cents).toBeCloseTo(0, 3)
+    expect(points[1].cents).toBeCloseTo(80, 1)
+    expect(points[2].cents).toBeCloseTo(0, 3)
+    expect(imported.notes[1].pitchBend).toBeUndefined()
+  })
+
   it('prefers the lyric melody track when chord-guide notes are present in the same MIDI file', () => {
     const project = parseMelodyMidi(createMelodyAndChordMidi(demoProject), 'full-song.mid')
 

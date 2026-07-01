@@ -240,6 +240,8 @@ Recommended coverage shape:
 - [x] Add DAW handoff MIDI guide files: the ZIP now includes
   `melody.mid` for vocal pitch/lyric timing and `chords.mid` for the starter
   harmony guide beside the WAV, UST/USTX, and text/CSV sidecars.
+- [x] Round-trip simple note pitch bends through `melody.mid` as standard MIDI
+  pitch wheel events with a declared +/-2 semitone pitch bend range.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
   note timing.
 - [x] Show tempo-map markers in the pattern panel and allow imported/nonzero

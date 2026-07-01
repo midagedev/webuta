@@ -1,5 +1,6 @@
+import { normalizeNotePitchBend } from './pitchBend'
 import { normalizedTempoChanges, sortedNotes } from './music'
-import { TICKS_PER_BEAT, type ChordMarker, type SongProject } from './types'
+import { TICKS_PER_BEAT, type ChordMarker, type NotePitchBend, type SongProject } from './types'
 
 type MidiEvent = {
   tick: number
@@ -9,6 +10,8 @@ type MidiEvent = {
 
 const MELODY_CHANNEL = 0
 const CHORD_CHANNEL = 1
+const MIDI_PITCH_BEND_RANGE_CENTS = 200
+const MIDI_PITCH_CENTER = 0x2000
 const textEncoder = new TextEncoder()
 const textDecoder = new TextDecoder()
 
@@ -18,6 +21,13 @@ type ParsedMidiNote = {
   tone: number
   lyric: string
   channel: number
+  pitchBend?: NotePitchBend
+}
+
+type ParsedMidiPitchWheel = {
+  tick: number
+  channel: number
+  cents: number
 }
 
 type ParsedMidiLyric = {
@@ -40,6 +50,7 @@ type ParsedMidiTrack = {
   name: string
   notes: ParsedMidiNote[]
   lyrics: ParsedMidiLyric[]
+  pitchWheels: ParsedMidiPitchWheel[]
 }
 
 export function createMelodyMidi(project: SongProject): Uint8Array {
@@ -89,6 +100,7 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
       name: `Track ${trackIndex + 1}`,
       notes: [],
       lyrics: [],
+      pitchWheels: [],
     }
     parseMidiTrack(chunk.data, division, track, tempos, signatures)
     if (track.notes.length > 0) {
@@ -117,6 +129,7 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
       duration: Math.max(1, note.duration),
       tone: note.tone,
       lyric: note.lyric || lyricForMidiNote(note, sortedLyrics, index),
+      ...(note.pitchBend ? { pitchBend: note.pitchBend } : {}),
     }))
   if (projectNotes.length === 0) {
     throw new Error('No vocal melody notes were found in the selected MIDI track.')
@@ -159,13 +172,15 @@ function createMelodyTrack(project: SongProject) {
   const events: MidiEvent[] = [
     metaEvent(0, 0, 0x03, 'WebUtau Vocal Melody'),
     { tick: 0, priority: 1, data: [0xc0 | MELODY_CHANNEL, 53] },
+    ...pitchBendRangeEvents(0, MELODY_CHANNEL),
   ]
   for (const note of sortedNotes(project.notes)) {
     const start = sanitizeTick(note.start)
     const end = Math.max(start + 1, sanitizeTick(note.start + note.duration))
     const tone = sanitizeMidiNote(note.tone)
-    events.push(metaEvent(start, 1, 0x05, note.lyric))
-    events.push({ tick: start, priority: 2, data: [0x90 | MELODY_CHANNEL, tone, 96] })
+    events.push(metaEvent(start, 3, 0x05, note.lyric))
+    events.push(...pitchBendEventsForNote(note.pitchBend, start, end, MELODY_CHANNEL))
+    events.push({ tick: start, priority: 5, data: [0x90 | MELODY_CHANNEL, tone, 96] })
     events.push({ tick: end, priority: 0, data: [0x80 | MELODY_CHANNEL, tone, 0] })
   }
   return createTrack(events)
@@ -245,6 +260,70 @@ function timeSignatureEvent(project: SongProject): MidiEvent {
     priority: 0,
     data: [0xff, 0x58, 0x04, Math.max(1, Math.round(project.beatPerBar || 4)), denominatorPower, 24, 8],
   }
+}
+
+function pitchBendRangeEvents(tick: number, channel: number): MidiEvent[] {
+  const status = 0xb0 | channel
+  return [
+    { tick, priority: 2, data: [status, 101, 0] },
+    { tick, priority: 2, data: [status, 100, 0] },
+    { tick, priority: 2, data: [status, 6, MIDI_PITCH_BEND_RANGE_CENTS / 100] },
+    { tick, priority: 2, data: [status, 38, 0] },
+    { tick, priority: 2, data: [status, 101, 127] },
+    { tick, priority: 2, data: [status, 100, 127] },
+  ]
+}
+
+function pitchBendEventsForNote(
+  pitchBend: NotePitchBend | undefined,
+  start: number,
+  end: number,
+  channel: number,
+): MidiEvent[] {
+  const duration = Math.max(1, end - start)
+  const byTick = new Map<number, number>()
+  byTick.set(start, 0)
+  for (const point of normalizeNotePitchBend(pitchBend).points) {
+    const tick = sanitizeTick(start + (duration * point.timePercent) / 100)
+    byTick.set(Math.min(end, Math.max(start, tick)), clampPitchWheelCents(point.cents))
+  }
+  const curveEvents = [...byTick.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([tick, cents]) => pitchWheelEvent(tick, tick === end ? -1 : 4, channel, cents))
+  return [...curveEvents, pitchWheelEvent(end, 1, channel, 0)]
+}
+
+function pitchWheelEvent(tick: number, priority: number, channel: number, cents: number): MidiEvent {
+  const value = pitchWheelValue(cents)
+  return {
+    tick,
+    priority,
+    data: [0xe0 | channel, value & 0x7f, (value >> 7) & 0x7f],
+  }
+}
+
+function pitchWheelValue(cents: number) {
+  const normalized = clampPitchWheelCents(cents) / MIDI_PITCH_BEND_RANGE_CENTS
+  const value =
+    normalized < 0
+      ? MIDI_PITCH_CENTER + normalized * MIDI_PITCH_CENTER
+      : MIDI_PITCH_CENTER + normalized * (MIDI_PITCH_CENTER - 1)
+  return Math.max(0, Math.min(0x3fff, Math.round(value)))
+}
+
+function pitchWheelCents(lsb: number, msb: number) {
+  const value = ((msb & 0x7f) << 7) | (lsb & 0x7f)
+  const normalized =
+    value < MIDI_PITCH_CENTER
+      ? (value - MIDI_PITCH_CENTER) / MIDI_PITCH_CENTER
+      : (value - MIDI_PITCH_CENTER) / (MIDI_PITCH_CENTER - 1)
+  return roundNumber(normalized * MIDI_PITCH_BEND_RANGE_CENTS, 3)
+}
+
+function clampPitchWheelCents(cents: number) {
+  return Number.isFinite(cents)
+    ? Math.max(-MIDI_PITCH_BEND_RANGE_CENTS, Math.min(MIDI_PITCH_BEND_RANGE_CENTS, cents))
+    : 0
 }
 
 function sortedChords(project: SongProject) {
@@ -389,11 +468,25 @@ function parseMidiTrack(
             tone: sanitizeMidiNote(tone),
             lyric: start.lyric,
             channel,
+            ...optionalImportedPitchBend(start.tick, scaledTick, channel, track.pitchWheels),
           })
         }
         if (stack && stack.length === 0) {
           active.delete(key)
         }
+      }
+      continue
+    }
+
+    if (command === 0xe0) {
+      const lsb = reader.readByte()
+      const msb = reader.readByte()
+      if (channel !== 9) {
+        track.pitchWheels.push({
+          tick: scaleMidiTick(tick, division),
+          channel,
+          cents: pitchWheelCents(lsb, msb),
+        })
       }
       continue
     }
@@ -404,6 +497,30 @@ function parseMidiTrack(
     }
     reader.readBytes(byteCount)
   }
+}
+
+function optionalImportedPitchBend(
+  start: number,
+  end: number,
+  channel: number,
+  pitchWheels: ParsedMidiPitchWheel[],
+): { pitchBend: NotePitchBend } | Record<string, never> {
+  const duration = Math.max(1, end - start)
+  const pointByTime = new Map<number, number>()
+  for (const wheel of pitchWheels) {
+    if (wheel.channel !== channel || wheel.tick < start || wheel.tick > end) {
+      continue
+    }
+    const timePercent = Math.max(0, Math.min(100, ((wheel.tick - start) / duration) * 100))
+    pointByTime.set(roundNumber(timePercent, 3), roundNumber(wheel.cents, 3))
+  }
+  const points = [...pointByTime.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([timePercent, cents]) => ({ timePercent, cents }))
+  if (!points.some((point) => Math.abs(point.cents) >= 0.5)) {
+    return {}
+  }
+  return { pitchBend: normalizeNotePitchBend({ points }) }
 }
 
 function chooseMelodyTrack(tracks: ParsedMidiTrack[]) {
@@ -490,6 +607,11 @@ function normalizeImportedTempos(tempos: ParsedMidiTempo[]) {
 
 function scaleMidiTick(tick: number, division: number) {
   return Math.max(0, Math.round((tick / division) * TICKS_PER_BEAT))
+}
+
+function roundNumber(value: number, decimals: number) {
+  const scale = 10 ** decimals
+  return Math.round(value * scale) / scale
 }
 
 function decodeMidiText(bytes: Uint8Array) {
