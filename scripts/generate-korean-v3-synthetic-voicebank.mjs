@@ -9,7 +9,7 @@ import JSZip from 'jszip'
 const SAMPLE_RATE = 40000
 const OUTPUT = join(process.cwd(), 'public/voicebanks/webuta-ko-v3.zip')
 const ZIP_FILE_DATE = '2026-01-01T00:00:00.000Z'
-const SYNTHESIS_PROFILE = 'deterministic-dsp-bright-formant-v3'
+const SYNTHESIS_PROFILE = 'deterministic-dsp-bright-formant-v3-starter-multipitch'
 
 const PITCHES = [
   { name: 'C4', midi: 60, hz: 261.625565 },
@@ -105,6 +105,82 @@ const DEMO_CV_SYLLABLES = [
   '어',
 ]
 const STARTER_HIGH_CV_SYLLABLES = ['크', '노', '이', '즈', '가', '시', '자', '으', '깨', '워', '위']
+const STARTER_PRIORITY_SYLLABLES = [
+  '네',
+  '오',
+  '빛',
+  '이',
+  '메',
+  '로',
+  '디',
+  '데',
+  '려',
+  '가',
+  '밤',
+  '와',
+  '너',
+  '나',
+  '노',
+  '래',
+  '해',
+  '레',
+  '트',
+  '비',
+  '뛰',
+  '어',
+  '달',
+  '속',
+  '에',
+  '숨',
+  '은',
+  '말',
+  '을',
+  '켜',
+  '핑',
+  '크',
+  '즈',
+  '심',
+  '장',
+  '깨',
+  '워',
+  '내',
+  '린',
+  '부',
+  '르',
+  '도',
+  '시',
+  '불',
+  '위',
+  '우',
+  '날',
+  '아',
+  '유',
+  '리',
+  '무',
+  '대',
+  '새',
+  '벽',
+  '창',
+  '작',
+  '꿈',
+  '써',
+  '중',
+  '력',
+  '하',
+  '늘',
+  '까',
+  '지',
+  '캔',
+  '꽃',
+  '처',
+  '럼',
+  '번',
+  '져',
+  '의',
+  '궤',
+  '천',
+  '히',
+]
 
 const VOWEL_FORMANTS = {
   'ㅏ': [820, 1220, 2700, 3600],
@@ -212,7 +288,7 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
         'Broadened vowel formant bands to reduce whistle-like resonances.',
         'Blended a low-passed glottal body layer behind the formants for a more vocal sustain.',
         'Applied deterministic soft saturation before normalization to add stable harmonic color without using recordings.',
-        'Uses 40 kHz source WAVs to keep the web bundle below the GitHub large-file warning while WebUtau exports DAW-ready 44.1 kHz renders.',
+        'Uses 40 kHz source WAVs to keep the web bundle below GitHub hard file limits while prioritizing starter-phrase pronunciation over the 50 MB warning-zone comfort line.',
       ],
     },
     qualityIntent:
@@ -281,6 +357,7 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
 
 export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
   const units = []
+  const cvUnitKeys = new Set()
   const onsetLimit = profile === 'tiny' ? ONSETS.slice(0, 3) : ONSETS
   const vowelLimit = profile === 'tiny' ? VOWELS.slice(0, 4) : VOWELS
   const mainPitch = PITCHES[1]
@@ -288,7 +365,26 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
   const supportPitches = profile === 'web' ? [mainPitch] : pitches
   const demoPitches = profile === 'web' ? PITCHES.filter((pitch) => pitch.name !== mainPitch.name) : []
   const starterHighPitches = profile === 'web' ? [STARTER_HIGH_PITCH] : []
+  const starterPriorityPitches = profile === 'web' ? [...PITCHES, STARTER_HIGH_PITCH] : []
   const codaPitches = profile === 'web' ? PITCHES : pitches
+
+  const pushCvUnit = ({ syllable, onset, vowel, pitch, roman }) => {
+    const key = `${syllable}:${pitch.name}`
+    if (cvUnitKeys.has(key)) {
+      return
+    }
+    cvUnitKeys.add(key)
+    units.push({
+      type: 'CV',
+      onset,
+      vowel,
+      coda: '',
+      pitch,
+      seconds: 0.94,
+      fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || syllable)}`,
+      aliases: aliasesFor(syllable, roman),
+    })
+  }
 
   for (const pitch of cvPitches) {
     for (let onsetIndex = 0; onsetIndex < onsetLimit.length; onsetIndex += 1) {
@@ -300,15 +396,12 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
           VOWELS.findIndex((item) => item[1] === vowel),
         )
         const roman = `${onsetRoman}${vowelRoman}`
-        units.push({
-          type: 'CV',
+        pushCvUnit({
+          syllable,
           onset,
           vowel,
-          coda: '',
           pitch,
-          seconds: 0.94,
-          fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || vowelRoman)}`,
-          aliases: aliasesFor(syllable, roman || vowelRoman),
+          roman: roman || vowelRoman,
         })
       }
     }
@@ -319,15 +412,12 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
           continue
         }
         const roman = `${romanForOnset(decomposed.onset)}${romanForVowel(decomposed.vowel)}`
-        units.push({
-          type: 'CV',
+        pushCvUnit({
+          syllable,
           onset: decomposed.onset,
           vowel: decomposed.vowel,
-          coda: '',
           pitch,
-          seconds: 0.94,
-          fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || syllable)}`,
-          aliases: aliasesFor(syllable, roman),
+          roman,
         })
       }
     }
@@ -340,15 +430,12 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
         continue
       }
       const roman = `${romanForOnset(decomposed.onset)}${romanForVowel(decomposed.vowel)}`
-      units.push({
-        type: 'CV',
+      pushCvUnit({
+        syllable,
         onset: decomposed.onset,
         vowel: decomposed.vowel,
-        coda: '',
         pitch,
-        seconds: 0.94,
-        fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || syllable)}`,
-        aliases: aliasesFor(syllable, roman),
+        roman,
       })
     }
   }
@@ -360,15 +447,35 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
         continue
       }
       const roman = `${romanForOnset(decomposed.onset)}${romanForVowel(decomposed.vowel)}`
-      units.push({
-        type: 'CV',
+      pushCvUnit({
+        syllable,
         onset: decomposed.onset,
         vowel: decomposed.vowel,
-        coda: '',
         pitch,
-        seconds: 0.94,
-        fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || syllable)}`,
-        aliases: aliasesFor(syllable, roman),
+        roman,
+      })
+    }
+  }
+
+  for (const pitch of starterPriorityPitches) {
+    for (const rawSyllable of STARTER_PRIORITY_SYLLABLES) {
+      const decomposed = decomposeHangul(rawSyllable)
+      if (!decomposed) {
+        continue
+      }
+      const onsetIndex = ONSETS.findIndex((item) => item[1] === decomposed.onset)
+      const vowelIndex = VOWELS.findIndex((item) => item[1] === decomposed.vowel)
+      if (onsetIndex < 0 || vowelIndex < 0) {
+        continue
+      }
+      const syllable = hangulSyllable(onsetIndex, vowelIndex)
+      const roman = `${romanForOnset(decomposed.onset)}${romanForVowel(decomposed.vowel)}`
+      pushCvUnit({
+        syllable,
+        onset: decomposed.onset,
+        vowel: decomposed.vowel,
+        pitch,
+        roman,
       })
     }
   }

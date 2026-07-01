@@ -162,11 +162,14 @@ Recommended coverage shape:
 - [x] Add sample-quality audit for package files, aliases, silence, clipping,
   RMS, and WAV consistency.
 - [x] Add F0/pitch-stability audit for generated sample bodies.
-- [x] Generate the first web-profile `webuta-ko-v3.zip`: 685 samples, 1603 aliases,
-  about 46 MB.
+- [x] Generate the current web-profile `webuta-ko-v3.zip`: 823 samples, 1892 aliases,
+  about 59 MB, prioritizing starter-phrase intelligibility over the earlier
+  50 MB comfort ceiling.
 - [x] Make `webuta-ko-v3.zip` the bundled voicebank selected on first launch.
 - [ ] Run browser smoke and human listening review before calling V3
-  community-ready.
+  community-ready. The previous `web-6` V3 was rejected in user listening
+  feedback as unintelligible, so no automated metric may override a failed
+  real-listener pronunciation review.
 
 ### M3. Sample Processing
 
@@ -387,24 +390,25 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 685 WAV samples, 1603 oto aliases, 49196883 bytes,
-  using 40 kHz source WAVs to stay below GitHub's large-file warning while
-  keeping loop stability.
+- Default web profile: 823 WAV samples, 1892 oto aliases, 59232002 bytes,
+  using 40 kHz source WAVs to stay below GitHub's 100 MB hard file limit while
+  accepting the 50 MB warning-zone tradeoff for starter-pronunciation coverage.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260702-v3-synthetic-web-6`.
+  version `20260702-v3-synthetic-web-7`.
 - The generator now uses synthesis profile
-  `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
-  glottal body layer, deterministic soft saturation, 40 kHz source WAVs, and
-  clearer `ㅡ`/`ㅢ` vowel separation without using recordings, datasets, TTS,
-  or model output.
+  `deterministic-dsp-bright-formant-v3-starter-multipitch`: broadened vowel
+  formants, a blended glottal body layer, deterministic soft saturation, 40 kHz
+  source WAVs, clearer `ㅡ`/`ㅢ` vowel separation, and C4/F4/A4/F5 copies of
+  starter-priority Korean CV units without using recordings, datasets, TTS, or
+  model output.
 - Recording/private-singer prototype scripts are kept only under
   `experimental:*`, and the old Supertonic path is kept only under
   `legacy:voicebank:supertonic`; neither is part of the V3 release workflow.
-- `npm run voicebank:audit-v3` passes on the default zip: all 685 WAV files
+- `npm run voicebank:audit-v3` passes on the default zip: all 823 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
-- `npm run voicebank:oto-v3` passes on the default zip: 685/685 manifest
-  samples audited against `oto.ini`, 1603 oto entries checked, and zero timing
+- `npm run voicebank:oto-v3` passes on the default zip: 823/823 manifest
+  samples audited against `oto.ini`, 1892 oto entries checked, and zero timing
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 11/11, render warnings are clear, the lyric line is
@@ -419,14 +423,14 @@ Current verified V3 evidence:
   `새 프로젝트`, and `기본 샘플`, the collapsed `고급 도구` review area, and
   Korean mode navigation are visible, the community
   release readiness card is visible, desktop/mobile overflow checks pass, the
-  exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes, and the
+  exported WAV is 44.1 kHz mono 16-bit PCM, 6.356 seconds, 560666 bytes, and the
   downloaded DAW handoff ZIP contains the rendered WAV, WebUtau project, USTX,
   classic UST, `melody.mid`, `chords.mid`, arrangement, lyric, note, manifest,
   and README files.
 - `npm run voicebank:demo-v3:pages` passes against
   `https://midagedev.github.io/webuta/`: the deployed app loads the bundled V3,
   the first-run demo aliases match 11/11, desktop/mobile layout checks pass, the
-  live WAV download is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes,
+  live WAV download is 44.1 kHz mono 16-bit PCM, 6.356 seconds, 560666 bytes,
   and the DAW ZIP/MIDI guide download is inspected.
 - The default `네오빛이 메로디로 데려가` melody is now A-B-C-B-D-C-B-A-C-D-E rather
   than a straight ascending test scale; regression tests pin this contour in the
@@ -457,12 +461,12 @@ Current verified V3 evidence:
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.
-- `npm run voicebank:pitch-v3` passes on the default zip: 685/685 samples
-  audited, maximum median pitch error about 4.5 cents, maximum body drift about
-  10.3 cents, and minimum median F0 confidence about 0.984.
-- `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain
-  samples audited, maximum loop residual ratio about 0.032, maximum seam jump
-  about 0.077.
+- `npm run voicebank:pitch-v3` passes on the default zip: 823/823 samples
+  audited, maximum median pitch error about 8.2 cents, maximum body drift about
+  15.2 cents, and minimum median F0 confidence about 0.984.
+- `npm run voicebank:loop-v3` passes on the default zip: 619/619 CV/V sustain
+  samples audited, maximum loop residual ratio about 0.041, maximum seam jump
+  about 0.105.
 - `npm run voicebank:sustain-v3` passes on the browser-rendered long-note audit:
   9/9 rendered notes pass, click candidate count is 0, maximum sustain sample
   step is about 0.076, maximum median pitch error is about 3.82 cents, and

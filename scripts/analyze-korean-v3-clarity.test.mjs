@@ -35,7 +35,7 @@ describe('Korean V3 clarity audit', () => {
     expect(report.decision).toBe('v3-clarity-audit-pass')
     expect(report.manifest).toMatchObject({
       name: 'WebUtau Korean V3 Synthetic',
-      synthesisProfile: 'deterministic-dsp-bright-formant-v3',
+      synthesisProfile: 'deterministic-dsp-bright-formant-v3-starter-multipitch',
     })
     expect(report.clarity.vowels.auditedCount).toBeGreaterThanOrEqual(4)
     expect(report.clarity.vowels.summary.minFormantEnergyRatio).toBeGreaterThan(0.1)

@@ -52,8 +52,13 @@ describe('Korean V3 synthetic voicebank generator', () => {
   it('keeps the web profile compact while covering the default demo', () => {
     const units = buildUnits({ profile: 'web' })
     const aliases = new Set(units.flatMap((unit) => unit.aliases))
+    const cvAliasesByPitch = new Set(
+      units
+        .filter((unit) => unit.type === 'CV')
+        .flatMap((unit) => unit.aliases.map((alias) => `${alias}:${unit.pitch.name}`)),
+    )
 
-    expect(units.length).toBeLessThan(700)
+    expect(units.length).toBeLessThan(900)
     expect(aliases.has('도')).toBe(true)
     expect(aliases.has('히')).toBe(true)
     expect(aliases.has('다')).toBe(true)
@@ -68,6 +73,9 @@ describe('Korean V3 synthetic voicebank generator', () => {
     expect(aliases.has('빛')).toBe(true)
     expect(aliases.has('ㅣㅊ')).toBe(true)
     expect(aliases.has('-ㅣㅊ')).toBe(true)
+    for (const alias of ['네', '메', '로', '디', '데', '려', '가', '비']) {
+      expect(cvAliasesByPitch.has(`${alias}:F5`), `${alias} should have an F5 starter-priority layer`).toBe(true)
+    }
   })
 })
 

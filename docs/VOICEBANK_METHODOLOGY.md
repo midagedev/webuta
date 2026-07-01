@@ -14,7 +14,7 @@ join those units without destroying consonants.
 ## Current Position
 
 WebUtau now ships a generated Korean V3 synthetic UTAU voicebank. The current
-web profile contains 685 generated 40 kHz source WAV samples, 1603 aliases,
+web profile contains 823 generated 40 kHz source WAV samples, 1892 aliases,
 `oto.ini`, and a browser sample renderer that exports songs as 44.1 kHz WAV.
 This is useful because it exercises the same route as an imported
 UTAU/OpenUtau singer, but it still has structural weaknesses:
@@ -56,7 +56,7 @@ starter-priority multipitch samples plus vowel/final-consonant tails:
 
 ```txt
 19 Hangul onsets * 21 Hangul vowels = 399 CV samples
-starter hook multipitch CV support + VC tails + selected CVC demos = 685 WAV samples
+starter hook C4/F4/A4/F5 multipitch CV support + VC tails + selected CVC demos = 823 WAV samples
 ```
 
 This is the minimal practical coverage for a Hangul starter voice. It can say

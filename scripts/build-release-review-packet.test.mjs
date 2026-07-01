@@ -31,12 +31,12 @@ describe('release review packet', () => {
     expect(packet.voicebank).toMatchObject({
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
-      version: '20260702-v3-synthetic-web-6',
+      version: '20260702-v3-synthetic-web-7',
       bundledByDefault: true,
       noRecordingRequired: true,
       kasaneTetoBundled: false,
     })
-    expect(packet.voicebank.url).toBe('https://example.test/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-6')
+    expect(packet.voicebank.url).toBe('https://example.test/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-7')
     expect(packet.requiredEvidence.map((item) => item.downloadFile)).toEqual([
       'listening-scores.local.json',
       'handoff-report.local.json',
@@ -98,7 +98,7 @@ function makeFixture(options = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260702-v3-synthetic-web-6'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260702-v3-synthetic-web-7'",
       '',
     ].join('\n'),
   )

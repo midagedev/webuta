@@ -37,6 +37,7 @@ describe('default demo render audit report', () => {
         'first-run release evidence links visible',
         'first-run sketch cues visible',
         'tempo map controls visible',
+        'project transpose controls visible',
         'Korean mode navigation visible',
         'first-run demo aliases fully matched',
         'first-run demo render warnings clear',

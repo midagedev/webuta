@@ -25,10 +25,10 @@ describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voice
     const coverage = analyzeVoicebankCoverage(voicebank, demoNotes)
 
     expect(voicebank.name).toBe('WebUtau Korean V3 Synthetic')
-    expect(bytes.byteLength).toBeLessThan(50_000_000)
+    expect(bytes.byteLength).toBeLessThan(65_000_000)
     expect(manifest.sampleRate).toBe(40000)
-    expect(voicebank.wavCount).toBe(685)
-    expect(voicebank.sampleCount).toBe(1603)
+    expect(voicebank.wavCount).toBe(823)
+    expect(voicebank.sampleCount).toBe(1892)
     expect(coverage).toMatchObject({
       totalNotes: 11,
       matchedNotes: 11,
@@ -38,6 +38,8 @@ describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voice
     expect(findBestEntryForLyric(voicebank, '도', 65).fileName).toContain('F4')
     expect(findBestEntryForLyric(voicebank, '도', 69).fileName).toContain('A4')
     expect(findBestEntryForLyric(voicebank, '키', 69).fileName).toContain('A4')
+    expect(findBestEntryForLyric(voicebank, '메', 74).fileName).toContain('F5')
+    expect(findBestEntryForLyric(voicebank, '려', 76).fileName).toContain('F5')
     expect(findBestEntryForLyric(voicebank, '연', 60).alias).toBe('연')
     expect(findSustainEntryForLyric(voicebank, '연', 60)?.alias).toBe('여')
     expect(findCodaTailEntryForLyric(voicebank, '연', 60)?.alias).toBe('ㅕㄴ')

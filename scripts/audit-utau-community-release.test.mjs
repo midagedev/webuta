@@ -229,7 +229,7 @@ describe('UTAU community release audit', () => {
     })
 
     expect(report.ok).toBe(false)
-    expect(report.problems.join('\n')).toContain('does not match 20260702-v3-synthetic-web-6')
+    expect(report.problems.join('\n')).toContain('does not match 20260702-v3-synthetic-web-7')
   })
 
   it('blocks release when deployed V3 listening review WAVs are missing', async () => {
@@ -238,7 +238,7 @@ describe('UTAU community release audit', () => {
         ok: true,
         voicebank: {
           file: 'webuta-ko-v3.zip',
-          version: '20260702-v3-synthetic-web-6',
+          version: '20260702-v3-synthetic-web-7',
           bytes: 593,
         },
         reviewAudio: makePagesReviewAudio().map((item, index) =>
@@ -593,7 +593,7 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must be ready')
-    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260702-v3-synthetic-web-6')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260702-v3-synthetic-web-7')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must require listening-scores.local.json')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must list at least eight V3/V2 review audio files')
   })
@@ -693,7 +693,7 @@ async function makeFixture(overrides = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260702-v3-synthetic-web-6'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260702-v3-synthetic-web-7'",
       '',
     ].join('\n'),
   )
@@ -705,7 +705,7 @@ async function makeFixture(overrides = {}) {
       ok: true,
       voicebank: {
         file: 'webuta-ko-v3.zip',
-        version: '20260702-v3-synthetic-web-6',
+        version: '20260702-v3-synthetic-web-7',
         bytes: readFileSync(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip')).byteLength,
       },
       checks: [
@@ -1581,8 +1581,8 @@ function makeReleasePacket() {
     voicebank: {
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
-      version: '20260702-v3-synthetic-web-6',
-      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-6',
+      version: '20260702-v3-synthetic-web-7',
+      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-7',
       bundledByDefault: true,
       origin: 'self-generated synthetic UTAU sample voicebank',
       noRecordingRequired: true,

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-01T17:22:47.061Z",
+  "generatedAt": "2026-07-01T20:51:23.395Z",
   "ok": true,
   "decision": "release-review-packet-ready",
   "pagesUrl": "https://midagedev.github.io/webuta/",
@@ -12,8 +12,8 @@
   "voicebank": {
     "name": "WebUtau Korean V3 Synthetic",
     "file": "webuta-ko-v3.zip",
-    "version": "20260702-v3-synthetic-web-6",
-    "url": "https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-6",
+    "version": "20260702-v3-synthetic-web-7",
+    "url": "https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-7",
     "bundledByDefault": true,
     "origin": "self-generated synthetic UTAU sample voicebank",
     "noRecordingRequired": true,

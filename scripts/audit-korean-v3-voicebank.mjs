@@ -22,7 +22,7 @@ const EXPECTED_SAMPLE_RATE = 40000
 
 export async function auditKoreanV3Voicebank(options = {}) {
   const zipPath = resolve(options.zip ?? DEFAULT_ZIP)
-  const maxBytes = Number(options.maxBytes ?? 50_000_000)
+  const maxBytes = Number(options.maxBytes ?? 65_000_000)
   const minWavs = Number(options.minWavs ?? 600)
   const minAliases = Number(options.minAliases ?? 1400)
   const maxSamples = Number(options.maxSamples ?? Number.POSITIVE_INFINITY)
