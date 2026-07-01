@@ -383,6 +383,12 @@ async function assertDefaultV3DemoReady(page) {
   await beginnerStartPanel.getByLabel('Recommended starter action').getByText('01 샘플 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '초보자 첫 버튼' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await beginnerStartPanel.getByRole('button', { name: '새 프로젝트 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const koreanModePath = page.getByLabel('Starter Korean mode path')
+  await koreanModePath.getByText('한국어 UTAU 모드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await koreanModePath.getByText('한글을 쓰면 발음 alias로 바로 연결').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await koreanModePath.getByLabel('Korean mode quick route').getByText('한글 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await koreanModePath.getByLabel('Korean mode quick route').getByText(/alias/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await koreanModePath.getByLabel('Korean mode quick route').getByText(/렌더하면 WAV|WAV 준비됨/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('첫 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('샘플 듣기 -> 가사 바꾸기 -> WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter hook chord guide').getByText('C -> G -> Am -> F').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -528,6 +534,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run route state badges visible',
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
+    'first-run Korean UTAU path visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',
     'first-run lyric helper visible',

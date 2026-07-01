@@ -108,6 +108,11 @@
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
   const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
+  const koreanAliasLabel = $derived(voicebankCoverage ? `${voicebankCoverage.matchedNotes}/${voicebankCoverage.totalNotes} alias` : 'alias 대기')
+  const koreanModeDetail = $derived(
+    isVoicebankReady ? `${voicebankLabel}가 현재 가사를 모두 매칭합니다.` : '기본 보컬의 한글 발음 매칭을 확인하고 있어요.',
+  )
+  const koreanWavStepLabel = $derived(rendered ? 'WAV 준비됨' : '렌더하면 WAV')
   const completionCount = $derived(rendered ? 3 : hasPendingLyricLine ? 1 : isPlaying ? 1 : 0)
   const starterProgressLabel = $derived(`${completionCount}/3`)
   const startPanelTitle = $derived(isDraftProject ? '지난 작업이 열렸어요' : '기본 샘플 준비 완료')
@@ -204,6 +209,19 @@
         <span>{startSecondaryLabel}</span>
         <strong>{startSecondaryMeta}</strong>
       </button>
+    </div>
+  </div>
+
+  <div class="starter-korean-path" aria-label="Starter Korean mode path">
+    <div class="starter-korean-copy">
+      <span>한국어 UTAU 모드</span>
+      <strong>한글을 쓰면 발음 alias로 바로 연결</strong>
+      <em>{koreanModeDetail}</em>
+    </div>
+    <div class="starter-korean-steps" aria-label="Korean mode quick route">
+      <span class="ready">한글 입력</span>
+      <span class={isVoicebankReady ? 'ready' : 'pending'}>{koreanAliasLabel}</span>
+      <span class={rendered ? 'ready' : 'next'}>{koreanWavStepLabel}</span>
     </div>
   </div>
 

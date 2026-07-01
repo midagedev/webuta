@@ -297,6 +297,7 @@ describe('UTAU community release audit', () => {
           'first-run route map visible',
           'first-run route state badges visible',
           'first-run lyric helper visible',
+          'first-run Korean UTAU path visible',
           'first-run DAW handoff checklist visible',
           'first-run release evidence links visible',
         ].includes(check.check),
@@ -314,6 +315,7 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run route map visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run lyric helper visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run Korean UTAU path visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
     expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
@@ -681,6 +683,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run route state badges visible',
       'first-run three-step checklist visible',
       'first-run quick-start CTA visible',
+      'first-run Korean UTAU path visible',
       'first-run starter launch panel visible',
       'first-run inline lyric input visible',
       'first-run lyric helper visible',
@@ -976,7 +979,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
-    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `첫 완성 루트`, `C -> G -> Am -> F`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
+    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `한국어 UTAU 모드`, `첫 완성 루트`, `C -> G -> Am -> F`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
     'The DAW handoff bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` sidecars.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
@@ -1015,7 +1018,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `현재 프로젝트`, `첫 완성 루트`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
+    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `한국어 UTAU 모드`, `현재 프로젝트`, `첫 완성 루트`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
     'The DAW bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',
@@ -1135,7 +1138,7 @@ function makeWavDawHandoffPage() {
     '<a href="../index.html">Open release hub</a>',
     '<section aria-label="60-second physical handoff path">',
     '<p>manual evidence only after real DAW import</p>',
-    '<p>처음 시작 and 듣기 · 가사 · WAV are visible.</p>',
+    '<p>처음 시작, 듣기 · 가사 · WAV, and 한국어 UTAU 모드 are visible.</p>',
     '<p>First-Vocal-Sketch.wav</p>',
     '<p>44.1 kHz mono 16-bit</p>',
     '<p>도 히 도 히 다 이 스 키</p>',

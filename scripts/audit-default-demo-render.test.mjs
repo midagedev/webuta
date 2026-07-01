@@ -19,6 +19,7 @@ describe('default demo render audit report', () => {
         'first-run route state badges visible',
         'first-run three-step checklist visible',
         'first-run quick-start CTA visible',
+        'first-run Korean UTAU path visible',
         'first-run starter launch panel visible',
         'first-run inline lyric input visible',
         'first-run lyric helper visible',
