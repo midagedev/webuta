@@ -1018,6 +1018,38 @@ describe('App editing workflow', () => {
     })
   })
 
+  it('copies and pastes the selected note after a new anchor as one undoable edit', async () => {
+    const { container } = render(App)
+    const pasteButton = screen.getByRole('button', { name: '복사한 노트 붙여넣기' }) as HTMLButtonElement
+
+    expect(pasteButton.disabled).toBe(true)
+
+    fireEvent.keyDown(window, { key: 'c', metaKey: true })
+    expect(screen.getAllByText('네 note copied').length).toBeGreaterThan(0)
+    expect(pasteButton.disabled).toBe(false)
+
+    const noteBlocks = container.querySelectorAll<HTMLButtonElement>('.note-block')
+    fireEvent.click(noteBlocks[1])
+    fireEvent.keyDown(window, { key: 'v', metaKey: true })
+
+    await waitFor(() => {
+      const saved = loadSavedProject()
+      expect(saved?.notes).toHaveLength(12)
+      expect(saved?.notes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ lyric: '네', tone: 69, start: 840, duration: 360 }),
+        ]),
+      )
+    })
+    expect(screen.getAllByText('네 note pasted').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByTitle('되돌리기'))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.notes).toHaveLength(11)
+    })
+  })
+
   it('nudges the selected note timing and pitch from the note panel', async () => {
     render(App)
 

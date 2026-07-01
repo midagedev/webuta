@@ -35,9 +35,11 @@
     addNoteAtTick,
     addNoteFromGrid,
     applyLyricLineToProject,
+    copyNoteForPaste,
     deleteNoteFromProject,
     duplicateNoteInProject,
     GRID_SNAP_TICKS,
+    pasteCopiedNoteInProject,
     quantizeProjectNotes,
     snapTickToGrid,
     splitNoteInProject,
@@ -155,6 +157,7 @@
   let isLoopOn = $state(false)
   let loopStartTick = $state(0)
   let loopEndTick = $state(TICKS_PER_BEAT * 4)
+  let copiedNote = $state<SongNote | null>(null)
   let lyricCursor = $state(0)
   let recordingStartedAtMs = 0
   let recordingOriginProject: SongProject | null = null
@@ -166,6 +169,7 @@
   const project = $derived(projectHistory.present)
   const canUndo = $derived(projectHistory.past.length > 0)
   const canRedo = $derived(projectHistory.future.length > 0)
+  const canPasteNote = $derived(Boolean(copiedNote))
   const selectedNote = $derived(project.notes.find((note) => note.id === selectedNoteId) ?? project.notes[0])
   const sortedProjectNotes = $derived(sortedNotes(project.notes))
   const selectedLyricMatchContext = $derived(
@@ -233,6 +237,16 @@
       if (commandPressed && key === 'y') {
         event.preventDefault()
         redoProject()
+        return
+      }
+      if (commandPressed && key === 'c') {
+        event.preventDefault()
+        copySelectedNote()
+        return
+      }
+      if (commandPressed && key === 'v') {
+        event.preventDefault()
+        pasteCopiedNote()
         return
       }
       if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -638,6 +652,28 @@
     selectedNoteId = result.duplicatedNote.id
     clearRendered()
     notice = `${result.duplicatedNote.lyric} note duplicated`
+  }
+
+  function copySelectedNote() {
+    if (!selectedNote) {
+      notice = 'Select a note to copy'
+      return
+    }
+    copiedNote = copyNoteForPaste(selectedNote)
+    notice = `${selectedNote.lyric} note copied`
+  }
+
+  function pasteCopiedNote() {
+    if (!copiedNote) {
+      notice = 'Copy a note first'
+      return
+    }
+    const result = pasteCopiedNoteInProject(project, copiedNote, selectedNote)
+    commitProject(result.project)
+    selectedNoteId = result.pastedNote.id
+    paintLyric = result.pastedNote.lyric
+    clearRendered()
+    notice = `${result.pastedNote.lyric} note pasted`
   }
 
   function handleGridClick(event: MouseEvent) {
@@ -1649,6 +1685,7 @@
         {nextPerformanceLyric}
         canUndo={canUndo && !isRecording}
         {canRedo}
+        {canPasteNote}
         {playbackTime}
         {displayDuration}
         onSaveProject={downloadWebutaProject}
@@ -1669,6 +1706,8 @@
         onSetLoopToSelection={setLoopToSelectedNote}
         onQuantize={quantizeCurrentProject}
         onDuplicateNote={duplicateSelectedNote}
+        onCopyNote={copySelectedNote}
+        onPasteNote={pasteCopiedNote}
         onSplitNote={splitSelectedNote}
         onDeleteNote={deleteSelectedNote}
         onUndo={undoProject}

@@ -144,29 +144,41 @@ export function duplicateNoteInProject(project: SongProject, noteId: string) {
   if (!currentNote) {
     return { project, sourceNote: null, duplicatedNote: null }
   }
-  const duplicatedNote = sanitizeNote({
-    ...currentNote,
-    id: makeId('note'),
-    start: currentNote.start + currentNote.duration,
-    pitchBend: currentNote.pitchBend
-      ? {
-          points: currentNote.pitchBend.points.map((point) => ({ ...point })),
-          ...(currentNote.pitchBend.modes ? { modes: [...currentNote.pitchBend.modes] } : {}),
-          ...(typeof currentNote.pitchBend.snapFirst === 'boolean' ? { snapFirst: currentNote.pitchBend.snapFirst } : {}),
-        }
-      : undefined,
-    vibrato: currentNote.vibrato ? { ...currentNote.vibrato } : undefined,
-  })
-  const notes = [...project.notes, duplicatedNote].sort((a, b) => a.start - b.start || a.tone - b.tone)
+  const { project: nextProject, pastedNote: duplicatedNote } = pasteCopiedNoteInProject(
+    project,
+    copyNoteForPaste(currentNote),
+    currentNote,
+  )
 
+  return {
+    project: nextProject,
+    sourceNote: currentNote,
+    duplicatedNote,
+  }
+}
+
+export function copyNoteForPaste(note: SongNote) {
+  return cloneNoteForPaste(note)
+}
+
+export function pasteCopiedNoteInProject(project: SongProject, copiedNote: SongNote, anchor: SongNote | undefined) {
+  const part = project.parts.find((item) => item.id === anchor?.partId) ?? ensurePrimaryPart(project)
+  const pastedNote = sanitizeNote({
+    ...cloneNoteForPaste(copiedNote),
+    id: makeId('note'),
+    trackId: anchor?.trackId ?? part.trackId,
+    partId: anchor?.partId ?? part.id,
+    start: anchor ? anchor.start + anchor.duration : copiedNote.start + copiedNote.duration,
+  })
+  const notes = [...project.notes, pastedNote].sort((a, b) => a.start - b.start || a.tone - b.tone)
+  const expandedParts = expandPartForNote(project.parts.some((item) => item.id === part.id) ? project.parts : [part, ...project.parts], pastedNote)
   return {
     project: {
       ...project,
-      parts: expandPartForNote(project.parts, duplicatedNote),
+      parts: expandedParts,
       notes,
     },
-    sourceNote: currentNote,
-    duplicatedNote,
+    pastedNote,
   }
 }
 
@@ -270,6 +282,22 @@ function expandPartForNote(parts: VoicePart[], note: SongNote) {
         }
       : part,
   )
+}
+
+function cloneNoteForPaste(note: SongNote): SongNote {
+  return sanitizeNote({
+    ...note,
+    timing: note.timing ? { ...note.timing } : undefined,
+    envelope: note.envelope ? { ...note.envelope } : undefined,
+    vibrato: note.vibrato ? { ...note.vibrato } : undefined,
+    pitchBend: note.pitchBend
+      ? {
+          points: note.pitchBend.points.map((point) => ({ ...point })),
+          ...(note.pitchBend.modes ? { modes: [...note.pitchBend.modes] } : {}),
+          ...(typeof note.pitchBend.snapFirst === 'boolean' ? { snapFirst: note.pitchBend.snapFirst } : {}),
+        }
+      : undefined,
+  })
 }
 
 function sanitizeNote(note: SongNote): SongNote {

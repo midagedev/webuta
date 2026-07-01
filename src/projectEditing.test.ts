@@ -6,8 +6,10 @@ import {
   addNoteAtTick,
   addNoteFromGrid,
   applyLyricLineToProject,
+  copyNoteForPaste,
   deleteNoteFromProject,
   duplicateNoteInProject,
+  pasteCopiedNoteInProject,
   quantizeProjectNotes,
   splitNoteInProject,
   tokenizeLyricLine,
@@ -213,6 +215,64 @@ describe('project editing helpers', () => {
 
     expect(result.project).toBe(demoProject)
     expect(result.duplicatedNote).toBeNull()
+  })
+
+  it('copies and pastes a note after the current anchor with DAW parameters intact', () => {
+    const sourceNote = {
+      ...demoProject.notes[10],
+      intensity: 92,
+      velocity: 126,
+      modulation: 8,
+      flags: 'g-2',
+      timing: { sampleStartMs: 22, preutteranceMs: 64, voiceOverlapMs: 20 },
+      envelope: { p1Ms: 0, p2Ms: 30, p3Ms: 180, v1: 0, v2: 100, v3: 58, v4: 4 },
+      vibrato: { enabled: true, depthCents: 21, rateHz: 5.8, startPercent: 38 },
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 44, cents: -24 },
+          { timePercent: 100, cents: 6 },
+        ],
+        modes: ['l', 'io'],
+        snapFirst: true,
+      },
+    }
+    const sourceProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note) => (note.id === sourceNote.id ? sourceNote : note)),
+    }
+    const anchor = sourceProject.notes[1]
+    const copiedNote = copyNoteForPaste(sourceNote)
+    const { project, pastedNote } = pasteCopiedNoteInProject(sourceProject, copiedNote, anchor)
+
+    expect(pastedNote).toMatchObject({
+      trackId: anchor.trackId,
+      partId: anchor.partId,
+      start: anchor.start + anchor.duration,
+      duration: sourceNote.duration,
+      tone: sourceNote.tone,
+      lyric: sourceNote.lyric,
+      intensity: 92,
+      velocity: 126,
+      modulation: 8,
+      flags: 'g-2',
+      timing: { sampleStartMs: 22, preutteranceMs: 64, voiceOverlapMs: 20 },
+      envelope: { p1Ms: 0, p2Ms: 30, p3Ms: 180, v1: 0, v2: 100, v3: 58, v4: 4 },
+      vibrato: { enabled: true, depthCents: 21, rateHz: 5.8, startPercent: 38 },
+      pitchBend: {
+        points: [
+          { timePercent: 0, cents: 0 },
+          { timePercent: 44, cents: -24 },
+          { timePercent: 100, cents: 6 },
+        ],
+        modes: ['l', 'io'],
+        snapFirst: true,
+      },
+    })
+    expect(pastedNote.id).not.toBe(sourceNote.id)
+    expect(pastedNote.pitchBend).not.toBe(copiedNote.pitchBend)
+    expect(pastedNote.pitchBend?.points).not.toBe(copiedNote.pitchBend?.points)
+    expect(project.notes).toHaveLength(sourceProject.notes.length + 1)
   })
 
   it('tokenizes compact Korean lyric lines by syllable', () => {

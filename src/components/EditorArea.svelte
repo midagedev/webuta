@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
   import {
+    Clipboard,
+    ClipboardPaste,
     Circle,
     Copy,
     Download,
@@ -80,6 +82,7 @@
     nextPerformanceLyric: string
     canUndo: boolean
     canRedo: boolean
+    canPasteNote: boolean
     playbackTime: number
     displayDuration: number
     onSaveProject: () => void
@@ -95,6 +98,8 @@
     onSetLoopToSelection: () => void
     onQuantize: () => void
     onDuplicateNote: () => void
+    onCopyNote: () => void
+    onPasteNote: () => void
     onSplitNote: () => void
     onDeleteNote: () => void
     onUndo: () => void
@@ -146,6 +151,7 @@
     nextPerformanceLyric,
     canUndo,
     canRedo,
+    canPasteNote,
     playbackTime,
     displayDuration,
     onSaveProject,
@@ -161,6 +167,8 @@
     onSetLoopToSelection,
     onQuantize,
     onDuplicateNote,
+    onCopyNote,
+    onPasteNote,
     onSplitNote,
     onDeleteNote,
     onUndo,
@@ -359,7 +367,15 @@
       </button>
       <button type="button" class="performance-action" aria-label="선택 노트 복제" onclick={onDuplicateNote}>
         <Copy size={16} aria-hidden="true" />
+        <span>DUP</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="선택 노트 복사" onclick={onCopyNote}>
+        <Clipboard size={16} aria-hidden="true" />
         <span>COPY</span>
+      </button>
+      <button type="button" class="performance-action" aria-label="복사한 노트 붙여넣기" onclick={onPasteNote} disabled={!canPasteNote}>
+        <ClipboardPaste size={16} aria-hidden="true" />
+        <span>PASTE</span>
       </button>
       <button type="button" class="performance-action" aria-label="선택 노트 분할" onclick={onSplitNote}>
         <Scissors size={16} aria-hidden="true" />
