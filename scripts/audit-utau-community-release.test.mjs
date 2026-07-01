@@ -1471,6 +1471,7 @@ function makeReadme() {
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
     'Run `npm run voicebank:songwriting-v3` for starter songwriting quality checks covering slow, mid, and fast BPM bands, melody contours, Hangul coda lyrics, and chord-guide variety.',
+    'Project editing tests cover compact Japanese romaji lyric chunks such as `daisuki` and `ma っ te` before lyric assignment.',
     'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, character.txt, Hangul CV/VC coda, multi-oto style ranking, folder-scoped duplicate WAV names, and Windows backslash sample paths.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',

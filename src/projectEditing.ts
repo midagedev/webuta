@@ -335,5 +335,193 @@ function splitLyricChunk(chunk: string) {
     return []
   }
   const segments = clean.match(/[가-힣]|[ぁ-ゖァ-ヺー]|[a-zA-Z]+|\d+/g)
-  return segments?.map((segment) => segment.toLowerCase()) ?? []
+  return segments?.flatMap((segment) => splitLyricSegment(segment)) ?? []
+}
+
+function splitLyricSegment(segment: string) {
+  const normalized = segment.toLowerCase()
+  if (!/^[a-z]+$/u.test(normalized)) {
+    return [normalized]
+  }
+  if (['r', 'br', 'rest'].includes(normalized)) {
+    return [normalized]
+  }
+  return splitRomajiJapaneseChunk(normalized) ?? [normalized]
+}
+
+const ROMAJI_MORA_TOKENS = [
+  'kya',
+  'kyu',
+  'kyo',
+  'gya',
+  'gyu',
+  'gyo',
+  'sya',
+  'syu',
+  'syo',
+  'sha',
+  'shu',
+  'she',
+  'sho',
+  'jya',
+  'jyu',
+  'jyo',
+  'cha',
+  'chu',
+  'che',
+  'cho',
+  'tya',
+  'tyu',
+  'tyo',
+  'nya',
+  'nyu',
+  'nyo',
+  'hya',
+  'hyu',
+  'hyo',
+  'bya',
+  'byu',
+  'byo',
+  'pya',
+  'pyu',
+  'pyo',
+  'mya',
+  'myu',
+  'myo',
+  'rya',
+  'ryu',
+  'ryo',
+  'kwa',
+  'kwi',
+  'kwe',
+  'kwo',
+  'gwa',
+  'gwi',
+  'gwe',
+  'gwo',
+  'shi',
+  'chi',
+  'tsu',
+  'tsa',
+  'tsi',
+  'tse',
+  'tso',
+  'thi',
+  'twu',
+  'dhi',
+  'dwu',
+  'fa',
+  'fi',
+  'fe',
+  'fo',
+  'ja',
+  'ju',
+  'jo',
+  'je',
+  'ye',
+  'wi',
+  'we',
+  'wo',
+  'ka',
+  'ki',
+  'ku',
+  'ke',
+  'ko',
+  'ga',
+  'gi',
+  'gu',
+  'ge',
+  'go',
+  'sa',
+  'si',
+  'su',
+  'se',
+  'so',
+  'za',
+  'ji',
+  'zu',
+  'ze',
+  'zo',
+  'ta',
+  'ti',
+  'tu',
+  'te',
+  'to',
+  'da',
+  'di',
+  'du',
+  'de',
+  'do',
+  'ha',
+  'hi',
+  'fu',
+  'he',
+  'ho',
+  'ba',
+  'bi',
+  'bu',
+  'be',
+  'bo',
+  'pa',
+  'pi',
+  'pu',
+  'pe',
+  'po',
+  'ma',
+  'mi',
+  'mu',
+  'me',
+  'mo',
+  'ya',
+  'yu',
+  'yo',
+  'ra',
+  'ri',
+  'ru',
+  're',
+  'ro',
+  'la',
+  'li',
+  'lu',
+  'le',
+  'lo',
+  'na',
+  'ni',
+  'nu',
+  'ne',
+  'no',
+  'wa',
+  'a',
+  'i',
+  'u',
+  'e',
+  'o',
+  'n',
+]
+
+function splitRomajiJapaneseChunk(chunk: string) {
+  const tokens: string[] = []
+  let cursor = 0
+  while (cursor < chunk.length) {
+    const current = chunk[cursor]
+    const next = chunk[cursor + 1]
+    if (
+      current &&
+      next &&
+      current === next &&
+      current !== 'n' &&
+      !'aeiou'.includes(current)
+    ) {
+      tokens.push('っ')
+      cursor += 1
+      continue
+    }
+    const matched = ROMAJI_MORA_TOKENS.find((token) => chunk.startsWith(token, cursor))
+    if (!matched) {
+      return undefined
+    }
+    tokens.push(matched)
+    cursor += matched.length
+  }
+  return tokens.length > 1 ? tokens : undefined
 }

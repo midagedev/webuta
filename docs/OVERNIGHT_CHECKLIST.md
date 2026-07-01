@@ -31,6 +31,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Add browser-safe demo vocal renderer as fallback.
 - [x] Add bundled `WebUtau Korean V3 Synthetic` UTAU-style voicebank for the default path.
 - [x] Add Hangul CV alias fallback so final-consonant syllables can use their base CV sample.
+- [x] Add compact Japanese romaji lyric splitting so beginner input such as
+  `daisuki`, `tokyo`, and `matte` becomes note-ready CV/yoon tokens.
 - [x] Add WAV encoder and download path.
 - [x] Add renderer registry for future OpenUtau server and WORLDLINE WASM engines.
 - [x] Add unit tests for parsing, rendering, and WAV output.
@@ -64,6 +66,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   `kya`, `shu`, `ja`, `cho`, and `ryo`, plus extended CV aliases such as
   `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and `gwa`,
   match hiragana/katakana UTAU aliases without falling back to the first sample.
+- [x] Project editing tests verify compact Japanese romaji chunks such as
+  `daisuki`, `tokyo`, and `matte` split into lyric tokens before assignment.
 - [x] Voicebank and renderer tests verify Japanese VCV aliases such as `- ど`,
   `o ひ`, and `i ど` are selected from phrase-start and previous-vowel note
   context.

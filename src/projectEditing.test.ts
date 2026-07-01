@@ -223,6 +223,14 @@ describe('project editing helpers', () => {
     expect(tokenizeLyricLine('do hi do hi da i su ki')).toEqual(['do', 'hi', 'do', 'hi', 'da', 'i', 'su', 'ki'])
   })
 
+  it('splits compact Japanese romaji lyric chunks into vocal-synth note tokens', () => {
+    expect(tokenizeLyricLine('daisuki tokyo matte')).toEqual(['da', 'i', 'su', 'ki', 'to', 'kyo', 'ma', 'っ', 'te'])
+  })
+
+  it('keeps rest markers and unparseable roman words as single lyric tokens', () => {
+    expect(tokenizeLyricLine('neon rest br xyz')).toEqual(['ne', 'o', 'n', 'rest', 'br', 'xyz'])
+  })
+
   it('applies a lyric line to notes in timeline order', () => {
     const { project, appliedCount, tokens } = applyLyricLineToProject(demoProject, '네오빛이 메로디로 데려가')
 
