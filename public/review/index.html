@@ -100,6 +100,13 @@
         margin-top: 18px;
       }
 
+      .fast-path {
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        background: #100f20;
+        padding: 18px;
+      }
+
       article {
         border: 1px solid var(--line);
         background: var(--panel-strong);
@@ -181,6 +188,15 @@
         margin-top: 8px;
       }
 
+      .fast-path p + p {
+        margin-top: 10px;
+      }
+
+      .fast-path code {
+        display: inline-block;
+        margin-top: 8px;
+      }
+
       .commands details {
         margin-top: 12px;
         color: var(--muted);
@@ -204,6 +220,7 @@
 
         header,
         article,
+        .fast-path,
         .commands {
           padding: 16px;
         }
@@ -263,6 +280,19 @@
           </p>
           <a class="secondary" href="wav-daw/index.html">Open DAW handoff</a>
         </article>
+      </section>
+
+      <section class="fast-path" aria-label="Fast acceptance path">
+        <h2>Fast Acceptance Path</h2>
+        <p>
+          Download <code>listening-scores.local.json</code> and <code>handoff-report.local.json</code>,
+          leave both files in your Downloads folder, then run:
+        </p>
+        <p><code>npm run release:accept-evidence</code></p>
+        <p>
+          The command auto-detects the newest matching files from Downloads, including browser-renamed files like
+          <code>listening-scores.local (1).json</code>. Use the longer command below only when the files are somewhere else.
+        </p>
       </section>
 
       <section class="commands" aria-label="Acceptance commands">

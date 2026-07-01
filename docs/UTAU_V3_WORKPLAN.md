@@ -333,7 +333,7 @@ npm run voicebank:pitch-v3
 npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
-npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json
+npm run release:accept-evidence
 npm run voicebank:sample-review-v3
 npm run screenshots:readme
 npm run release:audit-utau
@@ -382,11 +382,12 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
-  visible, the first-run `VOCAL STARTER` / `다음 행동` / `샘플 먼저 듣기`
-  focused next action, current-step badge, inline starter lyric input,
-  `처음 1분` route, starter `샘플 듣기` / `가사 바꾸기` / `멜로디 추천` /
-  `WAV 받기` action cards, current lyric card, folded `프로젝트 도구`, and
-  Korean mode navigation are visible, the community
+  visible, the first-run `VOCAL STARTER` / `01 샘플 듣기` / `02 가사 적용`
+  / `03 WAV 받기` quick checklist, `다음 행동` / `샘플 먼저 듣기` focused
+  next action, current-step badge, inline starter lyric input, `처음 1분`
+  route, starter `샘플 듣기` / `가사 바꾸기` / `멜로디 추천` / `WAV 받기`
+  action cards, current lyric card, folded `프로젝트 도구`, and Korean mode
+  navigation are visible, the community
   release readiness card is visible, desktop/mobile overflow checks pass, and
   the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
 - `npm run voicebank:demo-v3:pages` passes against
@@ -412,10 +413,12 @@ Current verified V3 evidence:
   sanitized manifest, 4 V3 WAVs, and 4 legacy V2 comparison WAVs under
   `public/review/v3/`; no local absolute paths remain in the public manifest or
   scorecard files.
-- `npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json`
-  validates both downloaded human review files, installs them atomically, and
-  reruns the final release audit. The older single-file accept commands remain
-  compatibility helpers, but the release flow should use the unified command.
+- `npm run release:accept-evidence` validates both downloaded human review
+  files from Downloads, installs them atomically, and reruns the final release
+  audit. Pass `-- --scores path/to/listening-scores.local.json --handoff
+  path/to/handoff-report.local.json` only when the files are outside Downloads.
+  The older single-file accept commands remain compatibility helpers, but the
+  release flow should use the unified command.
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.

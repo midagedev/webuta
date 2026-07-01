@@ -20,7 +20,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `VOCAL STARTER`, `다음 행동`, `샘플 먼저 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, `WAV 받기`, `현재 가사`, and folded `프로젝트 도구`.
+5. Confirm the first-run guide shows `VOCAL STARTER`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `다음 행동`, `샘플 먼저 듣기`, the `01` current-step badge, `스타터 가사 라인`, `처음 1분`, `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, `WAV 받기`, `현재 가사`, and folded `프로젝트 도구`.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
 8. Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.
@@ -30,17 +30,20 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 12. Return to WebUtau, refresh or relaunch, and confirm the browser draft restores locally.
 13. Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files and confirm it stays private to the browser storage.
 14. Turn network off, relaunch from the home-screen icon, and confirm the app shell opens after one prior online load.
-15. Open `review/wav-daw/index.html` from the public site, or copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path. Fill every field from this physical-device pass, download or save `handoff-report.local.json`, then accept both final release evidence files with:
+15. Open `review/wav-daw/index.html` from the public site, or copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path. Fill every field from this physical-device pass, download or save `handoff-report.local.json`, and keep it in Downloads beside `listening-scores.local.json`.
+16. From the repo root, accept both final release evidence files. The command auto-detects the newest matching files from Downloads:
 
 ```sh
-npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json
+npm run release:accept-evidence
 ```
+
+If either file is outside Downloads, pass both paths explicitly with `npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json`.
 
 ## Pass Criteria
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide puts the focused `샘플 먼저 듣기` action and `스타터 가사 라인` input before the `처음 1분` route, then shows large `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, and `WAV 받기` action cards with project utilities folded below.
+- The first-run guide puts the `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` quick checklist before the focused `샘플 먼저 듣기` action and `스타터 가사 라인` input, then shows the `처음 1분` route, large `샘플 듣기`, `가사 바꾸기`, `멜로디 추천`, and `WAV 받기` action cards with project utilities folded below.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.

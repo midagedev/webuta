@@ -81,6 +81,11 @@
             : coverageLabel,
   )
   const lyricRouteStatus = $derived(`${project.notes.length} notes`)
+  const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(lyricPreview) && compactLine(lyricLine).length > 0)
+  const listenProgressClass = $derived(isPlaying || !rendered ? 'current' : 'done')
+  const lyricProgressClass = $derived(hasPendingLyricLine ? 'current' : rendered ? 'done' : 'next')
+  const exportProgressClass = $derived(rendered ? 'current' : 'next')
+  const lyricProgressMeta = $derived(hasPendingLyricLine ? '적용 대기' : lyricRouteStatus)
   const composeRouteStatus = $derived('선택 사항')
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
 
@@ -90,6 +95,10 @@
       return
     }
     await onPlayPause()
+  }
+
+  function compactLine(line: string) {
+    return line.replace(/\s+/gu, '')
   }
 </script>
 
@@ -105,6 +114,39 @@
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
     </div>
+  </div>
+
+  <div class="starter-progress-rail" aria-label="Starter quick checklist">
+    <button
+      type="button"
+      class={`starter-progress-step ${listenProgressClass}`}
+      aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'}
+      onclick={() => void onPlayPause()}
+      disabled={isRendering}
+    >
+      <span class="progress-index">01</span>
+      <Headphones size={17} aria-hidden="true" />
+      <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
+      <em>{playStepLabel}</em>
+    </button>
+    <button type="button" class={`starter-progress-step ${lyricProgressClass}`} aria-label="둘째 단계 가사 적용" onclick={onApplyLyricLine}>
+      <span class="progress-index">02</span>
+      <PencilLine size={17} aria-hidden="true" />
+      <strong>가사 적용</strong>
+      <em>{lyricProgressMeta}</em>
+    </button>
+    <button
+      type="button"
+      class={`starter-progress-step ${exportProgressClass}`}
+      aria-label="셋째 단계 WAV 받기"
+      onclick={() => void onDownloadWav()}
+      disabled={isRendering}
+    >
+      <span class="progress-index">03</span>
+      <Download size={17} aria-hidden="true" />
+      <strong>WAV 받기</strong>
+      <em>{exportRouteStatus}</em>
+    </button>
   </div>
 
   <div class="starter-onboarding-grid" aria-label="Beginner launch pad">

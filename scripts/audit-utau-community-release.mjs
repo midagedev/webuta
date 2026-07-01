@@ -49,6 +49,7 @@ const EXPECTED_DECISIONS = {
 const DEMO_REQUIRED_CHECKS = [
   'default V3 voicebank loaded',
   'first-run starter guide visible',
+  'first-run three-step checklist visible',
   'first-run quick-start CTA visible',
   'first-run focused next action visible',
   'first-run starter route visible',
@@ -250,6 +251,8 @@ function publicReviewHubGate(path) {
       'listening-scores.local.json',
       'wav-daw/index.html',
       'handoff-report.local.json',
+      'Fast Acceptance Path',
+      'Downloads',
       'release:accept-evidence',
       'voicebank:accept-review-v3',
       'release:accept-daw-handoff',
@@ -500,6 +503,7 @@ function readmeGate(paths) {
       'License Boundaries',
       'public/review/index.html',
       'release:accept-evidence',
+      'Downloads',
     ]
     for (const snippet of requiredSnippets) {
       if (!readme.includes(snippet)) {
@@ -525,6 +529,9 @@ function readmeGate(paths) {
       'WebUtau Korean V3 Synthetic',
       'selected without importing a voicebank zip',
       'VOCAL STARTER',
+      '01 샘플 듣기',
+      '02 가사 적용',
+      '03 WAV 받기',
       '처음 1분',
       '다음 행동',
       '샘플 먼저 듣기',
@@ -539,6 +546,7 @@ function readmeGate(paths) {
       'wav-daw-handoff.local.template.json',
       'review/wav-daw/index.html',
       'release:accept-evidence',
+      'Downloads',
       'Optional compatibility pass',
       'Any optional imported voicebank zip remains user-provided and private to the browser',
     ]) {

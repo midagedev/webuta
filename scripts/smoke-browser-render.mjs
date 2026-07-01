@@ -363,6 +363,13 @@ async function assertDefaultV3DemoReady(page) {
   await starterGuide.getByText('VOCAL STARTER').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('듣고 · 바꾸고 · 저장하기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterQuickChecklist = page.getByLabel('Starter quick checklist')
+  await starterQuickChecklist.getByRole('button', { name: '첫 단계 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterQuickChecklist.getByRole('button', { name: '둘째 단계 가사 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterQuickChecklist.getByRole('button', { name: '셋째 단계 WAV 받기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterQuickChecklist.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterQuickChecklist.getByText('02').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterQuickChecklist.getByText('03').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('처음 1분').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('샘플 듣기 → 가사 바꾸기 → WAV 받기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -441,6 +448,7 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
     'first-run focused next action visible',
     'first-run starter route visible',
