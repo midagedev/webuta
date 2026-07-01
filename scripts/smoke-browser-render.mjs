@@ -384,14 +384,10 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('템포 맵').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('1 marker').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('1').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('샘플 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('2').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('가사 적용').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('3').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('멜로디 만들기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('4').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByText('WAV 받기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByRole('button', { name: '초보자 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByRole('button', { name: '초보자 가사 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByRole('button', { name: '초보자 멜로디 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterPath.getByRole('button', { name: '초보자 WAV 받기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '초보자 멜로디 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -441,10 +437,10 @@ async function assertDefaultV3DemoReady(page) {
     'first-run starter guide visible',
     'first-run quick-start CTA visible',
     'first-run focused next action visible',
-    'first-run beginner mission visible',
+    'first-run starter route visible',
     'first-run inline lyric input visible',
     'first-run current lyric card visible',
-    'first-run guided path visible',
+    'first-run action route visible',
     'first-run sketch cues visible',
     'tempo map controls visible',
     'Korean mode navigation visible',
