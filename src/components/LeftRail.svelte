@@ -211,6 +211,13 @@
   const evidencePreflightHref = `${import.meta.env.BASE_URL}review/index.html#evidence-preflight`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
+  let reviewerRunwaySteps = $derived([
+    { index: '01', label: 'Listen', detail: 'listening-scores.local.json', href: listeningReviewHref },
+    { index: '02', label: 'Handoff', detail: 'handoff-report.local.json', href: wavDawHandoffHref },
+    { index: '03', label: 'Preflight', detail: 'No upload check', href: evidencePreflightHref },
+    { index: '04', label: 'Status', detail: 'release:evidence-status' },
+    { index: '05', label: 'Accept', detail: 'release:accept-evidence' },
+  ])
 
   function isSelfGeneratedVoicebank(current: LoadedVoicebank | null) {
     const origin = current?.metadata.origin
@@ -682,6 +689,29 @@
         <div class="release-evidence-command">
           <span>수락</span>
           <code>npm run release:accept-evidence</code>
+        </div>
+        <div class="release-review-runway" aria-label="Reviewer Runway">
+          <div class="release-runway-head">
+            <span>Reviewer Runway</span>
+            <strong>01 Listen -> 02 Handoff -> 03 Preflight -> 04 Status -> 05 Accept</strong>
+          </div>
+          <div class="release-runway-steps">
+            {#each reviewerRunwaySteps as step (step.index)}
+              {#if step.href}
+                <a href={step.href} target="_blank" rel="noreferrer">
+                  <span>{step.index}</span>
+                  <strong>{step.label}</strong>
+                  <em>{step.detail}</em>
+                </a>
+              {:else}
+                <div>
+                  <span>{step.index}</span>
+                  <strong>{step.label}</strong>
+                  <em>{step.detail}</em>
+                </div>
+              {/if}
+            {/each}
+          </div>
         </div>
       </div>
       <div class="release-review-links">

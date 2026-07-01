@@ -477,6 +477,14 @@ async function assertDefaultV3DemoReady(page) {
   await starterHandoff.getByText('다운로드 패키지').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterHandoff.getByText('WAV · melody.mid · chords.mid').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterHandoff.getByText('arrangement.txt · lyrics.txt · notes.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterReviewerRunway = starterHandoff.getByLabel('Starter reviewer runway')
+  await starterReviewerRunway.getByText('Reviewer Runway').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('2 JSON 파일로 공개 전 체크 완료').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('Listen').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('Handoff').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('Preflight').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('Status').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterReviewerRunway.getByText('Accept').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterHubLink = starterHandoff.getByRole('link', { name: '스타터 릴리스 허브 열기' })
   await starterHubLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterHubHref = await starterHubLink.getAttribute('href')
@@ -515,9 +523,20 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Manual release evidence checklist').getByText('공개 전 마지막 2개 파일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('자동 3/3 통과 · 수동 0/2 남음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('Evidence Preflight').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Manual release evidence checklist').getByText('no upload').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page
+    .getByLabel('Manual release evidence checklist')
+    .getByText('Evidence Preflight · no upload', { exact: true })
+    .waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('npm run release:evidence-status').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('npm run release:accept-evidence').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const releaseReviewerRunway = page.getByLabel('Reviewer Runway')
+  await releaseReviewerRunway.getByText('01 Listen -> 02 Handoff -> 03 Preflight -> 04 Status -> 05 Accept').waitFor({
+    timeout: DEFAULT_TIMEOUT_MS,
+  })
+  await releaseReviewerRunway.getByText('listening-scores.local.json').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await releaseReviewerRunway.getByText('handoff-report.local.json').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await releaseReviewerRunway.getByText('release:evidence-status').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await releaseReviewerRunway.getByText('release:accept-evidence').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank origin metadata').getByText('자체 생성 보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -585,6 +604,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run current lyric card visible',
     'first-run utility actions visible',
     'first-run DAW handoff checklist visible',
+    'first-run reviewer runway visible',
     'first-run release evidence links visible',
     'first-run sketch cues visible',
     'tempo map controls visible',
@@ -594,6 +614,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run lyric visible',
     'community release readiness card visible',
     'manual release evidence checklist visible',
+    'manual release reviewer runway visible',
     'voicebank license metadata visible',
     'voicebank self-generated origin visible',
     'selected-note dynamics controls visible',

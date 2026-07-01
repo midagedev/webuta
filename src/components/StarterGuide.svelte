@@ -146,6 +146,14 @@
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
+  const evidencePreflightHref = `${import.meta.env.BASE_URL}review/index.html#evidence-preflight`
+  let reviewerRunwaySteps = $derived([
+    { index: '01', label: 'Listen', detail: '청취 JSON', href: listeningReviewHref },
+    { index: '02', label: 'Handoff', detail: 'DAW JSON', href: wavDawHandoffHref },
+    { index: '03', label: 'Preflight', detail: 'No upload', href: evidencePreflightHref },
+    { index: '04', label: 'Status', detail: '터미널 확인' },
+    { index: '05', label: 'Accept', detail: '최종 수락' },
+  ])
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -529,6 +537,29 @@
       <span>다운로드 패키지</span>
       <strong>WAV · melody.mid · chords.mid</strong>
       <em>arrangement.txt · lyrics.txt · notes.csv 포함</em>
+    </div>
+    <div class="starter-review-runway" aria-label="Starter reviewer runway">
+      <div class="starter-review-runway-head">
+        <span>Reviewer Runway</span>
+        <strong>2 JSON 파일로 공개 전 체크 완료</strong>
+      </div>
+      <div class="starter-review-runway-steps">
+        {#each reviewerRunwaySteps as step (step.index)}
+          {#if step.href}
+            <a href={step.href} target="_blank" rel="noreferrer">
+              <span>{step.index}</span>
+              <strong>{step.label}</strong>
+              <em>{step.detail}</em>
+            </a>
+          {:else}
+            <div>
+              <span>{step.index}</span>
+              <strong>{step.label}</strong>
+              <em>{step.detail}</em>
+            </div>
+          {/if}
+        {/each}
+      </div>
     </div>
     <div class="starter-handoff-links starter-review-grid">
       <a href={releaseReviewHubHref} target="_blank" rel="noreferrer" aria-label="스타터 릴리스 허브 열기">

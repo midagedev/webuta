@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte'
+import { fireEvent, render, screen, within } from '@testing-library/svelte'
 import { describe, expect, it, vi } from 'vitest'
 import LeftRail from './LeftRail.svelte'
 import { BUNDLED_UTAU_VOICEBANK_NAME } from '../bundledVoicebank'
@@ -28,6 +28,24 @@ describe('LeftRail release readiness', () => {
     expect(manualEvidence.textContent).toContain('no upload')
     expect(manualEvidence.textContent).toContain('npm run release:evidence-status')
     expect(manualEvidence.textContent).toContain('npm run release:accept-evidence')
+    const reviewerRunway = within(manualEvidence).getByLabelText('Reviewer Runway')
+    expect(reviewerRunway.textContent).toContain('01')
+    expect(reviewerRunway.textContent).toContain('Listen')
+    expect(reviewerRunway.textContent).toContain('listening-scores.local.json')
+    expect(reviewerRunway.textContent).toContain('02')
+    expect(reviewerRunway.textContent).toContain('Handoff')
+    expect(reviewerRunway.textContent).toContain('handoff-report.local.json')
+    expect(reviewerRunway.textContent).toContain('03')
+    expect(reviewerRunway.textContent).toContain('Preflight')
+    expect(reviewerRunway.textContent).toContain('04')
+    expect(reviewerRunway.textContent).toContain('Status')
+    expect(reviewerRunway.textContent).toContain('release:evidence-status')
+    expect(reviewerRunway.textContent).toContain('05')
+    expect(reviewerRunway.textContent).toContain('Accept')
+    expect(reviewerRunway.textContent).toContain('release:accept-evidence')
+    expect(reviewerRunway.querySelector('a[href="/review/v3/index.html"]')).toBeTruthy()
+    expect(reviewerRunway.querySelector('a[href="/review/wav-daw/index.html"]')).toBeTruthy()
+    expect(reviewerRunway.querySelector('a[href="/review/index.html#evidence-preflight"]')).toBeTruthy()
     expect(screen.getByRole('link', { name: '릴리스 허브 열기' }).getAttribute('href')).toBe('/review/index.html')
     expect(screen.getByRole('link', { name: 'Preflight 검사' }).getAttribute('href')).toBe('/review/index.html#evidence-preflight')
     expect(screen.getByRole('link', { name: '청취 리뷰 열기' }).getAttribute('href')).toBe('/review/v3/index.html')

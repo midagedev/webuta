@@ -311,6 +311,7 @@ describe('UTAU community release audit', () => {
           'first-run starter sample metrics visible',
           'first-run Korean UTAU path visible',
           'first-run DAW handoff checklist visible',
+          'first-run reviewer runway visible',
           'first-run release evidence links visible',
         ].includes(check.check),
     )
@@ -330,6 +331,7 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run starter sample gallery visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run Korean UTAU path visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run reviewer runway visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
     expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
   })
@@ -924,6 +926,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run current lyric card visible',
       'first-run utility actions visible',
       'first-run DAW handoff checklist visible',
+      'first-run reviewer runway visible',
       'first-run release evidence links visible',
       'first-run sketch cues visible',
       'tempo map controls visible',
@@ -932,6 +935,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run lyric visible',
       'community release readiness card visible',
       'manual release evidence checklist visible',
+      'manual release reviewer runway visible',
       'voicebank license metadata visible',
       'voicebank self-generated origin visible',
       'selected-note dynamics controls visible',
