@@ -124,6 +124,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   human-verified.
 - [x] Public review hub Evidence Preflight shows live `0/2` -> `2/2`
   readiness and the next action for the two required JSON evidence files.
+- [x] `npm run release:evidence-status` reports the same structured readiness
+  state before accepting the two final evidence files.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams

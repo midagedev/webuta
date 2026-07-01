@@ -27,15 +27,17 @@ export const PUBLIC_REVIEW_URLS = {
 export function inspectReleaseEvidence(options = {}) {
   const { cwd, listeningOut, handoffOut, listening, handoff, problems } = collectReleaseEvidence(options)
   const ok = problems.length === 0
+  const readiness = summarizeReadiness({ listening, handoff })
   const report = {
     version: 1,
     generatedAt: new Date().toISOString(),
     ok,
     decision: ok ? 'release-evidence-ready' : 'release-evidence-missing',
+    readiness,
     listening: summarizeEvidenceStatus(listening, listeningOut),
     wavDawHandoff: summarizeEvidenceStatus(handoff, handoffOut),
     problems,
-    nextActions: evidenceStatusNextActions({ ok }),
+    nextActions: evidenceStatusNextActions({ ok, listening, handoff, readiness }),
   }
   if (options.report) {
     writeJson(resolve(cwd, options.report), report)
@@ -45,6 +47,7 @@ export function inspectReleaseEvidence(options = {}) {
 
 export async function acceptReleaseEvidence(options = {}) {
   const { cwd, listeningOut, handoffOut, listening, handoff, problems } = collectReleaseEvidence(options)
+  const readiness = summarizeReadiness({ listening, handoff })
   let audit = null
 
   if (problems.length === 0) {
@@ -71,6 +74,7 @@ export async function acceptReleaseEvidence(options = {}) {
     generatedAt: new Date().toISOString(),
     ok,
     decision: ok ? 'release-evidence-accepted' : 'release-evidence-rejected',
+    readiness,
     listening: summarizeEvidence(listening, listeningOut),
     wavDawHandoff: summarizeEvidence(handoff, handoffOut),
     audit: audit ? summarizeAudit(audit) : null,
@@ -207,6 +211,66 @@ function summarizeEvidenceStatus(evidence, outPath) {
   }
 }
 
+function isEvidenceReady(evidence) {
+  return Boolean(evidence.sourcePath && evidence.problems.length === 0)
+}
+
+function summarizeReadiness({ listening, handoff }) {
+  const listeningReady = isEvidenceReady(listening)
+  const handoffReady = isEvidenceReady(handoff)
+  const readyCount = Number(listeningReady) + Number(handoffReady)
+  const next = nextEvidenceAction({ listening, handoff, listeningReady, handoffReady })
+  return {
+    readyCount,
+    total: 2,
+    label: `${readyCount}/2 ready`,
+    listening: {
+      fileName: LISTENING_FILE_NAME,
+      found: Boolean(listening.sourcePath),
+      valid: listeningReady,
+      sourcePath: listening.sourcePath,
+    },
+    wavDawHandoff: {
+      fileName: HANDOFF_FILE_NAME,
+      found: Boolean(handoff.sourcePath),
+      valid: handoffReady,
+      sourcePath: handoff.sourcePath,
+    },
+    nextAction: next.action,
+    nextDetail: next.detail,
+    preflightUrl: PUBLIC_REVIEW_URLS.preflight,
+  }
+}
+
+function nextEvidenceAction({ listening, handoff, listeningReady, handoffReady }) {
+  if (!listeningReady) {
+    return listening.sourcePath
+      ? {
+          action: 'fix-listening-scores',
+          detail: `Fix ${LISTENING_FILE_NAME}, then recheck it in Evidence Preflight and rerun npm run release:evidence-status.`,
+        }
+      : {
+          action: 'download-listening-scores',
+          detail: `Open ${PUBLIC_REVIEW_URLS.listening}, complete real listening review, and download ${LISTENING_FILE_NAME}.`,
+        }
+  }
+  if (!handoffReady) {
+    return handoff.sourcePath
+      ? {
+          action: 'fix-handoff-report',
+          detail: `Fix ${HANDOFF_FILE_NAME}, then recheck it in Evidence Preflight and rerun npm run release:evidence-status.`,
+        }
+      : {
+          action: 'download-handoff-report',
+          detail: `Open ${PUBLIC_REVIEW_URLS.wavDawHandoff} after a real physical-device DAW import pass and download ${HANDOFF_FILE_NAME}.`,
+        }
+  }
+  return {
+    action: 'run-release-accept-evidence',
+    detail: 'Keep both files in Downloads, then run npm run release:accept-evidence to install them atomically and rerun the final audit.',
+  }
+}
+
 function summarizeAudit(audit) {
   return {
     ok: audit.ok,
@@ -215,20 +279,37 @@ function summarizeAudit(audit) {
   }
 }
 
-function evidenceStatusNextActions({ ok }) {
+function evidenceStatusNextActions({ ok, listening, handoff, readiness }) {
   if (ok) {
     return [
+      `${readiness.label}. ${readiness.nextDetail}`,
       'Both release evidence JSON files are found and valid. Run npm run release:accept-evidence to install them atomically and rerun the final release audit.',
       `Optional browser confirmation: open Evidence Preflight at ${PUBLIC_REVIEW_URLS.preflight}; it checks the same two JSON files locally with no upload.`,
     ]
   }
-  return [
+  const actions = [
+    `${readiness.label}. ${readiness.nextDetail}`,
     `Open the release review hub at ${PUBLIC_REVIEW_URLS.hub}.`,
-    `Download ${LISTENING_FILE_NAME} from ${PUBLIC_REVIEW_URLS.listening}.`,
-    `Download ${HANDOFF_FILE_NAME} from ${PUBLIC_REVIEW_URLS.wavDawHandoff} after a real physical-device WAV/DAW import pass.`,
+  ]
+  if (!isEvidenceReady(listening)) {
+    actions.push(
+      listening.sourcePath
+        ? `Fix ${LISTENING_FILE_NAME}: ${listening.problems.slice(0, 2).join('; ')}`
+        : `Download ${LISTENING_FILE_NAME} from ${PUBLIC_REVIEW_URLS.listening}.`,
+    )
+  }
+  if (!isEvidenceReady(handoff)) {
+    actions.push(
+      handoff.sourcePath
+        ? `Fix ${HANDOFF_FILE_NAME}: ${handoff.problems.slice(0, 2).join('; ')}`
+        : `Download ${HANDOFF_FILE_NAME} from ${PUBLIC_REVIEW_URLS.wavDawHandoff} after a real physical-device WAV/DAW import pass.`,
+    )
+  }
+  actions.push(
     `Use Evidence Preflight at ${PUBLIC_REVIEW_URLS.preflight} to check both downloaded JSON files locally with no upload.`,
     'Keep both files in Downloads, then run npm run release:evidence-status before npm run release:accept-evidence.',
-  ]
+  )
+  return actions
 }
 
 function nextActions({ ok, skipAudit, audit }) {

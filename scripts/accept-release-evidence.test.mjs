@@ -24,6 +24,12 @@ describe('accept release evidence', () => {
 
     expect(report.ok).toBe(true)
     expect(report.decision).toBe('release-evidence-accepted')
+    expect(report.readiness).toMatchObject({
+      readyCount: 2,
+      total: 2,
+      label: '2/2 ready',
+      nextAction: 'run-release-accept-evidence',
+    })
     expect(report.listening.accepted).toBe(true)
     expect(report.wavDawHandoff.accepted).toBe(true)
     expect(JSON.parse(readFileSync(fixture.acceptedScores, 'utf8')).reviewId).toBe('webuta-ko-v3-synthetic-listening-review')
@@ -48,6 +54,12 @@ describe('accept release evidence', () => {
     })
 
     expect(report.ok).toBe(false)
+    expect(report.readiness).toMatchObject({
+      readyCount: 1,
+      total: 2,
+      label: '1/2 ready',
+      nextAction: 'fix-handoff-report',
+    })
     expect(report.problems.join('\n')).toContain('targetDawImportWorked must be true')
     expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
     expect(report.nextActions.join('\n')).toContain('no upload')

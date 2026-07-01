@@ -23,6 +23,12 @@ describe('release evidence status', () => {
 
     expect(report.ok).toBe(true)
     expect(report.decision).toBe('release-evidence-ready')
+    expect(report.readiness).toMatchObject({
+      readyCount: 2,
+      total: 2,
+      label: '2/2 ready',
+      nextAction: 'run-release-accept-evidence',
+    })
     expect(report.listening).toMatchObject({
       found: true,
       valid: true,
@@ -39,6 +45,7 @@ describe('release evidence status', () => {
     })
     expect(existsSync(fixture.acceptedScores)).toBe(false)
     expect(existsSync(fixture.acceptedHandoff)).toBe(false)
+    expect(report.nextActions.join('\n')).toContain('2/2 ready')
     expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
     expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
     expect(report.nextActions.join('\n')).toContain('no upload')
@@ -54,6 +61,12 @@ describe('release evidence status', () => {
 
     expect(report.ok).toBe(false)
     expect(report.decision).toBe('release-evidence-missing')
+    expect(report.readiness).toMatchObject({
+      readyCount: 1,
+      total: 2,
+      label: '1/2 ready',
+      nextAction: 'download-handoff-report',
+    })
     expect(report.listening.valid).toBe(true)
     expect(report.wavDawHandoff).toMatchObject({
       found: false,
@@ -83,11 +96,18 @@ describe('release evidence status', () => {
     })
 
     expect(report.ok).toBe(false)
+    expect(report.readiness).toMatchObject({
+      readyCount: 1,
+      total: 2,
+      label: '1/2 ready',
+      nextAction: 'fix-listening-scores',
+    })
     expect(report.listening.found).toBe(true)
     expect(report.listening.valid).toBe(false)
     expect(report.wavDawHandoff.valid).toBe(true)
     expect(report.problems.join('\n')).toContain('human listening decision must be community-ready, release-ready, or pass')
     expect(report.problems.join('\n')).toContain('human listening phrase IDs must be exactly')
+    expect(report.nextActions.join('\n')).toContain('Fix listening-scores.local.json')
   })
 })
 

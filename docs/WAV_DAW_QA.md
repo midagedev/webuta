@@ -34,7 +34,7 @@ Short route shown on `review/wav-daw/index.html`: the `60-second physical handof
 14. Turn network off, relaunch from the home-screen icon, and confirm the app shell opens after one prior online load.
 15. Open `review/wav-daw/index.html` from the public site, or copy `docs/wav-daw-handoff.local.template.json` to a local uncommitted report path. Fill every field from this physical-device pass, download or save `handoff-report.local.json`, and keep it in Downloads beside `listening-scores.local.json`.
 16. Open the release hub `Evidence Preflight` checker and choose both downloaded JSON files. It validates them locally in the browser with no upload.
-17. From the repo root, confirm both final release evidence files are present and valid. This read-only command auto-detects the newest matching files from Downloads:
+17. From the repo root, confirm both final release evidence files are present and valid. This read-only command auto-detects the newest matching files from Downloads and prints the same `0/2` -> `2/2` readiness state as the browser preflight:
 
 ```sh
 npm run release:evidence-status
