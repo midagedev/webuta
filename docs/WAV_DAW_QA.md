@@ -16,7 +16,7 @@ This checklist must be run on a physical device. Browser tests can verify the WA
 
 ## Steps
 
-Short route shown on `review/wav-daw/index.html`: open the public app, export `First-Vocal-Sketch.wav`, import it into the target DAW, then download `handoff-report.local.json` only after the imported region is visible and audible. The reference WAV is `44.1 kHz mono 16-bit` with the default lyric `도 히 도 히 다 이 스 키`.
+Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json` only after the imported region is visible and audible. The reference WAV is `44.1 kHz mono 16-bit` with the default lyric `도 히 도 히 다 이 스 키`.
 
 1. Open WebUtau from the public GitHub Pages URL.
 2. Optionally add it to the home screen when the platform supports it.
