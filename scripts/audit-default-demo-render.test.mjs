@@ -10,6 +10,8 @@ describe('default demo render audit report', () => {
       checks: [
         'default V3 voicebank loaded',
         'first-run starter guide visible',
+        'first-run beginner start panel visible',
+        'first-run context drawer visible',
         'first-run onboarding coach visible',
         'first-run one-minute path visible',
         'first-run starter chord guide visible',
@@ -17,7 +19,6 @@ describe('default demo render audit report', () => {
         'first-run route state badges visible',
         'first-run three-step checklist visible',
         'first-run quick-start CTA visible',
-        'first-run focused next action visible',
         'first-run starter launch panel visible',
         'first-run inline lyric input visible',
         'first-run lyric helper visible',

@@ -7414,6 +7414,191 @@ button:disabled:active {
   opacity: 1;
 }
 
+.starter-guide.onboarding-v7 {
+  gap: 9px;
+}
+
+.starter-start-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+  gap: 10px;
+  align-items: stretch;
+  padding: 12px;
+  border: 1px solid rgba(255, 231, 106, 0.7);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.2), rgba(255, 75, 202, 0.13), rgba(88, 244, 255, 0.08)),
+    rgba(5, 7, 14, 0.92);
+}
+
+.starter-start-copy {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+.starter-start-copy span,
+.starter-start-copy strong,
+.starter-start-copy em,
+.starter-start-primary span,
+.starter-start-primary strong,
+.starter-start-secondary span,
+.starter-start-secondary strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-start-copy span {
+  color: var(--tracker-amber, #ffe76a);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.starter-start-copy strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1;
+  font-weight: 950;
+  white-space: normal;
+}
+
+.starter-start-copy em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: normal;
+}
+
+.starter-start-actions {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(104px, 0.65fr);
+  gap: 8px;
+}
+
+.starter-start-primary,
+.starter-start-secondary {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(255, 231, 106, 0.62);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.starter-start-primary {
+  min-height: 92px;
+  color: #120817;
+  background: linear-gradient(135deg, var(--tracker-amber, #ffe76a), var(--tracker-pink, #ff4bca));
+}
+
+.starter-start-primary.ready {
+  background: linear-gradient(135deg, var(--tracker-green, #9dff6a), var(--tracker-cyan, #58f4ff));
+}
+
+.starter-start-primary.active {
+  color: var(--tracker-text, #f8f4ff);
+  background: rgba(255, 75, 202, 0.2);
+}
+
+.starter-start-secondary {
+  min-height: 92px;
+  color: var(--tracker-text, #f8f4ff);
+  border-color: rgba(88, 244, 255, 0.34);
+  background: rgba(12, 14, 26, 0.78);
+}
+
+.starter-start-primary span,
+.starter-start-secondary span {
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.starter-start-primary strong,
+.starter-start-secondary strong {
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: normal;
+}
+
+.starter-context-drawer {
+  min-width: 0;
+  border: 1px solid rgba(88, 244, 255, 0.2);
+  border-radius: 4px;
+  background: rgba(12, 14, 26, 0.6);
+}
+
+.starter-context-drawer > summary {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  color: var(--tracker-text, #f8f4ff);
+  cursor: pointer;
+}
+
+.starter-context-drawer > summary::-webkit-details-marker {
+  display: none;
+}
+
+.starter-context-drawer > summary svg {
+  flex: 0 0 auto;
+  color: var(--tracker-cyan, #58f4ff);
+}
+
+.starter-context-drawer > summary span,
+.starter-context-drawer > summary strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-context-drawer > summary span {
+  color: var(--tracker-cyan, #58f4ff);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.starter-context-drawer > summary strong {
+  margin-left: auto;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.starter-context-drawer .starter-coach-strip {
+  padding: 0 8px 8px;
+}
+
+.starter-guide.onboarding-v7 .starter-hero-action {
+  display: none;
+}
+
+.starter-guide.onboarding-v7 .starter-guide-launch {
+  gap: 6px;
+}
+
+.starter-guide.onboarding-v7 .starter-journey button {
+  min-height: 64px;
+}
+
+.starter-guide.onboarding-v7 .starter-compass {
+  opacity: 0.92;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -8625,6 +8810,67 @@ button:disabled:active {
 
   .starter-guide.onboarding-v6 {
     gap: 5px;
+  }
+
+  .starter-start-panel {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-start-copy {
+    gap: 3px;
+  }
+
+  .starter-start-copy span {
+    font-size: 8px;
+  }
+
+  .starter-start-copy strong {
+    font-size: 20px;
+  }
+
+  .starter-start-copy em {
+    font-size: 9px;
+  }
+
+  .starter-start-actions {
+    grid-template-columns: minmax(0, 1.25fr) minmax(92px, 0.75fr);
+    gap: 5px;
+  }
+
+  .starter-start-primary,
+  .starter-start-secondary {
+    min-height: 52px;
+    gap: 3px;
+    padding: 6px;
+  }
+
+  .starter-start-primary span,
+  .starter-start-secondary span {
+    font-size: 12px;
+  }
+
+  .starter-start-primary strong,
+  .starter-start-secondary strong {
+    font-size: 7px;
+  }
+
+  .starter-context-drawer > summary {
+    min-height: 34px;
+    padding: 0 7px;
+  }
+
+  .starter-context-drawer > summary span {
+    font-size: 8px;
+  }
+
+  .starter-context-drawer > summary strong {
+    font-size: 7px;
+  }
+
+  .starter-context-drawer .starter-coach-strip {
+    padding: 0 5px 5px;
   }
 
   .starter-guide.onboarding-v6 .starter-hero-action {

@@ -371,10 +371,18 @@ async function assertDefaultV3DemoReady(page) {
   await starterGuide.getByText('처음 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('First Vocal Sketch').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByText('듣기 · 가사 · WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const beginnerStartPanel = page.getByLabel('Beginner start panel')
+  await beginnerStartPanel.getByText('처음이면 여기부터').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerStartPanel.getByText('기본 샘플로 시작').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerStartPanel.getByRole('button', { name: '초보자 첫 버튼' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await beginnerStartPanel.getByRole('button', { name: '새 프로젝트 만들기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('1분 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('샘플 듣기 -> 가사 바꾸기 -> WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter hook chord guide').getByText('C -> G -> Am -> F').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  const onboardingCoach = page.getByLabel('Starter onboarding coach')
+  const contextDrawer = page.getByLabel('Starter context drawer')
+  await contextDrawer.getByText('현재 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await contextDrawer.locator('summary').click()
+  const onboardingCoach = contextDrawer.getByLabel('Starter onboarding coach')
   await onboardingCoach.getByText('현재 열린 프로젝트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await onboardingCoach.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await onboardingCoach.getByText('샘플 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -398,9 +406,6 @@ async function assertDefaultV3DemoReady(page) {
   await lyricHelper.getByText('한글 그대로 입력').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await lyricHelper.getByText('예: 도히도히 다이스키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await lyricHelper.getByText('현재 멜로디와 같음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByText('STEP 01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByText('샘플 먼저 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter lyric preview').getByText('기본 샘플').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -448,8 +453,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByRole('button', { name: '믹서', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByText('샘플 먼저 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByText('STEP 01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Beginner start panel').getByText('샘플을 먼저 듣고 가사만 바꿔보세요.').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -505,6 +509,8 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
+    'first-run beginner start panel visible',
+    'first-run context drawer visible',
     'first-run onboarding coach visible',
     'first-run one-minute path visible',
     'first-run starter chord guide visible',
@@ -512,7 +518,6 @@ async function assertDefaultV3DemoReady(page) {
     'first-run route state badges visible',
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
-    'first-run focused next action visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',
     'first-run lyric helper visible',

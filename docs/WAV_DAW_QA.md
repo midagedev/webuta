@@ -22,7 +22,7 @@ Short route shown on `review/wav-daw/index.html`: the `60-second physical handof
 2. Optionally add it to the home screen when the platform supports it.
 3. Relaunch WebUtau from the home-screen icon.
 4. Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.
-5. Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `0/3`, `1분 완성 루트`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `STEP 01`, `샘플 먼저 듣기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and the collapsed `고급 도구` review area.
+5. Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `0/3`, `처음이면 여기부터`, `초보자 첫 버튼`, `현재 프로젝트`, `1분 완성 루트`, `C -> G -> Am -> F`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and the collapsed `고급 도구` review area.
 6. Confirm the app shows `8/8 matched` for the default `도 히 도 히 다 이 스 키` project.
 7. Tap `들어보기` or the main play control and confirm audio preview works.
 8. Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.
@@ -52,7 +52,7 @@ If either file is outside Downloads, pass both paths explicitly with `npm run re
 
 - WebUtau opens from the home-screen icon.
 - `WebUtau Korean V3 Synthetic` is selected by default.
-- The first-run guide puts the `처음 시작` / `듣기 · 가사 · WAV` header, `1분 완성 루트`, `C -> G -> Am -> F` chord guide, and `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` route before the focused `STEP 01` / `샘플 먼저 듣기` action and `한글 그대로 입력` / `스타터 가사 라인` input, then shows the current lyric preview, desktop/mobile utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and a collapsed `고급 도구` release-review area.
+- The first-run guide puts the `처음 시작` / `듣기 · 가사 · WAV` header, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, collapsed `현재 프로젝트` context drawer, `1분 완성 루트`, `C -> G -> Am -> F` chord guide, and `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` route before the `한글 그대로 입력` / `스타터 가사 라인` input, then shows the current lyric preview, desktop/mobile utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and a collapsed `고급 도구` release-review area.
 - The DAW bundle should include `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV and project exports.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
