@@ -262,6 +262,49 @@
         margin-top: 14px;
       }
 
+      .preflight-status-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .preflight-status-strip div {
+        min-width: 0;
+        border: 1px solid #34304f;
+        background: #0b0b18;
+        padding: 12px;
+      }
+
+      .preflight-status-strip span,
+      .preflight-status-strip strong,
+      .preflight-status-strip em {
+        display: block;
+        min-width: 0;
+      }
+
+      .preflight-status-strip span {
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .preflight-status-strip strong {
+        margin-top: 5px;
+        color: var(--text);
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .preflight-status-strip em {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-style: normal;
+        line-height: 1.35;
+      }
+
       .file-check {
         min-width: 0;
         display: grid;
@@ -371,7 +414,8 @@
         }
 
         .steps,
-        .preflight-grid {
+        .preflight-grid,
+        .preflight-status-strip {
           grid-template-columns: 1fr;
         }
 
@@ -480,6 +524,23 @@
           No upload: choose the two downloaded JSON files here to check them locally in this browser before running
           <code>npm run release:evidence-status</code>.
         </p>
+        <div class="preflight-status-strip" aria-label="Evidence preflight progress">
+          <div>
+            <span>checked</span>
+            <strong id="evidenceReadyCount">0/2 ready</strong>
+            <em id="evidenceReadyDetail">No evidence files selected yet.</em>
+          </div>
+          <div>
+            <span>next action</span>
+            <strong id="evidenceNextAction">Choose listening JSON</strong>
+            <em id="evidenceNextDetail">Start with listening-scores.local.json, then add the DAW handoff report.</em>
+          </div>
+          <div>
+            <span>terminal</span>
+            <strong>status then accept</strong>
+            <em>Run release:evidence-status before release:accept-evidence.</em>
+          </div>
+        </div>
         <div class="preflight-grid">
           <label class="file-check" for="listeningEvidenceInput">
             <span>01 Listening JSON</span>
@@ -671,16 +732,36 @@
 
       function updateEvidenceSummary() {
         const summary = document.querySelector('#evidencePreflightSummary')
+        const readyCountLabel = document.querySelector('#evidenceReadyCount')
+        const readyDetail = document.querySelector('#evidenceReadyDetail')
+        const nextAction = document.querySelector('#evidenceNextAction')
+        const nextDetail = document.querySelector('#evidenceNextDetail')
         const readyCount = Number(Boolean(evidenceState.listening?.ok)) + Number(Boolean(evidenceState.handoff?.ok))
+        const anyChecked = Boolean(evidenceState.listening || evidenceState.handoff)
+        readyCountLabel.textContent = `${readyCount}/2 ready`
         summary.classList.toggle('ready', readyCount === 2)
-        summary.classList.toggle('warning', readyCount < 2 && (evidenceState.listening || evidenceState.handoff))
+        summary.classList.toggle('warning', readyCount < 2 && anyChecked)
         if (readyCount === 2) {
+          readyDetail.textContent = 'Both evidence files passed local browser checks.'
+          nextAction.textContent = 'Run terminal status'
+          nextDetail.textContent = 'Keep both files in Downloads, then run release:evidence-status and release:accept-evidence.'
           summary.innerHTML = 'Both JSON files look ready. Keep them in Downloads, then run <code>npm run release:evidence-status</code> and <code>npm run release:accept-evidence</code>.'
           return
         }
         const problems = [evidenceState.listening, evidenceState.handoff]
           .filter(Boolean)
           .flatMap((result) => result.problems.slice(0, 2))
+        const remainingCount = 2 - readyCount
+        readyDetail.textContent = anyChecked
+          ? `${readyCount}/2 files passed; ${remainingCount} file${remainingCount === 1 ? '' : 's'} still need attention.`
+          : 'No evidence files selected yet.'
+        if (!evidenceState.listening?.ok) {
+          nextAction.textContent = 'Choose listening JSON'
+          nextDetail.textContent = 'Open the listening review, score every phrase, then download listening-scores.local.json.'
+        } else if (!evidenceState.handoff?.ok) {
+          nextAction.textContent = 'Choose DAW JSON'
+          nextDetail.textContent = 'Open the WAV/DAW handoff page after a real device import, then download handoff-report.local.json.'
+        }
         summary.textContent = problems.length
           ? `${readyCount}/2 ready. ${problems.slice(0, 3).join(' ')}`
           : 'Choose both JSON files. No upload is performed; checks run locally in this browser.'

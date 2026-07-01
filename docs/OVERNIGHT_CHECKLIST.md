@@ -122,6 +122,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Physical-device WAV/DAW handoff now has a local report template and
   acceptance command, so release audit can block until the target DAW import is
   human-verified.
+- [x] Public review hub Evidence Preflight shows live `0/2` -> `2/2`
+  readiness and the next action for the two required JSON evidence files.
 - [ ] Physical device share/download and target DAW import confirmed by a human.
 
 ## Full Port Workstreams
