@@ -201,9 +201,10 @@
   )
   let releaseCardSummary = $derived(
     automatedReleaseChecksPass
-      ? '남은 단계: 청취 점수와 DAW 핸드오프 저장'
+      ? '공개 전 마지막 2개 증거 파일만 남음'
       : '기본 번들, alias 매칭, 렌더 경고를 확인하세요.',
   )
+  let releaseEvidenceProgress = $derived(automatedReleaseChecksPass ? '자동 3/3 통과 · 수동 0/2 남음' : '자동 점검 먼저 확인 · 수동 0/2 남음')
   let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
   let voicebankOriginState = $derived(!voicebank ? 'idle' : isSelfGeneratedVoicebank(voicebank) ? 'ready' : 'warning')
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
@@ -490,6 +491,30 @@
           <span>DAW 확인</span>
           <strong>NEED</strong>
           <em>handoff-report.local.json 필요</em>
+        </div>
+      </div>
+      <div class="release-evidence-next" aria-label="Manual release evidence checklist">
+        <div class="release-evidence-head">
+          <span>공개 전 마지막 2단계</span>
+          <strong>{releaseEvidenceProgress}</strong>
+        </div>
+        <div class="release-evidence-step">
+          <span>01</span>
+          <div>
+            <strong>청취 점수 저장</strong>
+            <em>V3/V2 비교 후 listening-scores.local.json</em>
+          </div>
+        </div>
+        <div class="release-evidence-step">
+          <span>02</span>
+          <div>
+            <strong>DAW 가져오기 확인</strong>
+            <em>실제 음악 앱에서 handoff-report.local.json</em>
+          </div>
+        </div>
+        <div class="release-evidence-command">
+          <span>완료 후</span>
+          <code>npm run release:accept-evidence</code>
         </div>
       </div>
       <div class="release-review-links">

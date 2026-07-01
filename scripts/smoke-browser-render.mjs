@@ -404,6 +404,9 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('공개 전 마지막 2단계').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('자동 3/3 통과 · 수동 0/2 남음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('npm run release:accept-evidence').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank origin metadata').getByText('자체 생성 보이스').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -458,6 +461,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run demo render warnings clear',
     'first-run lyric visible',
     'community release readiness card visible',
+    'manual release evidence checklist visible',
     'voicebank license metadata visible',
     'voicebank self-generated origin visible',
     'selected-note dynamics controls visible',

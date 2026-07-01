@@ -100,6 +100,51 @@
         margin-top: 18px;
       }
 
+      .completion-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+        border: 1px solid var(--line);
+        background: #100f20;
+        padding: 12px;
+      }
+
+      .completion-strip div {
+        min-width: 0;
+        border: 1px solid #2c2942;
+        background: #0c0b19;
+        padding: 12px;
+      }
+
+      .completion-strip span,
+      .completion-strip strong,
+      .completion-strip p {
+        display: block;
+        min-width: 0;
+      }
+
+      .completion-strip span {
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .completion-strip strong {
+        margin-top: 5px;
+        color: var(--text);
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .completion-strip p {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
       .fast-path {
         margin-top: 14px;
         border: 1px solid var(--line);
@@ -229,6 +274,10 @@
           grid-template-columns: 1fr;
         }
 
+        .completion-strip {
+          grid-template-columns: 1fr;
+        }
+
         h1 {
           font-size: 34px;
         }
@@ -251,6 +300,7 @@
         <div class="meta" aria-label="Release review context">
           <span class="pill">voicebank: WebUtau Korean V3 Synthetic</span>
           <span class="pill">No recording needed</span>
+          <span class="pill">2 files to finish</span>
           <span class="pill">public app: midagedev.github.io/webuta</span>
         </div>
         <div class="hero-actions" aria-label="Release review shortcuts">
@@ -259,6 +309,24 @@
           <a href="wav-daw/index.html">Open DAW handoff</a>
         </div>
       </header>
+
+      <section class="completion-strip" aria-label="Release completion path">
+        <div>
+          <span>자동 점검</span>
+          <strong>3/3 passed</strong>
+          <p>Bundled V3 zip, default render, and deployed review WAVs already pass.</p>
+        </div>
+        <div>
+          <span>수동 증거</span>
+          <strong>0/2 left</strong>
+          <p>Save <code>listening-scores.local.json</code> and <code>handoff-report.local.json</code>.</p>
+        </div>
+        <div>
+          <span>완료 명령</span>
+          <strong>accept evidence</strong>
+          <p><code>npm run release:accept-evidence</code></p>
+        </div>
+      </section>
 
       <section class="steps" aria-label="Required release evidence">
         <article>

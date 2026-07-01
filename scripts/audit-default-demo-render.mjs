@@ -24,6 +24,7 @@ const REQUIRED_CHECKS = [
   'first-run demo render warnings clear',
   'first-run lyric visible',
   'community release readiness card visible',
+  'manual release evidence checklist visible',
   'voicebank license metadata visible',
   'voicebank self-generated origin visible',
   'selected-note dynamics controls visible',
