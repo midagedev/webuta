@@ -499,6 +499,9 @@ Current verified V3 evidence:
   `ti`/`tu` style aliases and extended `てぃ`/`とぅ`-style aliases. Unit tests
   cover `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and
   `gwa` against mixed hiragana/katakana oto aliases without fallback.
+- Japanese VCV lyric matching now uses phrase-start and previous-vowel note
+  context, so VCV-only banks can choose aliases such as `- ど`, `o ひ`, and
+  `i ど` during both coverage checks and UTAU sample rendering.
 - Voicebank zip import now applies browser safety limits before parsing: the
   loader accepts Teto-sized normal UTAU packages but rejects unsafe paths,
   abnormal entry counts, oversized `oto.ini`/WAV members, excessive expanded WAV

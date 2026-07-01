@@ -266,6 +266,44 @@ describe('voicebank zip loader', () => {
     })
   })
 
+  it('uses Japanese VCV start and previous-vowel aliases from note context', async () => {
+    const zip = new JSZip()
+    zip.file('Teto/character.yaml', 'name: VCV Test Teto\n')
+    zip.file(
+      'Teto/oto.ini',
+      [
+        'start_do.wav=- ど,0,120,0,40,20',
+        'o_hi.wav=o ひ,0,120,0,40,20',
+        'i_do.wav=i ど,0,120,0,40,20',
+        'o_hi_2.wav=o ひ,0,120,0,40,20',
+      ].join('\n'),
+    )
+    for (const fileName of ['start_do.wav', 'o_hi.wav', 'i_do.wav', 'o_hi_2.wav']) {
+      zip.file(`Teto/${fileName}`, new Uint8Array([1, 2, 3, 4]))
+    }
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'japanese-vcv.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+
+    expect(findBestEntryForLyric(voicebank, '도', 60, { phraseStart: true }).alias).toBe('- ど')
+    expect(findBestEntryForLyric(voicebank, '히', 62, { previousLyric: '도' }).alias).toBe('o ひ')
+    expect(findBestEntryForLyric(voicebank, '도', 64, { previousLyric: '히' }).alias).toBe('i ど')
+    expect(findBestEntryForLyric(voicebank, 'hi', 62, { previousLyric: 'do' }).alias).toBe('o ひ')
+    expect(analyzeVoicebankCoverage(voicebank, [
+      { lyric: '도', start: 0, duration: 480, trackId: 'main' },
+      { lyric: '히', start: 480, duration: 480, trackId: 'main' },
+      { lyric: '도', start: 960, duration: 480, trackId: 'main' },
+      { lyric: '히', start: 1440, duration: 480, trackId: 'main' },
+    ])).toMatchObject({
+      totalNotes: 4,
+      matchedNotes: 4,
+      fallbackNotes: 0,
+      uniqueLyrics: 2,
+      fallbackLyrics: [],
+    })
+  })
+
   it('reports fallback coverage when a lyric has no alias match', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')

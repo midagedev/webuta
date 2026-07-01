@@ -743,6 +743,73 @@ describe('UTAU sample renderer', () => {
     expect(requestedPaths).toContain('WebUtau/yeo_n_C4.wav')
     expect(requestedPaths).not.toContain('WebUtau/yeon_C4.wav')
   })
+
+  it('renders Japanese VCV aliases with previous-note context', async () => {
+    const entries: OtoEntry[] = [
+      {
+        fileName: 'start_do_C4.wav',
+        path: 'Teto/start_do_C4.wav',
+        alias: '- ど',
+        offsetMs: 0,
+        consonantMs: 90,
+        cutoffMs: 0,
+        preutteranceMs: 35,
+        overlapMs: 18,
+      },
+      {
+        fileName: 'o_hi_C4.wav',
+        path: 'Teto/o_hi_C4.wav',
+        alias: 'o ひ',
+        offsetMs: 0,
+        consonantMs: 90,
+        cutoffMs: 0,
+        preutteranceMs: 35,
+        overlapMs: 18,
+      },
+      {
+        fileName: 'i_do_C4.wav',
+        path: 'Teto/i_do_C4.wav',
+        alias: 'i ど',
+        offsetMs: 0,
+        consonantMs: 90,
+        cutoffMs: 0,
+        preutteranceMs: 35,
+        overlapMs: 18,
+      },
+    ]
+    const requestedAliases: string[] = []
+    const voicebank: LoadedVoicebank = {
+      id: 'test-vcv-bank',
+      name: 'VCV Test Bank',
+      sourceFileName: 'vcv.zip',
+      metadata: makeVoicebankMetadata(),
+      entries,
+      aliases: entries.map((entry) => entry.alias),
+      sampleCount: entries.length,
+      wavCount: entries.length,
+      async readSample(entry) {
+        requestedAliases.push(entry.alias)
+        return new Uint8Array([1]).buffer
+      },
+    }
+    const audioContext = {
+      async decodeAudioData() {
+        return makeAudioBuffer(makeVocalishSource(0.7, 44100), 44100)
+      },
+    } as unknown as AudioContext
+
+    const renderer = createUtauSampleRenderer(voicebank, audioContext)
+    await renderer.render({
+      ...makeProject(),
+      notes: [
+        { id: 'n1', trackId: 'track', partId: 'part', start: 0, duration: 480, tone: 60, lyric: '도' },
+        { id: 'n2', trackId: 'track', partId: 'part', start: 480, duration: 480, tone: 62, lyric: '히' },
+        { id: 'n3', trackId: 'track', partId: 'part', start: 960, duration: 480, tone: 64, lyric: '도' },
+      ],
+    })
+
+    expect(requestedAliases).toEqual(['- ど', 'o ひ', 'i ど'])
+  })
 })
 
 function makeVoicebankMetadata() {

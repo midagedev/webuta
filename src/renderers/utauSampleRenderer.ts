@@ -4,12 +4,13 @@ import { noteEnvelopeGainAt } from '../envelope'
 import { noteIntensityGain, noteVelocityRate } from '../expression'
 import { notePitchCentsAt } from '../pitchBend'
 import { normalizeNoteTiming } from '../timing'
-import type { SongNote, SongProject } from '../types'
+import { TICKS_PER_BEAT, type SongNote, type SongProject } from '../types'
 import {
   findBestEntryForLyric,
   findCodaTailEntryForLyric,
   findSustainEntryForLyric,
   playbackRateForTone,
+  type LyricMatchContext,
   type LoadedVoicebank,
   type OtoEntry,
 } from '../voicebank'
@@ -42,8 +43,9 @@ export function createUtauSampleRenderer(voicebank: LoadedVoicebank, audioContex
       const notes = sortedNotes(project.notes)
       for (const [index, note] of notes.entries()) {
         throwIfAborted(options.signal)
+        const matchContext = lyricMatchContextForRenderedNote(notes, index)
         const sustainEntry = findSustainEntryForLyric(voicebank, note.lyric, note.tone)
-        const entry = sustainEntry ?? findBestEntryForLyric(voicebank, note.lyric, note.tone)
+        const entry = sustainEntry ?? findBestEntryForLyric(voicebank, note.lyric, note.tone, matchContext)
         const codaTailEntry = resolveCodaTailEntry(voicebank, note.lyric, note.tone, entry, Boolean(sustainEntry))
         const sample = await getSample(entry.path, async () => {
           const buffer = await voicebank.readSample(entry)
@@ -145,6 +147,19 @@ function mixCodaTailSample(
     output[startSample + i] +=
       readLinearUntil(source, sourcePosition, source.length) * Math.min(fadeIn, fadeOut) * 0.5 * intensityGain * envelopeGain
   }
+}
+
+function lyricMatchContextForRenderedNote(notes: SongNote[], index: number): LyricMatchContext {
+  const current = notes[index]
+  const previous = notes[index - 1]
+  if (!current || !previous || previous.trackId !== current.trackId) {
+    return { phraseStart: true }
+  }
+  const gapTicks = current.start - (previous.start + previous.duration)
+  if (gapTicks > TICKS_PER_BEAT / 2) {
+    return { phraseStart: true }
+  }
+  return { previousLyric: previous.lyric }
 }
 
 function getMonoSampleData(sample: AudioBuffer) {

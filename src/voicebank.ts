@@ -76,6 +76,11 @@ export type LyricEntryMatch = {
   quality: LyricMatchQuality
 }
 
+export type LyricMatchContext = {
+  previousLyric?: string
+  phraseStart?: boolean
+}
+
 export type VoicebankCoverage = {
   totalNotes: number
   matchedNotes: number
@@ -331,13 +336,22 @@ export function findEntryForLyric(voicebank: LoadedVoicebank, lyric: string) {
   return findBestEntryForLyric(voicebank, lyric, 60)
 }
 
-export function findBestEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
-  const match = findEntryMatchForLyric(voicebank, lyric, targetTone)
-  return bestEntryCandidate(voicebank, match.candidates, lyric, targetTone) ?? voicebank.entries[0]
+export function findBestEntryForLyric(
+  voicebank: LoadedVoicebank,
+  lyric: string,
+  targetTone: number,
+  context: LyricMatchContext = {},
+) {
+  const match = findEntryMatchForLyric(voicebank, lyric, targetTone, context)
+  return bestEntryCandidate(voicebank, match.candidates, lyric, targetTone, context) ?? voicebank.entries[0]
 }
 
-export function findEntryCandidatesForLyric(voicebank: LoadedVoicebank, lyric: string) {
-  return findEntryMatchForLyric(voicebank, lyric).candidates
+export function findEntryCandidatesForLyric(
+  voicebank: LoadedVoicebank,
+  lyric: string,
+  context: LyricMatchContext = {},
+) {
+  return findEntryMatchForLyric(voicebank, lyric, undefined, context).candidates
 }
 
 export function findCodaTailEntryForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone: number) {
@@ -365,16 +379,25 @@ export function findSustainEntryForLyric(voicebank: LoadedVoicebank, lyric: stri
   return bestEntryCandidate(voicebank, match.candidates, sustainLyric, targetTone)
 }
 
-export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string, targetTone?: number): LyricEntryMatch {
-  const normalized = normalizeLyric(lyric)
-  const likelyAliases = lyricToLikelyJapaneseAliases(normalized)
-  const hangulCvAlias = hangulSyllableWithoutCoda(normalized)
-  const likelyCvAliases = hangulCvAlias ? lyricToLikelyJapaneseAliases(hangulCvAlias) : []
-  const baseKeys = Array.from(new Set([normalized, ...likelyAliases, hangulCvAlias, ...likelyCvAliases].filter(Boolean)))
-  const targetKeys = Array.from(new Set([...likelyAliases, normalized, ...likelyCvAliases, hangulCvAlias].filter(Boolean)))
-  const mappedKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, targetKeys, targetTone)
-  const searchKeys = Array.from(new Set([...mappedKeys, ...baseKeys].filter(Boolean)))
-  const targetAlias = mappedKeys[0] ?? likelyAliases[0] ?? normalized
+export function findEntryMatchForLyric(
+  voicebank: LoadedVoicebank,
+  lyric: string,
+  targetTone?: number,
+  context: LyricMatchContext = {},
+): LyricEntryMatch {
+  const { searchKeys, preferredKeys, targetAlias } = lyricSearchPlan(voicebank, lyric, targetTone, context)
+
+  const preferredExact = voicebank.entries.filter((entry) =>
+    preferredKeys.some((key) => normalizeLyric(entry.alias) === key),
+  )
+  if (preferredExact.length > 0) {
+    return {
+      lyric,
+      targetAlias,
+      candidates: preferredExact,
+      quality: 'exact',
+    }
+  }
 
   const exact = voicebank.entries.filter((entry) =>
     searchKeys.some((key) => normalizeLyric(entry.alias) === key),
@@ -422,33 +445,35 @@ export function findEntryMatchForLyric(voicebank: LoadedVoicebank, lyric: string
 
 export function analyzeVoicebankCoverage(
   voicebank: LoadedVoicebank,
-  notes: Array<{ lyric: string }>,
+  notes: Array<{ lyric: string; start?: number; duration?: number; trackId?: string }>,
 ): VoicebankCoverage {
-  const lyricMatches = new Map<string, LyricEntryMatch>()
+  const matchCache = new Map<string, LyricEntryMatch>()
+  const uniqueLyrics = new Set<string>()
+  const matchedLyrics = new Set<string>()
+  const fallbackLyrics = new Set<string>()
   let matchedNotes = 0
-  for (const note of notes) {
+  for (const [index, note] of notes.entries()) {
     const lyric = normalizeLyric(note.lyric)
-    const match = lyricMatches.get(lyric) ?? findEntryMatchForLyric(voicebank, lyric)
-    lyricMatches.set(lyric, match)
+    const context = lyricMatchContextForNote(notes, index)
+    const cacheKey = `${context.previousLyric ?? (context.phraseStart ? '-' : '')}\u0000${lyric}`
+    const match = matchCache.get(cacheKey) ?? findEntryMatchForLyric(voicebank, lyric, undefined, context)
+    matchCache.set(cacheKey, match)
+    uniqueLyrics.add(lyric)
     if (match.quality !== 'fallback') {
       matchedNotes += 1
+      matchedLyrics.add(lyric)
+    } else {
+      fallbackLyrics.add(lyric)
     }
   }
-
-  const matchedLyrics = [...lyricMatches.values()]
-    .filter((match) => match.quality !== 'fallback')
-    .map((match) => match.lyric)
-  const fallbackLyrics = [...lyricMatches.values()]
-    .filter((match) => match.quality === 'fallback')
-    .map((match) => match.lyric)
 
   return {
     totalNotes: notes.length,
     matchedNotes,
     fallbackNotes: notes.length - matchedNotes,
-    uniqueLyrics: lyricMatches.size,
-    matchedLyrics,
-    fallbackLyrics,
+    uniqueLyrics: uniqueLyrics.size,
+    matchedLyrics: [...matchedLyrics],
+    fallbackLyrics: [...fallbackLyrics],
   }
 }
 
@@ -463,9 +488,10 @@ export function analyzeVoicebankRenderWarnings(
   for (const [index, note] of notes.entries()) {
     const noteId = note.id ?? `${index}`
     const lyric = normalizeLyric(note.lyric)
-    const match = findEntryMatchForLyric(voicebank, lyric)
+    const context = lyricMatchContextForNote(notes, index)
+    const match = findEntryMatchForLyric(voicebank, lyric, note.tone, context)
     const sustainEntry = findSustainEntryForLyric(voicebank, lyric, note.tone)
-    const selectedEntry = sustainEntry ?? findBestEntryForLyric(voicebank, lyric, note.tone)
+    const selectedEntry = sustainEntry ?? findBestEntryForLyric(voicebank, lyric, note.tone, context)
     const codaTailEntry = findCodaTailEntryForLyric(voicebank, lyric, note.tone)
 
     if (match.quality === 'fallback') {
@@ -538,23 +564,56 @@ export function playbackRateForTone(entry: OtoEntry, targetTone: number) {
   return midiToHz(targetTone) / midiToHz(estimateEntryBaseTone(entry))
 }
 
-function bestEntryCandidate(voicebank: LoadedVoicebank, entries: OtoEntry[], lyric: string, targetTone: number) {
-  const normalized = normalizeLyric(lyric)
-  const likelyAliases = lyricToLikelyJapaneseAliases(normalized)
-  const searchKeys = Array.from(new Set([normalized, ...likelyAliases].filter(Boolean)))
-  const mappedKeys = prefixMappedAliasesForKeys(voicebank, searchKeys, targetTone)
+function bestEntryCandidate(
+  voicebank: LoadedVoicebank,
+  entries: OtoEntry[],
+  lyric: string,
+  targetTone: number,
+  context: LyricMatchContext = {},
+) {
+  const { searchKeys, mappedKeys, preferredKeys, primaryKeys } = lyricSearchPlan(voicebank, lyric, targetTone, context)
   return entries
     .map((entry, index) => ({
       entry,
-      score: entrySelectionScore(entry, searchKeys, mappedKeys, targetTone, index),
+      score: entrySelectionScore(entry, searchKeys, mappedKeys, preferredKeys, primaryKeys, targetTone, index),
     }))
     .sort((a, b) => a.score - b.score)[0]?.entry
+}
+
+function lyricSearchPlan(
+  voicebank: LoadedVoicebank,
+  lyric: string,
+  targetTone: number | undefined,
+  context: LyricMatchContext,
+) {
+  const normalized = normalizeLyric(lyric)
+  const likelyAliases = lyricToLikelyJapaneseAliases(normalized)
+  const hangulCvAlias = hangulSyllableWithoutCoda(normalized)
+  const likelyCvAliases = hangulCvAlias ? lyricToLikelyJapaneseAliases(hangulCvAlias) : []
+  const primaryKeys = uniqueStrings([normalized, ...likelyAliases])
+  const baseKeys = uniqueStrings([normalized, ...likelyAliases, hangulCvAlias, ...likelyCvAliases])
+  const targetKeys = uniqueStrings([...likelyAliases, normalized, ...likelyCvAliases, hangulCvAlias])
+  const contextKeys = vcvContextAliasesForKeys(targetKeys, context)
+  const mappedContextKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, contextKeys, targetTone)
+  const mappedKeys = targetTone === undefined ? [] : prefixMappedAliasesForKeys(voicebank, targetKeys, targetTone)
+  const preferredKeys = uniqueStrings([...mappedContextKeys, ...contextKeys])
+  const searchKeys = uniqueStrings([...preferredKeys, ...mappedKeys, ...baseKeys])
+  const targetAlias = preferredKeys[0] ?? mappedKeys[0] ?? likelyAliases[0] ?? normalized
+  return {
+    searchKeys,
+    mappedKeys: uniqueStrings([...mappedContextKeys, ...mappedKeys]),
+    primaryKeys,
+    preferredKeys,
+    targetAlias,
+  }
 }
 
 function entrySelectionScore(
   entry: OtoEntry,
   searchKeys: string[],
   mappedKeys: string[],
+  preferredKeys: string[],
+  primaryKeys: string[],
   targetTone: number,
   index: number,
 ) {
@@ -577,10 +636,179 @@ function entrySelectionScore(
   const prefixPenalty = /^[-*]\s/.test(alias) ? 5 : 0
   const prefixMapPenalty =
     mappedKeys.length > 0 && !mappedKeys.some((key) => alias === key || core === key) ? 8 : 0
+  const primaryBonus = primaryKeys.some((key) => alias === key || core === key) ? -6 : 0
+  const contextBonus = preferredKeys.some((key) => alias === key) ? -18 : 0
   const vcvPenalty = /^[a-zぁ-んァ-ンー]\s/.test(alias) ? 18 : 0
   const pathPenalty = voicebankStylePenalty(path)
   const pitchPenalty = hasExplicitPitch(entry) ? Math.abs(estimateEntryBaseTone(entry) - targetTone) * 1.7 : 0
-  return matchScore + prefixMapPenalty + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+  return matchScore + primaryBonus + contextBonus + prefixMapPenalty + prefixPenalty + vcvPenalty + pathPenalty + pitchPenalty + index / 10000
+}
+
+function vcvContextAliasesForKeys(keys: string[], context: LyricMatchContext) {
+  if (keys.length === 0) {
+    return []
+  }
+  if (context.phraseStart) {
+    return uniqueStrings(keys.flatMap((key) => [`- ${key}`, `* ${key}`]))
+  }
+  if (!context.previousLyric?.trim()) {
+    return []
+  }
+  const previousVowels = japaneseTrailingVowels(context.previousLyric)
+  if (previousVowels.length === 0) {
+    return []
+  }
+  return uniqueStrings(
+    previousVowels.flatMap((vowel) =>
+      keys.flatMap((key) => [`${vowel} ${key}`, `${ROMAJI_VOWEL_TO_KANA[vowel] ?? vowel} ${key}`]),
+    ),
+  )
+}
+
+function japaneseTrailingVowels(lyric: string) {
+  const normalized = normalizeLyric(lyric)
+  return uniqueStrings(
+    lyricToLikelyJapaneseAliases(normalized)
+      .flatMap((alias) => [alias, normalized])
+      .map((alias) => japaneseTrailingVowel(alias))
+      .filter(Boolean),
+  )
+}
+
+function japaneseTrailingVowel(alias: string) {
+  const normalized = normalizeLyric(alias).replace(/ー+$/g, '')
+  for (let index = normalized.length - 1; index >= 0; index -= 1) {
+    const vowel = JAPANESE_KANA_VOWELS[normalized[index]]
+    if (vowel) {
+      return vowel
+    }
+  }
+  const romaji = normalized.match(/[a-z]+$/)?.[0]
+  if (romaji) {
+    if (romaji.endsWith('n')) {
+      return 'n'
+    }
+    return [...romaji].reverse().find((char) => char in ROMAJI_VOWEL_TO_KANA)
+  }
+  return undefined
+}
+
+function lyricMatchContextForNote(
+  notes: Array<{ lyric: string; start?: number; duration?: number; trackId?: string }>,
+  index: number,
+): LyricMatchContext {
+  const current = notes[index]
+  const previous = notes[index - 1]
+  if (!current || !previous) {
+    return { phraseStart: true }
+  }
+  if (current.trackId && previous.trackId && current.trackId !== previous.trackId) {
+    return { phraseStart: true }
+  }
+  if (
+    typeof current.start === 'number' &&
+    typeof previous.start === 'number' &&
+    typeof previous.duration === 'number' &&
+    current.start - (previous.start + previous.duration) > 240
+  ) {
+    return { phraseStart: true }
+  }
+  return { previousLyric: previous.lyric }
+}
+
+function uniqueStrings(values: Array<string | undefined>) {
+  return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))))
+}
+
+const ROMAJI_VOWEL_TO_KANA: Record<string, string> = {
+  a: 'あ',
+  i: 'い',
+  u: 'う',
+  e: 'え',
+  o: 'お',
+  n: 'ん',
+}
+
+const JAPANESE_KANA_VOWELS: Record<string, string> = {
+  あ: 'a',
+  ぁ: 'a',
+  か: 'a',
+  が: 'a',
+  さ: 'a',
+  ざ: 'a',
+  た: 'a',
+  だ: 'a',
+  な: 'a',
+  は: 'a',
+  ば: 'a',
+  ぱ: 'a',
+  ま: 'a',
+  や: 'a',
+  ゃ: 'a',
+  ら: 'a',
+  わ: 'a',
+  い: 'i',
+  ぃ: 'i',
+  き: 'i',
+  ぎ: 'i',
+  し: 'i',
+  じ: 'i',
+  ち: 'i',
+  ぢ: 'i',
+  に: 'i',
+  ひ: 'i',
+  び: 'i',
+  ぴ: 'i',
+  み: 'i',
+  り: 'i',
+  う: 'u',
+  ぅ: 'u',
+  く: 'u',
+  ぐ: 'u',
+  す: 'u',
+  ず: 'u',
+  つ: 'u',
+  づ: 'u',
+  ぬ: 'u',
+  ふ: 'u',
+  ぶ: 'u',
+  ぷ: 'u',
+  む: 'u',
+  ゆ: 'u',
+  ゅ: 'u',
+  る: 'u',
+  え: 'e',
+  ぇ: 'e',
+  け: 'e',
+  げ: 'e',
+  せ: 'e',
+  ぜ: 'e',
+  て: 'e',
+  で: 'e',
+  ね: 'e',
+  へ: 'e',
+  べ: 'e',
+  ぺ: 'e',
+  め: 'e',
+  れ: 'e',
+  お: 'o',
+  ぉ: 'o',
+  こ: 'o',
+  ご: 'o',
+  そ: 'o',
+  ぞ: 'o',
+  と: 'o',
+  ど: 'o',
+  の: 'o',
+  ほ: 'o',
+  ぼ: 'o',
+  ぽ: 'o',
+  も: 'o',
+  よ: 'o',
+  ょ: 'o',
+  ろ: 'o',
+  を: 'o',
+  ん: 'n',
 }
 
 function prefixMappedAliasesForKeys(voicebank: LoadedVoicebank, keys: string[], targetTone: number) {

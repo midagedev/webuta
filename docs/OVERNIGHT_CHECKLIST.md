@@ -57,6 +57,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   `kya`, `shu`, `ja`, `cho`, and `ryo`, plus extended CV aliases such as
   `fa`, `fi`, `she`, `je`, `che`, `ti`, `tu`, `tsa`, `wi`, `kwa`, and `gwa`,
   match hiragana/katakana UTAU aliases without falling back to the first sample.
+- [x] Voicebank and renderer tests verify Japanese VCV aliases such as `- ど`,
+  `o ひ`, and `i ど` are selected from phrase-start and previous-vowel note
+  context.
 - [x] Bundled `WebUtau Korean V3 Synthetic` contains 674 WAV samples and 1578 oto.ini alias lines.
 - [x] Built-in `네오빛이 메로디로 데려가` demo aliases are present in the bundled Korean V3 voicebank.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
