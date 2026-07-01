@@ -360,13 +360,16 @@ async function selectLocalNeuralModel(page) {
 
 async function assertDefaultV3DemoReady(page) {
   const starterGuide = page.getByLabel('First run guide')
-  await starterGuide.getByText('첫 보컬 스케치').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterGuide.getByText('기본 보이스와 멜로디 준비 완료').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Starter next action').getByText('지금 할 일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByText('QUICK START').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByText('First Vocal Sketch').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterGuide.getByText('듣고, 가사를 바꾸고, WAV로 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByText('처음이면').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByRole('button', { name: '스타터 재생' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('First run route').getByText('처음 3분').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('First run route').getByText('보이스 확인 → 들어보기 → WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Default lyric preview').getByText('현재 가사').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Default lyric preview').getByText('도 히 도 히 다 이 스 키').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Vocal sketch cues').getByText('미리듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Vocal sketch cues').getByText('가사·음정').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('보이스 확인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -419,9 +422,10 @@ async function assertDefaultV3DemoReady(page) {
   return [
     'default V3 voicebank loaded',
     'first-run starter guide visible',
-    'first-run next action CTA visible',
-    'first-run route visible',
+    'first-run quick-start CTA visible',
+    'first-run current lyric card visible',
     'first-run guided path visible',
+    'first-run sketch cues visible',
     'Korean mode navigation visible',
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',
