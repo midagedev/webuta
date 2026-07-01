@@ -711,6 +711,8 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
       'desktop WAV download',
+      'desktop DAW handoff bundle download',
+      'desktop DAW handoff bundle MIDI guides',
       'render history visible',
       'desktop no page horizontal overflow',
       'desktop piano keyboard and bar ruler visible',

@@ -73,6 +73,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   Korean mode navigation.
 - [x] First-run browser smoke verifies the `템포 맵` panel is visible so
   tempo-map preservation is user-facing, not only a renderer detail.
+- [x] First-run browser smoke downloads the DAW handoff ZIP and inspects the
+  bundled WAV, WebUtau project, USTX, classic UST, `melody.mid`, `chords.mid`,
+  manifest, README, and sidecar lyric/note/chord files.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
 - [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and

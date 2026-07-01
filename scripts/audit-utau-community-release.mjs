@@ -82,6 +82,8 @@ const DEMO_REQUIRED_CHECKS = [
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',
+  'desktop DAW handoff bundle download',
+  'desktop DAW handoff bundle MIDI guides',
   'render history visible',
   'desktop no page horizontal overflow',
   'desktop piano keyboard and bar ruler visible',
@@ -1359,7 +1361,7 @@ function nextActionsForProblems(problems) {
     actions.push('Deploy to GitHub Pages and rerun this audit with --pages-url https://midagedev.github.io/webuta/.')
   }
   if (problems.some((problem) => problem.includes('pages-default-demo'))) {
-    actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, and WAV download behavior.')
+    actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, WAV download, and DAW ZIP/MIDI guide download behavior.')
   }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')

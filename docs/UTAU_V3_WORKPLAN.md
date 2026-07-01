@@ -392,12 +392,16 @@ Current verified V3 evidence:
   current lyric card, desktop utilities for `멜로디 추천`, `DAW 번들`,
   `새 프로젝트`, and `기본 샘플`, the collapsed `고급 도구` review area, and
   Korean mode navigation are visible, the community
-  release readiness card is visible, desktop/mobile overflow checks pass, and
-  the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
+  release readiness card is visible, desktop/mobile overflow checks pass, the
+  exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes, and the
+  downloaded DAW handoff ZIP contains the rendered WAV, WebUtau project, USTX,
+  classic UST, `melody.mid`, `chords.mid`, arrangement, lyric, note, manifest,
+  and README files.
 - `npm run voicebank:demo-v3:pages` passes against
   `https://midagedev.github.io/webuta/`: the deployed app loads the bundled V3,
-  the first-run demo aliases match 8/8, desktop/mobile layout checks pass, and
-  the live WAV download is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
+  the first-run demo aliases match 8/8, desktop/mobile layout checks pass, the
+  live WAV download is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes,
+  and the DAW ZIP/MIDI guide download is inspected.
 - The default `도히도히 다이스키` melody is now E-G-E-A-G-A-F-E rather than a
   straight ascending test scale; regression tests pin this contour in the app
   fixture and listening-review pack.
@@ -546,7 +550,8 @@ Current verified V3 evidence:
   byte sizes against local assets.
 - Release audit now requires the deployed default-demo browser audit generated
   by `npm run voicebank:demo-v3:pages`, so GitHub Pages proves default V3
-  loading, desktop/mobile layout, and live WAV download before release.
+  loading, desktop/mobile layout, live WAV download, and DAW ZIP/MIDI guide
+  download before release.
 - Release audit now requires the V3 sample review preflight report to be ready,
   no-recording, and free of hard sample flags before community release.
 - Release audit now requires the V3 phoneme clarity audit, so vowel-color

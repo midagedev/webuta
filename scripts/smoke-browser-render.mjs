@@ -7,6 +7,7 @@ import { dirname, join, resolve } from 'node:path'
 import { createServer as createHttpServer } from 'node:http'
 import { createServer as createNetServer } from 'node:net'
 import { fileURLToPath } from 'node:url'
+import JSZip from 'jszip'
 import { chromium } from 'playwright'
 
 const DEFAULT_HOST = '127.0.0.1'
@@ -77,6 +78,7 @@ export async function smokeBrowserRender(options = {}) {
         { timeout: DEFAULT_TIMEOUT_MS },
       )
     }
+    const dawBundle = await downloadAndInspectDawBundle(page, tempRoot)
     await assertNoPageHorizontalOverflow(page, 'desktop-after-render')
 
     await page.setViewportSize({ width: 390, height: 844 })
@@ -96,12 +98,15 @@ export async function smokeBrowserRender(options = {}) {
         fileName: download.suggestedFilename(),
         wav,
       },
+      dawBundle,
       checks: [
         'desktop app loaded',
         neuralMode ? 'local neural service model selected' : 'local neural model blocked without endpoint',
         ...defaultV3Checks,
         'visible buttons labelled',
         neuralMode ? 'desktop neural WAV download' : 'desktop WAV download',
+        'desktop DAW handoff bundle download',
+        'desktop DAW handoff bundle MIDI guides',
         'render history visible',
         'desktop no page horizontal overflow',
         'desktop piano keyboard and bar ruler visible',
@@ -549,6 +554,155 @@ async function assertDefaultV3DemoReady(page) {
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]
+}
+
+async function downloadAndInspectDawBundle(page, tempRoot) {
+  const downloadPromise = page.waitForEvent('download', { timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('button', { name: '하단 DAW 번들 다운로드' }).click()
+  const download = await downloadPromise
+  const savedBundle = join(tempRoot, download.suggestedFilename())
+  await download.saveAs(savedBundle)
+  await page.getByText('DAW handoff bundle downloaded', { exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  return inspectDawBundleZip(savedBundle, download.suggestedFilename())
+}
+
+async function inspectDawBundleZip(path, fileName) {
+  const buffer = readFileSync(path)
+  if (!fileName.endsWith('.zip')) {
+    throw new Error(`DAW handoff download is not a zip file: ${fileName}`)
+  }
+  const zip = await JSZip.loadAsync(buffer)
+  const manifestFile = zip.file('manifest.json')
+  if (!manifestFile) {
+    throw new Error('DAW handoff bundle is missing manifest.json')
+  }
+  const manifest = JSON.parse(await manifestFile.async('string'))
+  if (manifest.format !== 'webuta-daw-handoff-bundle') {
+    throw new Error(`Unexpected DAW bundle format: ${manifest.format ?? 'missing'}`)
+  }
+  if (manifest.version < 4) {
+    throw new Error(`DAW bundle version ${manifest.version ?? 'missing'} does not include MIDI guide files`)
+  }
+  if (manifest.midi?.ppq !== 480) {
+    throw new Error(`DAW bundle MIDI PPQ ${manifest.midi?.ppq ?? 'missing'}; expected 480`)
+  }
+
+  const requiredFiles = requiredDawBundleFiles(manifest)
+  const missing = requiredFiles.filter((name) => !zip.file(name))
+  if (missing.length > 0) {
+    throw new Error(`DAW handoff bundle is missing files: ${missing.join(', ')}`)
+  }
+
+  const wavFile = zip.file(manifest.wav.file)
+  const melodyFile = zip.file(manifest.midi.melodyFile)
+  const chordFile = zip.file(manifest.midi.chordFile)
+  if (!wavFile || !melodyFile || !chordFile) {
+    throw new Error('DAW handoff bundle is missing WAV or MIDI guide files')
+  }
+
+  const wavBytes = Buffer.from(await wavFile.async('uint8array'))
+  const melodyBytes = Buffer.from(await melodyFile.async('uint8array'))
+  const chordBytes = Buffer.from(await chordFile.async('uint8array'))
+  assertPcmWavBytes(wavBytes, manifest.wav.file)
+  assertMidiFile(melodyBytes, manifest.midi.melodyFile)
+  assertMidiFile(chordBytes, manifest.midi.chordFile)
+
+  return {
+    fileName,
+    bytes: buffer.length,
+    format: manifest.format,
+    version: manifest.version,
+    projectName: manifest.project?.name ?? null,
+    files: requiredFiles,
+    wav: {
+      file: manifest.wav.file,
+      bytes: wavBytes.length,
+      sampleRate: manifest.wav.sampleRate,
+      channels: manifest.wav.channels,
+      bitsPerSample: manifest.wav.bitsPerSample,
+      durationSeconds: manifest.wav.durationSeconds,
+    },
+    midi: {
+      melodyFile: manifest.midi.melodyFile,
+      chordFile: manifest.midi.chordFile,
+      ppq: manifest.midi.ppq,
+      melodyBytes: melodyBytes.length,
+      chordBytes: chordBytes.length,
+    },
+  }
+}
+
+function requiredDawBundleFiles(manifest) {
+  const paths = [
+    manifest.wav?.file,
+    manifest.files?.webuta,
+    manifest.files?.ustx,
+    manifest.files?.ust,
+    manifest.midi?.melodyFile,
+    manifest.midi?.chordFile,
+    manifest.arrangement?.file,
+    manifest.arrangement?.chordFile,
+    manifest.lyrics?.file,
+    manifest.notes?.file,
+    manifest.files?.manifest,
+    manifest.files?.readme,
+  ]
+  const missingFields = paths
+    .map((value, index) => ({ value, index }))
+    .filter((entry) => typeof entry.value !== 'string' || entry.value.length === 0)
+    .map((entry) => entry.index)
+  if (missingFields.length > 0) {
+    throw new Error(`DAW bundle manifest is missing file path fields: ${missingFields.join(', ')}`)
+  }
+  return [...new Set(paths)]
+}
+
+function assertPcmWavBytes(buffer, label) {
+  if (buffer.toString('ascii', 0, 4) !== 'RIFF' || buffer.toString('ascii', 8, 12) !== 'WAVE') {
+    throw new Error(`Bundled WAV is not a RIFF/WAVE file: ${label}`)
+  }
+  if (buffer.toString('ascii', 12, 16) !== 'fmt ') {
+    throw new Error(`Bundled WAV has no leading fmt chunk: ${label}`)
+  }
+  const audioFormat = buffer.readUInt16LE(20)
+  const channels = buffer.readUInt16LE(22)
+  const sampleRate = buffer.readUInt32LE(24)
+  const bitsPerSample = buffer.readUInt16LE(34)
+  if (audioFormat !== 1 || channels !== 1 || sampleRate !== 44100 || bitsPerSample !== 16) {
+    throw new Error(
+      `Bundled WAV is not DAW-ready PCM: ${JSON.stringify({
+        label,
+        audioFormat,
+        channels,
+        sampleRate,
+        bitsPerSample,
+      })}`,
+    )
+  }
+}
+
+function assertMidiFile(buffer, label) {
+  if (buffer.length < 14 || buffer.toString('ascii', 0, 4) !== 'MThd') {
+    throw new Error(`Bundled MIDI guide is missing MThd header: ${label}`)
+  }
+  const headerLength = buffer.readUInt32BE(4)
+  const format = buffer.readUInt16BE(8)
+  const trackCount = buffer.readUInt16BE(10)
+  const division = buffer.readUInt16BE(12)
+  if (headerLength !== 6 || format !== 1 || trackCount < 1 || division !== 480) {
+    throw new Error(
+      `Bundled MIDI guide has unexpected header: ${JSON.stringify({
+        label,
+        headerLength,
+        format,
+        trackCount,
+        division,
+      })}`,
+    )
+  }
+  if (!buffer.includes(Buffer.from('MTrk', 'ascii'))) {
+    throw new Error(`Bundled MIDI guide is missing an MTrk chunk: ${label}`)
+  }
 }
 
 function inspectPcmWav(path) {

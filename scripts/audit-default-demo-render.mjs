@@ -50,6 +50,8 @@ const REQUIRED_CHECKS = [
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',
+  'desktop DAW handoff bundle download',
+  'desktop DAW handoff bundle MIDI guides',
   'render history visible',
   'desktop no page horizontal overflow',
   'desktop piano keyboard and bar ruler visible',
@@ -84,6 +86,7 @@ export function summarizeDefaultDemoSmoke(smoke, thresholdOverrides = {}) {
   const thresholds = { ...DEFAULT_THRESHOLDS, ...thresholdOverrides }
   const checks = new Set(Array.isArray(smoke?.checks) ? smoke.checks : [])
   const wav = smoke?.download?.wav ?? {}
+  const dawBundle = smoke?.dawBundle ?? {}
   const missingChecks = REQUIRED_CHECKS.filter((check) => !checks.has(check))
   const problems = [
     ...(smoke?.ok ? [] : ['browser smoke did not report ok=true']),
@@ -101,6 +104,14 @@ export function summarizeDefaultDemoSmoke(smoke, thresholdOverrides = {}) {
     ...(String(smoke?.download?.fileName ?? '').endsWith('.wav')
       ? []
       : [`download fileName ${smoke?.download?.fileName ?? 'unknown'} is not a WAV`]),
+    ...(String(dawBundle.fileName ?? '').endsWith('.zip')
+      ? []
+      : [`DAW bundle fileName ${dawBundle.fileName ?? 'unknown'} is not a ZIP`]),
+    ...(dawBundle.format === 'webuta-daw-handoff-bundle' ? [] : [`DAW bundle format ${dawBundle.format ?? 'missing'} is unexpected`]),
+    ...(dawBundle.version >= 4 ? [] : [`DAW bundle version ${dawBundle.version ?? 'missing'} is below 4`]),
+    ...(dawBundle.midi?.ppq === 480 ? [] : [`DAW bundle MIDI PPQ ${dawBundle.midi?.ppq ?? 'missing'}; expected 480`]),
+    ...(String(dawBundle.midi?.melodyFile ?? '').endsWith('.mid') ? [] : ['DAW bundle melody MIDI guide is missing']),
+    ...(String(dawBundle.midi?.chordFile ?? '').endsWith('.mid') ? [] : ['DAW bundle chord MIDI guide is missing']),
   ]
 
   return {
@@ -114,6 +125,7 @@ export function summarizeDefaultDemoSmoke(smoke, thresholdOverrides = {}) {
       passed: checks.has(check),
     })),
     download: smoke?.download ?? null,
+    dawBundle: smoke?.dawBundle ?? null,
     smoke: {
       mode: smoke?.mode ?? null,
       url: smoke?.url ?? null,

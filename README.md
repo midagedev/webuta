@@ -169,9 +169,10 @@ Current verified local smoke coverage:
 - Built-in `도히도히 다이스키` demo reports `8/8 matched` against the bundled `WebUtau Korean V3 Synthetic` zip.
 - Voicebank tests verify Japanese romaji yoon lyrics such as `kya`, `shu`, `ja`, `cho`, and `ryo` match hiragana/katakana UTAU aliases without fallback.
 - Bundled `WebUtau Korean V3 Synthetic` contains `615` WAV samples and `1437` oto.ini alias lines in the default web profile.
-- `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium and exports a DAW-ready WAV.
-- `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, and live WAV download.
+- `npm run voicebank:demo-v3` verifies the first-run V3 demo in Chromium, exports a DAW-ready WAV, downloads the DAW handoff ZIP, and inspects its manifest, WAV, UST/USTX/project exports, `melody.mid`, and `chords.mid`.
+- `npm run voicebank:demo-v3:pages` verifies the deployed GitHub Pages app in Chromium, including default V3 selection, desktop/mobile layout, live WAV download, and DAW ZIP/MIDI guide download.
 - The first-run browser smoke verifies the `처음 시작` / `듣기 · 가사 · WAV` header, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, collapsed `현재 프로젝트` context drawer, `1분 완성 루트`, `C -> G -> Am -> F` chord guide, `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` route with `지금` / `다음` state badges, inline starter lyric input with `한글 그대로 입력`, desktop/mobile utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and current lyric preview are visible before WAV/DAW handoff.
+- The first-run browser smoke downloads `First-Vocal-Sketch-daw-handoff.zip` and verifies it contains the rendered WAV, native `.webutau.json`, USTX, classic UST, `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, `notes.csv`, `manifest.json`, and `README.txt`.
 - The first-run browser smoke and release audit require the collapsed `고급 도구` area to expose the `다운로드 패키지` details, `WAV · melody.mid · chords.mid`, `arrangement.txt · lyrics.txt · notes.csv`, release hub, listening review, and DAW report builder links.
 - The first-run browser smoke verifies the `템포 맵` panel is visible, so imported UST/USTX tempo events are not hidden from the DAW workflow.
 - The first-run browser smoke verifies the arrangement chord lane is visible on desktop and mobile, so the starter harmony guide is not limited to the onboarding card.

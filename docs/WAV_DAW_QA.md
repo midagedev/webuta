@@ -54,6 +54,7 @@ If either file is outside Downloads, pass both paths explicitly with `npm run re
 - `WebUtau Korean V3 Synthetic` is selected by default.
 - The first-run guide puts the `처음 시작` / `듣기 · 가사 · WAV` header, `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, collapsed `현재 프로젝트` context drawer, `1분 완성 루트`, `C -> G -> Am -> F` chord guide, and `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` route before the `한글 그대로 입력` / `스타터 가사 라인` input, then shows the current lyric preview, desktop/mobile utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and a collapsed `고급 도구` release-review area.
 - The DAW bundle should include `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV and project exports.
+- Automated browser smoke must download the DAW bundle ZIP and inspect its `manifest.json`, rendered WAV, WebUtau project, USTX, classic UST, `melody.mid`, `chords.mid`, lyric, note, chord, arrangement, and README files before the physical-device handoff is accepted.
 - Default lyrics show `8/8 matched`.
 - Rendered WAV shows DAW-ready format metadata.
 - The target music tool imports the WAV without conversion errors.
