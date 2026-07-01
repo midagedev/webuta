@@ -265,9 +265,9 @@ Recommended coverage shape:
 - [x] Improve the default melody beyond a test scale: the built-in
   `네오빛이 메로디로 데려가` phrase now uses an A-B-C-B-D-C-B-A-C-D-E hook-shaped
   contour over `Am -> F -> C -> G`, and the first-run guide offers `Neon Lift`,
-  `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, and
-  `City Glide` sample hooks across different tempos, moods, note ranges, and
-  Hangul coda patterns.
+  `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`,
+  `City Glide`, `Glass Pulse`, `Lofi Diary`, and `Zero Gravity` sample hooks
+  across different tempos, moods, note ranges, and Hangul coda patterns.
 - [x] Ensure the default phrase uses aliases that exist in V3.
 - [x] Render default demo to WAV and archive diagnostics.
 - [x] Generate browser-rendered V2/V3 comparison WAVs and require V3 to score

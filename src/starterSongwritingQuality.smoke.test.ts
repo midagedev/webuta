@@ -144,9 +144,9 @@ function summarizePortfolio(samples: SampleSongwritingReport[]) {
     offGridSampleCount: samples.filter((sample) => sample.metrics.offGridStartCount > 0).length,
   }
   const problems = [
-    ...(samples.length >= 7 ? [] : [`starter songwriting sample count ${samples.length}; expected at least 7`]),
-    ...(summary.moodCount >= 7 ? [] : [`starter moods ${summary.moodCount}; expected at least 7`]),
-    ...(summary.chordProgressionCount >= 7 ? [] : [`starter chord progressions ${summary.chordProgressionCount}; expected at least 7`]),
+    ...(samples.length >= 10 ? [] : [`starter songwriting sample count ${samples.length}; expected at least 10`]),
+    ...(summary.moodCount >= 10 ? [] : [`starter moods ${summary.moodCount}; expected at least 10`]),
+    ...(summary.chordProgressionCount >= 10 ? [] : [`starter chord progressions ${summary.chordProgressionCount}; expected at least 10`]),
     ...(summary.bpmBandCount >= 3 ? [] : [`starter BPM bands ${summary.bpmBandCount}; expected slow, mid, and fast coverage`]),
     ...(summary.tempoSpan >= 70 ? [] : [`starter tempo span ${summary.tempoSpan}; expected at least 70 BPM`]),
     ...(summary.codaSampleCount >= 4 ? [] : [`starter coda sample count ${summary.codaSampleCount}; expected at least 4`]),

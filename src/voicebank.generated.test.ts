@@ -4,6 +4,7 @@ import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
 import {
   analyzeVoicebankCoverage,
+  analyzeVoicebankRenderWarnings,
   findBestEntryForLyric,
   findCodaTailEntryForLyric,
   findSustainEntryForLyric,
@@ -57,6 +58,18 @@ describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voice
         matchedNotes: sample.project.notes.length,
         fallbackNotes: 0,
       })
+    }
+  })
+
+  it('keeps every bundled starter sample inside the V3 warning-free render range', async () => {
+    const bytes = readFileSync(generatedV3Path)
+    const file = new File([bytes], 'webuta-ko-v3.zip', { type: 'application/zip' })
+    const voicebank = await loadVoicebankZip(file)
+
+    for (const sample of demoSamples) {
+      const warnings = analyzeVoicebankRenderWarnings(voicebank, sample.project.notes)
+      expect(warnings.warnings, `${sample.title} should render without warning chips`).toEqual([])
+      expect(warnings.warningCount, `${sample.title} warning count`).toBe(0)
     }
   })
 })

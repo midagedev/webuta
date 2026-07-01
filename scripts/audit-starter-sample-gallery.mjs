@@ -77,10 +77,37 @@ export const STARTER_SAMPLES = [
     chordLine: 'F -> E -> Am -> C',
     noteCount: 10,
   },
+  {
+    id: 'glass-pulse',
+    title: 'Glass Pulse',
+    mood: 'K-Pop Dance',
+    projectName: 'Glass Pulse Vocal',
+    lyricLine: '유 리 빛 무 대 위 로 날 아 가',
+    chordLine: 'Gm -> Eb -> Bb -> F',
+    noteCount: 10,
+  },
+  {
+    id: 'lofi-diary',
+    title: 'Lofi Diary',
+    mood: 'Bedroom Pop',
+    projectName: 'Lofi Diary Vocal',
+    lyricLine: '새 벽 창 에 작 은 꿈 을 써',
+    chordLine: 'D -> A -> Bm -> G',
+    noteCount: 9,
+  },
+  {
+    id: 'zero-gravity',
+    title: 'Zero Gravity',
+    mood: 'Future Rock',
+    projectName: 'Zero Gravity Vocal',
+    lyricLine: '중 력 날 아 하 늘 빛 까 지',
+    chordLine: 'Am -> G -> F -> E',
+    noteCount: 9,
+  },
 ]
 
 const DEFAULT_THRESHOLDS = {
-  minSampleCount: 7,
+  minSampleCount: 10,
   minDurationSeconds: 2.6,
   maxDurationSeconds: 12,
   minBytes: 220_000,

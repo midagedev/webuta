@@ -354,7 +354,7 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery render audit must pass')
-    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least seven samples')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least ten samples')
     expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
@@ -822,6 +822,9 @@ function makeStarterSongwritingReport() {
     ['pink-noise', 'Pink Noise', 'Hyperpop', 164, 11, 9, 6, 5, 3, 1, 1.75, 0.5455, 4, 'uuUddUdddd'],
     ['rain-verse', 'Rain Verse', 'Emo Ballad', 82, 10, 9, 5, 4, 3, 2, 2, 0.5, 3, 'uuUudDduD'],
     ['city-glide', 'City Glide', 'City Pop', 106, 10, 7, 5, 3, 2, 1, 2, 0.5, 4, 'uuuuddddU'],
+    ['glass-pulse', 'Glass Pulse', 'K-Pop Dance', 132, 10, 11, 6, 4, 3, 1, 2, 0.7, 2, 'usdDudUuu'],
+    ['lofi-diary', 'Lofi Diary', 'Bedroom Pop', 88, 9, 12, 6, 4, 1, 1, 1.5, 1, 7, 'uuUUdDdU'],
+    ['zero-gravity', 'Zero Gravity', 'Future Rock', 140, 9, 11, 6, 4, 2, 1, 2, 0.7778, 5, 'uUddDduU'],
   ]
   const samples = rows.map(
     ([
@@ -858,7 +861,7 @@ function makeStarterSongwritingReport() {
         finalNoteBeats,
         chordCoveredNoteCount: noteCount,
         chordToneRatio,
-        offGridStartCount: id === 'pink-noise' ? 1 : id === 'rain-verse' ? 2 : id === 'city-glide' ? 3 : 0,
+        offGridStartCount: id === 'pink-noise' ? 1 : id === 'rain-verse' ? 2 : id === 'city-glide' ? 3 : id === 'zero-gravity' ? 3 : 0,
         codaSyllableCount,
         contourSignature,
       },
@@ -877,17 +880,17 @@ function makeStarterSongwritingReport() {
     generatedAt: '2026-07-01T00:00:00.000Z',
     sampleCount: samples.length,
     portfolio: {
-      moodCount: 7,
-      titleCount: 7,
+      moodCount: 10,
+      titleCount: 10,
       tempoSpan: 82,
       minBpm: 82,
       maxBpm: 164,
       bpmBandCount: 3,
-      codaSampleCount: 6,
-      contourSignatureCount: 7,
-      chordProgressionCount: 7,
+      codaSampleCount: 9,
+      contourSignatureCount: 10,
+      chordProgressionCount: 10,
       globalToneRange: 23,
-      offGridSampleCount: 3,
+      offGridSampleCount: 4,
     },
     samples,
     problems: [],
@@ -982,6 +985,9 @@ function makeStarterSamplesReport() {
     ['pink-noise', 'Pink Noise', 'Hyperpop', 'Pink Noise Vocal', '핑 크 노 이 즈 가 심 장 을 깨 워', 'Bm -> G -> D -> A', 11],
     ['rain-verse', 'Rain Verse', 'Emo Ballad', 'Rain Verse Vocal', '비 가 내 린 밤 너 를 부 르 네', 'C -> G -> Am -> F', 10],
     ['city-glide', 'City Glide', 'City Pop', 'City Glide Vocal', '도 시 불 빛 위 로 우 린 날 아', 'F -> E -> Am -> C', 10],
+    ['glass-pulse', 'Glass Pulse', 'K-Pop Dance', 'Glass Pulse Vocal', '유 리 빛 무 대 위 로 날 아 가', 'Gm -> Eb -> Bb -> F', 10],
+    ['lofi-diary', 'Lofi Diary', 'Bedroom Pop', 'Lofi Diary Vocal', '새 벽 창 에 작 은 꿈 을 써', 'D -> A -> Bm -> G', 9],
+    ['zero-gravity', 'Zero Gravity', 'Future Rock', 'Zero Gravity Vocal', '중 력 날 아 하 늘 빛 까 지', 'Am -> G -> F -> E', 9],
   ].map(([id, title, mood, projectName, lyricLine, chordLine, noteCount], index) => ({
     id,
     title,
@@ -1046,9 +1052,9 @@ function makeStarterSamplesReport() {
     generatedAt: '2026-07-01T00:00:00.000Z',
     sampleCount: samples.length,
     diversity: {
-      moodCount: 7,
-      lyricLineCount: 7,
-      chordLineCount: 7,
+      moodCount: 10,
+      lyricLineCount: 10,
+      chordLineCount: 10,
     },
     samples,
     problems: [],
@@ -1395,7 +1401,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
-    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 7개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `Am -> F -> C -> G`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
+    'The first-run starter shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 10개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `처음 1분 가이드`, `Am -> F -> C -> G`, `현재 프로젝트`, `추가 작업`, `고급 도구`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
     'The DAW handoff bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` sidecars.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
@@ -1436,7 +1442,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 7개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
+    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 미션`, `한글 한 줄을 보컬 WAV로 만들기`, `First-Vocal-Sketch.wav`, `처음이면 여기부터`, `초보자 첫 버튼`, `첫 사용 순서`, `지금 할 일`, `빠른 가사 입력`, `빠른 가사 적용`, `샘플 고르기`, `보컬로이드풍 훅 10개`, `Neon Lift`, `Blue Hour`, `Retro Run`, `Moon Signal`, `Pink Noise`, `Rain Verse`, `City Glide`, `Glass Pulse`, `Lofi Diary`, `Zero Gravity`, `BPM/음역/노트/받침/끝음`, `가사 자세히`, `한국어 UTAU 모드`, `현재 프로젝트`, `처음 1분 가이드`, `Am -> F -> C -> G`, `01 샘플 듣기`, `02 가사 바꾸기`, `03 WAV 받기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `추가 작업`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
     'The DAW bundle includes `melody.mid`, `chords.mid`, `arrangement.txt`, `chords.csv`, `lyrics.txt`, and `notes.csv` beside the rendered WAV.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',

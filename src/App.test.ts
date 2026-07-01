@@ -128,7 +128,7 @@ describe('App editing workflow', () => {
     expect(within(beginnerStart).getByRole('button', { name: '새 프로젝트 만들기' })).toBeTruthy()
     const sampleGallery = within(guide).getByLabelText('Starter sample gallery')
     expect(sampleGallery.textContent).toContain('샘플 고르기')
-    expect(sampleGallery.textContent).toContain('보컬로이드풍 훅 7개')
+    expect(sampleGallery.textContent).toContain('보컬로이드풍 훅 10개')
     expect(sampleGallery.textContent).toContain('Neon Lift')
     expect(sampleGallery.textContent).toContain('Blue Hour')
     expect(sampleGallery.textContent).toContain('Retro Run')
@@ -136,6 +136,9 @@ describe('App editing workflow', () => {
     expect(sampleGallery.textContent).toContain('Pink Noise')
     expect(sampleGallery.textContent).toContain('Rain Verse')
     expect(sampleGallery.textContent).toContain('City Glide')
+    expect(sampleGallery.textContent).toContain('Glass Pulse')
+    expect(sampleGallery.textContent).toContain('Lofi Diary')
+    expect(sampleGallery.textContent).toContain('Zero Gravity')
     expect(sampleGallery.textContent).toContain('장르, 템포, 가사 발음이 다른 샘플')
     const neonMetrics = within(sampleGallery).getByLabelText('Neon Lift sample metrics')
     expect(neonMetrics.textContent).toContain('128 BPM')
@@ -277,6 +280,15 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('핑 크 노 이 즈 가 심 장 을 깨 워')
     expect(within(sampleGallery).getByRole('button', { name: 'Pink Noise 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Bm -> G -> D -> A')
+
+    fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Zero Gravity 샘플 열기' }))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Zero Gravity Vocal')
+    })
+    expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('중 력 날 아 하 늘 빛 까 지')
+    expect(within(sampleGallery).getByRole('button', { name: 'Zero Gravity 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Am -> G -> F -> E')
   })
 
   it('exposes a first-run DAW bundle action that renders and downloads a handoff zip', async () => {

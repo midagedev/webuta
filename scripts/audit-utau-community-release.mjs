@@ -244,15 +244,15 @@ function starterSongwritingGate(path) {
     if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.starterSongwritingAudit) {
       problems.push('starter songwriting quality audit must pass')
     }
-    if ((report.sampleCount ?? 0) < 7) {
-      problems.push('starter songwriting audit must cover at least seven samples')
+    if ((report.sampleCount ?? 0) < 10) {
+      problems.push('starter songwriting audit must cover at least ten samples')
     }
     const portfolio = report.portfolio ?? {}
-    if ((portfolio.moodCount ?? 0) < 7) {
-      problems.push('starter songwriting audit must cover seven distinct moods')
+    if ((portfolio.moodCount ?? 0) < 10) {
+      problems.push('starter songwriting audit must cover ten distinct moods')
     }
-    if ((portfolio.chordProgressionCount ?? 0) < 7) {
-      problems.push('starter songwriting audit must cover seven distinct chord progressions')
+    if ((portfolio.chordProgressionCount ?? 0) < 10) {
+      problems.push('starter songwriting audit must cover ten distinct chord progressions')
     }
     if ((portfolio.bpmBandCount ?? 0) < 3) {
       problems.push('starter songwriting audit must cover slow, mid, and fast BPM bands')
@@ -298,7 +298,7 @@ function starterSongwritingGate(path) {
       }
     }
   }
-  return makeGate('starter-songwriting-quality', 'Seven starter lyrics, melodies, and chord guides have usable musical variety', path, problems, report ? {
+  return makeGate('starter-songwriting-quality', 'Ten starter lyrics, melodies, and chord guides have usable musical variety', path, problems, report ? {
     sampleCount: report.sampleCount ?? 0,
     portfolio: report.portfolio ?? null,
     samples: (report.samples ?? []).map((sample) => ({
@@ -321,17 +321,17 @@ function starterSamplesGate(path) {
     if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.starterSamplesAudit) {
       problems.push('starter sample gallery render audit must pass')
     }
-    if ((report.sampleCount ?? 0) < 7) {
-      problems.push('starter sample gallery must render at least seven samples')
+    if ((report.sampleCount ?? 0) < 10) {
+      problems.push('starter sample gallery must render at least ten samples')
     }
-    if ((report.diversity?.moodCount ?? 0) < 7) {
-      problems.push('starter sample gallery must cover seven distinct moods')
+    if ((report.diversity?.moodCount ?? 0) < 10) {
+      problems.push('starter sample gallery must cover ten distinct moods')
     }
-    if ((report.diversity?.lyricLineCount ?? 0) < 7) {
-      problems.push('starter sample gallery must cover seven distinct lyric lines')
+    if ((report.diversity?.lyricLineCount ?? 0) < 10) {
+      problems.push('starter sample gallery must cover ten distinct lyric lines')
     }
-    if ((report.diversity?.chordLineCount ?? 0) < 7) {
-      problems.push('starter sample gallery must cover seven distinct chord lines')
+    if ((report.diversity?.chordLineCount ?? 0) < 10) {
+      problems.push('starter sample gallery must cover ten distinct chord lines')
     }
     for (const sample of report.samples ?? []) {
       if (sample.passed !== true) {
@@ -360,7 +360,7 @@ function starterSamplesGate(path) {
       }
     }
   }
-  return makeGate('starter-sample-gallery', 'Seven varied starter samples render WAV and DAW bundles through bundled V3', path, problems, report ? {
+  return makeGate('starter-sample-gallery', 'Ten varied starter samples render WAV and DAW bundles through bundled V3', path, problems, report ? {
     sampleCount: report.sampleCount ?? 0,
     diversity: report.diversity ?? null,
     samples: (report.samples ?? []).map((sample) => ({
@@ -946,7 +946,7 @@ function readmeGate(paths) {
       '현재 프로젝트',
       '처음 1분 가이드',
       '샘플 고르기',
-      '보컬로이드풍 훅 7개',
+      '보컬로이드풍 훅 10개',
       'Neon Lift',
       'Blue Hour',
       'Retro Run',
@@ -954,6 +954,9 @@ function readmeGate(paths) {
       'Pink Noise',
       'Rain Verse',
       'City Glide',
+      'Glass Pulse',
+      'Lofi Diary',
+      'Zero Gravity',
       'BPM/음역/노트/받침/끝음',
       'Am -> F -> C -> G',
       '추가 작업',
@@ -1032,7 +1035,7 @@ function readmeGate(paths) {
       '현재 프로젝트',
       '처음 1분 가이드',
       '샘플 고르기',
-      '보컬로이드풍 훅 7개',
+      '보컬로이드풍 훅 10개',
       'Neon Lift',
       'Blue Hour',
       'Retro Run',
@@ -1040,6 +1043,9 @@ function readmeGate(paths) {
       'Pink Noise',
       'Rain Verse',
       'City Glide',
+      'Glass Pulse',
+      'Lofi Diary',
+      'Zero Gravity',
       'BPM/음역/노트/받침/끝음',
       'Am -> F -> C -> G',
       '01 샘플 듣기',
@@ -1704,10 +1710,10 @@ function nextActionsForProblems(problems) {
     actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, WAV download, and DAW ZIP/MIDI guide download behavior.')
   }
   if (problems.some((problem) => problem.includes('starter-songwriting-quality'))) {
-    actions.push('Run npm run voicebank:songwriting-v3 so the seven first-run starter samples prove lyric, melody contour, BPM-band, Hangul coda, and chord-guide variety before release.')
+    actions.push('Run npm run voicebank:songwriting-v3 so the ten first-run starter samples prove lyric, melody contour, BPM-band, Hangul coda, and chord-guide variety before release.')
   }
   if (problems.some((problem) => problem.includes('starter-sample-gallery'))) {
-    actions.push('Run npm run voicebank:starter-samples-v3 so all seven first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
+    actions.push('Run npm run voicebank:starter-samples-v3 so all ten first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
   }
   if (problems.some((problem) => problem.includes('utau-import-compatibility'))) {
     actions.push('Run npm run voicebank:compatibility-utau so Japanese CV, VCV, prefix.map multipitch, Hangul CV/VC coda, and multi-oto style-ranking fixture voicebanks all render through the browser UTAU sample path.')
