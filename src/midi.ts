@@ -105,7 +105,8 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
   }
 
   const sortedLyrics = selectedTrack.lyrics.sort((a, b) => a.tick - b.tick)
-  const projectNotes = selectedTrack.notes
+  const selectedNotes = vocalNotesForTrack(selectedTrack, sortedLyrics)
+  const projectNotes = selectedNotes
     .sort((a, b) => a.start - b.start || a.tone - b.tone)
     .map((note, index) => ({
       id: `midi-note-${index + 1}`,
@@ -116,6 +117,9 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
       tone: note.tone,
       lyric: note.lyric || lyricForMidiNote(note, sortedLyrics, index),
     }))
+  if (projectNotes.length === 0) {
+    throw new Error('No vocal melody notes were found in the selected MIDI track.')
+  }
   const sortedTempos = normalizeImportedTempos(tempos)
   const firstTempo = sortedTempos[0]?.bpm ?? 120
   const timeSignature = signatures[0] ?? { beatPerBar: 4, beatUnit: 4 }
@@ -431,6 +435,36 @@ function melodyTrackScore(track: ParsedMidiTrack, hasLyrics: boolean) {
     return -1
   }
   return noteCount + uniqueToneCount * 0.25 + (hasLyrics ? track.lyrics.length * 2 : 0) - polyphonicStartRatio * 12 - (maxStartStack - 1) * 3 - namePenalty
+}
+
+function vocalNotesForTrack(track: ParsedMidiTrack, lyrics: ParsedMidiLyric[]) {
+  if (lyrics.length === 0) {
+    return track.notes
+  }
+  const lyricNotes = track.notes.filter((note) => note.lyric.trim().length > 0)
+  if (lyricNotes.length > 0) {
+    return lyricNotes
+  }
+  const usedIndexes = new Set<number>()
+  return lyrics
+    .map((lyric, lyricIndex) => {
+      const nextLyric = lyrics[lyricIndex + 1]
+      const maxStart = nextLyric ? Math.max(lyric.tick, nextLyric.tick - 1) : lyric.tick + TICKS_PER_BEAT
+      const candidates = track.notes
+        .map((note, noteIndex) => ({ note, noteIndex }))
+        .filter(({ note, noteIndex }) => !usedIndexes.has(noteIndex) && note.start >= lyric.tick && note.start <= maxStart)
+        .sort((a, b) => Math.abs(a.note.start - lyric.tick) - Math.abs(b.note.start - lyric.tick) || b.note.tone - a.note.tone)
+      const match = candidates[0]
+      if (!match) {
+        return null
+      }
+      usedIndexes.add(match.noteIndex)
+      return {
+        ...match.note,
+        lyric: lyric.text,
+      }
+    })
+    .filter((note): note is ParsedMidiNote => note !== null)
 }
 
 function lyricForMidiNote(note: ParsedMidiNote, lyrics: ParsedMidiLyric[], index: number) {

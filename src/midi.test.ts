@@ -60,6 +60,15 @@ describe('MIDI export', () => {
     expect(() => parseMelodyMidi(createChordMidi(demoProject), 'chords.mid')).toThrow(/melody-like MIDI track/u)
   })
 
+  it('keeps only lyric-linked vocal notes when a type-0 MIDI track also contains harmony notes', () => {
+    const project = parseMelodyMidi(createSingleTrackLyricHarmonyMidi(), 'type-zero-daw-export.mid')
+
+    expect(project.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛'])
+    expect(project.notes.map((note) => note.tone)).toEqual([69, 71, 72])
+    expect(project.notes.map((note) => note.start)).toEqual([0, 480, 960])
+    expect(project.notes).toHaveLength(3)
+  })
+
   it('round-trips every varied starter sample through melody MIDI', () => {
     for (const sample of demoSamples) {
       const project = parseMelodyMidi(createMelodyMidi(sample.project), `${sample.id}.mid`)
@@ -108,6 +117,55 @@ function createMelodyAndChordMidi(project: typeof demoProject) {
   ])
 }
 
+function createSingleTrackLyricHarmonyMidi() {
+  const textEncoder = new TextEncoder()
+  const events = [
+    metaEvent(0, 0, 0x03, 'One Track DAW Export', textEncoder),
+    { tick: 0, priority: 0, data: [0xff, 0x51, 0x03, 0x07, 0x27, 0x0e] },
+    { tick: 0, priority: 0, data: [0xff, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08] },
+    ...lyricHarmonyEvents(0, '네', 69, [60, 64, 67], textEncoder),
+    ...lyricHarmonyEvents(480, '오', 71, [65, 69, 72], textEncoder),
+    ...lyricHarmonyEvents(960, '빛', 72, [67, 71, 74], textEncoder),
+  ]
+  return concatBytes([
+    asciiBytes('MThd'),
+    u32(6),
+    u16(0),
+    u16(1),
+    u16(480),
+    createTrack(events),
+  ])
+}
+
+function lyricHarmonyEvents(tick: number, lyric: string, melodyTone: number, chordTones: number[], textEncoder: TextEncoder) {
+  return [
+    metaEvent(tick, 1, 0x05, lyric, textEncoder),
+    { tick, priority: 2, data: [0x90, melodyTone, 96] },
+    { tick: tick + 360, priority: 0, data: [0x80, melodyTone, 0] },
+    ...chordTones.flatMap((tone) => [
+      { tick, priority: 3, data: [0x91, tone, 72] },
+      { tick: tick + 480, priority: 0, data: [0x81, tone, 0] },
+    ]),
+  ]
+}
+
+function createTrack(events: Array<{ tick: number; priority: number; data: number[] }>) {
+  const sorted = [...events].sort((a, b) => a.tick - b.tick || a.priority - b.priority)
+  const bytes: number[] = []
+  let cursor = 0
+  for (const event of sorted) {
+    bytes.push(...varLen(event.tick - cursor), ...event.data)
+    cursor = event.tick
+  }
+  bytes.push(0, 0xff, 0x2f, 0)
+  return concatBytes([asciiBytes('MTrk'), u32(bytes.length), Uint8Array.from(bytes)])
+}
+
+function metaEvent(tick: number, priority: number, type: number, value: string, textEncoder: TextEncoder) {
+  const payload = [...textEncoder.encode(value)]
+  return { tick, priority, data: [0xff, type, ...varLen(payload.length), ...payload] }
+}
+
 function readTracks(midi: Uint8Array) {
   const tracks: Uint8Array[] = []
   let offset = 14
@@ -143,4 +201,14 @@ function concatBytes(parts: Uint8Array[]) {
     offset += part.length
   }
   return out
+}
+
+function varLen(value: number) {
+  let buffer = Math.max(0, Math.round(value)) & 0x7f
+  const bytes = [buffer]
+  while ((value >>= 7) > 0) {
+    buffer = (value & 0x7f) | 0x80
+    bytes.unshift(buffer)
+  }
+  return bytes
 }
