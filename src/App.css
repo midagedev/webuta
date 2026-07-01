@@ -6461,6 +6461,10 @@ button:disabled:active {
   min-height: 68px;
 }
 
+.starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -7118,6 +7122,10 @@ button:disabled:active {
 
   .starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-button {
     min-height: 58px;
+  }
+
+  .starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .starter-guide.onboarding-v3 .starter-focus {

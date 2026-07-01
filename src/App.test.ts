@@ -123,6 +123,7 @@ describe('App editing workflow', () => {
     expect(within(utilities).getByText('다음 선택')).toBeTruthy()
     expect(within(utilities).getByText('처음엔 샘플을 듣고 가사만 바꿔도 충분해요')).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' })).toBeTruthy()
+    expect(within(utilities).getByRole('button', { name: '스타터 DAW 번들 다운로드' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '새 프로젝트' })).toBeTruthy()
     expect(within(utilities).getByRole('button', { name: '데모 프로젝트로 복구' })).toBeTruthy()
     expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('미리듣기')
@@ -142,6 +143,23 @@ describe('App editing workflow', () => {
     fireEvent.click(within(utilities).getByRole('button', { name: '스타터 멜로디 추천' }))
 
     expect(screen.getByLabelText('Compose mode')).toBeTruthy()
+  })
+
+  it('exposes a first-run DAW bundle action that renders and downloads a handoff zip', async () => {
+    render(App)
+    const guide = screen.getByLabelText('First run guide')
+
+    fireEvent.click(within(guide).getByRole('button', { name: '스타터 DAW 번들 다운로드' }))
+
+    await waitFor(
+      () => {
+        expect(screen.getAllByText('DAW handoff bundle downloaded').length).toBeGreaterThan(0)
+      },
+      { timeout: 10000 },
+    )
+    const createdUrls = vi.mocked(URL.createObjectURL).mock.calls.map(([blob]) => blob)
+    const bundleBlob = createdUrls.find((blob) => blob instanceof Blob && blob.type === 'application/zip') as Blob | undefined
+    expect(bundleBlob).toBeTruthy()
   })
 
   it('makes a restored draft obvious and offers a one-tap return to the default sample', async () => {

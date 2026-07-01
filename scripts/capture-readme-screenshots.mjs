@@ -74,6 +74,7 @@ async function waitForAppReady(page) {
   await starterUtilities.getByText('다음 선택').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByText('처음엔 샘플을 듣고 가사만 바꿔도 충분해요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterUtilities.getByRole('button', { name: '스타터 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '데모 프로젝트로 복구' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Download, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Wand2 } from '@lucide/svelte'
+  import { Check, Download, FileArchive, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Wand2 } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatProjectSourceLabel, formatVoicebankCoverage, inputValue } from '../app/ui'
@@ -20,6 +20,7 @@
     onOpenCompose: () => void
     onPlayPause: () => Promise<void>
     onDownloadWav: () => Promise<void>
+    onDownloadDawBundle: () => Promise<void>
   }
 
   let {
@@ -38,6 +39,7 @@
     onOpenCompose,
     onPlayPause,
     onDownloadWav,
+    onDownloadDawBundle,
   }: Props = $props()
 
   const lyricPreview = $derived(project.notes.slice(0, 8).map((note) => note.lyric).join(' '))
@@ -229,6 +231,11 @@
           <Wand2 size={17} aria-hidden="true" />
           <span>멜로디 추천</span>
           <strong>선택 사항</strong>
+        </button>
+        <button type="button" class="starter-utility-button ready" aria-label="스타터 DAW 번들 다운로드" onclick={() => void onDownloadDawBundle()} disabled={isRendering}>
+          <FileArchive size={17} aria-hidden="true" />
+          <span>DAW 번들</span>
+          <strong>{rendered ? 'WAV 포함' : '렌더 후 ZIP'}</strong>
         </button>
         <button type="button" class="starter-utility-button" aria-label="새 프로젝트" onclick={onNewProject}>
           <FilePlus size={17} aria-hidden="true" />

@@ -1547,6 +1547,7 @@
         onOpenCompose={() => (activeMode = 'compose')}
         onPlayPause={playOrPause}
         onDownloadWav={downloadWav}
+        onDownloadDawBundle={downloadDawBundle}
       />
 
       {#if activeMode === 'compose'}
