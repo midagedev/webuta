@@ -185,7 +185,7 @@ Recommended coverage shape:
 - [x] Add deterministic zip generation and cache-busting version updates.
 - [x] Add a voicebank integrity test that loads the zip and verifies alias
   coverage.
-- [ ] Keep V2 available only as fallback until V3 passes listening review.
+- [x] Keep V2 available only as fallback until V3 passes listening review.
 
 ### M5. Browser UTAU Renderer
 
@@ -527,7 +527,10 @@ Current verified V3 evidence:
   metronome toggle, BPM edit, render, download, and share.
 - App code now names the bundled default as `BUNDLED_UTAU_VOICEBANK_*` instead
   of the older `KOREAN_LITE` default path; the old exports remain only as
-  compatibility aliases. V2/Supertonic docs are marked legacy.
+  compatibility aliases. V2/Supertonic docs are marked legacy, the procedural
+  lite generator is exposed only as `legacy:voicebank:lite`, and the release
+  audit blocks any active `voicebank:*` script that points back to the lite/V2
+  generator.
 - `npm run test:teto` passes against the ignored official
   `test-assets/TETO-OUset240323.zip`: 2 tests pass, the official zip loads,
   Japanese/Korean alias mappings resolve, and the built-in Korean demo renders

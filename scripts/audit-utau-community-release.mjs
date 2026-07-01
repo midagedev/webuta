@@ -642,6 +642,12 @@ function noRecordingWorkflowGate(path) {
             break
           }
         }
+        if (
+          name === 'voicebank:lite' ||
+          /generate-korean-lite-voicebank|webuta-ko-lite/u.test(script)
+        ) {
+          problems.push(`active script ${name} must not expose the legacy lite/V2 voicebank; move it under legacy:`)
+        }
       }
     }
   }

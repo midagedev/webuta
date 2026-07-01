@@ -41,10 +41,12 @@ onset/coda energy, intended target pitch error, and in-note pitch drift.
 ## Procedural Fallback
 
 ```sh
-npm run voicebank:lite
+npm run legacy:voicebank:lite
 ```
 
 This creates the older V1/V2 formant/procedural fallback pack with no external model dependency.
+It is kept for regression comparison and fallback research, not as an active
+community-release voicebank path.
 
 ## Supertonic V2 Legacy
 

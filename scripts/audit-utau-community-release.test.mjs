@@ -356,6 +356,32 @@ describe('UTAU community release audit', () => {
     expect(report.nextActions.join('\n')).toContain('experimental: or legacy:')
   })
 
+  it('blocks release when the legacy lite voicebank generator is exposed as an active workflow', async () => {
+    const fixture = await makeFixture({
+      packageJson: {
+        scripts: {
+          'voicebank:v3': 'node scripts/generate-korean-v3-synthetic-voicebank.mjs',
+          'voicebank:lite': 'node scripts/generate-korean-lite-voicebank.mjs',
+          'release:audit-utau': 'node scripts/audit-utau-community-release.mjs',
+          'release:packet': 'node scripts/build-release-review-packet.mjs',
+          'release:bundle': 'node scripts/build-release-review-bundle.mjs',
+          'release:evidence-status': 'node scripts/release-evidence-status.mjs',
+          'release:accept-evidence': 'node scripts/accept-release-evidence.mjs',
+        },
+      },
+    })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain(
+      'no-recording-workflow: active script voicebank:lite must not expose the legacy lite/V2 voicebank; move it under legacy:',
+    )
+  })
+
   it('blocks release when README screenshots are placeholders instead of real captures', async () => {
     const fixture = await makeFixture()
     writeFileSync(join(fixture.root, 'docs', 'screenshots', 'webuta-mobile.jpg'), 'jpg')

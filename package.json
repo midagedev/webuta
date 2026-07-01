@@ -75,7 +75,6 @@
     "neural:setup-mfa": "node scripts/setup-mfa-env.mjs",
     "neural:setup-openvpi": "node scripts/setup-openvpi-tooling.mjs",
     "neural:simplify-mfa-dictionary": "node scripts/simplify-mfa-dictionary.mjs",
-    "voicebank:lite": "node scripts/generate-korean-lite-voicebank.mjs",
     "voicebank:audit-v3": "node scripts/audit-korean-v3-voicebank.mjs",
     "voicebank:clarity-v3": "node scripts/analyze-korean-v3-clarity.mjs",
     "voicebank:demo-v3": "node scripts/audit-default-demo-render.mjs",
@@ -88,6 +87,7 @@
     "voicebank:review-v3": "node scripts/prepare-utau-v3-listening-review.mjs",
     "voicebank:sample-review-v3": "node scripts/report-utau-v3-sample-review.mjs",
     "voicebank:v3": "node scripts/generate-korean-v3-synthetic-voicebank.mjs",
+    "legacy:voicebank:lite": "node scripts/generate-korean-lite-voicebank.mjs",
     "legacy:voicebank:supertonic": "python3 scripts/generate-korean-supertonic-voicebank.py",
     "asset:teto": "node scripts/download-teto-asset.mjs"
   },
