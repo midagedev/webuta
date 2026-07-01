@@ -1068,10 +1068,10 @@ function nextActionsForProblems(problems) {
   }
   const actions = []
   if (problems.some((problem) => problem.includes('human-listening'))) {
-    actions.push('Open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then open the V3 listening scorecard at public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/ to use progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons. Download listening-scores.local.json and handoff-report.local.json, then run npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json.')
+    actions.push('Open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then open the V3 listening scorecard at public/review/v3/index.html or https://midagedev.github.io/webuta/review/v3/ to use progress/autosave while scoring the generated V3 WAVs plus V2/V3 comparisons. Download listening-scores.local.json and handoff-report.local.json, keep both files in Downloads, then run npm run release:accept-evidence. Use explicit --scores/--handoff paths only when the files are somewhere else.')
   }
   if (problems.some((problem) => problem.includes('wav-daw-handoff'))) {
-    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json. Accept both final JSON files with npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json.')
+    actions.push('Run the physical-device WAV/DAW checklist in docs/WAV_DAW_QA.md, open the release review hub at public/review/index.html or https://midagedev.github.io/webuta/review/, then use public/review/wav-daw/index.html or https://midagedev.github.io/webuta/review/wav-daw/ to download handoff-report.local.json. Keep handoff-report.local.json beside listening-scores.local.json in Downloads, then accept both final JSON files with npm run release:accept-evidence.')
   }
   if (problems.some((problem) => problem.includes('public-listening-review'))) {
     actions.push('Run npm run voicebank:review-v3 and npm run voicebank:publish-review-v3 so the V3 listening review scorecard is available from GitHub Pages.')

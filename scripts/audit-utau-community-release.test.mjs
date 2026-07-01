@@ -41,6 +41,9 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('human-listening: missing human listening scores')
     expect(report.problems.join('\n')).toContain('github-pages-v3: missing GitHub Pages deployment evidence')
     expect(report.nextActions.join('\n')).toContain('listening-scores.local.json')
+    expect(report.nextActions.join('\n')).toContain('Downloads')
+    expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
+    expect(report.nextActions.join('\n')).toContain('Use explicit --scores/--handoff paths only when the files are somewhere else.')
     expect(report.nextActions.join('\n')).toContain('https://midagedev.github.io/webuta/review/v3/')
     expect(report.nextActions.join('\n')).toContain('progress/autosave')
   })
@@ -56,7 +59,9 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('wav-daw-handoff: missing physical WAV DAW handoff report')
     expect(report.nextActions.join('\n')).toContain('docs/WAV_DAW_QA.md')
-    expect(report.nextActions.join('\n')).toContain('release:accept-evidence')
+    expect(report.nextActions.join('\n')).toContain('Downloads')
+    expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
+    expect(report.nextActions.join('\n')).not.toContain('npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json')
   })
 
   it('blocks release when physical DAW import did not pass', async () => {
