@@ -605,6 +605,7 @@ button:disabled {
 .voicebank-license-card,
 .voicebank-origin-card,
 .render-warning-card,
+.tempo-map-card,
 .lyric-match-chip,
 .render-note-chip {
   display: grid;
@@ -617,11 +618,118 @@ button:disabled {
 .coverage-card,
 .voicebank-license-card,
 .voicebank-origin-card,
-.render-warning-card {
+.render-warning-card,
+.tempo-map-card {
   margin-top: 8px;
   padding: 9px 10px;
   border: 1px solid #17212a;
   background: #151b22;
+}
+
+.tempo-map-card {
+  gap: 8px;
+  border-color: #263b48;
+  background: #101a21;
+}
+
+.tempo-map-head,
+.tempo-marker-row,
+.tempo-add-row {
+  min-width: 0;
+  display: grid;
+  align-items: center;
+  gap: 6px;
+}
+
+.tempo-map-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.tempo-map-head strong,
+.tempo-map-head span,
+.tempo-marker-row > span,
+.tempo-marker-row label,
+.tempo-add-row label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tempo-map-head strong {
+  color: #f4f7fb;
+  font-size: 12px;
+  font-weight: 880;
+}
+
+.tempo-map-head span,
+.tempo-marker-row > span {
+  color: #83f7ff;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.tempo-marker-list {
+  display: grid;
+  gap: 5px;
+}
+
+.tempo-marker-row {
+  grid-template-columns: 42px minmax(0, 1fr) 28px;
+}
+
+.tempo-marker-row:first-child {
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+.tempo-marker-row label,
+.tempo-add-row label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  color: #aeb8c5;
+  font-size: 10px;
+  font-weight: 820;
+}
+
+.tempo-marker-row input,
+.tempo-add-row input {
+  min-width: 0;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid #283746;
+  border-radius: 6px;
+  color: #f4f7fb;
+  background: #0c1218;
+  font: inherit;
+}
+
+.tempo-marker-row button,
+.tempo-add-row button {
+  min-width: 0;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid #304455;
+  border-radius: 6px;
+  color: #dffbff;
+  background: #162632;
+  font-size: 10px;
+  font-weight: 860;
+}
+
+.tempo-marker-row button {
+  color: #ffd6d0;
+  border-color: #5a302d;
+  background: #2a1718;
+}
+
+.tempo-add-row {
+  grid-template-columns: minmax(0, 1fr) 72px;
 }
 
 .release-readiness-card {

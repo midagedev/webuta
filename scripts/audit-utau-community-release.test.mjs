@@ -540,6 +540,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run current lyric card visible',
       'first-run guided path visible',
       'first-run sketch cues visible',
+      'tempo map controls visible',
       'first-run demo aliases fully matched',
       'first-run demo render warnings clear',
       'first-run lyric visible',

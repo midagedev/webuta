@@ -5,6 +5,7 @@ import {
   normalizedTempoChanges,
   projectDurationSeconds,
   secondsToTicksInProject,
+  tickPositionLabel,
   ticksToSecondsInProject,
 } from './music'
 
@@ -38,5 +39,12 @@ describe('tempo map timing helpers', () => {
     expect(durationTicksToSeconds(project, 240, 720)).toBeCloseTo(1.25, 6)
     expect(secondsToTicksInProject(1.5, project)).toBe(960)
     expect(projectDurationSeconds(project)).toBeCloseTo(2.166667, 5)
+  })
+
+  it('formats DAW-style bar and beat labels for tempo markers', () => {
+    expect(tickPositionLabel(0, demoProject)).toBe('1:1')
+    expect(tickPositionLabel(960, demoProject)).toBe('1:3')
+    expect(tickPositionLabel(2040, demoProject)).toBe('2:1+120')
+    expect(tickPositionLabel(1440, { ...demoProject, beatPerBar: 3 })).toBe('2:1')
   })
 })

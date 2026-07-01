@@ -402,6 +402,41 @@
     clearRendered()
   }
 
+  function updateTempoChange(position: number, bpm: number) {
+    const normalizedPosition = Math.max(0, Math.round(position))
+    const normalizedBpm = clampProjectBpm(bpm)
+    if (normalizedPosition === 0) {
+      updateProject({ bpm: normalizedBpm })
+      notice = `Tempo 1:1 · ${normalizedBpm} BPM`
+      return
+    }
+    commitProject((current) => {
+      const tempoChanges = (current.tempoChanges ?? []).filter((tempo) => Math.max(0, Math.round(tempo.position)) !== normalizedPosition)
+      return {
+        ...current,
+        tempoChanges: [...tempoChanges, { position: normalizedPosition, bpm: normalizedBpm }].sort((left, right) => left.position - right.position),
+      }
+    })
+    projectSourceLabel = projectSourceLabel === 'Built-in Hangul demo' ? projectSourceLabel : 'Saved browser draft'
+    clearRendered()
+    notice = `Tempo marker · ${normalizedBpm} BPM`
+  }
+
+  function removeTempoChange(position: number) {
+    const normalizedPosition = Math.max(0, Math.round(position))
+    if (normalizedPosition === 0) {
+      notice = 'Main BPM marker stays at 1:1'
+      return
+    }
+    commitProject((current) => ({
+      ...current,
+      tempoChanges: (current.tempoChanges ?? []).filter((tempo) => Math.max(0, Math.round(tempo.position)) !== normalizedPosition),
+    }))
+    projectSourceLabel = projectSourceLabel === 'Built-in Hangul demo' ? projectSourceLabel : 'Saved browser draft'
+    clearRendered()
+    notice = 'Tempo marker removed'
+  }
+
   function updateNote(noteId: string, patch: Partial<SongNote>, options: { history?: 'commit' | 'replace' } = {}) {
     const applyUpdate = (current: SongProject) => updateNoteInProject(current, noteId, patch).project
     if (options.history === 'replace') {
@@ -414,6 +449,10 @@
       paintLyric = patch.lyric.trim() || '라'
     }
     clearRendered()
+  }
+
+  function clampProjectBpm(value: number) {
+    return Math.max(40, Math.min(260, Number.isFinite(value) ? Math.round(value) : project.bpm))
   }
 
   function updateSelectedNote(patch: Partial<SongNote>) {
@@ -1446,6 +1485,8 @@
         onPreviewVoicebankSample={previewSelectedVoicebankSample}
         onBpm={(bpm) => updateProject({ bpm })}
         onBeat={(beatPerBar, beatUnit) => updateProject({ beatPerBar, beatUnit })}
+        onTempoChange={updateTempoChange}
+        onRemoveTempoChange={removeTempoChange}
         onRenderer={selectRenderer}
         onNeuralModel={selectNeuralModel}
         onLyric={(lyric) => {

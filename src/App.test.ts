@@ -127,6 +127,10 @@ describe('App editing workflow', () => {
     expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('미리듣기')
     expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('가사·음정')
     expect(screen.getByLabelText('Vocal sketch cues').textContent).toContain('WAV 저장')
+    expect(screen.getByLabelText('Tempo map').textContent).toContain('템포 맵')
+    expect(screen.getByLabelText('Tempo map').textContent).toContain('1 marker')
+    expect(screen.getByText('TEMPO')).toBeTruthy()
+    expect(screen.getByText('1 MARK')).toBeTruthy()
 
     fireEvent.click(within(guide).getByRole('button', { name: '가사 라인 적용' }))
 
@@ -137,6 +141,21 @@ describe('App editing workflow', () => {
     fireEvent.click(within(guide).getByRole('button', { name: '컴포즈 모드 열기' }))
 
     expect(screen.getByLabelText('Compose mode')).toBeTruthy()
+  })
+
+  it('adds a tempo marker at the selected note for DAW-style tempo maps', async () => {
+    render(App)
+
+    fireEvent.click(screen.getByRole('button', { name: '히 G4 note' }))
+    fireEvent.input(screen.getByLabelText('New tempo marker BPM'), { target: { value: '132' } })
+    fireEvent.click(screen.getByRole('button', { name: '선택 노트에 템포 마커 추가' }))
+
+    await waitFor(() => {
+      expect(loadSavedProject()?.tempoChanges).toContainEqual({ position: 480, bpm: 132 })
+    })
+    expect(screen.getByLabelText('Tempo map').textContent).toContain('2 markers')
+    expect(screen.getByLabelText('Tempo map').textContent).toContain('1:2')
+    expect(screen.getByText('2 MARK')).toBeTruthy()
   })
 
   it('duplicates the current project without overwriting the original draft name', async () => {

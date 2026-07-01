@@ -89,6 +89,45 @@ describe('LeftRail release readiness', () => {
     expect(onIntensity).toHaveBeenCalledWith(73)
   })
 
+  it('surfaces and edits imported tempo map markers', async () => {
+    const onBpm = vi.fn()
+    const onTempoChange = vi.fn()
+    const onRemoveTempoChange = vi.fn()
+    const project = makeProject()
+    project.tempoChanges = [
+      { position: 0, bpm: 112 },
+      { position: 960, bpm: 132 },
+    ]
+
+    render(
+      LeftRail,
+      makeProps({
+        project,
+        selectedNote: project.notes[2],
+        onBpm,
+        onTempoChange,
+        onRemoveTempoChange,
+      }),
+    )
+
+    const tempoMap = screen.getByLabelText('Tempo map')
+    expect(tempoMap.textContent).toContain('템포 맵')
+    expect(tempoMap.textContent).toContain('2 markers')
+    expect(tempoMap.textContent).toContain('1:1')
+    expect(tempoMap.textContent).toContain('1:3')
+
+    await fireEvent.input(screen.getByLabelText('Tempo marker 1:1 BPM'), { target: { value: '118' } })
+    await fireEvent.input(screen.getByLabelText('Tempo marker 1:3 BPM'), { target: { value: '140' } })
+    await fireEvent.click(screen.getByRole('button', { name: 'Remove tempo marker 1:3' }))
+    await fireEvent.input(screen.getByLabelText('New tempo marker BPM'), { target: { value: '126' } })
+    await fireEvent.click(screen.getByRole('button', { name: '선택 노트에 템포 마커 추가' }))
+
+    expect(onBpm).toHaveBeenCalledWith(118)
+    expect(onTempoChange).toHaveBeenCalledWith(960, 140)
+    expect(onRemoveTempoChange).toHaveBeenCalledWith(960)
+    expect(onTempoChange).toHaveBeenCalledWith(project.notes[2].start, 126)
+  })
+
   it('edits selected-note envelope as UST dynamics', async () => {
     const onEnvelope = vi.fn()
     render(LeftRail, makeProps({ onEnvelope }))
@@ -267,6 +306,8 @@ function makeProps(overrides: Partial<Record<string, unknown>> = {}) {
     onPreviewVoicebankSample: vi.fn(),
     onBpm: vi.fn(),
     onBeat: vi.fn(),
+    onTempoChange: vi.fn(),
+    onRemoveTempoChange: vi.fn(),
     onRenderer: vi.fn(),
     onNeuralModel: vi.fn(),
     onLyric: vi.fn(),

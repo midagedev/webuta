@@ -24,6 +24,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Add USTX export for round-tripping simple vocal projects.
 - [x] Add classic UST import/export for UTAU community project exchange.
 - [x] Preserve UST/USTX tempo events and use them for browser render timing.
+- [x] Show and edit tempo-map markers so imported UST/USTX tempo events remain
+  visible in the browser DAW workflow.
 - [x] Add native `.webutau.json` project save/import for browser-native work.
 - [x] Add touch-friendly first-screen editor with project actions, note editor, loop controls, and piano roll.
 - [x] Add browser-safe demo vocal renderer as fallback.
@@ -64,6 +66,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   current lyric card, Korean mode navigation, `미리듣기` / `가사·음정` /
   `WAV 저장` sketch cues, and `01 보이스 확인` / `02 먼저 들어보기` /
   `03 WAV 저장` guided path.
+- [x] First-run browser smoke verifies the `템포 맵` panel is visible so
+  tempo-map preservation is user-facing, not only a renderer detail.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel
   WAV phrases for human scoring.
 - [x] GitHub Pages audit verifies all 8 deployed V3/V2 review WAVs load and

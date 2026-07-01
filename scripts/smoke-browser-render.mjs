@@ -376,6 +376,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Vocal sketch cues').getByText('미리듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Vocal sketch cues').getByText('가사·음정').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Tempo map').getByText('템포 맵').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Tempo map').getByText('1 marker').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterPath = page.getByLabel('Starter path')
   await starterPath.getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterPath.getByText('보이스 확인').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -433,6 +435,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run current lyric card visible',
     'first-run guided path visible',
     'first-run sketch cues visible',
+    'tempo map controls visible',
     'Korean mode navigation visible',
     'first-run demo aliases fully matched',
     'first-run demo render warnings clear',

@@ -32,7 +32,7 @@
     inputValue,
     type VoicebankCacheStatus,
   } from '../app/ui'
-  import { toneName } from '../music'
+  import { normalizedTempoChanges, tickPositionLabel, toneName } from '../music'
 
   type Props = {
     project: SongProject
@@ -53,6 +53,8 @@
     onPreviewVoicebankSample: () => void
     onBpm: (bpm: number) => void
     onBeat: (beatPerBar: number, beatUnit: number) => void
+    onTempoChange: (position: number, bpm: number) => void
+    onRemoveTempoChange: (position: number) => void
     onRenderer: (renderer: RendererId) => void
     onNeuralModel: (modelId: string) => void
     onLyric: (lyric: string) => void
@@ -88,6 +90,8 @@
     onPreviewVoicebankSample,
     onBpm,
     onBeat,
+    onTempoChange,
+    onRemoveTempoChange,
     onRenderer,
     onNeuralModel,
     onLyric,
@@ -105,6 +109,7 @@
   }: Props = $props()
 
   let voicebankInput: HTMLInputElement
+  let newTempoMarkerBpm = $state<number | null>(null)
 
   async function handleVoicebankFileChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement
@@ -165,6 +170,9 @@
   let selectedPitchBendPointCount = $derived(selectedPitchBendEnabled ? selectedPitchBend.points.length : 0)
   let selectedPitchBendMode = $derived(editablePitchMode(selectedPitchBend.modes?.[Math.max(0, selectedPitchBendPeak.index - 1)]))
   let selectedPitchBendSnapFirst = $derived(selectedPitchBendEnabled && selectedPitchBend.snapFirst === true)
+  let tempoMap = $derived(normalizedTempoChanges(project))
+  let tempoMarkerCountLabel = $derived(`${tempoMap.length} marker${tempoMap.length === 1 ? '' : 's'}`)
+  let selectedTempoMarkerLabel = $derived(selectedNote ? tickPositionLabel(selectedNote.start, project) : '노트 선택')
   let renderWarningPreview = $derived(voicebankWarnings?.warnings.slice(0, 3) ?? [])
   let isBundledDefaultVoicebank = $derived(
     Boolean(voicebank) && voicebankName === BUNDLED_UTAU_VOICEBANK_NAME && voicebankCacheStatus === 'bundled',
@@ -337,6 +345,26 @@
     )
   }
 
+  function updateTempoMarker(position: number, bpm: number) {
+    const nextBpm = clampTempoBpm(bpm)
+    if (position <= 0) {
+      onBpm(nextBpm)
+      return
+    }
+    onTempoChange(Math.max(0, Math.round(position)), nextBpm)
+  }
+
+  function addTempoMarkerAtSelection() {
+    if (!selectedNote) {
+      return
+    }
+    updateTempoMarker(selectedNote.start, newTempoMarkerBpm ?? project.bpm)
+  }
+
+  function clampTempoBpm(value: number) {
+    return Math.max(40, Math.min(260, Number.isFinite(value) ? Math.round(value) : project.bpm))
+  }
+
   function pitchBendPeak(pitchBend: NotePitchBend, enabled: boolean) {
     if (!enabled || pitchBend.points.length === 0) {
       return { timePercent: 50, cents: 40, index: 1 }
@@ -486,6 +514,53 @@
         <option value="6/8">6/8</option>
       </select>
     </label>
+    <div class="tempo-map-card" aria-label="Tempo map">
+      <div class="tempo-map-head">
+        <strong>템포 맵</strong>
+        <span>{tempoMarkerCountLabel}</span>
+      </div>
+      <div class="tempo-marker-list">
+        {#each tempoMap as tempo (tempo.position)}
+          {@const markerLabel = tickPositionLabel(tempo.position, project)}
+          <div class="tempo-marker-row">
+            <span>{markerLabel}</span>
+            <label>
+              BPM
+              <input
+                aria-label={`Tempo marker ${markerLabel} BPM`}
+                type="number"
+                min="40"
+                max="260"
+                value={tempo.bpm}
+                oninput={(event) => updateTempoMarker(tempo.position, Number(inputValue(event)))}
+              />
+            </label>
+            {#if tempo.position > 0}
+              <button type="button" aria-label={`Remove tempo marker ${markerLabel}`} onclick={() => onRemoveTempoChange(tempo.position)}>
+                <Trash2 size={14} aria-hidden="true" />
+              </button>
+            {/if}
+          </div>
+        {/each}
+      </div>
+      <div class="tempo-add-row">
+        <label>
+          선택 {selectedTempoMarkerLabel}
+          <input
+            aria-label="New tempo marker BPM"
+            type="number"
+            min="40"
+            max="260"
+            value={newTempoMarkerBpm ?? project.bpm}
+            oninput={(event) => (newTempoMarkerBpm = clampTempoBpm(Number(inputValue(event))))}
+          />
+        </label>
+        <button type="button" aria-label="선택 노트에 템포 마커 추가" onclick={addTempoMarkerAtSelection} disabled={!selectedNote}>
+          <Plus size={15} aria-hidden="true" />
+          <span>마커</span>
+        </button>
+      </div>
+    </div>
     <label class="field-label">
       보컬
       <select value={selectedRendererId} onchange={(event) => onRenderer(inputValue(event) as RendererId)}>

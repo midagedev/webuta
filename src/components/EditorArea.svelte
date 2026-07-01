@@ -28,7 +28,7 @@
     type SongNote,
     type SongProject,
   } from '../types'
-  import { projectDurationTicks, toneName } from '../music'
+  import { normalizedTempoChanges, projectDurationTicks, toneName } from '../music'
   import {
     compactLyricLine,
     formatVoicebankCacheStatus,
@@ -216,6 +216,7 @@
   let historyRows = $derived(renderHistory.slice(0, 3))
   let rendererModeLabel = $derived(selectedRendererId === 'local-neural' ? 'NEURAL' : voicebank ? 'UTAU ZIP' : 'DEMO')
   let renderProgressWidth = $derived(isRendering ? renderProgress.percent : displayDuration > 0 ? Math.min(100, (playbackTime / displayDuration) * 100) : 0)
+  let tempoMarkerLabel = $derived(`${normalizedTempoChanges(project).length} MARK`)
 </script>
 
 <section class="editor-area">
@@ -235,6 +236,7 @@
     <div><span>PAT</span><strong>00</strong></div>
     <div><span>CH</span><strong>01 VOC</strong></div>
     <div><span>BPM</span><strong>{project.bpm}</strong></div>
+    <div><span>TEMPO</span><strong>{tempoMarkerLabel}</strong></div>
     <div><span>ROWS</span><strong>{rows.length}</strong></div>
     <div><span>BANK</span><strong>{rendererModeLabel}</strong></div>
     <div><span>MATCH</span><strong>{voicebank ? formatVoicebankCoverage(voicebankCoverage, 'compact') : 'DEMO'}</strong></div>

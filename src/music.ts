@@ -78,6 +78,17 @@ export function normalizedTempoChanges(project: SongProject): TempoChange[] {
     .sort((a, b) => a.position - b.position)
 }
 
+export function tickPositionLabel(ticks: number, project: Pick<SongProject, 'beatPerBar'>) {
+  const safeBeatPerBar = Number.isFinite(project.beatPerBar) && project.beatPerBar > 0 ? Math.round(project.beatPerBar) : 4
+  const position = Math.max(0, Math.round(ticks))
+  const barTicks = safeBeatPerBar * TICKS_PER_BEAT
+  const bar = Math.floor(position / barTicks)
+  const tickInBar = position - bar * barTicks
+  const beat = Math.floor(tickInBar / TICKS_PER_BEAT)
+  const tickInBeat = tickInBar - beat * TICKS_PER_BEAT
+  return tickInBeat === 0 ? `${bar + 1}:${beat + 1}` : `${bar + 1}:${beat + 1}+${tickInBeat}`
+}
+
 export function projectDurationTicks(project: SongProject) {
   const noteEnd = project.notes.reduce((max, note) => Math.max(max, note.start + note.duration), 0)
   const partEnd = project.parts.reduce((max, part) => Math.max(max, part.start + part.duration), 0)

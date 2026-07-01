@@ -239,6 +239,8 @@ Recommended coverage shape:
 - [x] Add classic UST import/export beside USTX for UTAU community handoff.
 - [x] Preserve UST/USTX tempo maps and apply tempo events to browser renderer
   note timing.
+- [x] Show tempo-map markers in the pattern panel and allow imported/nonzero
+  markers to be edited or removed without losing the global BPM marker.
 - [x] Preserve OpenUtau USTX `phonemeExpressions` for `vel`, `vol`, and
   `mod`, mapped to selected-note velocity, intensity, and modulation controls.
 - [x] Preserve classic UST `PBS`/`PBW`/`PBY` pitch-bend curves and `PBM`
@@ -486,6 +488,9 @@ Current verified V3 evidence:
   so the built-in song and a fresh sketch are not the same action.
 - Native `.webutau.json` project files now round-trip through the browser, while
   classic UST and USTX import/export remain available for UTAU/OpenUtau handoff.
+- Tempo maps are now visible in the pattern panel: the global `1:1` BPM marker
+  is editable through the main BPM path, imported nonzero markers can be edited
+  or removed, and a new marker can be added at the selected note position.
 - USTX import/export now preserves OpenUtau `phonemeExpressions` for `vel`,
   `vol`, and `mod`, so WebUtau velocity, intensity, and modulation edits survive
   the OpenUtau handoff path.
