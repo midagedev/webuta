@@ -110,7 +110,7 @@
   const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
   const completionCount = $derived(rendered ? 3 : hasPendingLyricLine ? 1 : isPlaying ? 1 : 0)
   const starterProgressLabel = $derived(`${completionCount}/3`)
-  const startPanelTitle = $derived(isDraftProject ? '저장된 작업에서 시작' : '기본 샘플로 시작')
+  const startPanelTitle = $derived(isDraftProject ? '지난 작업이 열렸어요' : '기본 샘플 준비 완료')
   const startPanelDetail = $derived(
     rendered
       ? 'WAV가 준비됐어요. 저장하거나 DAW 번들로 받을 수 있어요.'
@@ -119,13 +119,14 @@
         : isStarterActionLocked
           ? '기본 보컬을 불러오는 중이에요.'
           : isDraftProject
-            ? '이어서 듣거나, 기본 샘플로 바로 돌아갈 수 있어요.'
-            : '샘플을 먼저 듣고 가사만 바꿔보세요.',
+            ? '처음이면 기본 샘플, 이어 하려면 샘플 듣기.'
+            : '샘플 듣기, 가사 바꾸기, WAV 저장 순서로 가면 돼요.',
   )
   const startPrimaryLabel = $derived(rendered && !isPlaying ? 'WAV 받기' : isPlaying ? '멈추기' : isStarterActionLocked ? '보컬 대기' : '샘플 듣기')
-  const startSecondaryLabel = $derived(isDraftProject ? '기본 샘플' : '새 프로젝트')
-  const startSecondaryMeta = $derived(isDraftProject ? '도히도히' : 'blank')
+  const startSecondaryLabel = $derived(isDraftProject ? '기본 샘플' : '빈 프로젝트')
+  const startSecondaryMeta = $derived(isDraftProject ? '도히도히' : '새 노래')
   const startSecondaryAria = $derived(isDraftProject ? '기본 샘플로 시작' : '새 프로젝트 만들기')
+  const recommendedStepLabel = $derived(rendered && !isPlaying ? '03 WAV 저장' : hasPendingLyricLine ? '02 가사 적용' : '01 샘플 듣기')
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
@@ -146,7 +147,7 @@
   }
 </script>
 
-<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7" aria-label="First run guide">
+<section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>처음 시작</span>
@@ -166,8 +167,17 @@
       <span>처음이면 여기부터</span>
       <strong>{startPanelTitle}</strong>
       <em>{startPanelDetail}</em>
+      <div class="starter-start-steps" aria-label="첫 사용 순서">
+        <span class={listenProgressClass}>1 듣기</span>
+        <span class={lyricProgressClass}>2 가사</span>
+        <span class={exportProgressClass}>3 저장</span>
+      </div>
     </div>
     <div class="starter-start-actions">
+      <div class="starter-action-note" aria-label="Recommended starter action">
+        <span>추천</span>
+        <strong>{recommendedStepLabel}</strong>
+      </div>
       <button
         type="button"
         class={`starter-start-primary ${rendered && !isPlaying ? 'ready' : ''} ${isPlaying ? 'active' : ''}`}
@@ -224,7 +234,7 @@
 
   <div class="starter-compass" aria-label="First run one-minute path">
     <div class="starter-compass-copy">
-      <span>1분 완성 루트</span>
+      <span>첫 완성 루트</span>
       <strong>샘플 듣기 -&gt; 가사 바꾸기 -&gt; WAV 저장</strong>
       <div class="starter-hook-guide" aria-label="Starter hook chord guide">
         <Music2 size={14} aria-hidden="true" />
@@ -301,14 +311,14 @@
       </div>
     </div>
 
-    <div class="starter-quick-actions starter-next-steps-card" aria-label="Starter project utilities">
-      <div class="starter-quick-actions-head">
+    <details class="starter-quick-actions starter-next-steps-card" aria-label="Starter project utilities">
+      <summary class="starter-quick-actions-head">
         <ListChecks size={16} aria-hidden="true" />
         <div>
-          <span>{projectStateTitle}</span>
-          <strong>{projectStateDetail}</strong>
+          <span>추가 작업</span>
+          <strong>멜로디 · DAW · 프로젝트</strong>
         </div>
-      </div>
+      </summary>
       <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
         <span>{projectStateTitle}</span>
         <strong>{lyricPreview}</strong>
@@ -342,7 +352,7 @@
           <strong>{lyricPreview}</strong>
         </button>
       </div>
-    </div>
+    </details>
   </div>
 
   <details class="starter-advanced-tools starter-review-tools" aria-label="Starter handoff checklist">

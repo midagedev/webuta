@@ -386,10 +386,11 @@ Current verified V3 evidence:
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
   visible, the first-run `처음 시작` / `듣기 · 가사 · WAV` header,
-  `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, collapsed
-  `현재 프로젝트` context drawer, `01 샘플 듣기` / `02 가사 적용` /
+  `처음이면 여기부터` beginner start panel, `초보자 첫 버튼`, `첫 사용 순서`,
+  collapsed `현재 프로젝트` context drawer, `첫 완성 루트`,
+  `01 샘플 듣기` / `02 가사 적용` /
   `03 WAV 받기` route, inline starter lyric input with `한글 그대로 입력`,
-  current lyric card, desktop utilities for `멜로디 추천`, `DAW 번들`,
+  current lyric card, collapsed `추가 작업` utilities for `멜로디 추천`, `DAW 번들`,
   `새 프로젝트`, and `기본 샘플`, the collapsed `고급 도구` review area, and
   Korean mode navigation are visible, the community
   release readiness card is visible, desktop/mobile overflow checks pass, the

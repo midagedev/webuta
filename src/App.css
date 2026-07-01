@@ -7599,6 +7599,165 @@ button:disabled:active {
   opacity: 0.92;
 }
 
+.starter-guide.onboarding-v8 {
+  gap: 8px;
+}
+
+.starter-guide.onboarding-v8 .starter-start-panel {
+  grid-template-columns: minmax(0, 0.96fr) minmax(410px, 0.74fr);
+  padding: 13px;
+}
+
+.starter-guide.onboarding-v8 .starter-start-copy {
+  gap: 8px;
+}
+
+.starter-start-steps {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.starter-start-steps span {
+  min-width: 0;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border: 1px solid rgba(88, 244, 255, 0.28);
+  border-radius: 4px;
+  color: var(--tracker-muted, #9fb3ca);
+  background: rgba(12, 14, 26, 0.76);
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starter-start-steps span.current {
+  color: #110817;
+  border-color: rgba(255, 231, 106, 0.7);
+  background: linear-gradient(135deg, var(--tracker-amber, #ffe76a), var(--tracker-pink, #ff4bca));
+}
+
+.starter-start-steps span.done {
+  color: var(--tracker-green, #9dff6a);
+  border-color: rgba(157, 255, 106, 0.48);
+  background: rgba(157, 255, 106, 0.12);
+}
+
+.starter-guide.onboarding-v8 .starter-start-actions {
+  grid-template-columns: minmax(0, 1fr) minmax(104px, 0.58fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.starter-action-note {
+  grid-column: 1 / -1;
+  min-width: 0;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid rgba(88, 244, 255, 0.34);
+  border-radius: 4px;
+  color: var(--tracker-cyan, #58f4ff);
+  background: rgba(88, 244, 255, 0.08);
+  text-align: center;
+}
+
+.starter-action-note span,
+.starter-action-note strong {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-action-note span {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 8px;
+  font-weight: 950;
+}
+
+.starter-action-note strong {
+  color: var(--tracker-cyan, #58f4ff);
+  font-size: 9px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-guide.onboarding-v8 .starter-compass {
+  grid-template-columns: minmax(0, 1fr) minmax(180px, auto);
+  padding: 8px 10px;
+}
+
+.starter-guide.onboarding-v8 .starter-compass-copy {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "label title"
+    "hook detail";
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.starter-guide.onboarding-v8 .starter-compass-copy > span {
+  grid-area: label;
+}
+
+.starter-guide.onboarding-v8 .starter-compass-copy > strong {
+  grid-area: title;
+}
+
+.starter-guide.onboarding-v8 .starter-hook-guide {
+  grid-area: hook;
+}
+
+.starter-guide.onboarding-v8 .starter-compass-copy > em {
+  grid-area: detail;
+}
+
+.starter-guide.onboarding-v8 .starter-next-steps-card {
+  grid-template-rows: auto;
+}
+
+.starter-guide.onboarding-v8 .starter-next-steps-card[open] {
+  grid-template-rows: auto auto auto;
+}
+
+.starter-guide.onboarding-v8 .starter-quick-actions-head {
+  min-height: 42px;
+  padding: 0 2px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.starter-guide.onboarding-v8 .starter-quick-actions-head::-webkit-details-marker {
+  display: none;
+}
+
+.starter-guide.onboarding-v8 .starter-next-steps-card[open] .starter-quick-actions-head {
+  padding-bottom: 2px;
+}
+
+.starter-guide.onboarding-v8 .starter-next-steps-card:not([open]) {
+  align-self: start;
+  align-content: center;
+}
+
+.starter-guide.onboarding-v8 .starter-onboarding-grid {
+  grid-template-columns: minmax(320px, 1.15fr) minmax(240px, 0.72fr);
+  align-items: start;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -8930,6 +9089,65 @@ button:disabled:active {
 
   .starter-guide.onboarding-v6 .starter-onboarding-grid {
     gap: 5px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-start-panel {
+    grid-template-columns: 1fr;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-start-copy {
+    gap: 5px;
+  }
+
+  .starter-start-steps {
+    gap: 4px;
+  }
+
+  .starter-start-steps span {
+    min-height: 24px;
+    padding: 0 4px;
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-start-actions {
+    grid-template-columns: minmax(0, 1.25fr) minmax(82px, 0.75fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .starter-action-note {
+    min-height: 24px;
+    gap: 2px;
+    padding: 0 5px;
+  }
+
+  .starter-action-note span {
+    font-size: 7px;
+  }
+
+  .starter-action-note strong {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-compass {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-compass-copy {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "label"
+      "title"
+      "hook"
+      "detail";
+    gap: 3px;
+  }
+
+  .starter-guide.onboarding-v8 .starter-quick-actions-head {
+    min-height: 38px;
   }
 }
 
