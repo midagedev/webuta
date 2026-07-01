@@ -47,6 +47,7 @@ describe('default demo project', () => {
     expect(new Set(demoSamples.map((sample) => sample.listeningCue)).size).toBe(10)
     expect(new Set(demoSamples.map((sample) => sample.vocalFocus)).size).toBeGreaterThanOrEqual(9)
     expect(new Set(demoSamples.map((sample) => sample.project.bpm)).size).toBeGreaterThanOrEqual(6)
+    expect(new Set(demoSamples.map((sample) => tempoBand(sample.project.bpm))).size).toBe(4)
     expect(new Set(demoSamples.map((sample) => sample.project.source?.fileName)).size).toBe(10)
     expect(demoSamples.every((sample) => sample.project.notes.length >= 9)).toBe(true)
     expect(demoSamples.every((sample) => sample.bestFor.length >= 6)).toBe(true)
@@ -58,3 +59,16 @@ describe('default demo project', () => {
     expect(demoSamples.some((sample) => sample.lyricLine.includes('중 력 날'))).toBe(true)
   })
 })
+
+function tempoBand(bpm: number) {
+  if (bpm < 100) {
+    return 'slow'
+  }
+  if (bpm < 124) {
+    return 'mid'
+  }
+  if (bpm < 146) {
+    return 'up'
+  }
+  return 'fast'
+}

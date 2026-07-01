@@ -18,6 +18,7 @@ export const STARTER_SAMPLES = [
     id: 'neon-lift',
     title: 'Neon Lift',
     mood: 'Cyber Pop',
+    bpm: 128,
     projectName: 'First Vocal Sketch',
     lyricLine: '네 오 빛 이 메 로 디 로 데 려 가',
     chordLine: 'Am -> F -> C -> G',
@@ -27,6 +28,7 @@ export const STARTER_SAMPLES = [
     id: 'blue-hour',
     title: 'Blue Hour',
     mood: 'Dream Pop',
+    bpm: 94,
     projectName: 'Blue Hour Vocal',
     lyricLine: '밤 이 와 너 와 나 노 래 해',
     chordLine: 'F -> C -> G -> Am',
@@ -36,6 +38,7 @@ export const STARTER_SAMPLES = [
     id: 'retro-run',
     title: 'Retro Run',
     mood: 'Retro Game',
+    bpm: 150,
     projectName: 'Retro Run Vocal',
     lyricLine: '레 트 로 비 트 로 뛰 어 가',
     chordLine: 'Dm -> Bb -> F -> C',
@@ -45,6 +48,7 @@ export const STARTER_SAMPLES = [
     id: 'moon-signal',
     title: 'Moon Signal',
     mood: 'Dark Synth',
+    bpm: 112,
     projectName: 'Moon Signal Vocal',
     lyricLine: '달 빛 속 에 숨 은 말 을 켜',
     chordLine: 'Em -> C -> G -> D',
@@ -54,6 +58,7 @@ export const STARTER_SAMPLES = [
     id: 'pink-noise',
     title: 'Pink Noise',
     mood: 'Hyperpop',
+    bpm: 164,
     projectName: 'Pink Noise Vocal',
     lyricLine: '핑 크 노 이 즈 가 심 장 을 깨 워',
     chordLine: 'Bm -> G -> D -> A',
@@ -63,6 +68,7 @@ export const STARTER_SAMPLES = [
     id: 'rain-verse',
     title: 'Rain Verse',
     mood: 'Emo Ballad',
+    bpm: 82,
     projectName: 'Rain Verse Vocal',
     lyricLine: '비 가 내 린 밤 너 를 부 르 네',
     chordLine: 'C -> G -> Am -> F',
@@ -72,6 +78,7 @@ export const STARTER_SAMPLES = [
     id: 'city-glide',
     title: 'City Glide',
     mood: 'City Pop',
+    bpm: 106,
     projectName: 'City Glide Vocal',
     lyricLine: '도 시 불 빛 위 로 우 린 날 아',
     chordLine: 'F -> E -> Am -> C',
@@ -81,6 +88,7 @@ export const STARTER_SAMPLES = [
     id: 'glass-pulse',
     title: 'Glass Pulse',
     mood: 'K-Pop Dance',
+    bpm: 132,
     projectName: 'Glass Pulse Vocal',
     lyricLine: '유 리 빛 무 대 위 로 날 아 가',
     chordLine: 'Gm -> Eb -> Bb -> F',
@@ -90,6 +98,7 @@ export const STARTER_SAMPLES = [
     id: 'lofi-diary',
     title: 'Lofi Diary',
     mood: 'Bedroom Pop',
+    bpm: 88,
     projectName: 'Lofi Diary Vocal',
     lyricLine: '새 벽 창 에 작 은 꿈 을 써',
     chordLine: 'D -> A -> Bm -> G',
@@ -99,6 +108,7 @@ export const STARTER_SAMPLES = [
     id: 'zero-gravity',
     title: 'Zero Gravity',
     mood: 'Future Rock',
+    bpm: 140,
     projectName: 'Zero Gravity Vocal',
     lyricLine: '중 력 날 아 하 늘 빛 까 지',
     chordLine: 'Am -> G -> F -> E',
@@ -244,11 +254,14 @@ export function summarizeStarterSampleRenders(input = {}) {
       moodCount: new Set(renderedSamples.map((sample) => sample.mood)).size,
       lyricLineCount: new Set(renderedSamples.map((sample) => sample.lyricLine)).size,
       chordLineCount: new Set(renderedSamples.map((sample) => sample.chordLine)).size,
+      tempoBandCount: new Set(renderedSamples.map((sample) => starterTempoBand(sample.bpm))).size,
+      codaSampleCount: renderedSamples.filter((sample) => lyricLineHasHangulCoda(sample.lyricLine)).length,
     },
     samples: renderedSamples.map((sample) => ({
       id: sample.id,
       title: sample.title,
       mood: sample.mood,
+      bpm: sample.bpm ?? null,
       projectName: sample.projectName,
       lyricLine: sample.lyricLine,
       chordLine: sample.chordLine,
@@ -279,6 +292,30 @@ function problemsForRenderedSample(sample, thresholds) {
     ...(wav.rms >= thresholds.minRms ? [] : [`WAV rms ${Number(wav.rms ?? 0).toFixed(5)} below ${thresholds.minRms}`]),
     ...problemsForDawBundle(sample),
   ]
+}
+
+function starterTempoBand(bpm) {
+  if (bpm < 100) {
+    return 'slow'
+  }
+  if (bpm < 124) {
+    return 'mid'
+  }
+  if (bpm < 146) {
+    return 'up'
+  }
+  return 'fast'
+}
+
+function lyricLineHasHangulCoda(line = '') {
+  return String(line)
+    .split(/\s+/u)
+    .some((token) => [...token].some((char) => hasHangulCoda(char)))
+}
+
+function hasHangulCoda(char) {
+  const code = char.codePointAt(0) ?? 0
+  return code >= 0xac00 && code <= 0xd7a3 && (code - 0xac00) % 28 !== 0
 }
 
 function problemsForDawBundle(sample) {

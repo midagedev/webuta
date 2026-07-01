@@ -106,6 +106,7 @@
   )
   const koreanWavStepLabel = $derived(rendered ? 'WAV 준비됨' : '렌더하면 WAV')
   const activeSample = $derived(demoSamples.find((sample) => sample.id === activeSampleId) ?? demoSamples[0])
+  const samplePortfolio = $derived(summarizeStarterSamplePortfolio(demoSamples))
   const completionCount = $derived(rendered ? 3 : hasPendingLyricLine ? 1 : isPlaying ? 1 : 0)
   const starterProgressLabel = $derived(`${completionCount}/3`)
   const startPanelTitle = $derived(isDraftProject ? '지난 작업이 열렸어요' : '기본 샘플 준비 완료')
@@ -191,6 +192,44 @@
       codaCount: notes.filter((note) => hasHangulCoda(note.lyric)).length,
       finalBeats: ((finalNote?.duration ?? 0) / TICKS_PER_BEAT).toFixed(1),
     }
+  }
+
+  function summarizeStarterSamplePortfolio(samples: DemoSample[]) {
+    const stats = samples.map(starterSampleStats)
+    const tones = samples.flatMap((sample) => sample.project.notes.map((note) => note.tone))
+    const tempoBands = orderedTempoBands(samples.map((sample) => starterTempoBand(sample.project.bpm)))
+    const minTone = tones.length ? Math.min(...tones) : 60
+    const maxTone = tones.length ? Math.max(...tones) : 72
+    return {
+      sampleCount: samples.length,
+      moodCount: new Set(samples.map((sample) => sample.mood)).size,
+      chordLineCount: new Set(samples.map((sample) => sample.chordLine)).size,
+      vocalFocusCount: new Set(samples.map((sample) => sample.vocalFocus)).size,
+      codaSampleCount: stats.filter((stat) => stat.codaCount > 0).length,
+      tempoBandCount: tempoBands.length,
+      tempoLine: tempoBands.join(' · '),
+      moodLine: `${samples.slice(0, 3).map((sample) => sample.mood).join(' · ')}+`,
+      rangeLabel: `${toneName(minTone)}-${toneName(maxTone)}`,
+    }
+  }
+
+  function starterTempoBand(bpm: number) {
+    if (bpm < 100) {
+      return '느림'
+    }
+    if (bpm < 124) {
+      return '미드'
+    }
+    if (bpm < 146) {
+      return '업'
+    }
+    return '하이퍼'
+  }
+
+  function orderedTempoBands(bands: string[]) {
+    const order = ['느림', '미드', '업', '하이퍼']
+    const present = new Set(bands)
+    return order.filter((band) => present.has(band))
   }
 
   function hasHangulCoda(lyric: string) {
@@ -332,6 +371,33 @@
       <span>샘플 고르기</span>
       <strong>보컬로이드풍 훅 {demoSamples.length}개</strong>
       <em>장르, 템포, 가사 발음이 다른 샘플을 먼저 고르고 바로 들어보세요.</em>
+    </div>
+    <div class="starter-sample-portfolio" aria-label="Starter sample diversity summary">
+      <div>
+        <span>샘플</span>
+        <strong>{samplePortfolio.sampleCount}곡</strong>
+        <em>바로 선택</em>
+      </div>
+      <div>
+        <span>무드</span>
+        <strong>{samplePortfolio.moodCount}장르</strong>
+        <em>{samplePortfolio.moodLine}</em>
+      </div>
+      <div>
+        <span>템포</span>
+        <strong>{samplePortfolio.tempoBandCount}밴드</strong>
+        <em>{samplePortfolio.tempoLine}</em>
+      </div>
+      <div>
+        <span>발음</span>
+        <strong>받침 {samplePortfolio.codaSampleCount}곡</strong>
+        <em>{samplePortfolio.vocalFocusCount} 포커스</em>
+      </div>
+      <div>
+        <span>음역</span>
+        <strong>{samplePortfolio.rangeLabel}</strong>
+        <em>코드 {samplePortfolio.chordLineCount}개</em>
+      </div>
     </div>
     {#if activeSample}
       <div class="starter-sample-spotlight" aria-label="Starter sample selection guide">

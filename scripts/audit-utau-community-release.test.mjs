@@ -308,6 +308,7 @@ describe('UTAU community release audit', () => {
           'first-run lyric helper visible',
           'first-run starter sample gallery visible',
           'first-run starter sample choices visible',
+          'first-run starter sample diversity summary visible',
           'first-run starter sample metrics visible',
           'first-run starter sample selection guide visible',
           'first-run Korean UTAU path visible',
@@ -331,6 +332,7 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run lyric helper visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run starter sample gallery visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run starter sample selection guide visible')
+    expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run starter sample diversity summary visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run Korean UTAU path visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run reviewer runway visible')
@@ -347,6 +349,8 @@ describe('UTAU community release audit', () => {
       moodCount: 6,
       lyricLineCount: 6,
       chordLineCount: 6,
+      tempoBandCount: 2,
+      codaSampleCount: 2,
     }
     starterSamplesAudit.samples = starterSamplesAudit.samples.slice(0, 6)
     const fixture = await makeFixture({ starterSamplesAudit })
@@ -359,6 +363,8 @@ describe('UTAU community release audit', () => {
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery render audit must pass')
     expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least ten samples')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must cover slow, mid, and fast tempo bands')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must include at least four Hangul coda samples')
     expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
@@ -920,6 +926,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'first-run top lyric editor visible',
       'first-run starter sample gallery visible',
       'first-run starter sample choices visible',
+      'first-run starter sample diversity summary visible',
       'first-run starter sample metrics visible',
       'first-run starter sample selection guide visible',
       'first-run Korean UTAU path visible',
@@ -1062,6 +1069,8 @@ function makeStarterSamplesReport() {
       moodCount: 10,
       lyricLineCount: 10,
       chordLineCount: 10,
+      tempoBandCount: 4,
+      codaSampleCount: 9,
     },
     samples,
     problems: [],

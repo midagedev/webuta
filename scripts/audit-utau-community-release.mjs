@@ -70,6 +70,7 @@ const DEMO_REQUIRED_CHECKS = [
   'first-run top lyric editor visible',
   'first-run starter sample gallery visible',
   'first-run starter sample choices visible',
+  'first-run starter sample diversity summary visible',
   'first-run starter sample metrics visible',
   'first-run starter sample selection guide visible',
   'first-run Korean UTAU path visible',
@@ -335,6 +336,12 @@ function starterSamplesGate(path) {
     }
     if ((report.diversity?.chordLineCount ?? 0) < 10) {
       problems.push('starter sample gallery must cover ten distinct chord lines')
+    }
+    if ((report.diversity?.tempoBandCount ?? 0) < 3) {
+      problems.push('starter sample gallery must cover slow, mid, and fast tempo bands')
+    }
+    if ((report.diversity?.codaSampleCount ?? 0) < 4) {
+      problems.push('starter sample gallery must include at least four Hangul coda samples')
     }
     for (const sample of report.samples ?? []) {
       if (sample.passed !== true) {

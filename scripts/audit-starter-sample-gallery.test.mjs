@@ -20,6 +20,8 @@ describe('starter sample gallery render audit', () => {
       moodCount: 10,
       lyricLineCount: 10,
       chordLineCount: 10,
+      tempoBandCount: 4,
+      codaSampleCount: 9,
     })
     expect(report.samples.every((sample) => sample.passed)).toBe(true)
     expect(report.samples.every((sample) => sample.dawBundle?.passed)).toBe(true)

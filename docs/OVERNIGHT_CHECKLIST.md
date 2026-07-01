@@ -138,7 +138,9 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
   phrase-start/previous-vowel VCV context as full-song UTAU rendering.
 - [x] Browser audit renders all ten first-run starter samples through the
   bundled V3 voicebank and checks DAW-ready non-silent WAV output plus matching
-  DAW handoff ZIP contents for each.
+  DAW handoff ZIP contents for each, with the gallery report recording ten
+  moods, ten lyric lines, ten chord progressions, four tempo bands, and Hangul
+  coda coverage.
 - [x] `npm run voicebank:songwriting-v3` checks the ten starter samples
   directly from source for slow/mid/fast BPM coverage, at least five melody
   contours, Hangul coda lyrics, sustained cadence notes, chord-guide coverage,

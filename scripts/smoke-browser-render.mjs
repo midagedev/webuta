@@ -408,6 +408,13 @@ async function assertDefaultV3DemoReady(page) {
   await starterSampleGallery.getByRole('button', { name: 'Glass Pulse 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'Lofi Diary 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'Zero Gravity 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterSampleDiversity = starterSampleGallery.getByLabel('Starter sample diversity summary')
+  await starterSampleDiversity.getByText('10곡').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleDiversity.getByText('10장르').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleDiversity.getByText('4밴드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleDiversity.getByText('느림 · 미드 · 업 · 하이퍼').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleDiversity.getByText('받침 9곡').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterSampleDiversity.getByText('C4-B5').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterSelectionGuide = starterSampleGallery.getByLabel('Starter sample selection guide')
   await starterSelectionGuide.getByText('선택 중').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSelectionGuide.getByText('처음 듣는 기본 후렴').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -606,6 +613,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run top lyric editor visible',
     'first-run starter sample gallery visible',
     'first-run starter sample choices visible',
+    'first-run starter sample diversity summary visible',
     'first-run starter sample metrics visible',
     'first-run starter sample selection guide visible',
     'first-run Korean UTAU path visible',
