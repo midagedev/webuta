@@ -405,6 +405,16 @@ async function assertDefaultV3DemoReady(page) {
   await starterSampleGallery.getByRole('button', { name: 'Pink Noise 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'Rain Verse 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterSampleGallery.getByRole('button', { name: 'City Glide 샘플 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const neonMetrics = starterSampleGallery.getByLabel('Neon Lift sample metrics')
+  await neonMetrics.getByText('128 BPM').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await neonMetrics.getByText('A4-E5').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await neonMetrics.getByText('11 notes').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await neonMetrics.getByText('받침 1').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await neonMetrics.getByText('끝 2.0박').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const rainMetrics = starterSampleGallery.getByLabel('Rain Verse sample metrics')
+  await rainMetrics.getByText('82 BPM').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await rainMetrics.getByText('C4-A4').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await rainMetrics.getByText('받침 3').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const koreanModePath = page.getByLabel('Starter Korean mode path')
   await koreanModePath.getByText('한국어 UTAU 모드').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await koreanModePath.getByText('한글을 쓰면 발음 alias로 바로 연결').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -564,6 +574,7 @@ async function assertDefaultV3DemoReady(page) {
     'first-run top lyric editor visible',
     'first-run starter sample gallery visible',
     'first-run starter sample choices visible',
+    'first-run starter sample metrics visible',
     'first-run Korean UTAU path visible',
     'first-run starter launch panel visible',
     'first-run inline lyric input visible',

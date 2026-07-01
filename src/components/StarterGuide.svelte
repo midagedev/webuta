@@ -14,8 +14,10 @@
     Wand2,
   } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
+  import { TICKS_PER_BEAT } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import type { DemoSample, DemoSampleId } from '../demoProject'
+  import { toneName } from '../music'
   import { formatProjectSourceLabel, formatVoicebankCoverage, inputValue } from '../app/ui'
 
   type Props = {
@@ -165,6 +167,33 @@
     input?.focus()
     input?.select()
   }
+
+  function starterSampleStats(sample: DemoSample) {
+    const notes = sample.project.notes
+    const tones = notes.map((note) => note.tone)
+    const minTone = Math.min(...tones)
+    const maxTone = Math.max(...tones)
+    const finalNote = [...notes].sort((left, right) => left.start + left.duration - (right.start + right.duration)).at(-1)
+    return {
+      bpm: sample.project.bpm,
+      noteCount: notes.length,
+      rangeLabel: `${toneName(minTone)}-${toneName(maxTone)}`,
+      rangeSemitones: maxTone - minTone,
+      codaCount: notes.filter((note) => hasHangulCoda(note.lyric)).length,
+      finalBeats: ((finalNote?.duration ?? 0) / TICKS_PER_BEAT).toFixed(1),
+    }
+  }
+
+  function hasHangulCoda(lyric: string) {
+    const syllable = [...lyric].find((char) => {
+      const code = char.codePointAt(0) ?? 0
+      return code >= 0xac00 && code <= 0xd7a3
+    })
+    if (!syllable) {
+      return false
+    }
+    return ((syllable.codePointAt(0) ?? 0) - 0xac00) % 28 !== 0
+  }
 </script>
 
 <section class="starter-guide onboarding-v5 onboarding-v6 onboarding-v7 onboarding-v8 onboarding-v9 onboarding-v10" aria-label="First run guide">
@@ -297,6 +326,7 @@
     </div>
     <div class="starter-sample-grid">
       {#each demoSamples as sample}
+        {@const stats = starterSampleStats(sample)}
         <button
           type="button"
           class:active={sample.id === activeSampleId}
@@ -307,6 +337,13 @@
           <span>{sample.mood}</span>
           <strong>{sample.title}</strong>
           <em>{sample.lyricLine}</em>
+          <span class="starter-sample-metrics" aria-label={`${sample.title} sample metrics`}>
+            <b>{stats.bpm} BPM</b>
+            <b>{stats.rangeLabel}</b>
+            <b>{stats.noteCount} notes</b>
+            <b>받침 {stats.codaCount}</b>
+            <b>끝 {stats.finalBeats}박</b>
+          </span>
           <small>{sample.chordLine} · {sample.detail}</small>
         </button>
       {/each}
