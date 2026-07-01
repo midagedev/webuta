@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-01T08:48:02.735Z",
+  "generatedAt": "2026-07-01T09:00:10.127Z",
   "ok": true,
   "decision": "release-review-packet-ready",
   "pagesUrl": "https://midagedev.github.io/webuta/",
   "reviewHubUrl": "https://midagedev.github.io/webuta/review/",
+  "evidencePreflightUrl": "https://midagedev.github.io/webuta/review/#evidence-preflight",
   "listeningReviewUrl": "https://midagedev.github.io/webuta/review/v3/",
   "wavDawHandoffUrl": "https://midagedev.github.io/webuta/review/wav-daw/",
   "packetUrl": "https://midagedev.github.io/webuta/review/release-packet.json",
@@ -145,6 +146,7 @@
     "Complete the V3 listening scorecard from real playback.",
     "Complete the physical-device WAV/DAW handoff report.",
     "Keep both downloaded JSON files in Downloads.",
+    "Use Evidence Preflight in the review hub to check both JSON files locally with no upload.",
     "Run npm run release:evidence-status.",
     "Run npm run release:accept-evidence.",
     "Run npm run release:audit-utau."

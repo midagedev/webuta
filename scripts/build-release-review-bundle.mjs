@@ -128,6 +128,8 @@ function renderReadme(packet) {
     '- `listening-scores.local.json`: generated only after real phrase-by-phrase listening.',
     '- `handoff-report.local.json`: generated only after a real physical-device WAV/DAW import pass.',
     '',
+    `Use Evidence Preflight in the public review hub (${packet?.evidencePreflightUrl ?? 'https://midagedev.github.io/webuta/review/#evidence-preflight'}) to check both downloaded JSON files locally with no upload.`,
+    '',
     'Keep both downloaded JSON files in Downloads, then run:',
     '',
     '```sh',

@@ -47,6 +47,8 @@ describe('release review bundle', () => {
     }
     const readme = await zip.file('webuta-release-review/README.md').async('string')
     expect(readme).toContain('npm run release:evidence-status')
+    expect(readme).toContain('Evidence Preflight')
+    expect(readme).toContain('no upload')
     expect(readme).toContain('It does not ask anyone to record a voice')
   })
 

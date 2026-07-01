@@ -19,6 +19,7 @@ export const LISTENING_FILE_NAME = 'listening-scores.local.json'
 export const HANDOFF_FILE_NAME = 'handoff-report.local.json'
 export const PUBLIC_REVIEW_URLS = {
   hub: 'https://midagedev.github.io/webuta/review/',
+  preflight: 'https://midagedev.github.io/webuta/review/#evidence-preflight',
   listening: 'https://midagedev.github.io/webuta/review/v3/',
   wavDawHandoff: 'https://midagedev.github.io/webuta/review/wav-daw/',
 }
@@ -218,12 +219,14 @@ function evidenceStatusNextActions({ ok }) {
   if (ok) {
     return [
       'Both release evidence JSON files are found and valid. Run npm run release:accept-evidence to install them atomically and rerun the final release audit.',
+      `Optional browser confirmation: open Evidence Preflight at ${PUBLIC_REVIEW_URLS.preflight}; it checks the same two JSON files locally with no upload.`,
     ]
   }
   return [
     `Open the release review hub at ${PUBLIC_REVIEW_URLS.hub}.`,
     `Download ${LISTENING_FILE_NAME} from ${PUBLIC_REVIEW_URLS.listening}.`,
     `Download ${HANDOFF_FILE_NAME} from ${PUBLIC_REVIEW_URLS.wavDawHandoff} after a real physical-device WAV/DAW import pass.`,
+    `Use Evidence Preflight at ${PUBLIC_REVIEW_URLS.preflight} to check both downloaded JSON files locally with no upload.`,
     'Keep both files in Downloads, then run npm run release:evidence-status before npm run release:accept-evidence.',
   ]
 }
@@ -231,7 +234,7 @@ function evidenceStatusNextActions({ ok }) {
 function nextActions({ ok, skipAudit, audit }) {
   if (!ok) {
     return [
-      `Download fresh ${LISTENING_FILE_NAME} and ${HANDOFF_FILE_NAME} from the public review pages, then rerun npm run release:accept-evidence.`,
+      `Download fresh ${LISTENING_FILE_NAME} and ${HANDOFF_FILE_NAME} from the public review pages, check them in Evidence Preflight at ${PUBLIC_REVIEW_URLS.preflight} with no upload, then rerun npm run release:accept-evidence.`,
     ]
   }
   if (skipAudit) {

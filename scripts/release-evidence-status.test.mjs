@@ -40,6 +40,8 @@ describe('release evidence status', () => {
     expect(existsSync(fixture.acceptedScores)).toBe(false)
     expect(existsSync(fixture.acceptedHandoff)).toBe(false)
     expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
+    expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
+    expect(report.nextActions.join('\n')).toContain('no upload')
   })
 
   it('shows focused next actions when one evidence file is missing', () => {
@@ -60,6 +62,8 @@ describe('release evidence status', () => {
     })
     expect(report.problems.join('\n')).toContain('missing handoff-report.local.json')
     expect(report.nextActions.join('\n')).toContain('https://midagedev.github.io/webuta/review/wav-daw/')
+    expect(report.nextActions.join('\n')).toContain('https://midagedev.github.io/webuta/review/#evidence-preflight')
+    expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
     expect(report.nextActions.join('\n')).toContain('npm run release:evidence-status')
   })
 

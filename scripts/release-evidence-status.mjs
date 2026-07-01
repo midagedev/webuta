@@ -44,6 +44,7 @@ function parseArgs(argv) {
           '',
           'Review pages:',
           `  Hub:       ${PUBLIC_REVIEW_URLS.hub}`,
+          `  Preflight: ${PUBLIC_REVIEW_URLS.preflight}`,
           `  Listening: ${PUBLIC_REVIEW_URLS.listening}`,
           `  DAW:       ${PUBLIC_REVIEW_URLS.wavDawHandoff}`,
           `  App:       ${DEFAULT_PAGES_URL}`,

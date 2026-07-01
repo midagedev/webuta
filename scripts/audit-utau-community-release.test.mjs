@@ -43,6 +43,8 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('github-pages-v3: missing GitHub Pages deployment evidence')
     expect(report.nextActions.join('\n')).toContain('listening-scores.local.json')
     expect(report.nextActions.join('\n')).toContain('Downloads')
+    expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
+    expect(report.nextActions.join('\n')).toContain('no upload')
     expect(report.nextActions.join('\n')).toContain('npm run release:evidence-status')
     expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
     expect(report.nextActions.join('\n')).toContain('Use explicit --scores/--handoff paths only when the files are somewhere else.')
@@ -62,6 +64,8 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('wav-daw-handoff: missing physical WAV DAW handoff report')
     expect(report.nextActions.join('\n')).toContain('docs/WAV_DAW_QA.md')
     expect(report.nextActions.join('\n')).toContain('Downloads')
+    expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
+    expect(report.nextActions.join('\n')).toContain('no upload')
     expect(report.nextActions.join('\n')).toContain('npm run release:evidence-status')
     expect(report.nextActions.join('\n')).toContain('npm run release:accept-evidence')
     expect(report.nextActions.join('\n')).not.toContain('npm run release:accept-evidence -- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json')
@@ -489,7 +493,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><section aria-label="10-minute listening review path"><p>manual evidence only after real listening</p><p>Listen phrase by phrase</p><p>Compare V3 against V2</p><p>4/5 or higher</p></section><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Downloads</p><code>npm run release:evidence-status</code><code>npm run release:accept-evidence</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><section aria-label="10-minute listening review path"><p>manual evidence only after real listening</p><p>Listen phrase by phrase</p><p>Compare V3 against V2</p><p>4/5 or higher</p></section><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Evidence Preflight</p><p>no upload</p><p>Downloads</p><code>npm run release:evidence-status</code><code>npm run release:accept-evidence</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
@@ -629,7 +633,7 @@ async function writeReleaseBundleZip(root) {
   const entries = [
     [
       'webuta-release-review/README.md',
-      'It does not ask anyone to record a voice.\nnpm run release:evidence-status\nnpm run release:accept-evidence\n',
+      'It does not ask anyone to record a voice.\nEvidence Preflight\nno upload\nnpm run release:evidence-status\nnpm run release:accept-evidence\n',
     ],
     ['webuta-release-review/release-packet.json', JSON.stringify(makeReleasePacket())],
     ['webuta-release-review/review/index.html', makeReviewHubPage()],
@@ -1001,11 +1005,11 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `STEP 01`, `샘플 먼저 듣기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
+    'Confirm the first-run guide shows `처음 시작`, `듣기 · 가사 · WAV`, `1분 완성 루트`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `STEP 01`, `샘플 먼저 듣기`, `한글 그대로 입력`, `스타터 가사 라인`, `현재 가사`, `샘플 듣기`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, `기본 샘플`, and `고급 도구`.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',
     'Open `review/wav-daw/index.html` to generate `handoff-report.local.json`.',
-    'Fill `docs/wav-daw-handoff.local.template.json`, keep both JSON files in Downloads, run `npm run release:evidence-status`, and run `npm run release:accept-evidence`.',
+    'Fill `docs/wav-daw-handoff.local.template.json`, keep both JSON files in Downloads, check both in `Evidence Preflight` with no upload, run `npm run release:evidence-status`, and run `npm run release:accept-evidence`.',
     'Optional compatibility pass: import a user-provided UTAU/OpenUTAU zip from Files.',
     'Any optional imported voicebank zip remains user-provided and private to the browser.',
     '',
@@ -1032,7 +1036,7 @@ function makeReviewHubPage() {
     '<a href="wav-daw/index.html">Open DAW handoff</a>',
     '<code>handoff-report.local.json</code>',
     '<h2>Fast Acceptance Path</h2>',
-    '<section aria-label="Evidence preflight checker">',
+    '<section id="evidence-preflight" aria-label="Evidence preflight checker">',
     '<h2>Evidence Preflight</h2>',
     '<p>No upload: checks run locally in this browser.</p>',
     '<input id="listeningEvidenceInput">',

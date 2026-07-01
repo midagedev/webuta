@@ -78,7 +78,7 @@
       <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
     </div>
     <p>Template path: <code>listening-scores.local.template.json</code>. A phrase should score 4/5 or higher before community release.</p>
-    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, keep both files in Downloads, then run <code>npm run release:evidence-status</code> before accepting both with <code>npm run release:accept-evidence</code>. Use explicit <code>--scores</code> and <code>--handoff</code> paths only when the files are somewhere else.</p>
+    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, keep both files in Downloads, then use the review hub <code>Evidence Preflight</code> checker to validate both JSON files locally with no upload. Run <code>npm run release:evidence-status</code> before accepting both with <code>npm run release:accept-evidence</code>. Use explicit <code>--scores</code> and <code>--handoff</code> paths only when the files are somewhere else.</p>
     <section class="listening-route" aria-label="10-minute listening review path">
       <div class="route-head">
         <h2>10-minute listening review path</h2>
@@ -686,7 +686,7 @@
       downloadButton.title = problems.length === 0 ? 'Download release-audit-ready listening score JSON' : 'Finish every required score before downloading';
       problemList.className = `problem-list ${problems.length === 0 ? 'ok' : ''}`;
       problemList.innerHTML = problems.length === 0
-        ? '<li>Ready: download this JSON, keep it beside the DAW handoff JSON in Downloads, run npm run release:evidence-status, then run npm run release:accept-evidence.</li>'
+        ? '<li>Ready: download this JSON, keep it beside the DAW handoff JSON in Downloads, check both files in Evidence Preflight, run npm run release:evidence-status, then run npm run release:accept-evidence.</li>'
         : problems.slice(0, 8).map((problem) => `<li>${escapeText(problem)}</li>`).join('');
     }
 

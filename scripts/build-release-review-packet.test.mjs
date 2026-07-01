@@ -27,6 +27,7 @@ describe('release review packet', () => {
     expect(packet.ok).toBe(true)
     expect(packet.decision).toBe('release-review-packet-ready')
     expect(packet.pagesUrl).toBe('https://example.test/webuta/')
+    expect(packet.evidencePreflightUrl).toBe('https://example.test/webuta/review/#evidence-preflight')
     expect(packet.voicebank).toMatchObject({
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
@@ -43,6 +44,8 @@ describe('release review packet', () => {
     expect(packet.reviewAudio).toHaveLength(8)
     expect(packet.commands.status).toBe('npm run release:evidence-status')
     expect(packet.commands.accept).toBe('npm run release:accept-evidence')
+    expect(packet.checklist.join('\n')).toContain('Evidence Preflight')
+    expect(packet.checklist.join('\n')).toContain('no upload')
     expect(packet.checklist.join('\n')).toContain('Run npm run release:evidence-status.')
     expect(existsSync(join(fixture.root, 'public', 'review', 'release-packet.json'))).toBe(true)
     const written = JSON.parse(readFileSync(join(fixture.root, 'public', 'review', 'release-packet.json'), 'utf8'))

@@ -49,6 +49,8 @@ describe('accept release evidence', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('targetDawImportWorked must be true')
+    expect(report.nextActions.join('\n')).toContain('Evidence Preflight')
+    expect(report.nextActions.join('\n')).toContain('no upload')
     expect(existsSync(fixture.acceptedScores)).toBe(false)
     expect(existsSync(fixture.acceptedHandoff)).toBe(false)
   })

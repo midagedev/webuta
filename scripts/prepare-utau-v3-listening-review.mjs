@@ -548,7 +548,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       <strong>No recording step:</strong> this review does not ask anyone to record a voice. It only scores WAVs generated from the bundled synthetic UTAU V3 voicebank.
     </div>
     <p>Template path: <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
-    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, keep both files in Downloads, then run <code>npm run release:evidence-status</code> before accepting both with <code>npm run release:accept-evidence</code>. Use explicit <code>--scores</code> and <code>--handoff</code> paths only when the files are somewhere else.</p>
+    <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, keep both files in Downloads, then use the review hub <code>Evidence Preflight</code> checker to validate both JSON files locally with no upload. Run <code>npm run release:evidence-status</code> before accepting both with <code>npm run release:accept-evidence</code>. Use explicit <code>--scores</code> and <code>--handoff</code> paths only when the files are somewhere else.</p>
     <section class="listening-route" aria-label="10-minute listening review path">
       <div class="route-head">
         <h2>10-minute listening review path</h2>
@@ -827,7 +827,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
       downloadButton.title = problems.length === 0 ? 'Download release-audit-ready listening score JSON' : 'Finish every required score before downloading';
       problemList.className = \`problem-list \${problems.length === 0 ? 'ok' : ''}\`;
       problemList.innerHTML = problems.length === 0
-        ? '<li>Ready: download this JSON, keep it beside the DAW handoff JSON in Downloads, run npm run release:evidence-status, then run npm run release:accept-evidence.</li>'
+        ? '<li>Ready: download this JSON, keep it beside the DAW handoff JSON in Downloads, check both files in Evidence Preflight, run npm run release:evidence-status, then run npm run release:accept-evidence.</li>'
         : problems.slice(0, 8).map((problem) => \`<li>\${escapeText(problem)}</li>\`).join('');
     }
 
@@ -1007,7 +1007,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     'The scorecard starts with a `10-minute listening review path`: set reviewer info, listen phrase by phrase, compare V3 against V2, then download the JSON only after real listening.',
     'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
     'The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.',
-    'After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, keep both files in Downloads, then run `npm run release:evidence-status` before accepting both with `npm run release:accept-evidence` and the final release audit. Use explicit `--scores` and `--handoff` paths only when the files are somewhere else.',
+    'After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, keep both files in Downloads, then use the review hub `Evidence Preflight` checker to validate both JSON files locally with no upload. Run `npm run release:evidence-status` before accepting both with `npm run release:accept-evidence` and the final release audit. Use explicit `--scores` and `--handoff` paths only when the files are somewhere else.',
     'No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.',
     'Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.',
     comparisons.length

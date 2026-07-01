@@ -9,7 +9,7 @@ Open the HTML scorecard, review each phrase on headphones or neutral speakers, a
 The scorecard starts with a `10-minute listening review path`: set reviewer info, listen phrase by phrase, compare V3 against V2, then download the JSON only after real listening.
 The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.
 The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.
-After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, keep both files in Downloads, then run `npm run release:evidence-status` before accepting both with `npm run release:accept-evidence` and the final release audit. Use explicit `--scores` and `--handoff` paths only when the files are somewhere else.
+After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, keep both files in Downloads, then use the review hub `Evidence Preflight` checker to validate both JSON files locally with no upload. Run `npm run release:evidence-status` before accepting both with `npm run release:accept-evidence` and the final release audit. Use explicit `--scores` and `--handoff` paths only when the files are somewhere else.
 No new voice recording is required or requested. Score only the generated synthetic V3 WAVs.
 Score 1-5 for Korean clarity, vowel stability, consonant clarity, musicality, and artifacts.
 This pack also includes legacy V2 baseline WAVs. Score whether V3 is clearly better than V2 before release.
