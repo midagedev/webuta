@@ -208,6 +208,7 @@
   let voicebankLicenseState = $derived(!voicebank ? 'idle' : voicebank.metadata.license ? 'ready' : 'warning')
   let voicebankOriginState = $derived(!voicebank ? 'idle' : isSelfGeneratedVoicebank(voicebank) ? 'ready' : 'warning')
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
+  const evidencePreflightHref = `${import.meta.env.BASE_URL}review/index.html#evidence-preflight`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
 
@@ -646,7 +647,7 @@
       </div>
       <div class="release-evidence-next" aria-label="Manual release evidence checklist">
         <div class="release-evidence-head">
-          <span>공개 전 마지막 2단계</span>
+          <span>공개 전 마지막 2개 파일</span>
           <strong>{releaseEvidenceProgress}</strong>
         </div>
         <div class="release-evidence-step">
@@ -663,6 +664,10 @@
             <em>실제 음악 앱에서 handoff-report.local.json</em>
           </div>
         </div>
+        <div class="release-evidence-command preflight">
+          <span>사전 검사</span>
+          <code>Evidence Preflight · no upload</code>
+        </div>
         <div class="release-evidence-command">
           <span>확인</span>
           <code>npm run release:evidence-status</code>
@@ -676,6 +681,10 @@
         <a class="release-review-link" href={releaseReviewHubHref} target="_blank" rel="noreferrer">
           <ExternalLink size={14} aria-hidden="true" />
           <span>릴리스 허브 열기</span>
+        </a>
+        <a class="release-review-link" href={evidencePreflightHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>Preflight 검사</span>
         </a>
         <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
           <ExternalLink size={14} aria-hidden="true" />

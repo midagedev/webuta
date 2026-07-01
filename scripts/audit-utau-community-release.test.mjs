@@ -702,6 +702,7 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
       'classic UST import/export controls visible',
       'DAW handoff bundle export visible',
       'community release review hub linked',
+      'community evidence preflight linked',
       'community listening review scorecard linked',
       'selected-note UTAU sample preview available',
       'desktop WAV download',

@@ -74,6 +74,7 @@ const DEMO_REQUIRED_CHECKS = [
   'voicebank self-generated origin visible',
   'DAW handoff bundle export visible',
   'community release review hub linked',
+  'community evidence preflight linked',
   'community listening review scorecard linked',
   'selected-note UTAU sample preview available',
   'desktop WAV download',

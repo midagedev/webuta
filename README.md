@@ -174,7 +174,7 @@ Current verified local smoke coverage:
 - The first-run browser smoke verifies the `처음 시작` / `듣기 · 가사 · WAV` header, `1분 완성 루트`, `01 샘플 듣기` / `02 가사 적용` / `03 WAV 받기` route, `STEP 01` / `샘플 먼저 듣기` focused launch panel, inline starter lyric input with `한글 그대로 입력`, desktop/mobile utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, `기본 샘플`, and current lyric preview are visible before WAV/DAW handoff.
 - The first-run browser smoke and release audit require the collapsed `고급 도구` area to expose the `다운로드 패키지` details, `WAV · lyrics.txt · notes.csv`, release hub, listening review, and DAW report builder links.
 - The first-run browser smoke verifies the `템포 맵` panel is visible, so imported UST/USTX tempo events are not hidden from the DAW workflow.
-- The first-run browser smoke now verifies the community release readiness card is visible, marks the two manual evidence files as required, and shows the `공개 전 마지막 2단계` checklist.
+- The first-run browser smoke now verifies the community release readiness card is visible, marks the two manual evidence files as required, and shows the `공개 전 마지막 2개 파일` checklist with `Evidence Preflight` / `no upload`.
 - The first-run browser smoke verifies the current voicebank license metadata card and bundled V3 license excerpt are visible.
 - The first-run browser smoke verifies the bundled V3 self-generated origin card is visible.
 - The first-run browser smoke verifies selected-note dynamics controls are visible.

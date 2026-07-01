@@ -435,8 +435,10 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Manual release evidence checklist').getByText('공개 전 마지막 2단계').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('공개 전 마지막 2개 파일').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('자동 3/3 통과 · 수동 0/2 남음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('Evidence Preflight').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('no upload').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('npm run release:evidence-status').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('npm run release:accept-evidence').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -460,6 +462,12 @@ async function assertDefaultV3DemoReady(page) {
   const hubHref = await hubLink.getAttribute('href')
   if (!hubHref?.includes('/review/index.html')) {
     throw new Error(`Unexpected release review hub href: ${hubHref ?? 'missing'}`)
+  }
+  const preflightLink = page.getByRole('link', { name: 'Preflight 검사', exact: true })
+  await preflightLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const preflightHref = await preflightLink.getAttribute('href')
+  if (!preflightHref?.includes('/review/index.html#evidence-preflight')) {
+    throw new Error(`Unexpected release evidence preflight href: ${preflightHref ?? 'missing'}`)
   }
   const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기', exact: true })
   await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -511,6 +519,7 @@ async function assertDefaultV3DemoReady(page) {
     'classic UST import/export controls visible',
     'DAW handoff bundle export visible',
     'community release review hub linked',
+    'community evidence preflight linked',
     'community listening review scorecard linked',
     'selected-note UTAU sample preview available',
   ]
