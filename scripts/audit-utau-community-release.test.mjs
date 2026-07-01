@@ -436,6 +436,18 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must require listening-scores.local.json')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must list at least eight V3/V2 review audio files')
   })
+
+  it('blocks release when the public release review bundle is missing', async () => {
+    const fixture = await makeFixture({ omitReleaseBundle: true })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('public-release-review-bundle: missing public release review bundle')
+  })
 })
 
 async function makeFixture(overrides = {}) {
@@ -507,6 +519,9 @@ async function makeFixture(overrides = {}) {
   writeFileSync(join(root, 'README.md'), makeReadme())
   writeFileSync(join(docs, 'LICENSE_BOUNDARIES.md'), makeLicenseBoundaries())
   writeFileSync(join(docs, 'WAV_DAW_QA.md'), makeWavDawQa())
+  if (!overrides.omitReleaseBundle) {
+    await writeReleaseBundleZip(root)
+  }
   writeFakeJpeg(join(docs, 'screenshots', 'webuta-desktop.jpg'), 1280, 800, 90_000)
   writeFakeJpeg(join(docs, 'screenshots', 'webuta-mobile.jpg'), 390, 844, 45_000)
   writeFileSync(
@@ -535,6 +550,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip bytes match local bundle',
         'pages release review hub loaded',
         'pages release review packet loaded',
+        'pages release review bundle loaded',
         'pages V3 listening review scorecard loaded',
         'pages V3 listening review path loaded',
         'pages V3 listening review download gate loaded',
@@ -606,6 +622,34 @@ async function writeV3Zip(path, badSyntheticOrigin = false) {
         ].join('\n'),
   )
   writeFileSync(path, await zip.generateAsync({ type: 'nodebuffer' }))
+}
+
+async function writeReleaseBundleZip(root) {
+  const zip = new JSZip()
+  const entries = [
+    [
+      'webuta-release-review/README.md',
+      'It does not ask anyone to record a voice.\nnpm run release:evidence-status\nnpm run release:accept-evidence\n',
+    ],
+    ['webuta-release-review/release-packet.json', JSON.stringify(makeReleasePacket())],
+    ['webuta-release-review/review/index.html', makeReviewHubPage()],
+    ['webuta-release-review/review/v3/index.html', '<h1>Listening Review</h1>'],
+    ['webuta-release-review/review/v3/listening-scores.local.template.json', '{}\n'],
+    ['webuta-release-review/review/v3/review-manifest.json', JSON.stringify(makePublicReviewManifest())],
+    ['webuta-release-review/review/wav-daw/index.html', makeWavDawHandoffPage()],
+    ['webuta-release-review/docs/WAV_DAW_QA.md', makeWavDawQa()],
+    ['webuta-release-review/docs/LICENSE_BOUNDARIES.md', makeLicenseBoundaries()],
+  ]
+  for (const [path, content] of entries) {
+    zip.file(path, content)
+  }
+  for (const item of makeReleasePacket().reviewAudio) {
+    zip.file(`webuta-release-review/review/v3/${item.href}`, Buffer.alloc(200_000, 1))
+  }
+  writeFileSync(
+    join(root, 'public', 'review', 'release-review-bundle.zip'),
+    await zip.generateAsync({ type: 'nodebuffer', compression: 'STORE' }),
+  )
 }
 
 function passReport(decision) {
@@ -801,6 +845,7 @@ function makePackageJson() {
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
       'release:packet': 'node scripts/build-release-review-packet.mjs',
+      'release:bundle': 'node scripts/build-release-review-bundle.mjs',
       'release:audit-utau': 'node scripts/audit-utau-community-release.mjs --pages-url https://midagedev.github.io/webuta/',
       'release:evidence-status': 'node scripts/release-evidence-status.mjs',
       'release:accept-evidence': 'node scripts/accept-release-evidence.mjs',
@@ -924,9 +969,11 @@ function makeReadme() {
     'See License Boundaries.',
     'Use `public/review/index.html` as the release review hub.',
     'Use `public/review/release-packet.json` as the machine-readable reviewer packet.',
+    'Use `public/review/release-review-bundle.zip` as the offline reviewer bundle.',
     'Use the `10-minute listening review path` before accepting listening evidence.',
     'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
+    'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     '## Screenshots',
@@ -977,6 +1024,8 @@ function makeReviewHubPage() {
     '<a href="../">Open WebUtau app</a>',
     '<a href="v3/index.html">Open listening review</a>',
     '<a href="release-packet.json">Download review packet</a>',
+    '<a href="release-review-bundle.zip">Download review bundle</a>',
+    '<code>release-review-bundle.zip</code>',
     '<code>listening-scores.local.json</code>',
     '<a href="wav-daw/index.html">Open DAW handoff</a>',
     '<code>handoff-report.local.json</code>',

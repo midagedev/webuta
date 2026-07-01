@@ -466,76 +466,6 @@
     <div class="channel-meter" aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span><span></span>
     </div>
-    <div class={`release-readiness-card ${releaseCardState}`} aria-label="Community release readiness">
-      <div class="release-readiness-head">
-        <span class={`status-dot ${automatedReleaseChecksPass ? 'planned' : voicebank ? 'blocked' : 'idle'}`}></span>
-        <div>
-          <strong>{releaseCardTitle}</strong>
-          <span>{releaseCardSummary}</span>
-        </div>
-      </div>
-      <div class="release-checks">
-        {#each releaseChecks as check (check.label)}
-          <div class:passed={check.passed}>
-            <span>{check.label}</span>
-            <strong>{check.passed ? 'OK' : 'CHECK'}</strong>
-            <em>{check.detail}</em>
-          </div>
-        {/each}
-        <div class="review-needed">
-          <span>청취 리뷰</span>
-          <strong>NEED</strong>
-          <em>listening-scores.local.json 필요</em>
-        </div>
-        <div class="review-needed">
-          <span>DAW 확인</span>
-          <strong>NEED</strong>
-          <em>handoff-report.local.json 필요</em>
-        </div>
-      </div>
-      <div class="release-evidence-next" aria-label="Manual release evidence checklist">
-        <div class="release-evidence-head">
-          <span>공개 전 마지막 2단계</span>
-          <strong>{releaseEvidenceProgress}</strong>
-        </div>
-        <div class="release-evidence-step">
-          <span>01</span>
-          <div>
-            <strong>청취 점수 저장</strong>
-            <em>V3/V2 비교 후 listening-scores.local.json</em>
-          </div>
-        </div>
-        <div class="release-evidence-step">
-          <span>02</span>
-          <div>
-            <strong>DAW 가져오기 확인</strong>
-            <em>실제 음악 앱에서 handoff-report.local.json</em>
-          </div>
-        </div>
-        <div class="release-evidence-command">
-          <span>확인</span>
-          <code>npm run release:evidence-status</code>
-        </div>
-        <div class="release-evidence-command">
-          <span>수락</span>
-          <code>npm run release:accept-evidence</code>
-        </div>
-      </div>
-      <div class="release-review-links">
-        <a class="release-review-link" href={releaseReviewHubHref} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} aria-hidden="true" />
-          <span>릴리스 허브 열기</span>
-        </a>
-        <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} aria-hidden="true" />
-          <span>청취 리뷰 열기</span>
-        </a>
-        <a class="release-review-link" href={wavDawHandoffHref} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} aria-hidden="true" />
-          <span>DAW 리포트 만들기</span>
-        </a>
-      </div>
-    </div>
     <label class="field-label">
       BPM
       <input type="number" min="60" max="220" value={project.bpm} oninput={(event) => onBpm(Number(inputValue(event)) || 120)} />
@@ -686,6 +616,76 @@
           {/each}
         </ul>
       {/if}
+    </div>
+    <div class={`release-readiness-card ${releaseCardState}`} aria-label="Community release readiness">
+      <div class="release-readiness-head">
+        <span class={`status-dot ${automatedReleaseChecksPass ? 'planned' : voicebank ? 'blocked' : 'idle'}`}></span>
+        <div>
+          <strong>{releaseCardTitle}</strong>
+          <span>{releaseCardSummary}</span>
+        </div>
+      </div>
+      <div class="release-checks">
+        {#each releaseChecks as check (check.label)}
+          <div class:passed={check.passed}>
+            <span>{check.label}</span>
+            <strong>{check.passed ? 'OK' : 'CHECK'}</strong>
+            <em>{check.detail}</em>
+          </div>
+        {/each}
+        <div class="review-needed">
+          <span>청취 리뷰</span>
+          <strong>NEED</strong>
+          <em>listening-scores.local.json 필요</em>
+        </div>
+        <div class="review-needed">
+          <span>DAW 확인</span>
+          <strong>NEED</strong>
+          <em>handoff-report.local.json 필요</em>
+        </div>
+      </div>
+      <div class="release-evidence-next" aria-label="Manual release evidence checklist">
+        <div class="release-evidence-head">
+          <span>공개 전 마지막 2단계</span>
+          <strong>{releaseEvidenceProgress}</strong>
+        </div>
+        <div class="release-evidence-step">
+          <span>01</span>
+          <div>
+            <strong>청취 점수 저장</strong>
+            <em>V3/V2 비교 후 listening-scores.local.json</em>
+          </div>
+        </div>
+        <div class="release-evidence-step">
+          <span>02</span>
+          <div>
+            <strong>DAW 가져오기 확인</strong>
+            <em>실제 음악 앱에서 handoff-report.local.json</em>
+          </div>
+        </div>
+        <div class="release-evidence-command">
+          <span>확인</span>
+          <code>npm run release:evidence-status</code>
+        </div>
+        <div class="release-evidence-command">
+          <span>수락</span>
+          <code>npm run release:accept-evidence</code>
+        </div>
+      </div>
+      <div class="release-review-links">
+        <a class="release-review-link" href={releaseReviewHubHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>릴리스 허브 열기</span>
+        </a>
+        <a class="release-review-link" href={listeningReviewHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>청취 리뷰 열기</span>
+        </a>
+        <a class="release-review-link" href={wavDawHandoffHref} target="_blank" rel="noreferrer">
+          <ExternalLink size={14} aria-hidden="true" />
+          <span>DAW 리포트 만들기</span>
+        </a>
+      </div>
     </div>
   </section>
 

@@ -19,6 +19,7 @@ const DEFAULTS = {
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   publicReviewHub: 'public/review/index.html',
   publicReviewPacket: 'public/review/release-packet.json',
+  publicReviewBundle: 'public/review/release-review-bundle.zip',
   publicReviewIndex: 'public/review/v3/index.html',
   publicReviewManifest: 'public/review/v3/review-manifest.json',
   publicWavDawHandoffIndex: 'public/review/wav-daw/index.html',
@@ -105,6 +106,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reviewPackGate(paths.reviewManifest),
     publicReviewHubGate(paths.publicReviewHub),
     publicReviewPacketGate(paths.publicReviewPacket, bundled),
+    await publicReviewBundleGate(paths.publicReviewBundle),
     publicReviewGate(paths),
     publicWavDawHandoffGate(paths.publicWavDawHandoffIndex),
     sampleReviewGate(paths.sampleReview),
@@ -264,6 +266,8 @@ function publicReviewHubGate(path) {
       'handoff-report.local.json',
       'Download review packet',
       'release-packet.json',
+      'Download review bundle',
+      'release-review-bundle.zip',
       'Fast Acceptance Path',
       'Downloads',
       'release:evidence-status',
@@ -324,6 +328,59 @@ function publicReviewPacketGate(path, bundled) {
     reviewAudioCount: packet.reviewAudio?.length ?? 0,
     requiredEvidence: (packet.requiredEvidence ?? []).map((item) => item.downloadFile),
   } : null)
+}
+
+async function publicReviewBundleGate(path) {
+  const problems = []
+  let summary = null
+  if (!existsSync(path)) {
+    problems.push(`missing public release review bundle: ${path}`)
+  } else {
+    const bytes = readFileSync(path)
+    if (bytes.byteLength < 1_000_000) {
+      problems.push(`public release review bundle is unexpectedly small: ${bytes.byteLength} bytes`)
+    }
+    try {
+      const zip = await JSZip.loadAsync(bytes)
+      const fileNames = Object.keys(zip.files).filter((fileName) => !zip.files[fileName].dir)
+      const requiredFiles = [
+        'webuta-release-review/README.md',
+        'webuta-release-review/release-packet.json',
+        'webuta-release-review/review/index.html',
+        'webuta-release-review/review/v3/index.html',
+        'webuta-release-review/review/v3/listening-scores.local.template.json',
+        'webuta-release-review/review/v3/review-manifest.json',
+        'webuta-release-review/review/wav-daw/index.html',
+        'webuta-release-review/docs/WAV_DAW_QA.md',
+        'webuta-release-review/docs/LICENSE_BOUNDARIES.md',
+      ]
+      for (const fileName of requiredFiles) {
+        if (!zip.file(fileName)) {
+          problems.push(`public release review bundle must include ${fileName}`)
+        }
+      }
+      const reviewAudio = fileNames.filter((fileName) => /^webuta-release-review\/review\/v3\/audio\/.*\.wav$/u.test(fileName))
+      if (reviewAudio.length < 8) {
+        problems.push(`public release review bundle has ${reviewAudio.length} review WAVs; expected at least 8`)
+      }
+      const readme = zip.file('webuta-release-review/README.md')
+        ? await zip.file('webuta-release-review/README.md').async('string')
+        : ''
+      for (const snippet of ['npm run release:evidence-status', 'npm run release:accept-evidence', 'It does not ask anyone to record a voice']) {
+        if (!readme.includes(snippet)) {
+          problems.push(`public release review bundle README must include "${snippet}"`)
+        }
+      }
+      summary = {
+        bytes: bytes.byteLength,
+        fileCount: fileNames.length,
+        reviewAudioCount: reviewAudio.length,
+      }
+    } catch (error) {
+      problems.push(`unable to inspect public release review bundle: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  }
+  return makeGate('public-release-review-bundle', 'Published release review bundle ZIP', path, problems, summary)
 }
 
 function publicReviewGate(paths) {
@@ -526,6 +583,9 @@ function noRecordingWorkflowGate(path) {
       if (!scripts['release:packet']) {
         problems.push('package.json must expose release:packet')
       }
+      if (!scripts['release:bundle']) {
+        problems.push('package.json must expose release:bundle')
+      }
       if (!scripts['release:evidence-status']) {
         problems.push('package.json must expose release:evidence-status')
       }
@@ -592,6 +652,8 @@ function readmeGate(paths) {
       'First-Vocal-Sketch.wav',
       'release:packet',
       'release-packet.json',
+      'release:bundle',
+      'release-review-bundle.zip',
       'release:evidence-status',
       'release:accept-evidence',
       'Downloads',
@@ -895,6 +957,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 zip bytes match local bundle',
     'pages release review hub loaded',
     'pages release review packet loaded',
+    'pages release review bundle loaded',
     'pages V3 listening review scorecard loaded',
     'pages V3 listening review path loaded',
     'pages V3 listening review download gate loaded',
@@ -918,12 +981,14 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
   const app = await fetchWithProblem(base, 'GitHub Pages app', problems)
   const hubUrl = new URL('review/index.html', base)
   const packetUrl = new URL('review/release-packet.json', base)
+  const bundleUrl = new URL('review/release-review-bundle.zip', base)
   const reviewUrl = new URL('review/v3/index.html', base)
   const handoffUrl = new URL('review/wav-daw/index.html', base)
   const zipUrl = new URL(`voicebanks/${bundled.file}`, base)
   zipUrl.searchParams.set('v', bundled.version)
   const hub = await fetchWithProblem(hubUrl, 'GitHub Pages release review hub', problems)
   const packet = await fetchWithProblem(packetUrl, 'GitHub Pages release review packet', problems)
+  const bundle = await fetchWithProblem(bundleUrl, 'GitHub Pages release review bundle', problems, { method: 'HEAD' })
   const review = await fetchWithProblem(reviewUrl, 'GitHub Pages V3 listening review', problems)
   const handoff = await fetchWithProblem(handoffUrl, 'GitHub Pages WAV DAW handoff builder', problems)
   const zip = await fetchWithProblem(zipUrl, 'GitHub Pages V3 zip', problems, { method: 'HEAD' })
@@ -933,6 +998,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     url: base.href,
     hubUrl: hubUrl.href,
     packetUrl: packetUrl.href,
+    bundleUrl: bundleUrl.href,
     reviewUrl: reviewUrl.href,
     handoffUrl: handoffUrl.href,
     voicebankUrl: zipUrl.href,
@@ -960,6 +1026,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       html.includes('v3/index.html') &&
       html.includes('wav-daw/index.html') &&
       html.includes('release-packet.json') &&
+      html.includes('release-review-bundle.zip') &&
       html.includes('listening-scores.local.json') &&
       html.includes('handoff-report.local.json') &&
       html.includes('release:accept-evidence')
@@ -986,6 +1053,19 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages release review packet loaded')
     } else {
       problems.push('GitHub Pages release review packet is missing required release markers')
+    }
+  }
+  if (bundle?.ok) {
+    const bytes = Number(bundle.headers.get('content-length') ?? 0)
+    evidence.releaseBundle = {
+      url: bundleUrl.href,
+      status: bundle.status,
+      bytes,
+    }
+    if (bytes >= 1_000_000) {
+      evidence.checks.push('pages release review bundle loaded')
+    } else {
+      problems.push(`GitHub Pages release review bundle is unexpectedly small: ${bytes} bytes`)
     }
   }
   if (review?.ok) {

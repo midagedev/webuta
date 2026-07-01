@@ -19,6 +19,7 @@
     "experimental:smoke:recorder": "node scripts/smoke-private-singer-recorder.mjs",
     "experimental:smoke:training-pipeline": "node scripts/smoke-private-singer-training-pipeline.mjs",
     "release:packet": "node scripts/build-release-review-packet.mjs",
+    "release:bundle": "node scripts/build-release-review-bundle.mjs",
     "release:audit-utau": "node scripts/audit-utau-community-release.mjs --pages-url https://midagedev.github.io/webuta/",
     "release:evidence-status": "node scripts/release-evidence-status.mjs",
     "release:accept-evidence": "node scripts/accept-release-evidence.mjs",

@@ -123,7 +123,7 @@
   }
 </script>
 
-<section class="starter-guide onboarding-v5" aria-label="First run guide">
+<section class="starter-guide onboarding-v5 onboarding-v6" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
       <span>처음 시작</span>

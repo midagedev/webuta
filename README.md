@@ -152,6 +152,7 @@ npm run voicebank:clarity-v3
 npm run voicebank:review-v3
 npm run voicebank:publish-review-v3
 npm run release:packet
+npm run release:bundle
 npm run release:evidence-status
 npm run release:accept-evidence
 npm run screenshots:readme
@@ -192,6 +193,7 @@ Current verified local smoke coverage:
 - `npm run voicebank:review-v3` writes a browser-rendered listening review pack under `experiments/utau-v3/work/v3-listening-review/`.
 - `npm run voicebank:publish-review-v3` publishes that review scorecard and its WAVs to `public/review/v3/` for GitHub Pages.
 - `npm run release:packet` writes `public/review/release-packet.json`, a machine-readable reviewer packet with the current voicebank, review WAVs, required evidence files, and final commands.
+- `npm run release:bundle` writes `public/review/release-review-bundle.zip`, an offline reviewer ZIP containing the packet, scorecard, V3/V2 WAVs, DAW handoff page, and QA/license docs.
 - `npm run release:evidence-status` checks whether both downloaded release JSON files are present and valid without copying them, so reviewers can confirm the final handoff is ready before accepting evidence.
 - `npm run release:accept-evidence` validates both downloaded release JSON files, auto-detects them from Downloads when possible, installs them atomically, and then reruns the final release audit. Use `-- --scores path/to/listening-scores.local.json --handoff path/to/handoff-report.local.json` only when the files are outside Downloads.
 - `npm run voicebank:accept-review-v3 -- --scores path/to/listening-scores.local.json` and `npm run release:accept-daw-handoff -- --handoff path/to/handoff-report.local.json` remain compatibility helpers for single-file acceptance; the release path should use `release:accept-evidence`.
@@ -220,6 +222,7 @@ The current interface uses an original cyber vocal mascot illustration and a den
 - `public/voicebanks/webuta-ko-v3.zip` is the generated V3 starter voicebank; regenerate it with `npm run voicebank:v3`.
 - `public/review/index.html` is the public release review hub for the final listening and WAV/DAW evidence.
 - `public/review/release-packet.json` is the machine-readable reviewer packet linked from the release hub.
+- `public/review/release-review-bundle.zip` is the offline reviewer bundle linked from the release hub.
 - `public/review/v3/index.html` is the generated V3 listening scorecard; regenerate it with `npm run voicebank:review-v3` and `npm run voicebank:publish-review-v3`.
 - `public/review/wav-daw/index.html` is the physical-device WAV/DAW handoff report builder for `handoff-report.local.json`.
 - When the bundled voicebank changes, bump `BUNDLED_UTAU_VOICEBANK_VERSION` in `src/bundledVoicebank.ts` so browsers fetch the new zip.

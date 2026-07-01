@@ -37,6 +37,7 @@ describe('LeftRail release readiness', () => {
     expect(originCard.textContent).toContain('녹음 없음')
     expect(originCard.textContent).toContain('TTS/모델 출력 아님')
     expect(originCard.textContent).toContain('deterministic-dsp-only')
+    expect(screen.getByLabelText('Voicebank lyric coverage').compareDocumentPosition(releaseCard)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 
   it('does not mark imported user zips as the bundled V3 release voicebank', () => {

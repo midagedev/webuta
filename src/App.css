@@ -6913,6 +6913,86 @@ button:disabled:active {
   align-content: stretch;
 }
 
+/* Onboarding v6: make one next action dominant, then keep the route compact. */
+.starter-guide.onboarding-v6 {
+  gap: 8px;
+}
+
+.starter-guide.onboarding-v6 .starter-guide-head {
+  padding: 0 1px;
+}
+
+.starter-guide.onboarding-v6 .starter-guide-launch {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.starter-guide.onboarding-v6 .starter-hero-action {
+  min-height: 96px;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.32fr);
+  gap: 10px;
+  padding: 10px;
+  border-color: rgba(255, 231, 106, 0.68);
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.18), rgba(255, 75, 202, 0.11), rgba(88, 244, 255, 0.09)),
+    rgba(5, 7, 14, 0.9);
+}
+
+.starter-guide.onboarding-v6 .starter-coach-copy strong {
+  font-size: clamp(23px, 3.2vw, 34px);
+}
+
+.starter-guide.onboarding-v6 .starter-next-button {
+  min-height: 76px;
+}
+
+.starter-guide.onboarding-v6 .starter-journey {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.starter-guide.onboarding-v6 .starter-journey button {
+  min-height: 56px;
+  grid-template-columns: 30px 19px minmax(0, 1fr);
+  padding: 7px 8px;
+}
+
+.starter-guide.onboarding-v6 .starter-journey .progress-index {
+  width: 27px;
+  height: 34px;
+}
+
+.starter-guide.onboarding-v6 .starter-onboarding-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(244px, 0.38fr);
+  gap: 8px;
+}
+
+.starter-guide.onboarding-v6 .starter-next-steps-card {
+  opacity: 0.86;
+}
+
+.starter-guide.onboarding-v6 .starter-next-steps-card:focus-within,
+.starter-guide.onboarding-v6 .starter-next-steps-card:hover {
+  opacity: 1;
+}
+
+.starter-guide.onboarding-v6 .starter-edit-card {
+  border-color: rgba(157, 255, 106, 0.42);
+  background:
+    linear-gradient(90deg, rgba(157, 255, 106, 0.07), rgba(88, 244, 255, 0.055)),
+    rgba(5, 7, 14, 0.76);
+}
+
+.starter-guide.onboarding-v6 .starter-review-tools {
+  opacity: 0.78;
+}
+
+.starter-guide.onboarding-v6 .starter-review-tools[open],
+.starter-guide.onboarding-v6 .starter-review-tools:focus-within,
+.starter-guide.onboarding-v6 .starter-review-tools:hover {
+  opacity: 1;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -8035,6 +8115,62 @@ button:disabled:active {
   .starter-utility-button strong {
     grid-area: meta;
     font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v6 {
+    gap: 5px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-hero-action {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-coach-copy strong {
+    font-size: 18px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-next-button {
+    min-height: 48px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey button {
+    min-height: 46px;
+    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-areas:
+      "index title"
+      "index meta";
+    column-gap: 5px;
+    padding: 5px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey svg {
+    display: none;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey .progress-index {
+    width: 20px;
+    height: 30px;
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey strong {
+    font-size: 9px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-journey em {
+    font-size: 7px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-onboarding-grid {
+    gap: 5px;
   }
 }
 
