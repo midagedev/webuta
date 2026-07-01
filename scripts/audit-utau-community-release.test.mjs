@@ -849,6 +849,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
+    'The first-run starter shows `다음 선택` and `DAW 번들` for the ZIP handoff path.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',
     'Kasane Teto assets are not bundled in this repository.',
@@ -880,7 +881,7 @@ function makeWavDawQa() {
     '# WAV / DAW QA',
     'Default voicebank: WebUtau Korean V3 Synthetic',
     'Confirm `WebUtau Korean V3 Synthetic` is selected without importing a voicebank zip.',
-    'Confirm the first-run guide shows `START HERE`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `STEP 01`, `샘플 먼저 듣기`, `스타터 가사 라인`, `현재 가사`, `작업 시작`, `필요한 것만 바로 꺼내기`, `샘플 듣기`, `멜로디 추천`, `새 프로젝트`, and `기본 샘플`.',
+    'Confirm the first-run guide shows `START HERE`, `01 샘플 듣기`, `02 가사 적용`, `03 WAV 받기`, `지금 할 일 · STEP 01`, `샘플 먼저 듣기`, `스타터 가사 라인`, `현재 가사`, `다음 선택`, `샘플 듣기`, `멜로디 추천`, `DAW 번들`, `렌더 후 ZIP`, `새 프로젝트`, and `기본 샘플`.',
     'Short route shown on `review/wav-daw/index.html`: the `60-second physical handoff path` opens the public app, exports `First-Vocal-Sketch.wav`, imports it into the target DAW, then downloads `handoff-report.local.json`; expected WAV is `44.1 kHz mono 16-bit`.',
     'Tap `공유`, `스타터 WAV 받기`, or the top-bar WAV download button.',
     'Open `review/wav-daw/index.html` to generate `handoff-report.local.json`.',

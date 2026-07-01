@@ -64,8 +64,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] First-run onboarding smoke verifies the `START HERE` / `01 샘플 듣기`
   / `02 가사 적용` / `03 WAV 받기` quick checklist, `STEP 01` /
   `샘플 먼저 듣기` focused launch panel, inline starter lyric input, current
-  lyric card, visible `작업 시작` utilities for `멜로디 추천`, `새 프로젝트`,
-  and `기본 샘플`, and Korean mode navigation.
+  lyric card, visible `다음 선택` utilities for `멜로디 추천`, `DAW 번들`,
+  `새 프로젝트`, and `기본 샘플`, and Korean mode navigation.
 - [x] First-run browser smoke verifies the `템포 맵` panel is visible so
   tempo-map preservation is user-facing, not only a renderer detail.
 - [x] V3 listening review pack generated with first-run, batchim, CV, and vowel

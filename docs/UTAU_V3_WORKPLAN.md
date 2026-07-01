@@ -385,7 +385,7 @@ Current verified V3 evidence:
   visible, the first-run `START HERE` / `01 샘플 듣기` / `02 가사 적용`
   / `03 WAV 받기` quick checklist, `STEP 01` / `샘플 먼저 듣기` focused
   launch panel, inline starter lyric input, current lyric card, visible
-  `작업 시작` utilities for `멜로디 추천`, `새 프로젝트`, and `기본 샘플`, and
+  `다음 선택` utilities for `멜로디 추천`, `DAW 번들`, `새 프로젝트`, and `기본 샘플`, and
   Korean mode navigation are visible, the community
   release readiness card is visible, desktop/mobile overflow checks pass, and
   the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
