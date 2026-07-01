@@ -391,12 +391,8 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('템포 맵').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Tempo map').getByText('1 marker').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByRole('button', { name: '스타터 샘플 듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByRole('button', { name: '스타터 가사 바꾸기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterPath.getByRole('button', { name: '스타터 WAV 받기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterGuide.getByRole('button', { name: '가사 라인 적용' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterGuide.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterUtilities.getByRole('button', { name: '스타터 멜로디 추천' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '작곡', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '편집', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '노트', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -404,7 +400,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByText('WebUtau Korean V3 Synthetic').first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter next action').getByText('샘플 먼저 듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByLabel('Current starter step').getByText('01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter next action').getByText('STEP 01').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText('렌더 경고 없음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -451,10 +447,10 @@ async function assertDefaultV3DemoReady(page) {
     'first-run three-step checklist visible',
     'first-run quick-start CTA visible',
     'first-run focused next action visible',
-    'first-run starter route visible',
+    'first-run starter launch panel visible',
     'first-run inline lyric input visible',
     'first-run current lyric card visible',
-    'first-run action route visible',
+    'first-run utility actions visible',
     'first-run sketch cues visible',
     'tempo map controls visible',
     'Korean mode navigation visible',
