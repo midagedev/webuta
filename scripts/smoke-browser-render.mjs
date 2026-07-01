@@ -388,6 +388,27 @@ async function assertDefaultV3DemoReady(page) {
   await starterUtilities.getByRole('button', { name: '스타터 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '데모 프로젝트로 복구' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterHandoff = page.getByLabel('Starter handoff checklist')
+  await starterHandoff.getByText('다운로드 패키지').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterHandoff.getByText('WAV · lyrics.txt · notes.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterHubLink = starterHandoff.getByRole('link', { name: '스타터 릴리스 허브 열기' })
+  await starterHubLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterHubHref = await starterHubLink.getAttribute('href')
+  if (!starterHubHref?.includes('/review/index.html')) {
+    throw new Error(`Unexpected starter release review hub href: ${starterHubHref ?? 'missing'}`)
+  }
+  const starterListeningLink = starterHandoff.getByRole('link', { name: '스타터 청취 리뷰 열기' })
+  await starterListeningLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterListeningHref = await starterListeningLink.getAttribute('href')
+  if (!starterListeningHref?.includes('/review/v3/index.html')) {
+    throw new Error(`Unexpected starter listening review href: ${starterListeningHref ?? 'missing'}`)
+  }
+  const starterDawLink = starterHandoff.getByRole('link', { name: '스타터 DAW 리포트 만들기' })
+  await starterDawLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  const starterDawHref = await starterDawLink.getAttribute('href')
+  if (!starterDawHref?.includes('/review/wav-daw/index.html')) {
+    throw new Error(`Unexpected starter DAW handoff href: ${starterDawHref ?? 'missing'}`)
+  }
   await page.getByLabel('Vocal sketch cues').getByText('미리듣기').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Vocal sketch cues').getByText('가사·음정').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Vocal sketch cues').getByText('WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
@@ -425,13 +446,13 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByRole('button', { name: '하단 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.locator('input[accept*=".ust"]').waitFor({ state: 'attached', timeout: DEFAULT_TIMEOUT_MS })
   await page.getByRole('button', { name: '선택 노트 UTAU 샘플 미리듣기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  const hubLink = page.getByRole('link', { name: '릴리스 허브 열기' })
+  const hubLink = page.getByRole('link', { name: '릴리스 허브 열기', exact: true })
   await hubLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const hubHref = await hubLink.getAttribute('href')
   if (!hubHref?.includes('/review/index.html')) {
     throw new Error(`Unexpected release review hub href: ${hubHref ?? 'missing'}`)
   }
-  const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기' })
+  const reviewLink = page.getByRole('link', { name: '청취 리뷰 열기', exact: true })
   await reviewLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const reviewHref = await reviewLink.getAttribute('href')
   if (!reviewHref?.includes('/review/v3/index.html')) {
@@ -456,6 +477,8 @@ async function assertDefaultV3DemoReady(page) {
     'first-run inline lyric input visible',
     'first-run current lyric card visible',
     'first-run utility actions visible',
+    'first-run DAW handoff checklist visible',
+    'first-run release evidence links visible',
     'first-run sketch cues visible',
     'tempo map controls visible',
     'Korean mode navigation visible',

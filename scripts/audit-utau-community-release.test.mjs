@@ -849,7 +849,7 @@ function makeReadme() {
   return [
     '# WebUtau',
     'The app now ships with `WebUtau Korean V3 Synthetic`, not recorded from a human singer and not derived from public/private recorded datasets.',
-    'The first-run starter shows `다음 선택` and `DAW 번들` for the ZIP handoff path.',
+    'The first-run starter shows `다음 선택`, `DAW 번들`, and `다운로드 패키지` for the ZIP handoff path.',
     'The DAW handoff bundle includes `lyrics.txt` and `notes.csv` sidecars.',
     '## No Recording Needed',
     'The app, review flow, and release checklist must not ask the user, the user\'s family, or reviewers to record new voice material.',

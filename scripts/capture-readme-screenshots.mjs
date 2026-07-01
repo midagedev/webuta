@@ -77,10 +77,11 @@ async function waitForAppReady(page) {
   await starterUtilities.getByRole('button', { name: '스타터 DAW 번들 다운로드' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '새 프로젝트' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterUtilities.getByRole('button', { name: '데모 프로젝트로 복구' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter handoff checklist').getByText('WAV · lyrics.txt · notes.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByText(/8\/8 matched/u).first().waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank lyric coverage').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Community release readiness').getByText('V3 자동 점검 통과').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await page.getByRole('link', { name: '청취 리뷰 열기' }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByRole('link', { name: '청취 리뷰 열기', exact: true }).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
 }
 
 async function startViteServer({ cwd, host, port }) {

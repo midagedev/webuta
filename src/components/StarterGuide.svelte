@@ -1,5 +1,18 @@
 <script lang="ts">
-  import { Check, Download, FileArchive, FilePlus, Headphones, ListChecks, Music2, PencilLine, Play, RotateCcw, Wand2 } from '@lucide/svelte'
+  import {
+    Check,
+    Download,
+    ExternalLink,
+    FileArchive,
+    FilePlus,
+    Headphones,
+    ListChecks,
+    Music2,
+    PencilLine,
+    Play,
+    RotateCcw,
+    Wand2,
+  } from '@lucide/svelte'
   import type { RenderedAudio, SongProject } from '../types'
   import type { VoicebankCoverage } from '../voicebank'
   import { formatProjectSourceLabel, formatVoicebankCoverage, inputValue } from '../app/ui'
@@ -91,6 +104,9 @@
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
   const coachDetail = $derived(isDraftProject ? '기본 샘플이 필요하면 아래에서 바로 되돌릴 수 있어요' : '처음엔 샘플을 듣고 가사만 바꿔도 충분해요')
+  const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
+  const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
+  const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
 
   async function handleNextAction() {
     if (rendered && !isPlaying) {
@@ -248,6 +264,28 @@
           <strong>{lyricPreview}</strong>
         </button>
       </div>
+    </div>
+  </div>
+
+  <div class="starter-handoff-strip" aria-label="Starter handoff checklist">
+    <div class="starter-handoff-package">
+      <span>다운로드 패키지</span>
+      <strong>WAV · lyrics.txt · notes.csv</strong>
+      <em>{rendered ? '렌더 완료' : 'DAW 번들에 포함'}</em>
+    </div>
+    <div class="starter-handoff-links">
+      <a href={releaseReviewHubHref} target="_blank" rel="noreferrer" aria-label="스타터 릴리스 허브 열기">
+        <ExternalLink size={15} aria-hidden="true" />
+        <span>릴리스 허브</span>
+      </a>
+      <a href={listeningReviewHref} target="_blank" rel="noreferrer" aria-label="스타터 청취 리뷰 열기">
+        <Headphones size={15} aria-hidden="true" />
+        <span>청취 리뷰</span>
+      </a>
+      <a href={wavDawHandoffHref} target="_blank" rel="noreferrer" aria-label="스타터 DAW 리포트 만들기">
+        <FileArchive size={15} aria-hidden="true" />
+        <span>DAW 리포트</span>
+      </a>
     </div>
   </div>
 </section>

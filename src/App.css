@@ -6465,6 +6465,94 @@ button:disabled:active {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.starter-handoff-strip {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.2fr);
+  gap: 8px;
+  align-items: stretch;
+  padding: 8px;
+  border: 1px solid rgba(255, 231, 106, 0.32);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.08), rgba(88, 244, 255, 0.06), rgba(255, 75, 202, 0.055)),
+    rgba(5, 7, 14, 0.72);
+}
+
+.starter-handoff-package {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+}
+
+.starter-handoff-package span,
+.starter-handoff-package strong,
+.starter-handoff-package em,
+.starter-handoff-links a span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-handoff-package span {
+  color: var(--tracker-amber, #ffe76a);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-handoff-package strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.starter-handoff-package em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.starter-handoff-links {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.starter-handoff-links a {
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid rgba(88, 244, 255, 0.28);
+  border-radius: 4px;
+  color: var(--tracker-text, #f8f4ff);
+  background: rgba(12, 14, 26, 0.78);
+  text-decoration: none;
+}
+
+.starter-handoff-links a svg {
+  flex: 0 0 auto;
+  color: var(--tracker-cyan, #58f4ff);
+}
+
+.starter-handoff-links a span {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1.1;
+  white-space: normal;
+  text-align: center;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -7126,6 +7214,50 @@ button:disabled:active {
 
   .starter-guide.onboarding-v4 .starter-quick-actions .starter-utility-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .starter-handoff-strip {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-handoff-package {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 8px;
+  }
+
+  .starter-handoff-package span,
+  .starter-handoff-package strong {
+    grid-column: 1;
+  }
+
+  .starter-handoff-package strong {
+    font-size: 11px;
+  }
+
+  .starter-handoff-package em {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  .starter-handoff-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .starter-handoff-links a {
+    min-height: 38px;
+    gap: 4px;
+    padding: 0 5px;
+  }
+
+  .starter-handoff-links a span {
+    font-size: 9px;
   }
 
   .starter-guide.onboarding-v3 .starter-focus {

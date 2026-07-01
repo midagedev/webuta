@@ -518,6 +518,7 @@ function readmeGate(paths) {
       'Kasane Teto assets are not bundled',
       '다음 선택',
       'DAW 번들',
+      '다운로드 패키지',
       'lyrics.txt',
       'notes.csv',
       'License Boundaries',
