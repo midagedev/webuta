@@ -128,10 +128,15 @@ describe('App editing workflow', () => {
     expect(within(beginnerStart).getByRole('button', { name: '새 프로젝트 만들기' })).toBeTruthy()
     const sampleGallery = within(guide).getByLabelText('Starter sample gallery')
     expect(sampleGallery.textContent).toContain('샘플 고르기')
-    expect(sampleGallery.textContent).toContain('보컬로이드풍 훅 3개')
+    expect(sampleGallery.textContent).toContain('보컬로이드풍 훅 7개')
     expect(sampleGallery.textContent).toContain('Neon Lift')
     expect(sampleGallery.textContent).toContain('Blue Hour')
     expect(sampleGallery.textContent).toContain('Retro Run')
+    expect(sampleGallery.textContent).toContain('Moon Signal')
+    expect(sampleGallery.textContent).toContain('Pink Noise')
+    expect(sampleGallery.textContent).toContain('Rain Verse')
+    expect(sampleGallery.textContent).toContain('City Glide')
+    expect(sampleGallery.textContent).toContain('장르, 템포, 가사 발음이 다른 샘플')
     expect(within(sampleGallery).getByRole('button', { name: 'Neon Lift 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     const koreanModePath = within(guide).getByLabelText('Starter Korean mode path')
     expect(koreanModePath.textContent).toContain('한국어 UTAU 모드')
@@ -252,6 +257,15 @@ describe('App editing workflow', () => {
     expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('레 트 로 비 트 로 뛰 어 가')
     expect(within(sampleGallery).getByRole('button', { name: 'Retro Run 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
     expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Dm -> Bb -> F -> C')
+
+    fireEvent.click(within(sampleGallery).getByRole('button', { name: 'Pink Noise 샘플 열기' }))
+
+    await waitFor(() => {
+      expect((screen.getByLabelText('Project name') as HTMLInputElement).value).toBe('Pink Noise Vocal')
+    })
+    expect((within(guide).getByLabelText('빠른 가사 입력') as HTMLInputElement).value).toBe('핑 크 노 이 즈 가 심 장 을 깨 워')
+    expect(within(sampleGallery).getByRole('button', { name: 'Pink Noise 샘플 열기' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(guide).getByLabelText('Starter hook chord guide').textContent).toContain('Bm -> G -> D -> A')
   })
 
   it('exposes a first-run DAW bundle action that renders and downloads a handoff zip', async () => {

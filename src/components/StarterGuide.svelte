@@ -293,7 +293,7 @@
     <div class="starter-sample-gallery-head">
       <span>샘플 고르기</span>
       <strong>보컬로이드풍 훅 {demoSamples.length}개</strong>
-      <em>마음에 드는 분위기를 먼저 고르고 바로 들어보세요.</em>
+      <em>장르, 템포, 가사 발음이 다른 샘플을 먼저 고르고 바로 들어보세요.</em>
     </div>
     <div class="starter-sample-grid">
       {#each demoSamples as sample}

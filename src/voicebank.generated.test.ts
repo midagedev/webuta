@@ -9,6 +9,7 @@ import {
   findSustainEntryForLyric,
   loadVoicebankZip,
 } from './voicebank'
+import { demoSamples } from './demoProject'
 
 const generatedV3Path = join(process.cwd(), 'public', 'voicebanks', 'webuta-ko-v3.zip')
 
@@ -42,5 +43,20 @@ describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voice
     expect(findBestEntryForLyric(voicebank, '빛', 72).alias).toBe('빛')
     expect(findSustainEntryForLyric(voicebank, '빛', 72)?.alias).toBe('비')
     expect(findCodaTailEntryForLyric(voicebank, '빛', 72)?.alias).toBe('ㅣㅊ')
+  })
+
+  it('covers every bundled starter sample lyric with V3 aliases', async () => {
+    const bytes = readFileSync(generatedV3Path)
+    const file = new File([bytes], 'webuta-ko-v3.zip', { type: 'application/zip' })
+    const voicebank = await loadVoicebankZip(file)
+
+    for (const sample of demoSamples) {
+      const coverage = analyzeVoicebankCoverage(voicebank, sample.project.notes)
+      expect(coverage, `${sample.title} should not fall back to browser beeps`).toMatchObject({
+        totalNotes: sample.project.notes.length,
+        matchedNotes: sample.project.notes.length,
+        fallbackNotes: 0,
+      })
+    }
   })
 })

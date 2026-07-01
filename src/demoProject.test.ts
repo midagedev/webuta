@@ -17,9 +17,30 @@ describe('default demo project', () => {
   })
 
   it('ships varied starter samples for different first sketches', () => {
-    expect(demoSamples.map((sample) => sample.title)).toEqual(['Neon Lift', 'Blue Hour', 'Retro Run'])
-    expect(demoSamples.map((sample) => sample.mood)).toEqual(['Cyber Pop', 'Dream Pop', 'Retro Game'])
-    expect(new Set(demoSamples.map((sample) => sample.lyricLine)).size).toBe(3)
+    expect(demoSamples.map((sample) => sample.title)).toEqual([
+      'Neon Lift',
+      'Blue Hour',
+      'Retro Run',
+      'Moon Signal',
+      'Pink Noise',
+      'Rain Verse',
+      'City Glide',
+    ])
+    expect(demoSamples.map((sample) => sample.mood)).toEqual([
+      'Cyber Pop',
+      'Dream Pop',
+      'Retro Game',
+      'Dark Synth',
+      'Hyperpop',
+      'Emo Ballad',
+      'City Pop',
+    ])
+    expect(new Set(demoSamples.map((sample) => sample.lyricLine)).size).toBe(7)
+    expect(new Set(demoSamples.map((sample) => sample.chordLine)).size).toBe(7)
+    expect(new Set(demoSamples.map((sample) => sample.project.bpm)).size).toBeGreaterThanOrEqual(6)
+    expect(new Set(demoSamples.map((sample) => sample.project.source?.fileName)).size).toBe(7)
     expect(demoSamples.every((sample) => sample.project.notes.length >= 9)).toBe(true)
+    expect(demoSamples.some((sample) => sample.lyricLine.includes('심 장'))).toBe(true)
+    expect(demoSamples.some((sample) => sample.lyricLine.includes('비 가 내 린 밤'))).toBe(true)
   })
 })

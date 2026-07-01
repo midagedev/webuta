@@ -4,7 +4,14 @@ import { makeId } from './music'
 const trackId = 'track-main'
 const partId = 'part-main'
 
-export type DemoSampleId = 'neon-lift' | 'blue-hour' | 'retro-run'
+export type DemoSampleId =
+  | 'neon-lift'
+  | 'blue-hour'
+  | 'retro-run'
+  | 'moon-signal'
+  | 'pink-noise'
+  | 'rain-verse'
+  | 'city-glide'
 
 export type DemoSample = {
   id: DemoSampleId
@@ -137,6 +144,170 @@ export const demoSamples: DemoSample[] = [
           tone: 74,
           lyric: '가',
           vibrato: { enabled: true, depthCents: 16, rateHz: 5.8, startPercent: 42 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'moon-signal',
+    title: 'Moon Signal',
+    mood: 'Dark Synth',
+    detail: '받침이 있는 어두운 프리코러스',
+    lyricLine: '달 빛 속 에 숨 은 말 을 켜',
+    chordLine: 'Em -> C -> G -> D',
+    project: makeSampleProject({
+      id: 'demo-moon-signal',
+      fileName: 'sample-moon-signal',
+      name: 'Moon Signal Vocal',
+      comment: 'A darker synth-pop Korean sample that exercises coda consonants and mid-range phrasing.',
+      bpm: 112,
+      partDuration: TICKS_PER_BEAT * 10,
+      chords: [
+        { symbol: 'Em', start: 0, duration: TICKS_PER_BEAT * 2, tone: 64, quality: 'min', tones: [64, 67, 71] },
+        { symbol: 'C', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 60, quality: 'maj', tones: [60, 64, 67] },
+        { symbol: 'G', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 67, quality: 'maj', tones: [67, 71, 74] },
+        { symbol: 'D', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 4, tone: 62, quality: 'maj', tones: [62, 66, 69] },
+      ],
+      notes: [
+        { id: 'moon-1', start: 0, duration: 480, tone: 67, lyric: '달' },
+        { id: 'moon-2', start: 480, duration: 360, tone: 71, lyric: '빛' },
+        { id: 'moon-3', start: 960, duration: 480, tone: 74, lyric: '속' },
+        { id: 'moon-4', start: 1440, duration: 240, tone: 72, lyric: '에' },
+        { id: 'moon-5', start: 1680, duration: 600, tone: 71, lyric: '숨' },
+        { id: 'moon-6', start: 2400, duration: 360, tone: 69, lyric: '은' },
+        { id: 'moon-7', start: 2880, duration: 480, tone: 67, lyric: '말' },
+        { id: 'moon-8', start: 3360, duration: 360, tone: 69, lyric: '을' },
+        {
+          id: 'moon-9',
+          start: 3840,
+          duration: 960,
+          tone: 71,
+          lyric: '켜',
+          vibrato: { enabled: true, depthCents: 15, rateHz: 5.2, startPercent: 48 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'pink-noise',
+    title: 'Pink Noise',
+    mood: 'Hyperpop',
+    detail: '빠른 당김음과 강한 받침 테스트',
+    lyricLine: '핑 크 노 이 즈 가 심 장 을 깨 워',
+    chordLine: 'Bm -> G -> D -> A',
+    project: makeSampleProject({
+      id: 'demo-pink-noise',
+      fileName: 'sample-pink-noise',
+      name: 'Pink Noise Vocal',
+      comment: 'A fast hyperpop Korean sample with syncopated syllables and bright high notes.',
+      bpm: 164,
+      partDuration: TICKS_PER_BEAT * 8,
+      chords: [
+        { symbol: 'Bm', start: 0, duration: TICKS_PER_BEAT * 2, tone: 71, quality: 'min', tones: [71, 74, 78] },
+        { symbol: 'G', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 67, quality: 'maj', tones: [67, 71, 74] },
+        { symbol: 'D', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 62, quality: 'maj', tones: [62, 66, 69] },
+        { symbol: 'A', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 2, tone: 69, quality: 'maj', tones: [69, 73, 76] },
+      ],
+      notes: [
+        { id: 'pink-1', start: 0, duration: 240, tone: 74, lyric: '핑' },
+        { id: 'pink-2', start: 240, duration: 240, tone: 76, lyric: '크' },
+        { id: 'pink-3', start: 480, duration: 480, tone: 78, lyric: '노' },
+        { id: 'pink-4', start: 960, duration: 240, tone: 81, lyric: '이' },
+        { id: 'pink-5', start: 1200, duration: 240, tone: 79, lyric: '즈' },
+        { id: 'pink-6', start: 1440, duration: 360, tone: 78, lyric: '가' },
+        { id: 'pink-7', start: 1920, duration: 240, tone: 83, lyric: '심' },
+        { id: 'pink-8', start: 2160, duration: 240, tone: 81, lyric: '장' },
+        { id: 'pink-9', start: 2400, duration: 240, tone: 79, lyric: '을' },
+        { id: 'pink-10', start: 2640, duration: 360, tone: 78, lyric: '깨' },
+        {
+          id: 'pink-11',
+          start: 3000,
+          duration: 840,
+          tone: 76,
+          lyric: '워',
+          vibrato: { enabled: true, depthCents: 20, rateHz: 6.1, startPercent: 40 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'rain-verse',
+    title: 'Rain Verse',
+    mood: 'Emo Ballad',
+    detail: '긴 모음과 낮은 음역',
+    lyricLine: '비 가 내 린 밤 너 를 부 르 네',
+    chordLine: 'C -> G -> Am -> F',
+    project: makeSampleProject({
+      id: 'demo-rain-verse',
+      fileName: 'sample-rain-verse',
+      name: 'Rain Verse Vocal',
+      comment: 'A slower emo-ballad Korean sample for sustained vowels and low-register notes.',
+      bpm: 82,
+      partDuration: TICKS_PER_BEAT * 12,
+      chords: [
+        { symbol: 'C', start: 0, duration: TICKS_PER_BEAT * 3, tone: 60, quality: 'maj', tones: [60, 64, 67] },
+        { symbol: 'G', start: TICKS_PER_BEAT * 3, duration: TICKS_PER_BEAT * 3, tone: 67, quality: 'maj', tones: [67, 71, 74] },
+        { symbol: 'Am', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 3, tone: 69, quality: 'min', tones: [69, 72, 76] },
+        { symbol: 'F', start: TICKS_PER_BEAT * 9, duration: TICKS_PER_BEAT * 3, tone: 65, quality: 'maj', tones: [65, 69, 72] },
+      ],
+      notes: [
+        { id: 'rain-1', start: 0, duration: 600, tone: 60, lyric: '비' },
+        { id: 'rain-2', start: 720, duration: 360, tone: 62, lyric: '가' },
+        { id: 'rain-3', start: 1080, duration: 360, tone: 64, lyric: '내' },
+        { id: 'rain-4', start: 1440, duration: 720, tone: 67, lyric: '린' },
+        { id: 'rain-5', start: 2400, duration: 600, tone: 69, lyric: '밤' },
+        { id: 'rain-6', start: 3000, duration: 360, tone: 67, lyric: '너' },
+        { id: 'rain-7', start: 3360, duration: 360, tone: 64, lyric: '를' },
+        { id: 'rain-8', start: 3840, duration: 480, tone: 62, lyric: '부' },
+        { id: 'rain-9', start: 4320, duration: 360, tone: 64, lyric: '르' },
+        {
+          id: 'rain-10',
+          start: 4800,
+          duration: 960,
+          tone: 60,
+          lyric: '네',
+          vibrato: { enabled: true, depthCents: 12, rateHz: 4.8, startPercent: 55 },
+        },
+      ],
+    }),
+  },
+  {
+    id: 'city-glide',
+    title: 'City Glide',
+    mood: 'City Pop',
+    detail: '도시적인 코드감의 부드러운 후렴',
+    lyricLine: '도 시 불 빛 위 로 우 린 날 아',
+    chordLine: 'F -> E -> Am -> C',
+    project: makeSampleProject({
+      id: 'demo-city-glide',
+      fileName: 'sample-city-glide',
+      name: 'City Glide Vocal',
+      comment: 'A city-pop Korean sample with a gentle chorus contour and warmer chord motion.',
+      bpm: 106,
+      partDuration: TICKS_PER_BEAT * 10,
+      chords: [
+        { symbol: 'F', start: 0, duration: TICKS_PER_BEAT * 2, tone: 65, quality: 'maj', tones: [65, 69, 72] },
+        { symbol: 'E', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 64, quality: 'maj', tones: [64, 68, 71] },
+        { symbol: 'Am', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 69, quality: 'min', tones: [69, 72, 76] },
+        { symbol: 'C', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 4, tone: 60, quality: 'maj', tones: [60, 64, 67] },
+      ],
+      notes: [
+        { id: 'city-1', start: 0, duration: 360, tone: 69, lyric: '도' },
+        { id: 'city-2', start: 360, duration: 240, tone: 71, lyric: '시' },
+        { id: 'city-3', start: 600, duration: 360, tone: 72, lyric: '불' },
+        { id: 'city-4', start: 960, duration: 480, tone: 74, lyric: '빛' },
+        { id: 'city-5', start: 1440, duration: 360, tone: 76, lyric: '위' },
+        { id: 'city-6', start: 1800, duration: 360, tone: 74, lyric: '로' },
+        { id: 'city-7', start: 2400, duration: 480, tone: 72, lyric: '우' },
+        { id: 'city-8', start: 2880, duration: 360, tone: 71, lyric: '린' },
+        { id: 'city-9', start: 3360, duration: 360, tone: 69, lyric: '날' },
+        {
+          id: 'city-10',
+          start: 3840,
+          duration: 960,
+          tone: 72,
+          lyric: '아',
+          vibrato: { enabled: true, depthCents: 13, rateHz: 5.0, startPercent: 52 },
         },
       ],
     }),
