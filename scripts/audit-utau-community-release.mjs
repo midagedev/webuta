@@ -16,6 +16,7 @@ const DEFAULTS = {
   clarityAudit: 'experiments/utau-v3/work/v3-clarity-audit.json',
   demoAudit: 'experiments/utau-v3/work/default-demo-render-audit.json',
   pagesDemoAudit: 'experiments/utau-v3/work/pages-default-demo-render-audit.json',
+  starterSamplesAudit: 'experiments/utau-v3/work/starter-sample-gallery-render-audit.json',
   reviewManifest: 'experiments/utau-v3/work/v3-listening-review/review-manifest.json',
   publicReviewHub: 'public/review/index.html',
   publicReviewPacket: 'public/review/release-packet.json',
@@ -44,6 +45,7 @@ const EXPECTED_DECISIONS = {
   longSustainAudit: 'utau-long-sustain-audit-pass',
   clarityAudit: 'v3-clarity-audit-pass',
   demoAudit: 'default-demo-render-pass',
+  starterSamplesAudit: 'starter-sample-gallery-render-pass',
   reviewManifest: 'v3-listening-review-ready',
   sampleReview: 'v3-sample-review-report-ready',
 }
@@ -118,6 +120,7 @@ export async function auditUtauCommunityRelease(options = {}) {
     reportGate('phoneme-clarity', 'V3 phoneme clarity audit', paths.clarityAudit, EXPECTED_DECISIONS.clarityAudit),
     demoGate(paths.demoAudit),
     pagesDemoGate(paths.pagesDemoAudit, options.pagesUrl),
+    starterSamplesGate(paths.starterSamplesAudit),
     reviewPackGate(paths.reviewManifest),
     publicReviewHubGate(paths.publicReviewHub),
     publicReviewPacketGate(paths.publicReviewPacket, bundled),
@@ -225,6 +228,47 @@ function validateDefaultDemoReport(report, problems) {
   if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
     problems.push('demo WAV must be 44.1 kHz mono 16-bit PCM')
   }
+}
+
+function starterSamplesGate(path) {
+  const problems = []
+  const report = readOptionalJson(path, 'starter sample gallery render audit', problems)
+  if (report) {
+    if (report.ok !== true || report.decision !== EXPECTED_DECISIONS.starterSamplesAudit) {
+      problems.push('starter sample gallery render audit must pass')
+    }
+    if ((report.sampleCount ?? 0) < 7) {
+      problems.push('starter sample gallery must render at least seven samples')
+    }
+    if ((report.diversity?.moodCount ?? 0) < 7) {
+      problems.push('starter sample gallery must cover seven distinct moods')
+    }
+    if ((report.diversity?.lyricLineCount ?? 0) < 7) {
+      problems.push('starter sample gallery must cover seven distinct lyric lines')
+    }
+    if ((report.diversity?.chordLineCount ?? 0) < 7) {
+      problems.push('starter sample gallery must cover seven distinct chord lines')
+    }
+    for (const sample of report.samples ?? []) {
+      if (sample.passed !== true) {
+        problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} did not pass render gates`)
+      }
+      const wav = sample.wav ?? {}
+      if (wav.sampleRate !== 44100 || wav.channels !== 1 || wav.bitsPerSample !== 16) {
+        problems.push(`starter sample ${sample.title ?? sample.id ?? '(unknown)'} WAV must be 44.1 kHz mono 16-bit PCM`)
+      }
+    }
+  }
+  return makeGate('starter-sample-gallery', 'Seven varied starter samples render through bundled V3', path, problems, report ? {
+    sampleCount: report.sampleCount ?? 0,
+    diversity: report.diversity ?? null,
+    samples: (report.samples ?? []).map((sample) => ({
+      title: sample.title,
+      mood: sample.mood,
+      durationSeconds: sample.wav?.durationSeconds ?? null,
+      bytes: sample.wav?.bytes ?? null,
+    })),
+  } : null)
 }
 
 function reviewPackGate(path) {
@@ -1452,6 +1496,9 @@ function nextActionsForProblems(problems) {
   if (problems.some((problem) => problem.includes('pages-default-demo'))) {
     actions.push('Run npm run voicebank:demo-v3:pages after deploying so the live app proves default V3 render, mobile layout, WAV download, and DAW ZIP/MIDI guide download behavior.')
   }
+  if (problems.some((problem) => problem.includes('starter-sample-gallery'))) {
+    actions.push('Run npm run voicebank:starter-samples-v3 so all seven first-run starter samples are opened in the browser and rendered through the bundled V3 voicebank.')
+  }
   if (problems.some((problem) => problem.includes('readme-release-docs'))) {
     actions.push('Refresh README screenshots, license notes, and limitations before public release.')
   }
@@ -1500,6 +1547,8 @@ function parseArgs(argv) {
       options.pagesReport = argv[++index]
     } else if (arg === '--pages-demo-audit') {
       options.pagesDemoAudit = argv[++index]
+    } else if (arg === '--starter-samples-audit') {
+      options.starterSamplesAudit = argv[++index]
     } else if (arg === '--listening-scores') {
       options.listeningScores = argv[++index]
     } else if (arg === '--wav-daw-handoff') {
@@ -1516,6 +1565,7 @@ function parseArgs(argv) {
           '  --pages-url url          Verify a live GitHub Pages deployment',
           '  --pages-report path      Use saved GitHub Pages evidence JSON',
           '  --pages-demo-audit path  Override deployed browser demo audit JSON path',
+          '  --starter-samples-audit path  Override starter sample gallery render audit JSON path',
           '  --listening-scores path  Override human listening score JSON path',
           '  --wav-daw-handoff path   Override physical WAV/DAW handoff JSON path',
           '  --sample-review path     Override V3 sample review report JSON path',

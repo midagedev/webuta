@@ -79,6 +79,7 @@
     "voicebank:clarity-v3": "node scripts/analyze-korean-v3-clarity.mjs",
     "voicebank:demo-v3": "node scripts/audit-default-demo-render.mjs",
     "voicebank:demo-v3:pages": "node scripts/audit-default-demo-render.mjs --url https://midagedev.github.io/webuta/ --report experiments/utau-v3/work/pages-default-demo-render-audit.json",
+    "voicebank:starter-samples-v3": "node scripts/audit-starter-sample-gallery.mjs",
     "voicebank:loop-v3": "node scripts/analyze-korean-v3-loops.mjs",
     "voicebank:sustain-v3": "node scripts/audit-utau-long-sustain.mjs",
     "voicebank:oto-v3": "node scripts/audit-korean-v3-oto.mjs",

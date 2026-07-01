@@ -229,7 +229,7 @@ describe('UTAU community release audit', () => {
     })
 
     expect(report.ok).toBe(false)
-    expect(report.problems.join('\n')).toContain('does not match 20260701-v3-synthetic-web-5')
+    expect(report.problems.join('\n')).toContain('does not match 20260702-v3-synthetic-web-6')
   })
 
   it('blocks release when deployed V3 listening review WAVs are missing', async () => {
@@ -238,7 +238,7 @@ describe('UTAU community release audit', () => {
         ok: true,
         voicebank: {
           file: 'webuta-ko-v3.zip',
-          version: '20260701-v3-synthetic-web-5',
+          version: '20260702-v3-synthetic-web-6',
           bytes: 593,
         },
         reviewAudio: makePagesReviewAudio().map((item, index) =>
@@ -331,6 +331,30 @@ describe('UTAU community release audit', () => {
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run DAW handoff checklist visible')
     expect(report.problems.join('\n')).toContain('pages-default-demo: missing passed demo check: first-run release evidence links visible')
     expect(report.nextActions.join('\n')).toContain('voicebank:demo-v3:pages')
+  })
+
+  it('blocks release when varied starter sample render evidence is incomplete', async () => {
+    const starterSamplesAudit = makeStarterSamplesReport()
+    starterSamplesAudit.ok = false
+    starterSamplesAudit.decision = 'starter-sample-gallery-render-fail'
+    starterSamplesAudit.sampleCount = 6
+    starterSamplesAudit.diversity = {
+      moodCount: 6,
+      lyricLineCount: 6,
+      chordLineCount: 6,
+    }
+    starterSamplesAudit.samples = starterSamplesAudit.samples.slice(0, 6)
+    const fixture = await makeFixture({ starterSamplesAudit })
+
+    const report = await auditUtauCommunityRelease({
+      cwd: fixture.root,
+      pagesReport: fixture.pagesReport,
+    })
+
+    expect(report.ok).toBe(false)
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery render audit must pass')
+    expect(report.problems.join('\n')).toContain('starter-sample-gallery: starter sample gallery must render at least seven samples')
+    expect(report.nextActions.join('\n')).toContain('npm run voicebank:starter-samples-v3')
   })
 
   it('blocks release when the bundled V3 zip lacks no-recording synthetic-origin evidence', async () => {
@@ -477,7 +501,7 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must be ready')
-    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260701-v3-synthetic-web-5')
+    expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet voicebank version old does not match 20260702-v3-synthetic-web-6')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must require listening-scores.local.json')
     expect(report.problems.join('\n')).toContain('public-release-review-packet: public release review packet must list at least eight V3/V2 review audio files')
   })
@@ -522,6 +546,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(work, 'v3-clarity-audit.json'), passReport('v3-clarity-audit-pass'))
   writeJson(join(work, 'default-demo-render-audit.json'), makeDemoReport())
   writeJson(join(work, 'pages-default-demo-render-audit.json'), overrides.pagesDemo ?? makeDemoReport('https://midagedev.github.io/webuta/'))
+  writeJson(join(work, 'starter-sample-gallery-render-audit.json'), overrides.starterSamplesAudit ?? makeStarterSamplesReport())
   writeJson(join(work, 'v3-sample-review-report.json'), overrides.sampleReview ?? makeSampleReviewReport())
   writeFileSync(join(review, 'audio', '01-first-run-demo.wav'), 'wav')
   writeFileSync(join(review, 'audio', '02-coda-release-check.wav'), 'wav')
@@ -574,7 +599,7 @@ async function makeFixture(overrides = {}) {
     [
       "export const BUNDLED_UTAU_VOICEBANK_NAME = 'WebUtau Korean V3 Synthetic'",
       "export const BUNDLED_UTAU_VOICEBANK_FILE = 'webuta-ko-v3.zip'",
-      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260701-v3-synthetic-web-5'",
+      "export const BUNDLED_UTAU_VOICEBANK_VERSION = '20260702-v3-synthetic-web-6'",
       '',
     ].join('\n'),
   )
@@ -586,7 +611,7 @@ async function makeFixture(overrides = {}) {
       ok: true,
       voicebank: {
         file: 'webuta-ko-v3.zip',
-        version: '20260701-v3-synthetic-web-5',
+        version: '20260702-v3-synthetic-web-6',
         bytes: readFileSync(join(root, 'public', 'voicebanks', 'webuta-ko-v3.zip')).byteLength,
       },
       checks: [
@@ -786,6 +811,51 @@ function makeDemoReport(url = 'http://127.0.0.1:5173/') {
   }
 }
 
+function makeStarterSamplesReport() {
+  const samples = [
+    ['neon-lift', 'Neon Lift', 'Cyber Pop', 'First Vocal Sketch', '네 오 빛 이 메 로 디 로 데 려 가', 'Am -> F -> C -> G', 11],
+    ['blue-hour', 'Blue Hour', 'Dream Pop', 'Blue Hour Vocal', '밤 이 와 너 와 나 노 래 해', 'F -> C -> G -> Am', 9],
+    ['retro-run', 'Retro Run', 'Retro Game', 'Retro Run Vocal', '레 트 로 비 트 로 뛰 어 가', 'Dm -> Bb -> F -> C', 9],
+    ['moon-signal', 'Moon Signal', 'Dark Synth', 'Moon Signal Vocal', '달 빛 속 에 숨 은 말 을 켜', 'Em -> C -> G -> D', 9],
+    ['pink-noise', 'Pink Noise', 'Hyperpop', 'Pink Noise Vocal', '핑 크 노 이 즈 가 심 장 을 깨 워', 'Bm -> G -> D -> A', 11],
+    ['rain-verse', 'Rain Verse', 'Emo Ballad', 'Rain Verse Vocal', '비 가 내 린 밤 너 를 부 르 네', 'C -> G -> Am -> F', 10],
+    ['city-glide', 'City Glide', 'City Pop', 'City Glide Vocal', '도 시 불 빛 위 로 우 린 날 아', 'F -> E -> Am -> C', 10],
+  ].map(([id, title, mood, projectName, lyricLine, chordLine, noteCount], index) => ({
+    id,
+    title,
+    mood,
+    projectName,
+    lyricLine,
+    chordLine,
+    noteCount,
+    fileName: `${String(projectName).replaceAll(' ', '-')}.wav`,
+    wav: {
+      sampleRate: 44100,
+      channels: 1,
+      bitsPerSample: 16,
+      durationSeconds: 4.1 + index * 0.2,
+      bytes: 361_000 + index * 1200,
+      peak: 0.4,
+      rms: 0.06,
+    },
+    passed: true,
+  }))
+  return {
+    version: 1,
+    ok: true,
+    decision: 'starter-sample-gallery-render-pass',
+    generatedAt: '2026-07-01T00:00:00.000Z',
+    sampleCount: samples.length,
+    diversity: {
+      moodCount: 7,
+      lyricLineCount: 7,
+      chordLineCount: 7,
+    },
+    samples,
+    problems: [],
+  }
+}
+
 function makeReviewManifest(review) {
   const phrases = [
     ['first-run-demo', '01-first-run-demo.wav'],
@@ -904,6 +974,7 @@ function makePackageJson() {
       'voicebank:v3': 'node scripts/generate-korean-v3-synthetic-voicebank.mjs',
       'voicebank:audit-v3': 'node scripts/audit-korean-v3-voicebank.mjs',
       'voicebank:demo-v3': 'node scripts/audit-default-demo-render.mjs',
+      'voicebank:starter-samples-v3': 'node scripts/audit-starter-sample-gallery.mjs',
       'voicebank:sustain-v3': 'node scripts/audit-utau-long-sustain.mjs',
       'voicebank:review-v3': 'node scripts/prepare-utau-v3-listening-review.mjs',
       'release:packet': 'node scripts/build-release-review-packet.mjs',
@@ -1137,8 +1208,8 @@ function makeReleasePacket() {
     voicebank: {
       name: 'WebUtau Korean V3 Synthetic',
       file: 'webuta-ko-v3.zip',
-      version: '20260701-v3-synthetic-web-5',
-      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260701-v3-synthetic-web-5',
+      version: '20260702-v3-synthetic-web-6',
+      url: 'https://midagedev.github.io/webuta/voicebanks/webuta-ko-v3.zip?v=20260702-v3-synthetic-web-6',
       bundledByDefault: true,
       origin: 'self-generated synthetic UTAU sample voicebank',
       noRecordingRequired: true,

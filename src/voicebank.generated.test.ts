@@ -26,8 +26,8 @@ describe.skipIf(!existsSync(generatedV3Path))('generated WebUtau Korean V3 voice
     expect(voicebank.name).toBe('WebUtau Korean V3 Synthetic')
     expect(bytes.byteLength).toBeLessThan(50_000_000)
     expect(manifest.sampleRate).toBe(40000)
-    expect(voicebank.wavCount).toBe(674)
-    expect(voicebank.sampleCount).toBe(1578)
+    expect(voicebank.wavCount).toBe(685)
+    expect(voicebank.sampleCount).toBe(1603)
     expect(coverage).toMatchObject({
       totalNotes: 11,
       matchedNotes: 11,

@@ -16,6 +16,7 @@ const PITCHES = [
   { name: 'F4', midi: 65, hz: 349.228231 },
   { name: 'A4', midi: 69, hz: 440 },
 ]
+const STARTER_HIGH_PITCH = { name: 'F5', midi: 77, hz: 698.456463 }
 
 const ONSETS = [
   ['g', 'ㄱ'],
@@ -103,6 +104,7 @@ const DEMO_CV_SYLLABLES = [
   '뛰',
   '어',
 ]
+const STARTER_HIGH_CV_SYLLABLES = ['크', '노', '이', '즈', '가', '시', '자', '으', '깨', '워', '위']
 
 const VOWEL_FORMANTS = {
   'ㅏ': [820, 1220, 2700, 3600],
@@ -195,7 +197,7 @@ export async function generateKoreanV3SyntheticVoicebank(options = {}) {
     profile,
     generatedAt: new Date().toISOString(),
     sampleRate: SAMPLE_RATE,
-    basePitches: pitches.map((pitch) => pitch.name),
+    basePitches: uniqueStrings(sampleReports.map((sample) => sample.pitch)),
     license: 'Original deterministic DSP-generated samples and metadata; redistributable under the MIT license of the WebUtau repository.',
     sourceLineage: {
       method: 'deterministic-dsp-only',
@@ -285,6 +287,7 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
   const cvPitches = profile === 'web' ? [mainPitch] : pitches
   const supportPitches = profile === 'web' ? [mainPitch] : pitches
   const demoPitches = profile === 'web' ? PITCHES.filter((pitch) => pitch.name !== mainPitch.name) : []
+  const starterHighPitches = profile === 'web' ? [STARTER_HIGH_PITCH] : []
   const codaPitches = profile === 'web' ? PITCHES : pitches
 
   for (const pitch of cvPitches) {
@@ -332,6 +335,26 @@ export function buildUnits({ profile = 'release', pitches = PITCHES } = {}) {
 
   for (const pitch of demoPitches) {
     for (const syllable of DEMO_CV_SYLLABLES) {
+      const decomposed = decomposeHangul(syllable)
+      if (!decomposed) {
+        continue
+      }
+      const roman = `${romanForOnset(decomposed.onset)}${romanForVowel(decomposed.vowel)}`
+      units.push({
+        type: 'CV',
+        onset: decomposed.onset,
+        vowel: decomposed.vowel,
+        coda: '',
+        pitch,
+        seconds: 0.94,
+        fileStem: `cv_${String(units.length).padStart(4, '0')}_${safeName(roman || syllable)}`,
+        aliases: aliasesFor(syllable, roman),
+      })
+    }
+  }
+
+  for (const pitch of starterHighPitches) {
+    for (const syllable of STARTER_HIGH_CV_SYLLABLES) {
       const decomposed = decomposeHangul(syllable)
       if (!decomposed) {
         continue
@@ -804,6 +827,10 @@ function safeName(value) {
 
 function zipFileOptions() {
   return { date: new Date(ZIP_FILE_DATE) }
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter((value) => typeof value === 'string' && value.length > 0))]
 }
 
 async function readExistingOutput(output) {

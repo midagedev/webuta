@@ -161,7 +161,7 @@ Recommended coverage shape:
 - [x] Add sample-quality audit for package files, aliases, silence, clipping,
   RMS, and WAV consistency.
 - [x] Add F0/pitch-stability audit for generated sample bodies.
-- [x] Generate the first web-profile `webuta-ko-v3.zip`: 674 samples, 1578 aliases,
+- [x] Generate the first web-profile `webuta-ko-v3.zip`: 685 samples, 1603 aliases,
   about 46 MB.
 - [x] Make `webuta-ko-v3.zip` the bundled voicebank selected on first launch.
 - [ ] Run browser smoke and human listening review before calling V3
@@ -373,11 +373,11 @@ community-ready.
 Current verified V3 evidence:
 
 - `npm run voicebank:v3` generated `public/voicebanks/webuta-ko-v3.zip`.
-- Default web profile: 674 WAV samples, 1578 oto aliases, 48391438 bytes,
+- Default web profile: 685 WAV samples, 1603 oto aliases, 49196883 bytes,
   using 40 kHz source WAVs to stay below GitHub's large-file warning while
   keeping loop stability.
 - `src/bundledVoicebank.ts` selects `webuta-ko-v3.zip` with cache-busting
-  version `20260701-v3-synthetic-web-5`.
+  version `20260702-v3-synthetic-web-6`.
 - The generator now uses synthesis profile
   `deterministic-dsp-bright-formant-v3`: broadened vowel formants, a blended
   glottal body layer, deterministic soft saturation, 40 kHz source WAVs, and
@@ -386,11 +386,11 @@ Current verified V3 evidence:
 - Recording/private-singer prototype scripts are kept only under
   `experimental:*`, and the old Supertonic path is kept only under
   `legacy:voicebank:supertonic`; neither is part of the V3 release workflow.
-- `npm run voicebank:audit-v3` passes on the default zip: all 674 WAV files
+- `npm run voicebank:audit-v3` passes on the default zip: all 685 WAV files
   audited, zero WAV problems, required package files present, no missing sample
   references.
-- `npm run voicebank:oto-v3` passes on the default zip: 674/674 manifest
-  samples audited against `oto.ini`, 1578 oto entries checked, and zero timing
+- `npm run voicebank:oto-v3` passes on the default zip: 685/685 manifest
+  samples audited against `oto.ini`, 1603 oto entries checked, and zero timing
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 11/11, render warnings are clear, the lyric line is
@@ -443,7 +443,7 @@ Current verified V3 evidence:
 - The offline scorecard has Playwright regression tests that fill all score
   controls, generate JSON, verify the no-recording review metadata, and ensure
   V2/V3 comparison scores are exported.
-- `npm run voicebank:pitch-v3` passes on the default zip: 674/674 samples
+- `npm run voicebank:pitch-v3` passes on the default zip: 685/685 samples
   audited, maximum median pitch error about 4.5 cents, maximum body drift about
   10.3 cents, and minimum median F0 confidence about 0.984.
 - `npm run voicebank:loop-v3` passes on the default zip: 432/432 CV/V sustain

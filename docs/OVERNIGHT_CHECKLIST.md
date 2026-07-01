@@ -60,7 +60,7 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] Voicebank and renderer tests verify Japanese VCV aliases such as `- ど`,
   `o ひ`, and `i ど` are selected from phrase-start and previous-vowel note
   context.
-- [x] Bundled `WebUtau Korean V3 Synthetic` contains 674 WAV samples and 1578 oto.ini alias lines.
+- [x] Bundled `WebUtau Korean V3 Synthetic` contains 685 WAV samples and 1603 oto.ini alias lines.
 - [x] Built-in `네오빛이 메로디로 데려가` demo aliases are present in the bundled Korean V3 voicebank.
 - [x] Playwright browser smoke imported the official zip and downloaded `First-Vocal-Sketch.wav`.
 - [x] Default V3 demo browser audit passes: V3 selected, aliases 11/11 matched,
@@ -128,6 +128,8 @@ Goal: build toward a community-release-ready UTAU-first browser vocal synth/DAW 
 - [x] App tests verify selected-note preview uses the loaded UTAU sample renderer.
 - [x] Selected-note alias display and isolated sample preview use the same
   phrase-start/previous-vowel VCV context as full-song UTAU rendering.
+- [x] Browser audit renders all seven first-run starter samples through the
+  bundled V3 voicebank and checks DAW-ready non-silent WAV output for each.
 - [x] README desktop/mobile screenshots are captured from the running app and
   checked by release audit for readable dimensions and minimum byte size.
 - [x] `npm run release:audit-utau` passes every automated community-release gate
