@@ -486,6 +486,27 @@ describe('voicebank zip loader', () => {
     expect(entry.path).toContain('重音テト単独音')
   })
 
+  it('keeps same-named WAV samples scoped to their local oto.ini folder', async () => {
+    const zip = new JSZip()
+    zip.file('Singer/character.yaml', 'name: Folder Scoped Singer\n')
+    zip.file('Singer/oto.ini', 'a_C4.wav=あ_DARK,0,120,0,40,20\n')
+    zip.file('Singer/a_C4.wav', new Uint8Array([1, 2, 3, 4]))
+    zip.file('Singer/bright/oto.ini', 'a_C4.wav=あ,0,120,0,40,20\n')
+    zip.file('Singer/bright/a_C4.wav', new Uint8Array([5, 6, 7, 8]))
+    zip.file('Singer/soft/oto.ini', 'a_C4.wav=あ_SOFT,0,120,0,40,20\n')
+    zip.file('Singer/soft/a_C4.wav', new Uint8Array([9, 10, 11, 12]))
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const file = new File([blob], 'folder-scoped-oto.zip')
+
+    const voicebank = await loadVoicebankZip(file)
+    const entry = findBestEntryForLyric(voicebank, 'a', 69)
+    const sample = new Uint8Array(await voicebank.readSample(entry))
+
+    expect(entry.alias).toBe('あ')
+    expect(entry.path).toBe('Singer/bright/a_C4.wav')
+    expect([...sample]).toEqual([5, 6, 7, 8])
+  })
+
   it('chooses the closest pitched sample for the same alias', async () => {
     const zip = new JSZip()
     zip.file('Teto/character.yaml', 'name: Test Teto\n')

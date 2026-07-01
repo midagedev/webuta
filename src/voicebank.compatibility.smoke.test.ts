@@ -49,6 +49,10 @@ type CompatibilityFixture = {
     mode: 'exact' | 'contains'
     values: string[]
   }
+  expectedSamplePaths?: {
+    mode: 'exact' | 'contains'
+    values: string[]
+  }
   expectedPrefixMapPaths?: string[]
 }
 
@@ -107,7 +111,7 @@ describe('UTAU import compatibility smoke audit', () => {
       writeJson(resolve(REPORT_PATH), report)
     }
 
-    expect(report.caseCount).toBeGreaterThanOrEqual(7)
+    expect(report.caseCount).toBeGreaterThanOrEqual(8)
     expect(report.problems).toEqual([])
     expect(report.ok).toBe(true)
   }, 30000)
@@ -165,6 +169,13 @@ async function auditCompatibilityFixture(fixture: CompatibilityFixture): Promise
     aliasesMatch(logged.requestedAliases, fixture.expectedAliases),
     `requested aliases ${JSON.stringify(logged.requestedAliases)} did not match ${JSON.stringify(fixture.expectedAliases.values)}`,
   )
+  if (fixture.expectedSamplePaths) {
+    addCheck(
+      'renderer requested expected WAV sample paths',
+      valuesMatch(logged.requestedPaths, fixture.expectedSamplePaths),
+      `requested paths ${JSON.stringify(logged.requestedPaths)} did not match ${JSON.stringify(fixture.expectedSamplePaths.values)}`,
+    )
+  }
   for (const expectedPath of fixture.expectedPrefixMapPaths ?? []) {
     addCheck(
       `prefix.map path ${expectedPath} loaded`,
@@ -325,6 +336,21 @@ function makeCompatibilityFixtures(): CompatibilityFixture[] {
       notes: [{ lyric: '도', tone: 62 }],
       expectedAliases: { mode: 'exact', values: ['ど'] },
     },
+    {
+      id: 'folder-scoped-oto-duplicates',
+      title: 'Folder-scoped oto.ini keeps duplicate WAV file names separate',
+      fileName: 'compat-folder-scoped-oto.zip',
+      rootDir: 'FolderSinger',
+      characterName: 'Compatibility Folder-Scoped Singer',
+      entries: [
+        { fileName: 'a_C4.wav', alias: 'あ_DARK', frequency: 190 },
+        { directory: 'bright', fileName: 'a_C4.wav', alias: 'あ', frequency: 440 },
+        { directory: 'soft', fileName: 'a_C4.wav', alias: 'あ_SOFT', frequency: 240 },
+      ],
+      notes: [{ lyric: 'a', tone: 69 }],
+      expectedAliases: { mode: 'exact', values: ['あ'] },
+      expectedSamplePaths: { mode: 'exact', values: ['FolderSinger/bright/a_C4.wav'] },
+    },
   ]
 }
 
@@ -428,6 +454,10 @@ function withRequestLog(voicebank: LoadedVoicebank) {
 }
 
 function aliasesMatch(actual: string[], expected: { mode: 'exact' | 'contains'; values: string[] }) {
+  return valuesMatch(actual, expected)
+}
+
+function valuesMatch(actual: string[], expected: { mode: 'exact' | 'contains'; values: string[] }) {
   if (expected.mode === 'exact') {
     return actual.length === expected.values.length && actual.every((alias, index) => alias === expected.values[index])
   }

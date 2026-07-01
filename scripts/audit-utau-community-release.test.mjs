@@ -437,10 +437,11 @@ describe('UTAU community release audit', () => {
 
     expect(report.ok).toBe(false)
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must pass')
-    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least seven diverse fixture voicebanks')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit must cover at least eight diverse fixture voicebanks')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case shift-jis-oto')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case legacy-character-txt')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case multi-oto-style-ranking')
+    expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU import compatibility audit missing case folder-scoped-oto-duplicates')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV did not pass')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must have zero fallback notes')
     expect(report.problems.join('\n')).toContain('utau-import-compatibility: UTAU compatibility case Japanese CV must record requested oto aliases')
@@ -1133,6 +1134,13 @@ function makeUtauCompatibilityReport() {
       sampleCount: 2,
       wavCount: 2,
     }),
+    makeUtauCompatibilityCase('folder-scoped-oto-duplicates', 'folder-scoped duplicate WAV names', ['あ'], {
+      lyricLine: 'a',
+      aliasCount: 3,
+      sampleCount: 3,
+      wavCount: 3,
+      requestedPaths: ['FolderSinger/bright/a_C4.wav'],
+    }),
   ]
   return {
     version: 1,
@@ -1186,7 +1194,7 @@ function makeUtauCompatibilityCase(id, title, requestedAliases, options = {}) {
       rms: 0.06,
       nonFiniteSampleCount: 0,
       requestedAliases,
-      requestedPaths: requestedAliases.map((alias) => `samples/${alias}.wav`),
+      requestedPaths: options.requestedPaths ?? requestedAliases.map((alias) => `samples/${alias}.wav`),
     },
     checks: [
       { check: 'voicebank zip parsed with every fixture sample', passed: true },
@@ -1455,7 +1463,7 @@ function makeReadme() {
     'Run `npm run release:packet` to rebuild the public reviewer packet.',
     'Run `npm run release:bundle` to rebuild the offline reviewer bundle.',
     'Run `npm run voicebank:songwriting-v3` for starter songwriting quality checks covering slow, mid, and fast BPM bands, melody contours, Hangul coda lyrics, and chord-guide variety.',
-    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, character.txt, Hangul CV/VC coda, and multi-oto style ranking.',
+    'Run `npm run voicebank:compatibility-utau` for UTAU import compatibility checks covering Japanese CV, Japanese VCV, prefix.map, Shift-JIS oto.ini, character.txt, Hangul CV/VC coda, multi-oto style ranking, and folder-scoped duplicate WAV names.',
     'Run `npm run release:evidence-status` to check both release JSON files before copying them.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     'The public review hub includes `Evidence Preflight` with `No upload` local JSON checks.',
