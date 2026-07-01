@@ -77,11 +77,11 @@
   )
   const nextActionMeta = $derived(rendered ? rendered.fileName : `${project.notes.length} notes · ${project.bpm} BPM`)
   const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 받기' : '스타터 재생')
-  const guideSummary = $derived(rendered ? 'WAV 준비 완료' : '듣고 · 바꾸고 · 저장하기')
+  const guideSummary = $derived(rendered ? 'WAV 준비 완료' : '듣기 · 가사 · WAV')
   const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
-  const focusStep = $derived(isRendering ? '02' : rendered ? '03' : isVoicebankReady ? '01' : '00')
+  const focusStep = $derived(isRendering ? '02' : rendered ? '03' : '01')
   const focusTitle = $derived(
-    isRendering ? '소리 만드는 중' : rendered ? 'WAV 저장하기' : isVoicebankReady ? '샘플 먼저 듣기' : '보컬 불러오는 중',
+    isRendering ? '소리 만드는 중' : rendered ? 'WAV 저장하기' : isVoicebankReady ? '샘플 먼저 듣기' : '샘플 준비 중',
   )
   const focusMeta = $derived(
     isRendering
@@ -92,7 +92,7 @@
           ? '지난 작업을 이어서 열었어요'
           : isVoicebankReady
             ? '도히도히 다이스키 기본 샘플'
-            : coverageLabel,
+            : '기본 보컬 로딩',
   )
   const lyricRouteStatus = $derived(`${project.notes.length} notes`)
   const hasPendingLyricLine = $derived(compactLine(lyricLine) !== compactLine(lyricPreview) && compactLine(lyricLine).length > 0)
@@ -103,21 +103,9 @@
   const exportRouteStatus = $derived(rendered ? '저장 가능' : missionWavMeta)
   const projectStateTitle = $derived(isDraftProject ? '저장된 작업' : '기본 샘플')
   const projectStateDetail = $derived(isDraftProject ? '이전 작업을 이어서 열었어요' : '도히도히 다이스키로 시작해요')
-  const coachDetail = $derived(isDraftProject ? '기본 샘플이 필요하면 아래에서 바로 되돌릴 수 있어요' : '처음엔 샘플을 듣고 가사만 바꿔도 충분해요')
-  const lyricInputTokenCount = $derived(lyricLine.trim().split(/\s+/u).filter(Boolean).length || compactLine(lyricLine).length)
-  const firstRunRouteTitle = $derived(
-    isRendering ? '소리 만드는 중' : rendered ? '이제 WAV로 저장' : hasPendingLyricLine ? '새 가사를 멜로디에 적용' : '샘플을 먼저 듣고 시작',
-  )
-  const firstRunRouteDetail = $derived(
-    isRendering
-      ? '잠시 뒤 재생과 다운로드가 열려요'
-      : rendered
-        ? '완성된 WAV를 바로 받을 수 있어요'
-        : hasPendingLyricLine
-          ? `${lyricInputTokenCount}개 발음이 입력됐어요`
-          : `${project.notes.length} notes · ${project.bpm} BPM`,
-  )
   const lyricInputStatus = $derived(hasPendingLyricLine ? '적용 전 새 가사' : '현재 멜로디와 같음')
+  const completionCount = $derived(rendered ? 3 : hasPendingLyricLine ? 1 : isPlaying ? 1 : 0)
+  const starterProgressLabel = $derived(`${completionCount}/3`)
   const releaseReviewHubHref = `${import.meta.env.BASE_URL}review/index.html`
   const listeningReviewHref = `${import.meta.env.BASE_URL}review/v3/index.html`
   const wavDawHandoffHref = `${import.meta.env.BASE_URL}review/wav-daw/index.html`
@@ -135,10 +123,10 @@
   }
 </script>
 
-<section class="starter-guide onboarding-v4" aria-label="First run guide">
+<section class="starter-guide onboarding-v5" aria-label="First run guide">
   <div class="starter-guide-head">
     <div class="starter-title">
-      <span>START HERE</span>
+      <span>처음 시작</span>
       <strong>{project.name}</strong>
       <em>{guideSummary}</em>
     </div>
@@ -146,38 +134,14 @@
       <span>{project.bpm} BPM</span>
       <span class={isVoicebankReady ? 'ready' : 'pending'}>{voicebankStatusLabel}</span>
       <span>{projectContextLabel}</span>
+      <span class="starter-progress-pill">{starterProgressLabel}</span>
     </div>
   </div>
 
-  <div class="starter-route-banner" aria-label="First run route">
-    <div class="starter-route-copy">
-      <span>처음 3분</span>
-      <strong>{firstRunRouteTitle}</strong>
-      <em>{firstRunRouteDetail}</em>
-    </div>
-    <ol class="starter-route-summary" aria-label="Starter route summary">
-      <li class={listenProgressClass}>
-        <span>01</span>
-        <strong>듣기</strong>
-        <em>{playStepLabel}</em>
-      </li>
-      <li class={lyricProgressClass}>
-        <span>02</span>
-        <strong>가사</strong>
-        <em>{lyricProgressMeta}</em>
-      </li>
-      <li class={exportProgressClass}>
-        <span>03</span>
-        <strong>저장</strong>
-        <em>{exportRouteStatus}</em>
-      </li>
-    </ol>
-  </div>
-
-  <div class="starter-launch-panel starter-coach-panel" aria-label="Starter launch panel">
-    <div class="starter-focus starter-coach-card" aria-label="Starter next action">
+  <div class="starter-guide-launch" aria-label="Starter launch panel">
+    <div class="starter-hero-action" aria-label="Starter next action">
       <div class="starter-focus-copy starter-coach-copy">
-        <span>지금 할 일 · STEP {focusStep}</span>
+        <span>STEP {focusStep} · 지금 누를 버튼</span>
         <strong>{focusTitle}</strong>
         <em>{nextActionDetail} · {focusMeta}</em>
       </div>
@@ -200,52 +164,32 @@
       </button>
     </div>
 
-    <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
-      <span>{projectStateTitle}</span>
-      <strong>{lyricPreview}</strong>
-      <em>{projectStateDetail}</em>
-      {#if isDraftProject}
-        <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
-          <RotateCcw size={14} aria-hidden="true" />
-          <span>기본 샘플로</span>
+    <ol class="starter-journey" aria-label="Starter route summary">
+      <li class={listenProgressClass}>
+        <button type="button" aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'} onclick={() => void onPlayPause()} disabled={isRendering}>
+          <span class="progress-index">01</span>
+          <Headphones size={18} aria-hidden="true" />
+          <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
+          <em>{playStepLabel}</em>
         </button>
-      {:else}
-        <em>{voicebankLabel}</em>
-      {/if}
-    </div>
-  </div>
-
-  <div class="starter-progress-rail starter-recipe-rail" aria-label="Starter quick checklist">
-    <button
-      type="button"
-      class={`starter-progress-step ${listenProgressClass}`}
-      aria-label={isPlaying ? '첫 단계 일시정지' : '첫 단계 샘플 듣기'}
-      onclick={() => void onPlayPause()}
-      disabled={isRendering}
-    >
-      <span class="progress-index">01</span>
-      <Headphones size={17} aria-hidden="true" />
-      <strong>{isPlaying ? '일시정지' : '샘플 듣기'}</strong>
-      <em>{playStepLabel}</em>
-    </button>
-    <button type="button" class={`starter-progress-step ${lyricProgressClass}`} aria-label="둘째 단계 가사 적용" onclick={onApplyLyricLine}>
-      <span class="progress-index">02</span>
-      <PencilLine size={17} aria-hidden="true" />
-      <strong>가사 적용</strong>
-      <em>{lyricProgressMeta}</em>
-    </button>
-    <button
-      type="button"
-      class={`starter-progress-step ${exportProgressClass}`}
-      aria-label="셋째 단계 WAV 받기"
-      onclick={() => void onDownloadWav()}
-      disabled={isRendering}
-    >
-      <span class="progress-index">03</span>
-      <Download size={17} aria-hidden="true" />
-      <strong>WAV 받기</strong>
-      <em>{exportRouteStatus}</em>
-    </button>
+      </li>
+      <li class={lyricProgressClass}>
+        <button type="button" aria-label="둘째 단계 가사 적용" onclick={onApplyLyricLine}>
+          <span class="progress-index">02</span>
+          <PencilLine size={18} aria-hidden="true" />
+          <strong>가사 적용</strong>
+          <em>{lyricProgressMeta}</em>
+        </button>
+      </li>
+      <li class={exportProgressClass}>
+        <button type="button" aria-label="셋째 단계 WAV 받기" onclick={() => void onDownloadWav()} disabled={isRendering}>
+          <span class="progress-index">03</span>
+          <Download size={18} aria-hidden="true" />
+          <strong>WAV 받기</strong>
+          <em>{exportRouteStatus}</em>
+        </button>
+      </li>
+    </ol>
   </div>
 
   <div class="starter-onboarding-grid" aria-label="Beginner launch pad">
@@ -282,9 +226,20 @@
       <div class="starter-quick-actions-head">
         <ListChecks size={16} aria-hidden="true" />
         <div>
-          <span>다음 선택</span>
-          <strong>{coachDetail}</strong>
+          <span>{projectStateTitle}</span>
+          <strong>{projectStateDetail}</strong>
         </div>
+      </div>
+      <div class="starter-mini-preview starter-project-state" aria-label="Starter lyric preview">
+        <span>{projectStateTitle}</span>
+        <strong>{lyricPreview}</strong>
+        <em>{isDraftProject ? projectStateDetail : voicebankLabel}</em>
+        {#if isDraftProject}
+          <button type="button" class="starter-inline-reset" aria-label="저장된 작업 대신 기본 샘플 열기" onclick={onResetDemoProject}>
+            <RotateCcw size={14} aria-hidden="true" />
+            <span>기본 샘플로</span>
+          </button>
+        {/if}
       </div>
       <div class="starter-utility-row">
         <button type="button" class="starter-utility-button listen" aria-label="스타터 멜로디 추천" onclick={onOpenCompose}>
@@ -311,13 +266,18 @@
     </div>
   </div>
 
-  <div class="starter-handoff-strip" aria-label="Starter handoff checklist">
+  <details class="starter-advanced-tools starter-review-tools" aria-label="Starter handoff checklist">
+    <summary>
+      <ListChecks size={15} aria-hidden="true" />
+      <span>고급 도구</span>
+      <strong>검수 · 공개 준비</strong>
+    </summary>
     <div class="starter-handoff-package">
       <span>다운로드 패키지</span>
       <strong>WAV · lyrics.txt · notes.csv</strong>
       <em>{rendered ? '렌더 완료' : 'DAW 번들에 포함'}</em>
     </div>
-    <div class="starter-handoff-links">
+    <div class="starter-handoff-links starter-review-grid">
       <a href={releaseReviewHubHref} target="_blank" rel="noreferrer" aria-label="스타터 릴리스 허브 열기">
         <ExternalLink size={15} aria-hidden="true" />
         <span>릴리스 허브</span>
@@ -331,5 +291,5 @@
         <span>DAW 리포트</span>
       </a>
     </div>
-  </div>
+  </details>
 </section>

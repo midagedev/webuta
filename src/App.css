@@ -6690,6 +6690,229 @@ button:disabled:active {
   text-align: center;
 }
 
+.starter-guide.onboarding-v5 {
+  gap: 10px;
+  padding: 10px;
+  border-color: rgba(255, 231, 106, 0.42);
+  background:
+    linear-gradient(90deg, rgba(255, 75, 202, 0.1), rgba(88, 244, 255, 0.08), rgba(157, 255, 106, 0.07)),
+    rgba(8, 7, 18, 0.94);
+}
+
+.starter-guide.onboarding-v5 .starter-title span {
+  color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-progress-pill {
+  color: var(--tracker-amber, #ffe76a) !important;
+  border-color: rgba(255, 231, 106, 0.44) !important;
+  background: rgba(255, 231, 106, 0.1) !important;
+}
+
+.starter-guide-launch {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.starter-hero-action {
+  min-width: 0;
+  min-height: 120px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.42fr);
+  gap: 12px;
+  align-items: stretch;
+  padding: 12px;
+  border: 1px solid rgba(255, 231, 106, 0.58);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 231, 106, 0.16), rgba(255, 75, 202, 0.1), rgba(88, 244, 255, 0.08)),
+    rgba(5, 7, 14, 0.88);
+}
+
+.starter-guide.onboarding-v5 .starter-coach-copy {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+}
+
+.starter-guide.onboarding-v5 .starter-coach-copy span {
+  color: var(--tracker-amber, #ffe76a);
+  font-size: 10px;
+}
+
+.starter-guide.onboarding-v5 .starter-coach-copy strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 30px;
+  line-height: 1;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v5 .starter-coach-copy em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 11px;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v5 .starter-next-button {
+  min-height: 92px;
+  justify-content: center;
+  text-align: center;
+}
+
+.starter-guide.onboarding-v5 .starter-next-button span {
+  font-size: 15px;
+}
+
+.starter-guide.onboarding-v5 .starter-next-button strong {
+  font-size: 10px;
+}
+
+.starter-journey {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.starter-journey li,
+.starter-journey button {
+  min-width: 0;
+}
+
+.starter-journey button {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  display: grid;
+  grid-template-columns: 34px 22px minmax(0, 1fr);
+  grid-template-areas:
+    "index icon title"
+    "index icon meta";
+  align-items: center;
+  column-gap: 7px;
+  padding: 10px;
+  border: 1px solid rgba(88, 244, 255, 0.3);
+  border-radius: 4px;
+  color: var(--tracker-text, #f8f4ff);
+  background: rgba(12, 14, 26, 0.82);
+  text-align: left;
+  transition:
+    transform 115ms ease,
+    filter 115ms ease,
+    border-color 115ms ease,
+    box-shadow 115ms ease;
+}
+
+.starter-journey svg {
+  grid-area: icon;
+  color: var(--tracker-cyan, #58f4ff);
+}
+
+.starter-journey strong,
+.starter-journey em {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-journey strong {
+  grid-area: title;
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.starter-journey em {
+  grid-area: meta;
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.starter-journey li.current button {
+  border-color: rgba(255, 231, 106, 0.6);
+  background: rgba(255, 231, 106, 0.12);
+}
+
+.starter-journey li.current svg,
+.starter-journey li.current strong,
+.starter-journey li.current em,
+.starter-journey li.current .progress-index {
+  color: var(--tracker-amber, #ffe76a);
+}
+
+.starter-journey li.done button {
+  border-color: rgba(157, 255, 106, 0.52);
+  background: rgba(157, 255, 106, 0.12);
+}
+
+.starter-journey li.done svg,
+.starter-journey li.done strong,
+.starter-journey li.done em,
+.starter-journey li.done .progress-index {
+  color: var(--tracker-green, #9dff6a);
+}
+
+.starter-guide.onboarding-v5 .starter-onboarding-grid {
+  grid-template-columns: minmax(320px, 1fr) minmax(260px, 0.78fr);
+  gap: 10px;
+}
+
+.starter-guide.onboarding-v5 .starter-next-steps-card {
+  grid-template-rows: auto auto auto;
+  border-color: rgba(88, 244, 255, 0.34);
+}
+
+.starter-guide.onboarding-v5 .starter-project-state {
+  min-height: 0;
+}
+
+.starter-guide.onboarding-v5 .starter-project-state strong {
+  font-size: 16px;
+}
+
+.starter-guide.onboarding-v5 .starter-quick-actions .starter-utility-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.starter-guide.onboarding-v5 .starter-quick-actions .starter-utility-button {
+  min-height: 68px;
+}
+
+.starter-review-tools {
+  min-width: 0;
+  padding: 0;
+  border-color: rgba(255, 231, 106, 0.26);
+}
+
+.starter-review-tools[open] {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.2fr);
+  gap: 8px;
+  padding: 0 8px 8px;
+}
+
+.starter-review-tools > summary {
+  min-width: 0;
+}
+
+.starter-review-tools[open] > summary {
+  grid-column: 1 / -1;
+}
+
+.starter-review-grid {
+  align-content: stretch;
+}
+
 .starter-guide.onboarding-v3 .starter-focus {
   min-height: 106px;
   grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
@@ -7479,6 +7702,138 @@ button:disabled:active {
 
   .starter-handoff-links a span {
     font-size: 9px;
+  }
+
+  .starter-guide.onboarding-v5 {
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-guide-head {
+    display: grid;
+    grid-template-columns: minmax(112px, 0.72fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .starter-guide.onboarding-v5 .starter-status {
+    align-content: stretch;
+  }
+
+  .starter-guide-launch {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .starter-hero-action {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-coach-copy {
+    min-height: 0;
+  }
+
+  .starter-guide.onboarding-v5 .starter-coach-copy span {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-coach-copy strong {
+    font-size: 19px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-coach-copy em {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-next-button {
+    min-height: 52px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-next-button span {
+    font-size: 12px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-next-button strong {
+    font-size: 8px;
+  }
+
+  .starter-journey {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .starter-journey button {
+    min-height: 50px;
+    padding: 6px;
+  }
+
+  .starter-journey strong {
+    font-size: 10px;
+  }
+
+  .starter-journey em {
+    font-size: 8px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-onboarding-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-next-steps-card {
+    display: none;
+  }
+
+  .starter-guide.onboarding-v5 .starter-project-state {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 8px;
+    padding: 7px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-project-state span,
+  .starter-guide.onboarding-v5 .starter-project-state strong,
+  .starter-guide.onboarding-v5 .starter-project-state em {
+    grid-column: 1;
+  }
+
+  .starter-guide.onboarding-v5 .starter-project-state strong {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .starter-guide.onboarding-v5 .starter-inline-reset {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    min-height: 36px;
+    padding: 0 8px;
+  }
+
+  .starter-guide.onboarding-v5 .starter-quick-actions .starter-utility-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .starter-guide.onboarding-v5 .starter-quick-actions .starter-utility-button {
+    min-height: 58px;
+  }
+
+  .starter-review-tools[open] {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 0 7px 7px;
+  }
+
+  .starter-review-tools .starter-handoff-package {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 8px;
+  }
+
+  .starter-review-tools .starter-handoff-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .starter-guide.onboarding-v3 .starter-focus {
