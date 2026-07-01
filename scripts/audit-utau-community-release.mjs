@@ -286,6 +286,11 @@ function publicReviewGate(paths) {
       'progressSummary',
       'problemList',
       'Finish every required score before downloading',
+      '10-minute listening review path',
+      'manual evidence only after real listening',
+      'Listen phrase by phrase',
+      'Compare V3 against V2',
+      '4/5 or higher',
       'release:accept-evidence',
       'Downloads',
     ]) {
@@ -514,6 +519,7 @@ function readmeGate(paths) {
       'License Boundaries',
       'public/review/index.html',
       '60-second physical handoff path',
+      '10-minute listening review path',
       'First-Vocal-Sketch.wav',
       'release:accept-evidence',
       'Downloads',
@@ -813,6 +819,7 @@ function validatePagesEvidence(evidence, bundled, localBytes, problems) {
     'pages V3 zip bytes match local bundle',
     'pages release review hub loaded',
     'pages V3 listening review scorecard loaded',
+    'pages V3 listening review path loaded',
     'pages V3 listening review download gate loaded',
     'pages V3 listening review audio loaded',
     'pages WAV DAW handoff builder loaded',
@@ -893,6 +900,16 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
       evidence.checks.push('pages V3 listening review download gate loaded')
     } else {
       problems.push('GitHub Pages V3 listening review is missing scorecard download gate markers')
+    }
+    if (
+      html.includes('10-minute listening review path') &&
+      html.includes('manual evidence only after real listening') &&
+      html.includes('Compare V3 against V2') &&
+      html.includes('listening-scores.local.json')
+    ) {
+      evidence.checks.push('pages V3 listening review path loaded')
+    } else {
+      problems.push('GitHub Pages V3 listening review is missing listening path markers')
     }
   }
   if (handoff?.ok) {

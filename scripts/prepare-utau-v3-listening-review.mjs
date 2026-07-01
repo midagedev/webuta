@@ -483,9 +483,24 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     p { color: var(--muted); line-height: 1.55; }
     code { color: #9cff8a; word-break: break-all; }
     form { display: grid; gap: 16px; }
-    .notice, article, fieldset, .output { border: 1px solid #2d3544; border-radius: 8px; background: var(--panel); }
+    .notice, .listening-route, article, fieldset, .output { border: 1px solid #2d3544; border-radius: 8px; background: var(--panel); }
     .notice { padding: 14px 16px; }
     .notice strong { color: var(--accent); }
+    .listening-route { display: grid; gap: 14px; margin: 16px 0; padding: 16px; border-color: #355567; }
+    .route-head { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+    .route-head h2 { margin: 0; font-size: 21px; }
+    .route-pill { display: inline-flex; min-height: 30px; align-items: center; border: 1px solid #37596a; border-radius: 999px; padding: 0 10px; color: var(--accent); background: #10131b; font-size: 12px; font-weight: 900; }
+    .route-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .route-step { display: grid; gap: 8px; align-content: start; min-height: 142px; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: #10131b; }
+    .route-step span { width: 30px; min-height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: #071113; background: var(--accent); font-size: 12px; font-weight: 950; }
+    .route-step strong, .route-step em { display: block; min-width: 0; }
+    .route-step strong { color: var(--text); font-size: 15px; line-height: 1.15; }
+    .route-step em { color: var(--muted); font-size: 12px; font-style: normal; line-height: 1.38; }
+    .review-reference { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .review-reference div { min-width: 0; padding: 10px; border: 1px solid #31384a; border-radius: 7px; background: #111722; }
+    .review-reference span, .review-reference strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .review-reference span { color: var(--accent); font-size: 11px; font-weight: 900; }
+    .review-reference strong { margin-top: 4px; color: var(--text); font-size: 13px; }
     .meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
     label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
     input, select, textarea, button { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #10131b; color: var(--text); font: inherit; }
@@ -519,7 +534,7 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     .ok { color: var(--ok); font-weight: 800; }
     @media (max-width: 760px) {
       h1 { font-size: 30px; }
-      .meta, .scores, .comparison-grid { grid-template-columns: 1fr; }
+      .meta, .scores, .comparison-grid, .route-grid, .review-reference { grid-template-columns: 1fr; }
       button { width: 100%; }
     }
   </style>
@@ -533,6 +548,52 @@ export function renderHtml({ phrases, comparisons = [], listeningTemplatePath })
     </div>
     <p>Template path: <code>${escapeHtml(listeningTemplatePath)}</code>. A phrase should score 4/5 or higher before community release.</p>
     <p>After downloading this JSON, download <code>handoff-report.local.json</code> from the DAW handoff page too, keep both files in Downloads, then accept both with <code>npm run release:accept-evidence</code>. Use explicit <code>--scores</code> and <code>--handoff</code> paths only when the files are somewhere else.</p>
+    <section class="listening-route" aria-label="10-minute listening review path">
+      <div class="route-head">
+        <h2>10-minute listening review path</h2>
+        <span class="route-pill">manual evidence only after real listening</span>
+      </div>
+      <div class="route-grid">
+        <div class="route-step">
+          <span>01</span>
+          <strong>Set reviewer info</strong>
+          <em>Fill reviewer, playback device, and choose a passing decision only after every required score is honest.</em>
+        </div>
+        <div class="route-step">
+          <span>02</span>
+          <strong>Listen phrase by phrase</strong>
+          <em>Use headphones or neutral speakers, then score Korean clarity, vowel stability, consonants, musicality, and artifacts.</em>
+        </div>
+        <div class="route-step">
+          <span>03</span>
+          <strong>Compare V3 against V2</strong>
+          <em>For each phrase, score whether current V3 is clearly better than the legacy V2 baseline.</em>
+        </div>
+        <div class="route-step">
+          <span>04</span>
+          <strong>Download the JSON</strong>
+          <em>Only download listening-scores.local.json after the status says the release scorecard passes.</em>
+        </div>
+      </div>
+      <div class="review-reference" aria-label="Listening review reference">
+        <div>
+          <span>phrases</span>
+          <strong>${phrases.length} V3 renders</strong>
+        </div>
+        <div>
+          <span>comparison</span>
+          <strong>${comparisons.length} legacy V2 WAVs</strong>
+        </div>
+        <div>
+          <span>threshold</span>
+          <strong>4/5 or higher</strong>
+        </div>
+        <div>
+          <span>output</span>
+          <strong>listening-scores.local.json</strong>
+        </div>
+      </div>
+    </section>
     <form id="scorecardForm">
       <section class="meta" aria-label="Review metadata">
         <label>Reviewer
@@ -942,6 +1003,7 @@ function renderReadme({ indexHtmlPath, listeningTemplatePath, phrases, compariso
     `Score template: ${listeningTemplatePath}`,
     '',
     'Open the HTML scorecard, review each phrase on headphones or neutral speakers, and download `listening-scores.local.json` after the scorecard says it passes.',
+    'The scorecard starts with a `10-minute listening review path`: set reviewer info, listen phrase by phrase, compare V3 against V2, then download the JSON only after real listening.',
     'The HTML scorecard autosaves an in-progress draft in the current browser and includes a clear-draft control.',
     'The scorecard shows metadata, phrase-score, V2/V3 comparison progress, and a problem list; JSON download stays disabled until every required score meets the release thresholds.',
     'After downloading this file, download `handoff-report.local.json` from the DAW handoff page too, keep both files in Downloads, then accept both with `npm run release:accept-evidence` before running the final release audit. Use explicit `--scores` and `--handoff` paths only when the files are somewhere else.',

@@ -420,7 +420,7 @@ async function makeFixture(overrides = {}) {
   writeJson(join(review, 'review-manifest.json'), makeReviewManifest(review))
   writeFileSync(
     join(root, 'public', 'review', 'v3', 'index.html'),
-    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Downloads</p><code>npm run release:accept-evidence</code>',
+    '<h1>WebUtau Korean V3 Listening Review</h1><p>No recording step</p><section aria-label="10-minute listening review path"><p>manual evidence only after real listening</p><p>Listen phrase by phrase</p><p>Compare V3 against V2</p><p>4/5 or higher</p></section><p id="progressSummary"></p><ul id="problemList"></ul><button title="Finish every required score before downloading">Download JSON</button><code>listening-scores.local.json</code><p>Downloads</p><code>npm run release:accept-evidence</code>',
   )
   writeFileSync(join(root, 'public', 'review', 'v3', 'README.md'), '# WebUtau Korean V3 Listening Review\n')
   writeFileSync(join(root, 'public', 'review', 'v3', 'listening-scores.local.template.json'), '{}\n')
@@ -475,6 +475,7 @@ async function makeFixture(overrides = {}) {
         'pages V3 zip bytes match local bundle',
         'pages release review hub loaded',
         'pages V3 listening review scorecard loaded',
+        'pages V3 listening review path loaded',
         'pages V3 listening review download gate loaded',
         'pages V3 listening review audio loaded',
         'pages WAV DAW handoff builder loaded',
@@ -853,6 +854,7 @@ function makeReadme() {
     'Kasane Teto assets are not bundled in this repository.',
     'See License Boundaries.',
     'Use `public/review/index.html` as the release review hub.',
+    'Use the `10-minute listening review path` before accepting listening evidence.',
     'Use the `60-second physical handoff path` to export `First-Vocal-Sketch.wav` before DAW import.',
     'Run `npm run release:accept-evidence` after downloading both release JSON files into Downloads.',
     '## Screenshots',
