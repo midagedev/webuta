@@ -250,7 +250,7 @@
     <input
       bind:this={projectInput}
       type="file"
-      accept=".webutau.json,.ust,.ustx,.yaml,.yml,.json"
+      accept=".webutau.json,.ust,.ustx,.mid,.midi,.smf,.yaml,.yml,.json"
       class="hidden-input"
       onchange={(event) => void handleProjectFileChange(event)}
     />

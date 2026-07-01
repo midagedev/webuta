@@ -4,6 +4,7 @@ import JSZip from 'jszip'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.svelte'
 import { demoProject } from './demoProject'
+import { createMelodyMidi } from './midi'
 import { serializeWebutaProject } from './projectFile'
 import { loadSavedProject, saveProject } from './projectStorage'
 import { clearSavedVoicebankFile, saveVoicebankFile } from './voicebankStorage'
@@ -492,6 +493,26 @@ describe('App editing workflow', () => {
       ])
     })
     expect(screen.getAllByText('classic-hook.ust').length).toBeGreaterThan(0)
+  })
+
+  it('imports a MIDI melody file as a vocal sketch project', async () => {
+    const { container } = render(App)
+    const projectInput = container.querySelector('input[accept*=".mid"]') as HTMLInputElement
+    const midiBytes = createMelodyMidi(demoProject)
+    const midiBody = midiBytes.buffer.slice(midiBytes.byteOffset, midiBytes.byteOffset + midiBytes.byteLength) as ArrayBuffer
+    const file = new File([midiBody], 'starter-hook.mid', { type: 'audio/midi' })
+
+    fireEvent.change(projectInput, { target: { files: [file] } })
+
+    await waitFor(() => {
+      const savedProject = loadSavedProject()
+      expect(savedProject?.source).toEqual({ fileName: 'starter-hook.mid', format: 'midi' })
+      expect(savedProject?.name).toBe('starter hook')
+      expect(savedProject?.notes.map((note) => note.lyric)).toEqual(defaultLyrics)
+      expect(savedProject?.notes.map((note) => note.tone)).toEqual([69, 71, 72, 71, 74, 72, 71, 69, 72, 74, 76])
+    })
+    expect(screen.getByLabelText('Current project').textContent).toContain('starter hook')
+    expect(screen.getAllByText('starter-hook.mid loaded').length).toBeGreaterThan(0)
   })
 
   it('saves native WebUtau project JSON and keeps USTX/UST export available', async () => {

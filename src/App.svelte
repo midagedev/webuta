@@ -61,6 +61,7 @@
   import { fetchLocalNeuralModelCard } from './renderers/localNeuralRenderer'
   import { localNeuralEndpoint, neuralModelCards as initialNeuralModelCards, renderers, rendererCapabilities } from './renderers/registry'
   import { createUtauSampleRenderer } from './renderers/utauSampleRenderer'
+  import { parseMelodyMidi } from './midi'
   import { parseUst, serializeUst } from './ust'
   import { parseUstx, serializeUstx } from './ustx'
   import {
@@ -350,9 +351,8 @@
   }
 
   async function handleProjectFile(file: File) {
-    const text = await file.text()
     try {
-      const nextProject = parseProjectFile(text, file.name)
+      const nextProject = await parseProjectUpload(file)
       projectHistory = replaceProjectHistory(nextProject)
       selectedNoteId = nextProject.notes[0]?.id ?? ''
       performanceKeys = nextProject.notes.slice(0, 8)
@@ -1497,6 +1497,13 @@
       return error.message
     }
     return 'Unknown error'
+  }
+
+  async function parseProjectUpload(file: File) {
+    if (/\.(midi?|smf)$/iu.test(file.name)) {
+      return parseMelodyMidi(await file.arrayBuffer(), file.name)
+    }
+    return parseProjectFile(await file.text(), file.name)
   }
 
   function parseProjectFile(text: string, fileName: string) {

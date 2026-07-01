@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { demoProject } from './demoProject'
-import { createChordMidi, createMelodyMidi } from './midi'
+import { demoProject, demoSamples } from './demoProject'
+import { createChordMidi, createMelodyMidi, parseMelodyMidi } from './midi'
 
 describe('MIDI export', () => {
   it('writes a type-1 melody MIDI with tempo, lyrics, and note events', () => {
@@ -29,6 +29,37 @@ describe('MIDI export', () => {
     expect(text(midi)).toContain('Am')
     expect(hasEvent(midi, [0x91, 60, 72])).toBe(true)
     expect(hasEvent(midi, [0x81, 60, 0])).toBe(true)
+  })
+
+  it('imports a melody MIDI as a vocal project with tempo and lyric meta events', () => {
+    const project = parseMelodyMidi(createMelodyMidi(demoProject), 'starter-hook.mid')
+
+    expect(project.name).toBe('starter hook')
+    expect(project.bpm).toBe(128)
+    expect(project.tempoChanges).toEqual([{ position: 0, bpm: 128 }])
+    expect(project.beatPerBar).toBe(4)
+    expect(project.beatUnit).toBe(4)
+    expect(project.source).toEqual({ fileName: 'starter-hook.mid', format: 'midi' })
+    expect(project.notes.map((note) => note.lyric)).toEqual(['네', '오', '빛', '이', '메', '로', '디', '로', '데', '려', '가'])
+    expect(project.notes.map((note) => note.tone)).toEqual([69, 71, 72, 71, 74, 72, 71, 69, 72, 74, 76])
+    expect(project.notes.map((note) => note.start)).toEqual([0, 480, 960, 1440, 1680, 1920, 2400, 2880, 3360, 3840, 4320])
+    expect(project.notes.map((note) => note.duration)).toEqual([360, 360, 480, 240, 240, 360, 360, 360, 360, 360, 960])
+    expect(project.parts[0].duration).toBeGreaterThanOrEqual(5760)
+  })
+
+  it('round-trips every varied starter sample through melody MIDI', () => {
+    for (const sample of demoSamples) {
+      const project = parseMelodyMidi(createMelodyMidi(sample.project), `${sample.id}.mid`)
+
+      expect(project.bpm).toBe(sample.project.bpm)
+      expect(project.tempoChanges).toEqual(sample.project.tempoChanges ?? [{ position: 0, bpm: sample.project.bpm }])
+      expect(project.beatPerBar).toBe(sample.project.beatPerBar)
+      expect(project.beatUnit).toBe(sample.project.beatUnit)
+      expect(project.notes.map((note) => note.lyric)).toEqual(sample.project.notes.map((note) => note.lyric))
+      expect(project.notes.map((note) => note.tone)).toEqual(sample.project.notes.map((note) => note.tone))
+      expect(project.notes.map((note) => note.start)).toEqual(sample.project.notes.map((note) => note.start))
+      expect(project.notes.map((note) => note.duration)).toEqual(sample.project.notes.map((note) => note.duration))
+    }
   })
 })
 
