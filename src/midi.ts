@@ -1,3 +1,4 @@
+import { normalizeNoteIntensity, sanitizeOptionalNoteIntensity } from './expression'
 import { normalizeNotePitchBend } from './pitchBend'
 import { normalizedTempoChanges, sortedNotes } from './music'
 import { TICKS_PER_BEAT, type ChordMarker, type NotePitchBend, type SongProject } from './types'
@@ -10,6 +11,7 @@ type MidiEvent = {
 
 const MELODY_CHANNEL = 0
 const CHORD_CHANNEL = 1
+const DEFAULT_MIDI_NOTE_VELOCITY = 96
 const MIDI_PITCH_BEND_RANGE_CENTS = 200
 const MIDI_PITCH_CENTER = 0x2000
 const textEncoder = new TextEncoder()
@@ -21,6 +23,7 @@ type ParsedMidiNote = {
   tone: number
   lyric: string
   channel: number
+  intensity?: number
   pitchBend?: NotePitchBend
 }
 
@@ -129,6 +132,7 @@ export function parseMelodyMidi(bytes: Uint8Array | ArrayBuffer, fileName = 'mel
       duration: Math.max(1, note.duration),
       tone: note.tone,
       lyric: note.lyric || lyricForMidiNote(note, sortedLyrics, index),
+      ...(note.intensity !== undefined ? { intensity: note.intensity } : {}),
       ...(note.pitchBend ? { pitchBend: note.pitchBend } : {}),
     }))
   if (projectNotes.length === 0) {
@@ -178,9 +182,10 @@ function createMelodyTrack(project: SongProject) {
     const start = sanitizeTick(note.start)
     const end = Math.max(start + 1, sanitizeTick(note.start + note.duration))
     const tone = sanitizeMidiNote(note.tone)
+    const velocity = noteIntensityToMidiVelocity(note.intensity)
     events.push(metaEvent(start, 3, 0x05, note.lyric))
     events.push(...pitchBendEventsForNote(note.pitchBend, start, end, MELODY_CHANNEL))
-    events.push({ tick: start, priority: 5, data: [0x90 | MELODY_CHANNEL, tone, 96] })
+    events.push({ tick: start, priority: 5, data: [0x90 | MELODY_CHANNEL, tone, velocity] })
     events.push({ tick: end, priority: 0, data: [0x80 | MELODY_CHANNEL, tone, 0] })
   }
   return createTrack(events)
@@ -351,6 +356,18 @@ function sanitizeMidiNote(tone: number) {
   return Number.isFinite(tone) ? Math.min(127, Math.max(0, Math.round(tone))) : 60
 }
 
+function noteIntensityToMidiVelocity(intensity: number | undefined) {
+  return sanitizeMidiVelocity((normalizeNoteIntensity(intensity) / 100) * DEFAULT_MIDI_NOTE_VELOCITY)
+}
+
+function midiVelocityToNoteIntensity(velocity: number) {
+  return sanitizeOptionalNoteIntensity((sanitizeMidiVelocity(velocity) / DEFAULT_MIDI_NOTE_VELOCITY) * 100)
+}
+
+function sanitizeMidiVelocity(velocity: number) {
+  return Number.isFinite(velocity) ? Math.min(127, Math.max(1, Math.round(velocity))) : DEFAULT_MIDI_NOTE_VELOCITY
+}
+
 function varLen(value: number) {
   let buffer = Math.max(0, Math.round(value)) & 0x7f
   const bytes = [buffer]
@@ -392,7 +409,7 @@ function parseMidiTrack(
   signatures: ParsedMidiTimeSignature[],
 ) {
   const reader = new MidiEventReader(data)
-  const active = new Map<string, Array<{ tick: number; lyric: string }>>()
+  const active = new Map<string, Array<{ tick: number; lyric: string; intensity?: number }>>()
   let tick = 0
   let runningStatus = 0
   let pendingLyric = ''
@@ -455,7 +472,12 @@ function parseMidiTrack(
       const scaledTick = scaleMidiTick(tick, division)
       if (command === 0x90 && velocity > 0) {
         const stack = active.get(key) ?? []
-        stack.push({ tick: scaledTick, lyric: pendingLyric })
+        const intensity = midiVelocityToNoteIntensity(velocity)
+        stack.push({
+          tick: scaledTick,
+          lyric: pendingLyric,
+          ...(intensity !== undefined ? { intensity } : {}),
+        })
         active.set(key, stack)
         pendingLyric = ''
       } else {
@@ -468,6 +490,7 @@ function parseMidiTrack(
             tone: sanitizeMidiNote(tone),
             lyric: start.lyric,
             channel,
+            ...(start.intensity !== undefined ? { intensity: start.intensity } : {}),
             ...optionalImportedPitchBend(start.tick, scaledTick, channel, track.pitchWheels),
           })
         }

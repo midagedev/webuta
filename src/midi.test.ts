@@ -80,6 +80,19 @@ describe('MIDI export', () => {
     expect(imported.notes[1].pitchBend).toBeUndefined()
   })
 
+  it('round-trips WebUtau intensity as MIDI note velocity', () => {
+    const dynamicProject = {
+      ...demoProject,
+      notes: demoProject.notes.map((note, index) => (index === 0 ? { ...note, intensity: 67 } : note)),
+    }
+    const midi = createMelodyMidi(dynamicProject)
+    const imported = parseMelodyMidi(midi, 'dynamic-starter-hook.mid')
+
+    expect(hasEvent(midi, [0x90, 69, 64])).toBe(true)
+    expect(imported.notes[0].intensity).toBe(67)
+    expect(imported.notes[1].intensity).toBeUndefined()
+  })
+
   it('prefers the lyric melody track when chord-guide notes are present in the same MIDI file', () => {
     const project = parseMelodyMidi(createMelodyAndChordMidi(demoProject), 'full-song.mid')
 
@@ -122,6 +135,7 @@ describe('MIDI export', () => {
       expect(project.notes.map((note) => note.tone)).toEqual(sample.project.notes.map((note) => note.tone))
       expect(project.notes.map((note) => note.start)).toEqual(sample.project.notes.map((note) => note.start))
       expect(project.notes.map((note) => note.duration)).toEqual(sample.project.notes.map((note) => note.duration))
+      expect(project.notes.map((note) => note.intensity)).toEqual(sample.project.notes.map((note) => note.intensity))
     }
   })
 })

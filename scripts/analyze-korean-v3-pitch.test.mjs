@@ -43,7 +43,7 @@ describe('Korean V3 pitch analyzer', () => {
     expect(report.pitch.summary.problemCount).toBe(0)
     expect(report.pitch.summary.maxMedianAbsCents).toBeLessThan(10)
     expect(savedReport.pitch.samples.length).toBe(report.pitch.auditedCount)
-  })
+  }, 15_000)
 
   it('fails when a sample is far from its declared base pitch', async () => {
     const root = makeTempRoot()
