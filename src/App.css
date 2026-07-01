@@ -6216,14 +6216,84 @@ button:disabled:active {
 }
 
 /* Onboarding clarity pass: one obvious launch path before the dense editor. */
-.starter-guide.onboarding-v2 {
+.starter-guide.onboarding-v2,
+.starter-guide.onboarding-v3 {
   gap: 8px;
+}
+
+.starter-launch-panel {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(210px, 0.42fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.starter-guide.onboarding-v3 .starter-focus {
+  min-height: 106px;
+  grid-template-columns: minmax(0, 0.72fr) minmax(248px, 0.48fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.starter-guide.onboarding-v3 .starter-focus-copy strong {
+  font-size: 24px;
+  white-space: normal;
+}
+
+.starter-guide.onboarding-v3 .starter-next-button {
+  min-height: 72px;
+  justify-content: center;
+}
+
+.starter-mini-preview {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid rgba(157, 255, 106, 0.34);
+  border-radius: 4px;
+  background: rgba(5, 7, 14, 0.74);
+}
+
+.starter-mini-preview span,
+.starter-mini-preview strong,
+.starter-mini-preview em,
+.starter-quick-actions-head span,
+.starter-quick-actions-head strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+}
+
+.starter-mini-preview span,
+.starter-quick-actions-head span {
+  color: var(--tracker-green, #9dff6a);
+  font-size: 9px;
+  font-weight: 950;
+}
+
+.starter-mini-preview strong {
+  color: var(--tracker-green, #9dff6a);
+  font-size: 19px;
+  line-height: 1.12;
+  font-weight: 950;
+}
+
+.starter-mini-preview em {
+  color: var(--tracker-muted, #9fb3ca);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .starter-onboarding-grid {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(230px, 0.78fr) minmax(320px, 1.22fr);
+  grid-template-columns: minmax(320px, 1.15fr) minmax(260px, 0.85fr);
   gap: 8px;
   align-items: stretch;
 }
@@ -6259,6 +6329,75 @@ button:disabled:active {
   border: 1px solid rgba(88, 244, 255, 0.32);
   border-radius: 4px;
   background: rgba(5, 7, 14, 0.74);
+}
+
+.starter-quick-actions {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid rgba(255, 75, 202, 0.32);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255, 75, 202, 0.075), rgba(88, 244, 255, 0.06)),
+    rgba(5, 7, 14, 0.72);
+}
+
+.starter-quick-actions-head {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.starter-quick-actions-head svg {
+  flex: 0 0 auto;
+  color: var(--tracker-cyan, #58f4ff);
+}
+
+.starter-quick-actions-head div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.starter-quick-actions-head strong {
+  color: var(--tracker-text, #f8f4ff);
+  font-size: 12px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.starter-quick-actions .starter-utility-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.starter-quick-actions .starter-utility-button {
+  min-height: 82px;
+  display: grid;
+  grid-template-rows: 20px auto auto;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 7px 6px;
+  text-align: center;
+}
+
+.starter-quick-actions .starter-utility-button span,
+.starter-quick-actions .starter-utility-button strong {
+  max-width: 100%;
+  text-align: center;
+}
+
+.starter-quick-actions .starter-utility-button span {
+  white-space: normal;
+  line-height: 1.14;
+}
+
+.starter-quick-actions .starter-utility-button strong {
+  font-size: 8px;
 }
 
 .starter-edit-head {
@@ -6650,6 +6789,35 @@ button:disabled:active {
 }
 
 @media (max-width: 760px) {
+  .starter-launch-panel {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .starter-guide.onboarding-v3 .starter-focus {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .starter-guide.onboarding-v3 .starter-focus-copy strong {
+    font-size: 18px;
+  }
+
+  .starter-guide.onboarding-v3 .starter-next-button {
+    min-height: 52px;
+  }
+
+  .starter-mini-preview {
+    padding: 7px;
+    gap: 3px;
+  }
+
+  .starter-mini-preview strong {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
   .starter-onboarding-grid,
   .starter-guide.onboarding-v2 .starter-hero {
     grid-template-columns: 1fr;
@@ -6667,6 +6835,31 @@ button:disabled:active {
 
   .starter-edit-card {
     padding: 7px;
+  }
+
+  .starter-quick-actions {
+    padding: 7px;
+  }
+
+  .starter-quick-actions-head strong {
+    font-size: 11px;
+  }
+
+  .starter-quick-actions .starter-utility-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .starter-quick-actions .starter-utility-button {
+    min-height: 76px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 18px auto auto;
+    grid-template-areas: none;
+  }
+
+  .starter-quick-actions .starter-utility-button svg,
+  .starter-quick-actions .starter-utility-button span,
+  .starter-quick-actions .starter-utility-button strong {
+    grid-area: auto;
   }
 
   .starter-lyric-input-row {

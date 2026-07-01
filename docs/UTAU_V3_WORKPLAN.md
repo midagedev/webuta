@@ -382,12 +382,11 @@ Current verified V3 evidence:
   or alias contract problems.
 - `npm run voicebank:demo-v3` passes in Chromium: bundled V3 is loaded,
   first-run aliases match 8/8, render warnings are clear, the lyric line is
-  visible, the first-run `VOCAL STARTER` / `01 샘플 듣기` / `02 가사 적용`
-  / `03 WAV 받기` quick checklist, `다음 행동` / `샘플 먼저 듣기` focused
-  next action, current-step badge, inline starter lyric input, `처음 1분`
-  route, starter `샘플 듣기` / `가사 바꾸기` / `멜로디 추천` / `WAV 받기`
-  action cards, current lyric card, folded `프로젝트 도구`, and Korean mode
-  navigation are visible, the community
+  visible, the first-run `START HERE` / `01 샘플 듣기` / `02 가사 적용`
+  / `03 WAV 받기` quick checklist, `STEP 01` / `샘플 먼저 듣기` focused
+  launch panel, inline starter lyric input, current lyric card, visible
+  `작업 시작` utilities for `멜로디 추천`, `새 프로젝트`, and `기본 샘플`, and
+  Korean mode navigation are visible, the community
   release readiness card is visible, desktop/mobile overflow checks pass, and
   the exported WAV is 44.1 kHz mono 16-bit PCM, 6.56 seconds, 578384 bytes.
 - `npm run voicebank:demo-v3:pages` passes against
