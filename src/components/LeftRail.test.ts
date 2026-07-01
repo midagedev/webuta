@@ -24,6 +24,7 @@ describe('LeftRail release readiness', () => {
     expect(manualEvidence.textContent).toContain('자동 3/3 통과 · 수동 0/2 남음')
     expect(manualEvidence.textContent).toContain('청취 점수 저장')
     expect(manualEvidence.textContent).toContain('DAW 가져오기 확인')
+    expect(manualEvidence.textContent).toContain('npm run release:evidence-status')
     expect(manualEvidence.textContent).toContain('npm run release:accept-evidence')
     expect(screen.getByRole('link', { name: '릴리스 허브 열기' }).getAttribute('href')).toBe('/review/index.html')
     expect(screen.getByRole('link', { name: '청취 리뷰 열기' }).getAttribute('href')).toBe('/review/v3/index.html')

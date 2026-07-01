@@ -296,6 +296,7 @@ function publicReviewGate(paths) {
       'Listen phrase by phrase',
       'Compare V3 against V2',
       '4/5 or higher',
+      'release:evidence-status',
       'release:accept-evidence',
       'Downloads',
     ]) {
@@ -917,6 +918,7 @@ async function fetchPagesEvidence(pagesUrl, bundled, localBytes, publicReviewMan
     if (
       html.includes('problemList') &&
       html.includes('Finish every required score before downloading') &&
+      html.includes('release:evidence-status') &&
       html.includes('release:accept-evidence') &&
       html.includes('Downloads')
     ) {

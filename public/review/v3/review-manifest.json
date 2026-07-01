@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-01T05:42:23.253Z",
+  "generatedAt": "2026-07-01T07:56:54.316Z",
   "ok": true,
   "decision": "v3-listening-review-ready",
   "outDir": "public/review/v3",
@@ -202,6 +202,7 @@
   "nextSteps": [
     "Open index.html",
     "Use the HTML scorecard to download listening-scores.local.json",
+    "Download handoff-report.local.json from the WAV/DAW handoff page, then run npm run release:evidence-status before npm run release:accept-evidence.",
     "Tune generator consonant/noise/formant profiles if any phrase or V2 comparison scores below 4/5."
   ],
   "publishedForWeb": true

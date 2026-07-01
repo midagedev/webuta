@@ -434,6 +434,7 @@ async function assertDefaultV3DemoReady(page) {
   await page.getByLabel('Community release readiness').getByText('listening-scores.local.json 필요').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('공개 전 마지막 2단계').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('자동 3/3 통과 · 수동 0/2 남음').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Manual release evidence checklist').getByText('npm run release:evidence-status').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Manual release evidence checklist').getByText('npm run release:accept-evidence').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText('번들 V3 라이선스 포함').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Voicebank license metadata').getByText(/Generated original sample data/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })

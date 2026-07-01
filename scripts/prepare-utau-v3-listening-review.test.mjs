@@ -92,6 +92,7 @@ describe('UTAU V3 listening review pack', () => {
     expect(html).toContain('noRecordingRequired')
     expect(html).toContain('data-score-key="koreanClarityScore"')
     expect(html).toContain('listening-scores.local.json')
+    expect(html).toContain('release:evidence-status')
     expect(html).toContain('release:accept-evidence')
     expect(html).toContain('Downloads')
     expect(html).toContain('--scores')

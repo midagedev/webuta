@@ -513,7 +513,11 @@
           </div>
         </div>
         <div class="release-evidence-command">
-          <span>완료 후</span>
+          <span>확인</span>
+          <code>npm run release:evidence-status</code>
+        </div>
+        <div class="release-evidence-command">
+          <span>수락</span>
           <code>npm run release:accept-evidence</code>
         </div>
       </div>
