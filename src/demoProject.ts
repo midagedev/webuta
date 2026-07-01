@@ -11,6 +11,12 @@ export const demoProject: SongProject = {
   bpm: 112,
   beatPerBar: 4,
   beatUnit: 4,
+  chords: [
+    { symbol: 'C', start: 0, duration: TICKS_PER_BEAT * 2, tone: 60, quality: 'maj', tones: [60, 64, 67] },
+    { symbol: 'G', start: TICKS_PER_BEAT * 2, duration: TICKS_PER_BEAT * 2, tone: 67, quality: 'maj', tones: [67, 71, 74] },
+    { symbol: 'Am', start: TICKS_PER_BEAT * 4, duration: TICKS_PER_BEAT * 2, tone: 69, quality: 'min', tones: [69, 72, 76] },
+    { symbol: 'F', start: TICKS_PER_BEAT * 6, duration: TICKS_PER_BEAT * 4, tone: 65, quality: 'maj', tones: [65, 69, 72] },
+  ],
   source: {
     fileName: 'built-in-demo',
     format: 'webuta',

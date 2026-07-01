@@ -29,6 +29,7 @@ describe('composer', () => {
     expect(nextProject.notes.every((note) => note.trackId === 'track')).toBe(true)
     expect(nextProject.notes.every((note) => note.partId === 'part')).toBe(true)
     expect(nextProject.parts[0].name).toBe('Generated Hook')
+    expect(nextProject.chords?.map((chord) => chord.symbol).slice(0, 4)).toEqual(['Am', 'F', 'C', 'G'])
   })
 })
 

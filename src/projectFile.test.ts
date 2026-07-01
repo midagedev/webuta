@@ -54,6 +54,7 @@ describe('WebUtau project files', () => {
     expect(project.notes[0].flags).toBe('g-2BRE20')
     expect(project.notes[0].timing).toEqual({ sampleStartMs: 25, preutteranceMs: 72, voiceOverlapMs: 20 })
     expect(project.notes[0].envelope).toEqual({ p1Ms: 0, p2Ms: 24, p3Ms: 140, v1: 0, v2: 100, v3: 60, v4: 12 })
+    expect(project.chords?.map((chord) => chord.symbol)).toEqual(['C', 'G', 'Am', 'F'])
     expect(project.source).toEqual({
       fileName: 'saved-hook.webutau.json',
       format: 'webuta',

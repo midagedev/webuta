@@ -6998,6 +6998,34 @@ button:disabled:active {
   white-space: nowrap;
 }
 
+.starter-hook-guide {
+  min-width: 0;
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 75, 202, 0.32);
+  border-radius: 4px;
+  color: var(--tracker-pink, #ff4bca);
+  background: rgba(255, 75, 202, 0.08);
+}
+
+.starter-hook-guide svg {
+  flex: 0 0 auto;
+}
+
+.starter-hook-guide span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--tracker-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 950;
+}
+
 .starter-compass-copy em {
   color: var(--tracker-muted, #9fb3ca);
   font-size: 10px;
@@ -8003,6 +8031,16 @@ button:disabled:active {
   .starter-guide.onboarding-v6 .starter-compass-copy strong {
     font-size: 13px;
     white-space: normal;
+  }
+
+  .starter-guide.onboarding-v6 .starter-hook-guide {
+    width: 100%;
+    justify-content: center;
+    padding: 4px 6px;
+  }
+
+  .starter-guide.onboarding-v6 .starter-hook-guide span {
+    font-size: 8px;
   }
 
   .starter-guide.onboarding-v6 .starter-compass-copy em {

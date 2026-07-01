@@ -70,6 +70,15 @@ export type TempoChange = {
   bpm: number
 }
 
+export type ChordMarker = {
+  symbol: string
+  start: number
+  duration: number
+  tone?: number
+  quality?: 'maj' | 'min'
+  tones?: number[]
+}
+
 export type VoicePart = {
   id: string
   trackId: string
@@ -84,6 +93,7 @@ export type SongProject = {
   comment: string
   bpm: number
   tempoChanges?: TempoChange[]
+  chords?: ChordMarker[]
   beatPerBar: number
   beatUnit: number
   tracks: Track[]

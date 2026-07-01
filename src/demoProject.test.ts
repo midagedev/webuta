@@ -12,5 +12,7 @@ describe('default demo project', () => {
     expect(new Set(tones).size).toBeGreaterThanOrEqual(4)
     expect(intervals.some((interval) => Math.abs(interval) >= 3)).toBe(true)
     expect(intervals.every((interval) => interval === 2 || interval === 1)).toBe(false)
+    expect(demoProject.chords?.map((chord) => chord.symbol)).toEqual(['C', 'G', 'Am', 'F'])
+    expect(demoProject.chords?.map((chord) => chord.start)).toEqual([0, 960, 1920, 2880])
   })
 })

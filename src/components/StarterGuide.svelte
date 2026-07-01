@@ -84,6 +84,7 @@
   const nextActionAria = $derived(isPlaying ? '스타터 재생 일시정지' : rendered ? '스타터 WAV 받기' : '스타터 재생')
   const guideSummary = $derived(rendered ? 'WAV 준비 완료' : '듣기 · 가사 · WAV')
   const missionWavMeta = $derived(rendered ? 'download' : isRendering ? '렌더 중' : '렌더 후 저장')
+  const chordGuide = $derived(project.chords?.slice(0, 4).map((chord) => chord.symbol).join(' -> ') || '멜로디 중심')
   const focusStep = $derived(isRendering ? '02' : rendered ? '03' : '01')
   const focusTitle = $derived(
     isStarterActionLocked
@@ -185,6 +186,10 @@
     <div class="starter-compass-copy">
       <span>1분 완성 루트</span>
       <strong>샘플 듣기 -&gt; 가사 바꾸기 -&gt; WAV 저장</strong>
+      <div class="starter-hook-guide" aria-label="Starter hook chord guide">
+        <Music2 size={14} aria-hidden="true" />
+        <span>{chordGuide}</span>
+      </div>
       <em>{compassDetail}</em>
     </div>
     <div class="starter-compass-tags" aria-label="Starter readiness snapshot">
@@ -333,8 +338,8 @@
     </summary>
     <div class="starter-handoff-package">
       <span>다운로드 패키지</span>
-      <strong>WAV · lyrics.txt · notes.csv</strong>
-      <em>{rendered ? '렌더 완료' : 'DAW 번들에 포함'}</em>
+      <strong>WAV · arrangement.txt · chords.csv</strong>
+      <em>lyrics.txt · notes.csv 포함</em>
     </div>
     <div class="starter-handoff-links starter-review-grid">
       <a href={releaseReviewHubHref} target="_blank" rel="noreferrer" aria-label="스타터 릴리스 허브 열기">

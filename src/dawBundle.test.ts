@@ -38,6 +38,8 @@ describe('DAW handoff bundle', () => {
       'project/First-Vocal-Sketch.ust',
       'project/First-Vocal-Sketch.ustx',
       'project/First-Vocal-Sketch.webutau.json',
+      'project/arrangement.txt',
+      'project/chords.csv',
       'project/lyrics.txt',
       'project/notes.csv',
     ])
@@ -62,6 +64,12 @@ describe('DAW handoff bundle', () => {
         file: 'project/notes.csv',
         count: 8,
       },
+      arrangement: {
+        file: 'project/arrangement.txt',
+        chordFile: 'project/chords.csv',
+        chordCount: 4,
+        chordLine: 'C  G  Am  F',
+      },
       wav: {
         file: 'audio/First-Vocal-Sketch.wav',
         sampleRate: 44100,
@@ -78,8 +86,16 @@ describe('DAW handoff bundle', () => {
     const notesCsv = await zip.file('project/notes.csv')!.async('string')
     expect(notesCsv).toContain('index,lyric,tone,noteName,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
     expect(notesCsv).toContain('1,도,64,E4,0,420,0.000,0.469,1:1')
+    const chordsCsv = await zip.file('project/chords.csv')!.async('string')
+    expect(chordsCsv).toContain('index,symbol,startTick,durationTicks,startSeconds,durationSeconds,barBeat')
+    expect(chordsCsv).toContain('1,C,0,960,0.000,1.071,1:1')
+    const arrangement = await zip.file('project/arrangement.txt')!.async('string')
+    expect(arrangement).toContain('Chord guide:')
+    expect(arrangement).toContain('C  G  Am  F')
     const readme = await zip.file('README.txt')!.async('string')
     expect(readme).toContain('Import audio/First-Vocal-Sketch.wav into your DAW')
+    expect(readme).toContain('project/arrangement.txt')
+    expect(readme).toContain('project/chords.csv')
     expect(readme).toContain('project/lyrics.txt')
     expect(readme).toContain('project/notes.csv')
   })

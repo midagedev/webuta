@@ -11,6 +11,7 @@ describe('default demo render audit report', () => {
         'default V3 voicebank loaded',
         'first-run starter guide visible',
         'first-run one-minute path visible',
+        'first-run starter chord guide visible',
         'first-run route map visible',
         'first-run route state badges visible',
         'first-run three-step checklist visible',

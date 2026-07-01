@@ -140,6 +140,14 @@ export function applyMelodySuggestion(project: SongProject, suggestion: MelodySu
     ...project,
     name: project.name.trim() ? project.name : 'Generated Vocal Sketch',
     bpm: suggestion.bpm,
+    chords: suggestion.chords.map((chord) => ({
+      symbol: chord.symbol,
+      start: chord.start,
+      duration: chord.duration,
+      tone: chord.tone,
+      quality: chord.quality,
+      tones: [...chord.tones],
+    })),
     tracks: [
       {
         ...track,

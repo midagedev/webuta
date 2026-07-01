@@ -1,4 +1,4 @@
-import type { SongNote, SongProject, TempoChange, Track, VoicePart } from './types'
+import type { ChordMarker, SongNote, SongProject, TempoChange, Track, VoicePart } from './types'
 import { isValidNoteEnvelope } from './envelope'
 import { isValidNoteFlags, isValidNoteIntensity, isValidNoteModulation, isValidNoteVelocity } from './expression'
 import { sanitizeOptionalNotePitchBend } from './pitchBend'
@@ -63,6 +63,7 @@ export function isSongProject(value: unknown): value is SongProject {
     typeof value.comment === 'string' &&
     isFiniteNumber(value.bpm) &&
     (value.tempoChanges === undefined || (Array.isArray(value.tempoChanges) && value.tempoChanges.every(isTempoChange))) &&
+    (value.chords === undefined || (Array.isArray(value.chords) && value.chords.every(isChordMarker))) &&
     isFiniteNumber(value.beatPerBar) &&
     isFiniteNumber(value.beatUnit) &&
     Array.isArray(value.tracks) &&
@@ -129,6 +130,22 @@ function isTempoChange(value: unknown): value is TempoChange {
     return false
   }
   return isFiniteNumber(value.position) && isFiniteNumber(value.bpm)
+}
+
+function isChordMarker(value: unknown): value is ChordMarker {
+  if (!isObject(value)) {
+    return false
+  }
+  return (
+    typeof value.symbol === 'string' &&
+    value.symbol.trim().length > 0 &&
+    isFiniteNumber(value.start) &&
+    isFiniteNumber(value.duration) &&
+    value.duration > 0 &&
+    (value.tone === undefined || isFiniteNumber(value.tone)) &&
+    (value.quality === undefined || value.quality === 'maj' || value.quality === 'min') &&
+    (value.tones === undefined || (Array.isArray(value.tones) && value.tones.every(isFiniteNumber)))
+  )
 }
 
 function isSongNote(value: unknown): value is SongNote {

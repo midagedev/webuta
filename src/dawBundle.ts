@@ -3,10 +3,10 @@ import { durationTicksToSeconds, sanitizeFileName, sortedNotes, tickPositionLabe
 import { serializeWebutaProject } from './projectFile'
 import { serializeUst } from './ust'
 import { serializeUstx } from './ustx'
-import type { RenderedAudio, SongProject } from './types'
+import type { ChordMarker, RenderedAudio, SongProject } from './types'
 
 export const DAW_HANDOFF_BUNDLE_FORMAT = 'webuta-daw-handoff-bundle'
-export const DAW_HANDOFF_BUNDLE_VERSION = 2
+export const DAW_HANDOFF_BUNDLE_VERSION = 3
 
 export type DawHandoffBundleOptions = {
   project: SongProject
@@ -31,10 +31,14 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
     ust: `project/${baseName}.ust`,
     lyrics: 'project/lyrics.txt',
     notesCsv: 'project/notes.csv',
+    chordsCsv: 'project/chords.csv',
+    arrangement: 'project/arrangement.txt',
     manifest: 'manifest.json',
     readme: 'README.txt',
   }
   const lyricLine = createLyricLine(options.project)
+  const chords = sortedChords(options.project)
+  const chordLine = createChordLine(chords)
   const manifest = {
     format: DAW_HANDOFF_BUNDLE_FORMAT,
     version: DAW_HANDOFF_BUNDLE_VERSION,
@@ -57,6 +61,12 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
       file: files.notesCsv,
       count: options.project.notes.length,
     },
+    arrangement: {
+      file: files.arrangement,
+      chordFile: files.chordsCsv,
+      chordCount: chords.length,
+      chordLine,
+    },
     wav: {
       file: files.wav,
       sampleRate: options.rendered.wavInfo.sampleRate,
@@ -75,6 +85,8 @@ export async function createDawHandoffBundle(options: DawHandoffBundleOptions): 
   zip.file(files.ust, serializeUst(options.project))
   zip.file(files.lyrics, createLyricsText(options.project))
   zip.file(files.notesCsv, createNotesCsv(options.project))
+  zip.file(files.chordsCsv, createChordsCsv(options.project))
+  zip.file(files.arrangement, createArrangementText(options.project, options.voicebankName, options.rendererName))
   zip.file(files.manifest, `${JSON.stringify(manifest, null, 2)}\n`)
   zip.file(files.readme, createBundleReadme(options, files))
 
@@ -98,7 +110,7 @@ function createBundleReadme(options: DawHandoffBundleOptions, files: Record<stri
     '',
     'Quick start:',
     `1. Import ${files.wav} into your DAW as the vocal audio track.`,
-    `2. Open ${files.lyrics} to confirm the lyric line, or ${files.notesCsv} to inspect note timing.`,
+    `2. Open ${files.arrangement} for the starter chord guide, then use ${files.lyrics} and ${files.notesCsv} to align lyrics and notes.`,
     `3. Keep ${files.webuta}, ${files.ustx}, and ${files.ust} beside the WAV if you want to revise the song later.`,
     '',
     'Files:',
@@ -108,6 +120,8 @@ function createBundleReadme(options: DawHandoffBundleOptions, files: Record<stri
     `- ${files.ust}: classic UTAU project export.`,
     `- ${files.lyrics}: plain-text lyric line for quick checking.`,
     `- ${files.notesCsv}: note timing, pitch, and lyric table for DAW alignment.`,
+    `- ${files.chordsCsv}: chord timing table for quickly sketching accompaniment.`,
+    `- ${files.arrangement}: human-readable BPM, lyric, and chord guide.`,
     `- ${files.manifest}: machine-readable bundle metadata.`,
     '',
     `Voicebank: ${options.voicebankName}`,
@@ -124,11 +138,37 @@ function createLyricLine(project: SongProject) {
     .join(' ')
 }
 
+function createChordLine(chords: ChordMarker[]) {
+  return chords.map((chord) => chord.symbol).join('  ')
+}
+
 function createLyricsText(project: SongProject) {
   return [
     `${project.name}`,
     '',
     createLyricLine(project),
+    '',
+  ].join('\n')
+}
+
+function createArrangementText(project: SongProject, voicebankName: string, rendererName: string) {
+  const chords = sortedChords(project)
+  const chordLine = createChordLine(chords)
+  return [
+    `${project.name}`,
+    '',
+    `BPM: ${project.bpm}`,
+    `Meter: ${project.beatPerBar}/${project.beatUnit}`,
+    `Voicebank: ${voicebankName}`,
+    `Renderer: ${rendererName}`,
+    '',
+    'Lyric line:',
+    createLyricLine(project),
+    '',
+    'Chord guide:',
+    chordLine || 'No chord guide stored in this project.',
+    '',
+    ...chords.map((chord) => `${tickPositionLabel(chord.start, project)}  ${chord.symbol}  ${formatCsvSeconds(durationTicksToSeconds(project, chord.start, chord.duration))}s`),
     '',
   ].join('\n')
 }
@@ -157,6 +197,24 @@ function createNotesCsv(project: SongProject) {
     tickPositionLabel(note.start, project),
   ])
   return `${[header, ...rows].map((row) => row.map(csvCell).join(',')).join('\n')}\n`
+}
+
+function createChordsCsv(project: SongProject) {
+  const header = ['index', 'symbol', 'startTick', 'durationTicks', 'startSeconds', 'durationSeconds', 'barBeat']
+  const rows = sortedChords(project).map((chord, index) => [
+    String(index + 1),
+    chord.symbol,
+    String(chord.start),
+    String(chord.duration),
+    formatCsvSeconds(ticksToSecondsInProject(chord.start, project)),
+    formatCsvSeconds(durationTicksToSeconds(project, chord.start, chord.duration)),
+    tickPositionLabel(chord.start, project),
+  ])
+  return `${[header, ...rows].map((row) => row.map(csvCell).join(',')).join('\n')}\n`
+}
+
+function sortedChords(project: SongProject) {
+  return [...(project.chords ?? [])].sort((a, b) => a.start - b.start || a.symbol.localeCompare(b.symbol))
 }
 
 function formatCsvSeconds(seconds: number) {

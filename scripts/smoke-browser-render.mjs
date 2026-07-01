@@ -365,6 +365,7 @@ async function assertDefaultV3DemoReady(page) {
   await starterGuide.getByText('듣기 · 가사 · WAV').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('1분 완성 루트').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('First run one-minute path').getByText('샘플 듣기 -> 가사 바꾸기 -> WAV 저장').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await page.getByLabel('Starter hook chord guide').getByText('C -> G -> Am -> F').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter readiness snapshot').getByText(/바로 시작 가능|보컬 로딩 중/u).waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await page.getByLabel('Starter launch panel').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterRouteSummary = page.getByLabel('Starter route summary')
@@ -400,7 +401,8 @@ async function assertDefaultV3DemoReady(page) {
   await starterHandoff.getByText('검수 · 공개 준비').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   await starterHandoff.locator('summary').click()
   await starterHandoff.getByText('다운로드 패키지').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
-  await starterHandoff.getByText('WAV · lyrics.txt · notes.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterHandoff.getByText('WAV · arrangement.txt · chords.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
+  await starterHandoff.getByText('lyrics.txt · notes.csv').waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterHubLink = starterHandoff.getByRole('link', { name: '스타터 릴리스 허브 열기' })
   await starterHubLink.waitFor({ timeout: DEFAULT_TIMEOUT_MS })
   const starterHubHref = await starterHubLink.getAttribute('href')
@@ -490,6 +492,7 @@ async function assertDefaultV3DemoReady(page) {
     'default V3 voicebank loaded',
     'first-run starter guide visible',
     'first-run one-minute path visible',
+    'first-run starter chord guide visible',
     'first-run route map visible',
     'first-run route state badges visible',
     'first-run three-step checklist visible',
